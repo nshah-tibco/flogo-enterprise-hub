@@ -348,6 +348,7 @@
                 "enableASR": false,
                 "swagger": "",
                 "authorization": false,
+                "authorizationConn": "",
                 "serviceName": "",
                 "resourcePath": "",
                 "Method": "GET",
@@ -414,7 +415,7 @@
             }
           }
         ],
-        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiTG9nU3RhcnQiOnsieCI6MjE1LCJ5Ijo4OX0sIkludm9rZVJFU1RTZXJ2aWNlIjp7IngiOjQyNSwieSI6ODl9LCJSZXR1cm4iOnsieCI6NjQwLCJ5Ijo4Nn19",
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiTG9nU3RhcnQiOnsieCI6MjE1LCJ5Ijo4OX0sIkludm9rZVJFU1RTZXJ2aWNlIjp7IngiOjQyNSwieSI6ODh9LCJSZXR1cm4iOnsieCI6NjQwLCJ5Ijo4Nn19",
         "metadata": {
           "input": [
             {
@@ -510,6 +511,7 @@
                 "enableASR": false,
                 "swagger": "",
                 "authorization": false,
+                "authorizationConn": "",
                 "serviceName": "",
                 "resourcePath": "",
                 "Method": "GET",
@@ -672,6 +674,7 @@
                 "enableASR": false,
                 "swagger": "",
                 "authorization": false,
+                "authorizationConn": "",
                 "serviceName": "",
                 "resourcePath": "",
                 "Method": "GET",
@@ -914,6 +917,7 @@
                 "enableASR": false,
                 "swagger": "",
                 "authorization": false,
+                "authorizationConn": "",
                 "serviceName": "",
                 "resourcePath": "",
                 "Method": "GET",

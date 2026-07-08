@@ -2,3 +2,20 @@
 .vscode
 .mcp.json
 bin
+
+# --- Build artifacts ---
+# Windows executables / libraries
+*.exe
+*.dll
+# macOS / Linux shared libraries
+*.dylib
+*.so
+
+# Flogo compiled app binaries.
+# flogobuild produces a Windows .exe (covered above) or an EXTENSION-LESS
+# executable on Linux/macOS (darwin/linux GOOS). Since those have no extension,
+# ignore everything under Flogo_Apps/ except the .flogo source and subfolders.
+Flogo_Apps/*
+!Flogo_Apps/*/
+!Flogo_Apps/*.flogo
+!Flogo_Apps/.gitignore

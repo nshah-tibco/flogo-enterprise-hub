@@ -1,0 +1,181 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "act_default_noop github.com/project-flogo/contrib/activity/noop",
+    "act_general_mapper github.com/tibco/flogo-general/src/app/General/activity/mapper",
+    "act_general_log github.com/tibco/flogo-general/src/app/General/activity/log",
+    "tr_timer github.com/tibco/flogo-general/src/app/General/trigger/timer",
+    "github.com/project-flogo/contrib/function/string",
+    "github.com/project-flogo/contrib/function/coerce"
+  ],
+  "name": "Flogo_project",
+  "description": "Flogo Project created with Flogo Design",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "settings": {},
+      "id": "timerTrigger",
+      "name": "timerTrigger",
+      "description": "Trigger created with Flogo Design",
+      "ref": "#tr_timer",
+      "handlers": [
+        {
+          "settings": {
+            "Scheduler Options": "Timer",
+            "Start Time": "",
+            "Repeating": false,
+            "Delayed Start": false,
+            "Time Interval": 1,
+            "Interval Unit": "Second",
+            "Cron Expression": ""
+          },
+          "action": {
+            "input": {},
+            "output": {},
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:mapping_from_excel"
+            }
+          },
+          "name": "mapping_from_excel",
+          "description": "Handler created by Flogo Design"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:mapping_from_excel",
+      "data": {
+        "name": "mapping_from_excel",
+        "description": "Flogo Flow created with Flogo Design",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "mapper1",
+            "type": "label",
+            "label": "StartActivity to mapper1"
+          },
+          {
+            "id": 2,
+            "from": "mapper1",
+            "to": "mapper2",
+            "type": "label",
+            "label": "mapper1 to mapper2"
+          },
+          {
+            "id": 3,
+            "from": "mapper2",
+            "to": "logger",
+            "type": "label",
+            "label": "mapper2 to logger"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#act_default_noop"
+            }
+          },
+          {
+            "activity": {
+              "input": {
+                "input": {
+                  "mapping": {
+                    "FirstName": "John",
+                    "LastName": "Doe",
+                    "Tel": "+1-555-123-4567",
+                    "mail": "john.doe@email.com"
+                  }
+                }
+              },
+              "ref": "#act_general_mapper",
+              "schemas": {
+                "input": {
+                  "input": "schema://InputSchema"
+                },
+                "output": {
+                  "output": "schema://InputSchema"
+                }
+              }
+            },
+            "id": "mapper1",
+            "name": "mapper1",
+            "description": "General tibco-wi-mapper Activity"
+          },
+          {
+            "activity": {
+              "input": {
+                "input": {
+                  "mapping": {
+                    "Name": "=string.concat($activity[mapper1].output.FirstName, \" \", $activity[mapper1].output.LastName)",
+                    "PhoneNumber": "=$activity[mapper1].output.Tel",
+                    "EmailAddress": "=$activity[mapper1].output.mail"
+                  }
+                }
+              },
+              "ref": "#act_general_mapper",
+              "schemas": {
+                "input": {
+                  "input": "schema://OutputSchema"
+                },
+                "output": {
+                  "output": "schema://OutputSchema"
+                }
+              }
+            },
+            "id": "mapper2",
+            "name": "mapper2",
+            "description": "General tibco-wi-mapper Activity"
+          },
+          {
+            "activity": {
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=coerce.toString($activity[mapper2].output)",
+                "logLevel": ""
+              },
+              "ref": "#act_general_log"
+            },
+            "id": "logger",
+            "name": "logger",
+            "description": "General tibco-wi-log Activity"
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo0NX0sIm1hcHBlcjEiOnsieCI6MjUwLCJ5Ijo0NX0sIm1hcHBlcjIiOnsieCI6NDUwLCJ5Ijo0NX0sImxvZ2dlciI6eyJ4Ijo2NTAsInkiOjQ1fX0=",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        }
+      }
+    }
+  ],
+  "properties": [],
+  "connections": {},
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1kZWZhdWx0LWNvbnRyaWJzL3NyYy9hcHAvRGVmYXVsdCIsImlkIjoiRGVmYXVsdCIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wLWIxMC12My1tYWluIiwibmFtZSI6IlRJQkNPIEZsb2dvIENvbm5lY3RvciBmb3IgRGVmYXVsdCIsInMzbG9jYXRpb24iOiJUaWJjby9EZWZhdWx0IiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWdlbmVyYWwvc3JjL2FwcC9HZW5lcmFsIiwiaWQiOiJHZW5lcmFsIiwidmVyc2lvbiI6IjEuNi4xNCIsInRhZyI6IjEuNi4xNC1iMDQiLCJuYW1lIjoiVElCQ08gRmxvZ28gQ29ubmVjdG9yIGZvciBHZW5lcmFsIiwiczNsb2NhdGlvbiI6IlRpYmNvL0dlbmVyYWwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
+  "metadata": {
+    "endpoints": [],
+    "flogoVersion": "2.26.3"
+  },
+  "schemas": {
+    "InputSchema": {
+      "type": "json",
+      "value": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"FirstName\": {\n      \"type\": \"string\"\n    },\n    \"LastName\": {\n      \"type\": \"string\"\n    },\n    \"Tel\": {\n      \"type\": \"string\"\n    },\n    \"mail\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"FirstName\": {\n      \"type\": \"string\"\n    },\n    \"LastName\": {\n      \"type\": \"string\"\n    },\n    \"Tel\": {\n      \"type\": \"string\"\n    },\n    \"mail\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+    },
+    "OutputSchema": {
+      "type": "json",
+      "value": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"Name\": {\n      \"type\": \"string\"\n    },\n    \"PhoneNumber\": {\n      \"type\": \"string\"\n    },\n    \"EmailAddress\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"Name\": {\n      \"type\": \"string\"\n    },\n    \"PhoneNumber\": {\n      \"type\": \"string\"\n    },\n    \"EmailAddress\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+    }
+  }
+}

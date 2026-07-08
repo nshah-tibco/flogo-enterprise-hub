@@ -5,18 +5,15 @@
     "github.com/tibco/flogo-general/src/app/General/activity/log",
     "github.com/tibco/flogo-general/src/app/General/activity/rest",
     "github.com/project-flogo/contrib/activity/actreturn",
-    "github.com/tibco/flogo-ai-agent/src/app/AgenticAI/activity/agentactivity",
-    "github.com/project-flogo/websocket/activity/wswritedata",
     "github.com/tibco/flogo-general/src/app/General/activity/sendmail",
     "github.com/tibco/flogo-ai-agent/src/app/AgenticAI/trigger/agent",
-    "github.com/project-flogo/websocket/trigger/wsserver",
     "github.com/project-flogo/contrib/function/string",
     "github.com/project-flogo/contrib/function/coerce",
     "github.com/tibco/flogo-ai-agent/src/app/AgenticAI/connector/llmprovider",
     "github.com/tibco/flogo-ai-agent/src/app/AgenticAI/connector/mcpserverconfig"
   ],
-  "name": "Hospital_AI_Agent",
-  "description": "",
+  "name": "Hospital_A2A_Servers",
+  "description": "Hospital A2A Servers for post discharge co-ordinator, pharmacy fullfillment, bed turnover, send email",
   "version": "1.0.0",
   "type": "flogo:app",
   "appModel": "1.1.1",
@@ -30,9 +27,9 @@
         "llmProviderConnection": "conn://0bcabd04-b832-4452-ae0a-2cadb27002ed",
         "agentName": "post_discharge_coordinator",
         "agentDescription": "Retrieves patient discharge summaries from the EMR system and books follow-up appointments with the appropriate specialty based on discharge requirements. Returns the discharge summary and appointment details to the orchestrator. Does not hand over to any other agents.",
-        "agentType": "Local",
-        "agentPort": 8080,
-        "agentUrl": "http://localhost:9898",
+        "agentType": "A2A Server",
+        "agentPort": "=$property[\"Post_Discharge_A2AServer_PORT\"]",
+        "agentUrl": "=$property[\"Post_Discharge_A2AServer_URL\"]",
         "agentAuthMode": "None",
         "agentToken": "",
         "model": "=$property[\"LLM_Model\"]",
@@ -116,9 +113,9 @@
         "llmProviderConnection": "conn://0bcabd04-b832-4452-ae0a-2cadb27002ed",
         "agentName": "pharmacy_fulfillment_agent",
         "agentDescription": "Processes medication orders based on discharge prescriptions received from the Post-Discharge Coordinator. Retrieves medication details from the pharmacy catalog, calculates estimated ready time, and creates pharmacy orders with designated pickup locations. Returns order confirmation including medication name, ready time, and order status to complete the medication fulfillment workflow.",
-        "agentType": "Local",
-        "agentPort": 8080,
-        "agentUrl": "http://localhost:9898",
+        "agentType": "A2A Server",
+        "agentPort": "=$property[\"Pharmacy_Fullfillment_A2AServer_PORT\"]",
+        "agentUrl": "=$property[\"Pharmacy_Fullfillment_A2AServer_URL\"]",
         "agentAuthMode": "None",
         "agentToken": "",
         "model": "=$property[\"LLM_Model\"]",
@@ -202,9 +199,9 @@
         "llmProviderConnection": "conn://0bcabd04-b832-4452-ae0a-2cadb27002ed",
         "agentName": "bed_turnover_agent",
         "agentDescription": "Manages bed status transitions when patients are discharged by requesting housekeeping services through the bed management API. Tracks bed cleaning progress and updates bed availability status in real-time. Notifies the admissions team when beds become available for new patient assignments to optimize hospital capacity utilization.",
-        "agentType": "Local",
-        "agentPort": 8080,
-        "agentUrl": "http://localhost:9898",
+        "agentType": "A2A Server",
+        "agentPort": "=$property[\"Bed_Turnover_A2AServer_PORT\"]",
+        "agentUrl": "=$property[\"Bed_Turnover_A2AServer_URL\"]",
         "agentAuthMode": "None",
         "agentToken": "",
         "model": "=$property[\"LLM_Model\"]",
@@ -281,55 +278,6 @@
       ]
     },
     {
-      "ref": "#wsserver",
-      "name": "wsserver",
-      "description": "Websocket server listens for connection request from the client",
-      "settings": {
-        "port": 8082,
-        "enableTLS": false,
-        "serverCert": "",
-        "serverKey": "",
-        "enableClientAuth": false,
-        "trustStore": ""
-      },
-      "id": "WebsocketServer",
-      "handlers": [
-        {
-          "description": "",
-          "settings": {
-            "method": "GET",
-            "path": "/ws/chat",
-            "mode": "Data",
-            "format": "String",
-            "jsonSchema": ""
-          },
-          "action": {
-            "ref": "github.com/project-flogo/flow",
-            "settings": {
-              "flowURI": "res://flow:Orchestrator-Agent"
-            },
-            "input": {
-              "pathParams": "=$.pathParams",
-              "queryParams": "=$.queryParams",
-              "headers": "=$.headers",
-              "content": "=$.content",
-              "wsconnection": "=$.wsconnection"
-            }
-          },
-          "schemas": {
-            "output": {
-              "headers": {
-                "type": "json",
-                "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false},\"Sec-Websocket-Key\":{\"type\":\"string\",\"visible\":false},\"Sec-Websocket-Version\":{\"type\":\"string\",\"visible\":false},\"Upgrade\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
-                "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Sec-Websocket-Key\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Sec-Websocket-Version\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Upgrade\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
-              }
-            }
-          },
-          "name": "Orchestrator-Agent"
-        }
-      ]
-    },
-    {
       "ref": "#agent",
       "name": "flogo-agenticai-agent",
       "description": "AI Agent trigger for Agentic AI. This agent must be invoked within the app using 'Invoke AI Agent Trigger' activity. This functionality is in preview stage and not recommended for production use",
@@ -337,9 +285,9 @@
         "llmProviderConnection": "conn://0bcabd04-b832-4452-ae0a-2cadb27002ed",
         "agentName": "SendEmail",
         "agentDescription": "Sends a single comprehensive discharge confirmation email to the patient. Must only be invoked once at the very end after all other discharge tasks are complete. Do not invoke this agent until post_discharge_coordinator, pharmacy_fulfillment_agent, and bed_turnover_agent have all finished.",
-        "agentType": "Local",
-        "agentPort": 8080,
-        "agentUrl": "http://localhost:9898",
+        "agentType": "A2A Server",
+        "agentPort": "=$property[\"SendEmail_A2AServer_PORT\"]",
+        "agentUrl": "=$property[\"SendEmail_A2AServer_URL\"]",
         "agentAuthMode": "None",
         "agentToken": "",
         "model": "=$property[\"LLM_Model\"]",
@@ -1110,129 +1058,6 @@
       }
     },
     {
-      "id": "flow:Orchestrator-Agent",
-      "data": {
-        "name": "Orchestrator-Agent",
-        "description": "",
-        "links": [
-          {
-            "id": 1,
-            "from": "StartActivity",
-            "to": "AIAgent",
-            "type": "label",
-            "label": "StartActivity to AIAgent"
-          },
-          {
-            "id": 2,
-            "from": "AIAgent",
-            "to": "WebsocketWriteData",
-            "type": "label",
-            "label": "AIAgent to WebsocketWriteData"
-          }
-        ],
-        "tasks": [
-          {
-            "id": "StartActivity",
-            "name": "StartActivity",
-            "description": "NoOp Activity",
-            "activity": {
-              "ref": "#noop"
-            }
-          },
-          {
-            "id": "AIAgent",
-            "name": "AIAgent",
-            "description": "Configure AI Agent in the flow",
-            "activity": {
-              "ref": "#agentactivity",
-              "settings": {
-                "llmProviderConnection": "conn://0bcabd04-b832-4452-ae0a-2cadb27002ed",
-                "model": "=$property[\"LLM_Model\"]",
-                "reasoning": "",
-                "temperature": 0.7,
-                "enableGuardrails": true,
-                "rateLimit": 25,
-                "tokenLimit": 2048,
-                "redactSensitiveData": true,
-                "responseType": "Text",
-                "agentHandoffs": "post_discharge_coordinator,pharmacy_fulfillment_agent,bed_turnover_agent,SendEmail",
-                "remoteAgents": [],
-                "mcpServers": [
-                  "conn://65b8b2d5-6ce2-48b2-bbae-17d9fb360d56"
-                ],
-                "conversationStoreType": "Memory",
-                "memoryMaxSize": 100,
-                "systemPrompt": "You are the Hospital Discharge Orchestrator Agent responsible for coordinating post-discharge care workflows. You manage four sub-agents: post_discharge_coordinator for retrieving discharge summaries and booking follow-up appointments, pharmacy_fulfillment_agent for processing medication orders, bed_turnover_agent for managing bed availability, and SendEmail for sending confirmation emails to patients.\n\nINTENT ANALYSIS: Before invoking any sub-agent, carefully analyze the user's request to determine which tasks are needed. If the user only asks for a discharge summary, invoke only post_discharge_coordinator and return the summary without triggering any other agents. If the user asks to process discharge with medications, invoke post_discharge_coordinator followed by pharmacy_fulfillment_agent. If the user asks for bed cleanup only, invoke only bed_turnover_agent. If the user asks for medication orders only, invoke only pharmacy_fulfillment_agent. If the user asks for a full or complete discharge process, invoke all relevant agents in sequence. Only invoke SendEmail if the user explicitly requests an email or says send confirmation email or send email with details. Never invoke SendEmail unless the user explicitly asks for it.\n\nWORKFLOW FOR FULL DISCHARGE: Follow this exact sequence when a full discharge is requested. Step 1: Invoke post_discharge_coordinator with patient_id to retrieve the discharge summary and book a follow-up appointment if follow_up_required is true. Wait for it to complete fully. Step 2: If the discharge summary contains a non-empty medications array, invoke pharmacy_fulfillment_agent with patient_id and the medications array from the discharge summary. If there are no medications, skip this step. Wait for it to complete fully. Step 3: Invoke bed_turnover_agent with the bed_id and ward_id obtained from the discharge summary to initiate bed cleaning. Wait for it to complete fully. Step 4: Only if the user requested an email, invoke SendEmail exactly ONCE. This must be the absolute last step. Pass all collected details to SendEmail including patient_id, appointment information if booked, medication order confirmations if any, and bed cleanup status.\n\nCRITICAL EMAIL RULE: You must NEVER invoke SendEmail more than once in a single conversation. Do not invoke SendEmail after booking an appointment. Do not invoke SendEmail after ordering medications. Do not invoke SendEmail after bed cleanup. Only invoke SendEmail once as the very last step after steps 1, 2, and 3 are all fully completed. If you have already invoked SendEmail once, do not invoke it again regardless of any reason. Track whether you have already called SendEmail and refuse to call it a second time.\n\nMCP TOOLS: You have access to HospitalMCPServer tools for read-only data queries such as checking bed availability, viewing patient records, or looking up medication catalog information. Use these tools only for reading and retrieving data. Never use MCP tools to create, update, or modify records. For all write operations like booking appointments, creating pharmacy orders, or requesting bed cleaning, use the appropriate sub-agent.\n\nRESPONSE FORMATTING: Structure your final response using clearly labeled sections with double asterisks for section headers. Use the following sections based on what was completed. Start with a brief greeting, then use these section headers:\n\n**Discharge Summary** - Include patient discharge date, ward, bed, specialty, and follow-up status.\n\n**Follow-Up Appointment Scheduled** - Include specialty, appointment date, time, and confirmation number. If no follow-up is required, state that clearly.\n\n**Medication Orders Processed** - Include each medication name, days supply, pickup location, and estimated ready time. If no medications were prescribed, state that clearly.\n\n**Bed Turnover Initiated** - Include bed ID, ward, cleaning status, and estimated ready time.\n\n**Appointment Confirmation Email Sent** - Confirm that the email was sent to the patient. Include only if email was actually sent.\n\nEnd with a warm closing statement about next steps. Use a professional, friendly, and empathetic tone suitable for healthcare communication. Write in clear flowing language within each section.\n\nTERMINATION RULES: Complete each sub-agent task within a maximum of 3 attempts. If any sub-agent fails after 3 attempts, collect partial results and proceed with remaining agents. Never retry indefinitely. If critical failures occur, terminate gracefully and report what was completed and what failed.\n\nSCOPE: You only handle post-discharge coordination including discharge summaries, follow-up appointments, medication orders, and bed management. Politely decline any requests outside this scope such as diagnosis, treatment advice, billing inquiries, and emergency services. Clearly state what you can and cannot assist with when asked."
-              },
-              "input": {
-                "userPrompt": "=coerce.toString($flow.content)",
-                "conversationId": ""
-              },
-              "schemas": {
-                "input": {
-                  "filteredToolNames": {
-                    "type": "json",
-                    "value": "{\r\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\r\n  \"type\": \"array\",\r\n  \"items\": {\r\n    \"type\": \"string\"\r\n  }\r\n}\r\n",
-                    "fe_metadata": "{\r\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\r\n  \"type\": \"array\",\r\n  \"items\": {\r\n    \"type\": \"string\"\r\n  }\r\n}\r\n"
-                  }
-                }
-              },
-              "feSchemaMap": {}
-            }
-          },
-          {
-            "id": "WebsocketWriteData",
-            "name": "WebsocketWriteData",
-            "description": "Websocket Write Data Activity will write data to existing Websocket connection",
-            "activity": {
-              "ref": "#wswritedata",
-              "settings": {
-                "format": "String",
-                "jsonSchema": ""
-              },
-              "input": {
-                "message": "=$activity[AIAgent].response",
-                "wsconnection": "=$flow.wsconnection"
-              }
-            }
-          }
-        ],
-        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiQUlBZ2VudCI6eyJ4IjoyNDgsInkiOjk2fSwiV2Vic29ja2V0V3JpdGVEYXRhIjp7IngiOjQ2OCwieSI6OTV9fQ==",
-        "metadata": {
-          "input": [
-            {
-              "name": "pathParams",
-              "type": "params"
-            },
-            {
-              "name": "queryParams",
-              "type": "params"
-            },
-            {
-              "name": "headers",
-              "type": "object",
-              "schema": {
-                "type": "json",
-                "value": "{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false},\"Sec-Websocket-Key\":{\"type\":\"string\",\"visible\":false},\"Sec-Websocket-Version\":{\"type\":\"string\",\"visible\":false},\"Upgrade\":{\"type\":\"string\",\"visible\":false}}"
-              }
-            },
-            {
-              "name": "content",
-              "type": "any"
-            },
-            {
-              "name": "wsconnection",
-              "type": "any"
-            }
-          ],
-          "output": [],
-          "fe_metadata": {
-            "input": "{\"type\":\"object\",\"title\":\"WebsocketServer\",\"properties\":{\"pathParams\":{\"type\":\"params\"},\"queryParams\":{\"type\":\"params\"},\"headers\":{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false},\"Sec-Websocket-Key\":{\"type\":\"string\",\"visible\":false},\"Sec-Websocket-Version\":{\"type\":\"string\",\"visible\":false},\"Upgrade\":{\"type\":\"string\",\"visible\":false}},\"required\":[]},\"content\":{\"type\":\"any\",\"required\":false},\"wsconnection\":{\"type\":\"any\",\"required\":false}}}"
-          }
-        }
-      }
-    },
-    {
       "id": "flow:SendEmail_Flow",
       "data": {
         "name": "SendEmail Flow",
@@ -1387,7 +1212,7 @@
     {
       "name": "AgenticAI.OpenAIConn.API_Key",
       "type": "string",
-      "value": "SECRET:hf40EdPPdSeQVbVXF54McWeOwIDroRHT9ReQx8v/gm3LJR2PpktPYzcyZHZXmxmJxCdNOC4vdTBLLdf8jMPXX87sPJ6xAw5mQrjmBWXdtjDZyjUDFDigfhnqXCN/FQuYiIADuJhy1oEipsKvALR6hQWjcV9QnKq2Lbeo22zwGoOmg6JQLPCErdbXx7jqDWZ2Yp4lP2pCArY2H0xb+D6aa+zZQQ7otZvIBSFnO8fVTje7YgH0"
+      "value": "SECRET:7Fw2Q/oVFX8d6CE9OBaMa1XSEg6zGZlc9yDWKhxOjBIeYd65Jy+9w2ahe1Kax7QBddRn0Du2lQ+X/DvKaO2w8pDoGIDhzMYnPQfv+fo5avK71mKffMX1PyAzpxYqdPrIJNDaeBJQKzc/8TiSd3bDDgn7bpVn9JOvrQx3I0dDC7zhHx0x+UsoSIbV+EqvuAovTzx4/nyqISEuM4ZDO6miZ6EzAnzSmwKo6XhchtjBgR5c7mJE"
     },
     {
       "name": "AgenticAI.OpenAIConn.LLM_Base_URL",
@@ -1437,7 +1262,47 @@
     {
       "name": "Email_App_Password",
       "type": "string",
-      "value": "zngg pcba nntl thex"
+      "value": "SECRET:+cXCqDDELJ330kh12zf6pMG8EV4inut59mbnR/gYco3IHEY="
+    },
+    {
+      "name": "SendEmail_A2AServer_PORT",
+      "type": "string",
+      "value": "8073"
+    },
+    {
+      "name": "Post_Discharge_A2AServer_PORT",
+      "type": "string",
+      "value": "8070"
+    },
+    {
+      "name": "Pharmacy_Fullfillment_A2AServer_PORT",
+      "type": "string",
+      "value": "8071"
+    },
+    {
+      "name": "Bed_Turnover_A2AServer_PORT",
+      "type": "string",
+      "value": "8072"
+    },
+    {
+      "name": "SendEmail_A2AServer_URL",
+      "type": "string",
+      "value": "http://localhost:8073"
+    },
+    {
+      "name": "Post_Discharge_A2AServer_URL",
+      "type": "string",
+      "value": "http://localhost:8070"
+    },
+    {
+      "name": "Pharmacy_Fullfillment_A2AServer_URL",
+      "type": "string",
+      "value": "http://localhost:8071"
+    },
+    {
+      "name": "Bed_Turnover_A2AServer_URL",
+      "type": "string",
+      "value": "http://localhost:8072"
     }
   ],
   "connections": {
@@ -1469,7 +1334,7 @@
         "description": "Key to use with claude ",
         "llmProvider": "Anthropic",
         "anthropicProvider": "Default",
-        "apiKey": "SECRET:x8DSyBR+K5janaXbtl8ta17hkAZYSzJR3Xxufj/NXA==",
+        "apiKey": "SECRET:4Nq4uLjv2TDJm6c0o7kK2yJqLA6h3RRoapjHiIba5Q==",
         "llmProviderUrl": "",
         "azureDeployment": "",
         "azureRegion": "",
@@ -1494,14 +1359,32 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS4zIiwidGFnIjoiMC45LjMtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWdlbmVyYWwvc3JjL2FwcC9HZW5lcmFsIiwiaWQiOiJHZW5lcmFsIiwidmVyc2lvbiI6IjEuNi4xNCIsInRhZyI6IjEuNi4xNC1iMDQiLCJuYW1lIjoiR2VuZXJhbCIsInMzbG9jYXRpb24iOiJUaWJjby9HZW5lcmFsIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3Byb2plY3QtZmxvZ28vd2Vic29ja2V0IiwiaWQiOiJ3ZWJzb2NrZXQiLCJ2ZXJzaW9uIjoiMS4wLjEiLCJ0YWciOiIxLjAuMS1iMDMtZmxvZ28tMi4yNS4wIiwibmFtZSI6IldlYnNvY2tldCIsInMzbG9jYXRpb24iOiJUaWJjby93ZWJzb2NrZXQiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS4zIiwidGFnIjoiMC45LjMtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWdlbmVyYWwvc3JjL2FwcC9HZW5lcmFsIiwiaWQiOiJHZW5lcmFsIiwidmVyc2lvbiI6IjEuNi4xNCIsInRhZyI6IjEuNi4xNC1iMDQiLCJuYW1lIjoiR2VuZXJhbCIsInMzbG9jYXRpb24iOiJUaWJjby9HZW5lcmFsIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
   "metadata": {
     "endpoints": [
       {
         "protocol": "http",
-        "port": "8082",
-        "title": "WebsocketServer",
-        "type": "public"
+        "port": "8070",
+        "type": "public",
+        "name": "post_discharge_coordinator_trigger"
+      },
+      {
+        "protocol": "http",
+        "port": "8071",
+        "type": "public",
+        "name": "pharmacy_fulfillment_agent_trigger"
+      },
+      {
+        "protocol": "http",
+        "port": "8072",
+        "type": "public",
+        "name": "bed_turnover_agent_trigger"
+      },
+      {
+        "protocol": "http",
+        "port": "8073",
+        "type": "public",
+        "name": "SendEmailAgent"
       }
     ],
     "flogoVersion": "2.26.5"

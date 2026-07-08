@@ -2,6 +2,7 @@
 -- PostgreSQL 14+
 
 -- Drop existing tables (reverse dependency order)
+DROP TABLE IF EXISTS rebooking_log CASCADE;
 DROP TABLE IF EXISTS booking_segments CASCADE;
 DROP TABLE IF EXISTS bookings CASCADE;
 DROP TABLE IF EXISTS frequentflyer CASCADE;
@@ -74,12 +75,27 @@ CREATE TABLE booking_segments (
     arrival_time    TIMESTAMP WITH TIME ZONE NOT NULL,
     seat_number     VARCHAR(5),
     cabin           VARCHAR(20) DEFAULT 'Economy', -- Economy, Business
-    segment_status  VARCHAR(20) DEFAULT 'CONFIRMED', -- CONFIRMED, CHECKED_IN, BOARDED, COMPLETED, CANCELLED
+    segment_status  VARCHAR(20) DEFAULT 'CONFIRMED', -- CONFIRMED, CHECKED_IN, BOARDED, COMPLETED, CANCELLED, REBOOKED
     CONSTRAINT chk_cabin CHECK (cabin IN ('Economy','Business')),
-    CONSTRAINT chk_seg_status CHECK (segment_status IN ('CONFIRMED','CHECKED_IN','BOARDED','COMPLETED','CANCELLED'))
+    CONSTRAINT chk_seg_status CHECK (segment_status IN ('CONFIRMED','CHECKED_IN','BOARDED','COMPLETED','CANCELLED','REBOOKED'))
+);
+
+-- 6. Rebooking Log — Tracks all passenger rebookings
+CREATE TABLE rebooking_log (
+    id              SERIAL PRIMARY KEY,
+    pnr             VARCHAR(6) NOT NULL,
+    passenger_id    VARCHAR(20),
+    original_flight VARCHAR(10) NOT NULL,
+    new_flight      VARCHAR(10) NOT NULL,
+    original_seat   VARCHAR(5),
+    new_seat        VARCHAR(5),
+    reason          VARCHAR(200),
+    rebooked_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status          VARCHAR(20) DEFAULT 'COMPLETED'
 );
 
 -- Indexes
+CREATE INDEX idx_rebooking_pnr ON rebooking_log(pnr);
 CREATE INDEX idx_flights_number ON flights(flight_number);
 CREATE INDEX idx_flights_status ON flights(status);
 CREATE INDEX idx_passengers_id ON passengers(passenger_id);
@@ -94,14 +110,14 @@ CREATE INDEX idx_frequentflyer_passenger ON frequentflyer(passenger_id);
 
 -- Flights (8 flights — today's date, flight numbers)
 INSERT INTO flights (flight_number, origin, origin_city, destination, destination_city, scheduled_departure, estimated_departure, scheduled_arrival, estimated_arrival, status, gate, delay_minutes, delay_reason, aircraft) VALUES
-('FL801', 'BOG', 'Bogota',       'PTY', 'Panama City',  '2026-05-21 08:30:00-05:00', '2026-05-21 10:00:00-05:00', '2026-05-21 11:15:00-05:00', '2026-05-21 12:45:00-05:00', 'DELAYED', 'B12', 90, 'Late arriving aircraft from GYE', 'Boeing 737 MAX 9'),
-('FL445', 'PTY', 'Panama City',  'MIA', 'Miami',        '2026-05-21 12:30:00-05:00', NULL,                         '2026-05-21 16:45:00-04:00', NULL,                         'ON_TIME', 'A08', 0,  NULL, 'Boeing 737-800'),
-('FL447', 'PTY', 'Panama City',  'MIA', 'Miami',        '2026-05-21 15:30:00-05:00', NULL,                         '2026-05-21 19:45:00-04:00', NULL,                         'ON_TIME', 'A12', 0,  NULL, 'Boeing 737 MAX 9'),
-('FL215', 'GRU', 'Sao Paulo',    'PTY', 'Panama City',  '2026-05-21 06:00:00-03:00', NULL,                         '2026-05-21 11:30:00-05:00', NULL,                         'ON_TIME', 'C04', 0,  NULL, 'Boeing 737 MAX 9'),
-('FL302', 'PTY', 'Panama City',  'JFK', 'New York',     '2026-05-21 13:00:00-05:00', NULL,                         '2026-05-21 19:15:00-04:00', NULL,                         'ON_TIME', 'A15', 0,  NULL, 'Boeing 737 MAX 9'),
-('FL510', 'SCL', 'Santiago',     'PTY', 'Panama City',  '2026-05-21 07:15:00-04:00', '2026-05-21 08:00:00-04:00',  '2026-05-21 12:45:00-05:00', '2026-05-21 13:30:00-05:00', 'DELAYED', 'C08', 45, 'Weather conditions in Santiago',  'Boeing 737-800'),
-('FL612', 'PTY', 'Panama City',  'ORD', 'Chicago',      '2026-05-21 14:00:00-05:00', NULL,                         '2026-05-21 19:30:00-05:00', NULL,                         'ON_TIME', 'A20', 0,  NULL, 'Boeing 737 MAX 9'),
-('FL725', 'LIM', 'Lima',         'PTY', 'Panama City',  '2026-05-21 09:00:00-05:00', NULL,                         '2026-05-21 13:30:00-05:00', NULL,                         'ON_TIME', 'B06', 0,  NULL, 'Boeing 737-800');
+('FL801', 'DEN', 'Denver',       'ATL', 'Atlanta',      '2026-05-21 08:30:00-05:00', '2026-05-21 10:00:00-05:00', '2026-05-21 11:15:00-05:00', '2026-05-21 12:45:00-05:00', 'DELAYED', 'B12', 90, 'Late arriving aircraft from DFW', 'Boeing 737 MAX 9'),
+('FL445', 'ATL', 'Atlanta',      'MIA', 'Miami',        '2026-05-21 12:30:00-05:00', NULL,                         '2026-05-21 16:45:00-04:00', NULL,                         'ON_TIME', 'A08', 0,  NULL, 'Boeing 737-800'),
+('FL447', 'ATL', 'Atlanta',      'MIA', 'Miami',        '2026-05-21 15:30:00-05:00', NULL,                         '2026-05-21 19:45:00-04:00', NULL,                         'ON_TIME', 'A12', 0,  NULL, 'Boeing 737 MAX 9'),
+('FL215', 'LAX', 'Los Angeles',  'ATL', 'Atlanta',      '2026-05-21 06:00:00-03:00', NULL,                         '2026-05-21 11:30:00-05:00', NULL,                         'ON_TIME', 'C04', 0,  NULL, 'Boeing 737 MAX 9'),
+('FL302', 'ATL', 'Atlanta',      'JFK', 'New York',     '2026-05-21 13:00:00-05:00', NULL,                         '2026-05-21 19:15:00-04:00', NULL,                         'ON_TIME', 'A15', 0,  NULL, 'Boeing 737 MAX 9'),
+('FL510', 'SEA', 'Seattle',      'ATL', 'Atlanta',      '2026-05-21 07:15:00-04:00', '2026-05-21 08:00:00-04:00',  '2026-05-21 12:45:00-05:00', '2026-05-21 13:30:00-05:00', 'DELAYED', 'C08', 45, 'Weather conditions in Seattle',  'Boeing 737-800'),
+('FL612', 'ATL', 'Atlanta',      'ORD', 'Chicago',      '2026-05-21 14:00:00-05:00', NULL,                         '2026-05-21 19:30:00-05:00', NULL,                         'ON_TIME', 'A20', 0,  NULL, 'Boeing 737 MAX 9'),
+('FL725', 'BOS', 'Boston',       'ATL', 'Atlanta',      '2026-05-21 09:00:00-05:00', NULL,                         '2026-05-21 13:30:00-05:00', NULL,                         'ON_TIME', 'B06', 0,  NULL, 'Boeing 737-800');
 
 -- Passengers (10 passengers)
 INSERT INTO passengers (passenger_id, first_name, last_name, email, phone, nationality) VALUES
@@ -131,50 +147,50 @@ INSERT INTO frequentflyer (passenger_id, frequentflyer_number, tier, miles_balan
 
 -- Bookings (8 PNRs)
 INSERT INTO bookings (pnr, passenger_id, booking_date) VALUES
-('ABCDE1', 'PAX-2026-00101', '2026-04-15'),  -- Carlos: BOG→PTY→MIA (disrupted)
-('FGHIJ2', 'PAX-2026-00102', '2026-04-20'),  -- Ana: GRU→PTY→JFK
-('KLMNO3', 'PAX-2026-00103', '2026-05-01'),  -- Roberto: local PTY→MIA
-('PQRST4', 'PAX-2026-00104', '2026-05-05'),  -- Maria: SCL→PTY→ORD (at risk)
-('UVWXY5', 'PAX-2026-00105', '2026-04-28'),  -- Jorge: LIM→PTY→MIA
-('BCDEF6', 'PAX-2026-00106', '2026-05-10'),  -- Isabella: BOG→PTY (one-way)
-('GHIJK7', 'PAX-2026-00107', '2026-05-12'),  -- Diego: BOG→PTY→JFK
-('LMNOP8', 'PAX-2026-00110', '2026-05-08');  -- Camila: GRU→PTY→ORD
+('ABCDE1', 'PAX-2026-00101', '2026-04-15'),  -- Carlos: DEN→ATL→MIA (disrupted)
+('FGHIJ2', 'PAX-2026-00102', '2026-04-20'),  -- Ana: LAX→ATL→JFK
+('KLMNO3', 'PAX-2026-00103', '2026-05-01'),  -- Roberto: local ATL→MIA
+('PQRST4', 'PAX-2026-00104', '2026-05-05'),  -- Maria: SEA→ATL→ORD (at risk)
+('UVWXY5', 'PAX-2026-00105', '2026-04-28'),  -- Jorge: BOS→ATL→MIA
+('BCDEF6', 'PAX-2026-00106', '2026-05-10'),  -- Isabella: DEN→ATL (one-way)
+('GHIJK7', 'PAX-2026-00107', '2026-05-12'),  -- Diego: DEN→ATL→JFK
+('LMNOP8', 'PAX-2026-00110', '2026-05-08');  -- Camila: LAX→ATL→ORD
 
 -- Booking Segments (multi-leg itineraries)
--- Carlos Martinez: BOG→PTY (FL801, delayed) + PTY→MIA (FL445, will miss)
+-- Carlos Martinez: DEN→ATL (FL801, delayed) + ATL→MIA (FL445, will miss)
 INSERT INTO booking_segments (booking_id, segment_order, flight_number, origin, destination, departure_time, arrival_time, seat_number, cabin, segment_status) VALUES
-(1, 1, 'FL801', 'BOG', 'PTY', '2026-05-21 08:30:00-05:00', '2026-05-21 11:15:00-05:00', '4A', 'Business', 'CHECKED_IN'),
-(1, 2, 'FL445', 'PTY', 'MIA', '2026-05-21 12:30:00-05:00', '2026-05-21 16:45:00-04:00', '3C', 'Business', 'CONFIRMED');
+(1, 1, 'FL801', 'DEN', 'ATL', '2026-05-21 08:30:00-05:00', '2026-05-21 11:15:00-05:00', '4A', 'Business', 'CHECKED_IN'),
+(1, 2, 'FL445', 'ATL', 'MIA', '2026-05-21 12:30:00-05:00', '2026-05-21 16:45:00-04:00', '3C', 'Business', 'CONFIRMED');
 
--- Ana Silva: GRU→PTY + PTY→JFK
+-- Ana Silva: LAX→ATL + ATL→JFK
 INSERT INTO booking_segments (booking_id, segment_order, flight_number, origin, destination, departure_time, arrival_time, seat_number, cabin, segment_status) VALUES
-(2, 1, 'FL215', 'GRU', 'PTY', '2026-05-21 06:00:00-03:00', '2026-05-21 11:30:00-05:00', '12B', 'Economy', 'CHECKED_IN'),
-(2, 2, 'FL302', 'PTY', 'JFK', '2026-05-21 13:00:00-05:00', '2026-05-21 19:15:00-04:00', '14A', 'Economy', 'CONFIRMED');
+(2, 1, 'FL215', 'LAX', 'ATL', '2026-05-21 06:00:00-03:00', '2026-05-21 11:30:00-05:00', '12B', 'Economy', 'CHECKED_IN'),
+(2, 2, 'FL302', 'ATL', 'JFK', '2026-05-21 13:00:00-05:00', '2026-05-21 19:15:00-04:00', '14A', 'Economy', 'CONFIRMED');
 
--- Roberto Gonzalez: PTY→MIA (direct)
+-- Roberto Gonzalez: ATL→MIA (direct)
 INSERT INTO booking_segments (booking_id, segment_order, flight_number, origin, destination, departure_time, arrival_time, seat_number, cabin, segment_status) VALUES
-(3, 1, 'FL445', 'PTY', 'MIA', '2026-05-21 12:30:00-05:00', '2026-05-21 16:45:00-04:00', '1A', 'Business', 'CONFIRMED');
+(3, 1, 'FL445', 'ATL', 'MIA', '2026-05-21 12:30:00-05:00', '2026-05-21 16:45:00-04:00', '1A', 'Business', 'CONFIRMED');
 
--- Maria Fernandez: SCL→PTY (FL510, delayed 45 min) + PTY→ORD (FL612)
+-- Maria Fernandez: SEA→ATL (FL510, delayed 45 min) + ATL→ORD (FL612)
 INSERT INTO booking_segments (booking_id, segment_order, flight_number, origin, destination, departure_time, arrival_time, seat_number, cabin, segment_status) VALUES
-(4, 1, 'FL510', 'SCL', 'PTY', '2026-05-21 07:15:00-04:00', '2026-05-21 12:45:00-05:00', '8C', 'Economy', 'CHECKED_IN'),
-(4, 2, 'FL612', 'PTY', 'ORD', '2026-05-21 14:00:00-05:00', '2026-05-21 19:30:00-05:00', '10A', 'Economy', 'CONFIRMED');
+(4, 1, 'FL510', 'SEA', 'ATL', '2026-05-21 07:15:00-04:00', '2026-05-21 12:45:00-05:00', '8C', 'Economy', 'CHECKED_IN'),
+(4, 2, 'FL612', 'ATL', 'ORD', '2026-05-21 14:00:00-05:00', '2026-05-21 19:30:00-05:00', '10A', 'Economy', 'CONFIRMED');
 
--- Jorge Lopez: LIM→PTY + PTY→MIA
+-- Jorge Lopez: BOS→ATL + ATL→MIA
 INSERT INTO booking_segments (booking_id, segment_order, flight_number, origin, destination, departure_time, arrival_time, seat_number, cabin, segment_status) VALUES
-(5, 1, 'FL725', 'LIM', 'PTY', '2026-05-21 09:00:00-05:00', '2026-05-21 13:30:00-05:00', '15D', 'Economy', 'CONFIRMED'),
-(5, 2, 'FL447', 'PTY', 'MIA', '2026-05-21 15:30:00-05:00', '2026-05-21 19:45:00-04:00', '16A', 'Economy', 'CONFIRMED');
+(5, 1, 'FL725', 'BOS', 'ATL', '2026-05-21 09:00:00-05:00', '2026-05-21 13:30:00-05:00', '15D', 'Economy', 'CONFIRMED'),
+(5, 2, 'FL447', 'ATL', 'MIA', '2026-05-21 15:30:00-05:00', '2026-05-21 19:45:00-04:00', '16A', 'Economy', 'CONFIRMED');
 
--- Isabella Ramirez: BOG→PTY (one-way, same delayed flight FL801)
+-- Isabella Ramirez: DEN→ATL (one-way, same delayed flight FL801)
 INSERT INTO booking_segments (booking_id, segment_order, flight_number, origin, destination, departure_time, arrival_time, seat_number, cabin, segment_status) VALUES
-(6, 1, 'FL801', 'BOG', 'PTY', '2026-05-21 08:30:00-05:00', '2026-05-21 11:15:00-05:00', '6B', 'Economy', 'CHECKED_IN');
+(6, 1, 'FL801', 'DEN', 'ATL', '2026-05-21 08:30:00-05:00', '2026-05-21 11:15:00-05:00', '6B', 'Economy', 'CHECKED_IN');
 
--- Diego Torres: BOG→PTY + PTY→JFK
+-- Diego Torres: DEN→ATL + ATL→JFK
 INSERT INTO booking_segments (booking_id, segment_order, flight_number, origin, destination, departure_time, arrival_time, seat_number, cabin, segment_status) VALUES
-(7, 1, 'FL801', 'BOG', 'PTY', '2026-05-21 08:30:00-05:00', '2026-05-21 11:15:00-05:00', '22A', 'Economy', 'CHECKED_IN'),
-(7, 2, 'FL302', 'PTY', 'JFK', '2026-05-21 13:00:00-05:00', '2026-05-21 19:15:00-04:00', '20C', 'Economy', 'CONFIRMED');
+(7, 1, 'FL801', 'DEN', 'ATL', '2026-05-21 08:30:00-05:00', '2026-05-21 11:15:00-05:00', '22A', 'Economy', 'CHECKED_IN'),
+(7, 2, 'FL302', 'ATL', 'JFK', '2026-05-21 13:00:00-05:00', '2026-05-21 19:15:00-04:00', '20C', 'Economy', 'CONFIRMED');
 
--- Camila Rojas: GRU→PTY + PTY→ORD
+-- Camila Rojas: LAX→ATL + ATL→ORD
 INSERT INTO booking_segments (booking_id, segment_order, flight_number, origin, destination, departure_time, arrival_time, seat_number, cabin, segment_status) VALUES
-(8, 1, 'FL215', 'GRU', 'PTY', '2026-05-21 06:00:00-03:00', '2026-05-21 11:30:00-05:00', '18B', 'Economy', 'CONFIRMED'),
-(8, 2, 'FL612', 'PTY', 'ORD', '2026-05-21 14:00:00-05:00', '2026-05-21 19:30:00-05:00', '19A', 'Economy', 'CONFIRMED');
+(8, 1, 'FL215', 'LAX', 'ATL', '2026-05-21 06:00:00-03:00', '2026-05-21 11:30:00-05:00', '18B', 'Economy', 'CONFIRMED'),
+(8, 2, 'FL612', 'ATL', 'ORD', '2026-05-21 14:00:00-05:00', '2026-05-21 19:30:00-05:00', '19A', 'Economy', 'CONFIRMED');

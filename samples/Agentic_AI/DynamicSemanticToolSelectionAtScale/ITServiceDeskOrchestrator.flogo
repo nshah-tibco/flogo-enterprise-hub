@@ -317,7 +317,7 @@
     {
       "name": "AgenticAI.OpenAI.API_Key",
       "type": "string",
-      "value": "SECRET:o5yj9rjMNTtCS1xBTVYaQmrhB2XrJEI2s+Ap+SdyebW0GW5t+QddtxLlcoBGgWT+TyuwSzd0mOdc3f6f5W27EpzuduUYTk/bU/0t+8n8mEZWLX7qiBPb4LwLeWIpPeLbiMOMsJcnYmxyN4sfg2vJ3q4SbGXbpHU+iRkP/Y/D85RbSo6D0hTJW7e2gwIbpyXMY/3co+hox+OV34fp7DxESiXJsLTdfq/GoywV0OEyesBPMfMo"
+      "value": "SECRET:hcFDGJp6nI0fY+xZdrSvG42JO+2k/sek5a7fM4HMxTyl5V1Um2JQDody5jRT78hne6gzSDpD4FjnlZXV9NiM2vq8AuZ90hpAqS0Yo109c1i9LnlrzCCXyUBg20fWkP0KNI5whZHJiubkum3UiUyJWHPW4/DxKfCAIeRNFxqPEzTD/vU4Tj1hamaOprJ1SbdET2gxD5MRhsUDH9IRLIulTlIHqU71JDnA5utvLdqJUCtAwF8b"
     },
     {
       "name": "AgenticAI.OpenAI.LLM_Base_URL",
@@ -342,7 +342,7 @@
     {
       "name": "LLMClient.openai.LLM_APIKey",
       "type": "string",
-      "value": "SECRET:VdvTnAAniMADKDyU8VqL5NKk+cmF+A9yvtLSvPem2YPCZt7CuSMwVfK/O/yYdYFPE8xYSG6eQ5HlSWI+6SWmlQLWm5ofdCSHDdZDO9xAALEqRqS98IuXJ/B6zVVIMSOdKdwHkJPUCLd7p/PjLALQ+b76mKig9lsPIqCp73MAO4eRgQzc1P+juQ0EaerQko/uPd32qJdvUA2hBMyOXTTxEI/oe3wdANv3vSbZO/VtsfPiKMLc"
+      "value": "SECRET:F05jsfgaqzfSJswhSmlbUowhqnMUAZ7O+QfHibJ/c0U5kHAIHYNv/59IbJuCXleZFpyGVwODUCPBOy2c3WFKTxUytX3SjOexru/cP0uKGU6chpmaWJzOYe0JbROAdXgzWAFQSV/NPyxCaxxyWR4VPn5dTQs9cDbDaZ+QotiyOWNT6R48fb+PAexzXhcsFqw7EMzlQf4ufSRnLqS0+/aCoftGvbPxTI+Npju70qDPNwWPtUCn"
     },
     {
       "name": "AgenticAI.systemPrompt",
@@ -423,7 +423,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTQiLCJ0YWciOiIxLjYuMTQtYjA0IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS4zIiwidGFnIjoiMC45LjMtYjA3LTAuOS4zIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTQiLCJ0YWciOiIxLjYuMTQtYjA0IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS4zIiwidGFnIjoiMC45LjMtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
   "metadata": {
     "endpoints": [
       {

@@ -3,18 +3,18 @@
 -- PostgreSQL 14+
 
 -- Clear all data (reverse dependency order)
-TRUNCATE booking_segments, bookings, frequentflyer, passengers, flights RESTART IDENTITY CASCADE;
+TRUNCATE rebooking_log, booking_segments, bookings, frequentflyer, passengers, flights RESTART IDENTITY CASCADE;
 
 -- Flights — use CURRENT_DATE for today-relative scheduling
 INSERT INTO flights (flight_number, origin, origin_city, destination, destination_city, scheduled_departure, estimated_departure, scheduled_arrival, estimated_arrival, status, gate, delay_minutes, delay_reason, aircraft) VALUES
-('FL801', 'BOG', 'Bogota',       'PTY', 'Panama City',  CURRENT_DATE + INTERVAL '8 hours 30 minutes',  CURRENT_DATE + INTERVAL '10 hours',            CURRENT_DATE + INTERVAL '11 hours 15 minutes', CURRENT_DATE + INTERVAL '12 hours 45 minutes', 'DELAYED', 'B12', 90, 'Late arriving aircraft from GYE', 'Boeing 737 MAX 9'),
-('FL445', 'PTY', 'Panama City',  'MIA', 'Miami',        CURRENT_DATE + INTERVAL '12 hours 30 minutes', NULL,                                           CURRENT_DATE + INTERVAL '16 hours 45 minutes', NULL,                                           'ON_TIME', 'A08', 0,  NULL, 'Boeing 737-800'),
-('FL447', 'PTY', 'Panama City',  'MIA', 'Miami',        CURRENT_DATE + INTERVAL '15 hours 30 minutes', NULL,                                           CURRENT_DATE + INTERVAL '19 hours 45 minutes', NULL,                                           'ON_TIME', 'A12', 0,  NULL, 'Boeing 737 MAX 9'),
-('FL215', 'GRU', 'Sao Paulo',    'PTY', 'Panama City',  CURRENT_DATE + INTERVAL '6 hours',             NULL,                                           CURRENT_DATE + INTERVAL '11 hours 30 minutes', NULL,                                           'ON_TIME', 'C04', 0,  NULL, 'Boeing 737 MAX 9'),
-('FL302', 'PTY', 'Panama City',  'JFK', 'New York',     CURRENT_DATE + INTERVAL '13 hours',            NULL,                                           CURRENT_DATE + INTERVAL '19 hours 15 minutes', NULL,                                           'ON_TIME', 'A15', 0,  NULL, 'Boeing 737 MAX 9'),
-('FL510', 'SCL', 'Santiago',     'PTY', 'Panama City',  CURRENT_DATE + INTERVAL '7 hours 15 minutes',  CURRENT_DATE + INTERVAL '8 hours',              CURRENT_DATE + INTERVAL '12 hours 45 minutes', CURRENT_DATE + INTERVAL '13 hours 30 minutes', 'DELAYED', 'C08', 45, 'Weather conditions in Santiago',  'Boeing 737-800'),
-('FL612', 'PTY', 'Panama City',  'ORD', 'Chicago',      CURRENT_DATE + INTERVAL '14 hours',            NULL,                                           CURRENT_DATE + INTERVAL '19 hours 30 minutes', NULL,                                           'ON_TIME', 'A20', 0,  NULL, 'Boeing 737 MAX 9'),
-('FL725', 'LIM', 'Lima',         'PTY', 'Panama City',  CURRENT_DATE + INTERVAL '9 hours',             NULL,                                           CURRENT_DATE + INTERVAL '13 hours 30 minutes', NULL,                                           'ON_TIME', 'B06', 0,  NULL, 'Boeing 737-800');
+('FL801', 'DEN', 'Denver',       'ATL', 'Atlanta',      CURRENT_DATE + INTERVAL '8 hours 30 minutes',  CURRENT_DATE + INTERVAL '10 hours',            CURRENT_DATE + INTERVAL '11 hours 15 minutes', CURRENT_DATE + INTERVAL '12 hours 45 minutes', 'DELAYED', 'B12', 90, 'Late arriving aircraft from DFW', 'Boeing 737 MAX 9'),
+('FL445', 'ATL', 'Atlanta',      'MIA', 'Miami',        CURRENT_DATE + INTERVAL '12 hours 30 minutes', NULL,                                           CURRENT_DATE + INTERVAL '16 hours 45 minutes', NULL,                                           'ON_TIME', 'A08', 0,  NULL, 'Boeing 737-800'),
+('FL447', 'ATL', 'Atlanta',      'MIA', 'Miami',        CURRENT_DATE + INTERVAL '15 hours 30 minutes', NULL,                                           CURRENT_DATE + INTERVAL '19 hours 45 minutes', NULL,                                           'ON_TIME', 'A12', 0,  NULL, 'Boeing 737 MAX 9'),
+('FL215', 'LAX', 'Los Angeles',  'ATL', 'Atlanta',      CURRENT_DATE + INTERVAL '6 hours',             NULL,                                           CURRENT_DATE + INTERVAL '11 hours 30 minutes', NULL,                                           'ON_TIME', 'C04', 0,  NULL, 'Boeing 737 MAX 9'),
+('FL302', 'ATL', 'Atlanta',      'JFK', 'New York',     CURRENT_DATE + INTERVAL '13 hours',            NULL,                                           CURRENT_DATE + INTERVAL '19 hours 15 minutes', NULL,                                           'ON_TIME', 'A15', 0,  NULL, 'Boeing 737 MAX 9'),
+('FL510', 'SEA', 'Seattle',      'ATL', 'Atlanta',      CURRENT_DATE + INTERVAL '7 hours 15 minutes',  CURRENT_DATE + INTERVAL '8 hours',              CURRENT_DATE + INTERVAL '12 hours 45 minutes', CURRENT_DATE + INTERVAL '13 hours 30 minutes', 'DELAYED', 'C08', 45, 'Weather conditions in Seattle',  'Boeing 737-800'),
+('FL612', 'ATL', 'Atlanta',      'ORD', 'Chicago',      CURRENT_DATE + INTERVAL '14 hours',            NULL,                                           CURRENT_DATE + INTERVAL '19 hours 30 minutes', NULL,                                           'ON_TIME', 'A20', 0,  NULL, 'Boeing 737 MAX 9'),
+('FL725', 'BOS', 'Boston',       'ATL', 'Atlanta',      CURRENT_DATE + INTERVAL '9 hours',             NULL,                                           CURRENT_DATE + INTERVAL '13 hours 30 minutes', NULL,                                           'ON_TIME', 'B06', 0,  NULL, 'Boeing 737-800');
 
 -- Passengers
 INSERT INTO passengers (passenger_id, first_name, last_name, email, phone, nationality) VALUES
@@ -54,40 +54,40 @@ INSERT INTO bookings (pnr, passenger_id, booking_date) VALUES
 ('LMNOP8', 'PAX-2026-00110', CURRENT_DATE - INTERVAL '13 days');
 
 -- Booking Segments (all today-relative)
--- Carlos: BOG→PTY (delayed) + PTY→MIA (will miss)
+-- Carlos: DEN→ATL (delayed) + ATL→MIA (will miss)
 INSERT INTO booking_segments (booking_id, segment_order, flight_number, origin, destination, departure_time, arrival_time, seat_number, cabin, segment_status) VALUES
-(1, 1, 'FL801', 'BOG', 'PTY', CURRENT_DATE + INTERVAL '8 hours 30 minutes',  CURRENT_DATE + INTERVAL '11 hours 15 minutes', '4A', 'Business', 'CHECKED_IN'),
-(1, 2, 'FL445', 'PTY', 'MIA', CURRENT_DATE + INTERVAL '12 hours 30 minutes', CURRENT_DATE + INTERVAL '16 hours 45 minutes', '3C', 'Business', 'CONFIRMED');
+(1, 1, 'FL801', 'DEN', 'ATL', CURRENT_DATE + INTERVAL '8 hours 30 minutes',  CURRENT_DATE + INTERVAL '11 hours 15 minutes', '4A', 'Business', 'CHECKED_IN'),
+(1, 2, 'FL445', 'ATL', 'MIA', CURRENT_DATE + INTERVAL '12 hours 30 minutes', CURRENT_DATE + INTERVAL '16 hours 45 minutes', '3C', 'Business', 'CONFIRMED');
 
--- Ana: GRU→PTY + PTY→JFK
+-- Ana: LAX→ATL + ATL→JFK
 INSERT INTO booking_segments (booking_id, segment_order, flight_number, origin, destination, departure_time, arrival_time, seat_number, cabin, segment_status) VALUES
-(2, 1, 'FL215', 'GRU', 'PTY', CURRENT_DATE + INTERVAL '6 hours',  CURRENT_DATE + INTERVAL '11 hours 30 minutes', '12B', 'Economy', 'CHECKED_IN'),
-(2, 2, 'FL302', 'PTY', 'JFK', CURRENT_DATE + INTERVAL '13 hours', CURRENT_DATE + INTERVAL '19 hours 15 minutes', '14A', 'Economy', 'CONFIRMED');
+(2, 1, 'FL215', 'LAX', 'ATL', CURRENT_DATE + INTERVAL '6 hours',  CURRENT_DATE + INTERVAL '11 hours 30 minutes', '12B', 'Economy', 'CHECKED_IN'),
+(2, 2, 'FL302', 'ATL', 'JFK', CURRENT_DATE + INTERVAL '13 hours', CURRENT_DATE + INTERVAL '19 hours 15 minutes', '14A', 'Economy', 'CONFIRMED');
 
--- Roberto: PTY→MIA (direct)
+-- Roberto: ATL→MIA (direct)
 INSERT INTO booking_segments (booking_id, segment_order, flight_number, origin, destination, departure_time, arrival_time, seat_number, cabin, segment_status) VALUES
-(3, 1, 'FL445', 'PTY', 'MIA', CURRENT_DATE + INTERVAL '12 hours 30 minutes', CURRENT_DATE + INTERVAL '16 hours 45 minutes', '1A', 'Business', 'CONFIRMED');
+(3, 1, 'FL445', 'ATL', 'MIA', CURRENT_DATE + INTERVAL '12 hours 30 minutes', CURRENT_DATE + INTERVAL '16 hours 45 minutes', '1A', 'Business', 'CONFIRMED');
 
--- Maria: SCL→PTY (delayed 45 min) + PTY→ORD
+-- Maria: SEA→ATL (delayed 45 min) + ATL→ORD
 INSERT INTO booking_segments (booking_id, segment_order, flight_number, origin, destination, departure_time, arrival_time, seat_number, cabin, segment_status) VALUES
-(4, 1, 'FL510', 'SCL', 'PTY', CURRENT_DATE + INTERVAL '7 hours 15 minutes', CURRENT_DATE + INTERVAL '12 hours 45 minutes', '8C',  'Economy', 'CHECKED_IN'),
-(4, 2, 'FL612', 'PTY', 'ORD', CURRENT_DATE + INTERVAL '14 hours',           CURRENT_DATE + INTERVAL '19 hours 30 minutes', '10A', 'Economy', 'CONFIRMED');
+(4, 1, 'FL510', 'SEA', 'ATL', CURRENT_DATE + INTERVAL '7 hours 15 minutes', CURRENT_DATE + INTERVAL '12 hours 45 minutes', '8C',  'Economy', 'CHECKED_IN'),
+(4, 2, 'FL612', 'ATL', 'ORD', CURRENT_DATE + INTERVAL '14 hours',           CURRENT_DATE + INTERVAL '19 hours 30 minutes', '10A', 'Economy', 'CONFIRMED');
 
--- Jorge: LIM→PTY + PTY→MIA
+-- Jorge: BOS→ATL + ATL→MIA
 INSERT INTO booking_segments (booking_id, segment_order, flight_number, origin, destination, departure_time, arrival_time, seat_number, cabin, segment_status) VALUES
-(5, 1, 'FL725', 'LIM', 'PTY', CURRENT_DATE + INTERVAL '9 hours',            CURRENT_DATE + INTERVAL '13 hours 30 minutes', '15D', 'Economy', 'CONFIRMED'),
-(5, 2, 'FL447', 'PTY', 'MIA', CURRENT_DATE + INTERVAL '15 hours 30 minutes', CURRENT_DATE + INTERVAL '19 hours 45 minutes', '16A', 'Economy', 'CONFIRMED');
+(5, 1, 'FL725', 'BOS', 'ATL', CURRENT_DATE + INTERVAL '9 hours',            CURRENT_DATE + INTERVAL '13 hours 30 minutes', '15D', 'Economy', 'CONFIRMED'),
+(5, 2, 'FL447', 'ATL', 'MIA', CURRENT_DATE + INTERVAL '15 hours 30 minutes', CURRENT_DATE + INTERVAL '19 hours 45 minutes', '16A', 'Economy', 'CONFIRMED');
 
--- Isabella: BOG→PTY (one-way, on delayed FL801)
+-- Isabella: DEN→ATL (one-way, on delayed FL801)
 INSERT INTO booking_segments (booking_id, segment_order, flight_number, origin, destination, departure_time, arrival_time, seat_number, cabin, segment_status) VALUES
-(6, 1, 'FL801', 'BOG', 'PTY', CURRENT_DATE + INTERVAL '8 hours 30 minutes', CURRENT_DATE + INTERVAL '11 hours 15 minutes', '6B', 'Economy', 'CHECKED_IN');
+(6, 1, 'FL801', 'DEN', 'ATL', CURRENT_DATE + INTERVAL '8 hours 30 minutes', CURRENT_DATE + INTERVAL '11 hours 15 minutes', '6B', 'Economy', 'CHECKED_IN');
 
--- Diego: BOG→PTY + PTY→JFK
+-- Diego: DEN→ATL + ATL→JFK
 INSERT INTO booking_segments (booking_id, segment_order, flight_number, origin, destination, departure_time, arrival_time, seat_number, cabin, segment_status) VALUES
-(7, 1, 'FL801', 'BOG', 'PTY', CURRENT_DATE + INTERVAL '8 hours 30 minutes', CURRENT_DATE + INTERVAL '11 hours 15 minutes', '22A', 'Economy', 'CHECKED_IN'),
-(7, 2, 'FL302', 'PTY', 'JFK', CURRENT_DATE + INTERVAL '13 hours',           CURRENT_DATE + INTERVAL '19 hours 15 minutes', '20C', 'Economy', 'CONFIRMED');
+(7, 1, 'FL801', 'DEN', 'ATL', CURRENT_DATE + INTERVAL '8 hours 30 minutes', CURRENT_DATE + INTERVAL '11 hours 15 minutes', '22A', 'Economy', 'CHECKED_IN'),
+(7, 2, 'FL302', 'ATL', 'JFK', CURRENT_DATE + INTERVAL '13 hours',           CURRENT_DATE + INTERVAL '19 hours 15 minutes', '20C', 'Economy', 'CONFIRMED');
 
--- Camila: GRU→PTY + PTY→ORD
+-- Camila: LAX→ATL + ATL→ORD
 INSERT INTO booking_segments (booking_id, segment_order, flight_number, origin, destination, departure_time, arrival_time, seat_number, cabin, segment_status) VALUES
-(8, 1, 'FL215', 'GRU', 'PTY', CURRENT_DATE + INTERVAL '6 hours',  CURRENT_DATE + INTERVAL '11 hours 30 minutes', '18B', 'Economy', 'CONFIRMED'),
-(8, 2, 'FL612', 'PTY', 'ORD', CURRENT_DATE + INTERVAL '14 hours', CURRENT_DATE + INTERVAL '19 hours 30 minutes', '19A', 'Economy', 'CONFIRMED');
+(8, 1, 'FL215', 'LAX', 'ATL', CURRENT_DATE + INTERVAL '6 hours',  CURRENT_DATE + INTERVAL '11 hours 30 minutes', '18B', 'Economy', 'CONFIRMED'),
+(8, 2, 'FL612', 'ATL', 'ORD', CURRENT_DATE + INTERVAL '14 hours', CURRENT_DATE + INTERVAL '19 hours 30 minutes', '19A', 'Economy', 'CONFIRMED');

@@ -309,7 +309,7 @@
     {
       "name": "AgenticAI.openai.API_Key",
       "type": "string",
-      "value": "SECRET:qlA1Skw9OM+sVGPHyzeS3E7c/JbYA8a4LS/ztxRZXPC9cuH4x7GoTOmDv6T+osGw5Olkq8dEjwkVJJQlRc8odskuZwbscHo0MiuE9sl4H8pTUai9Ino1dBzLXLDUed2SIGEX3m2rEyQMg3C3Ps8EnC5boDZThUPng8fwf7lCQ8vwblOrD/PDPlatcU2+IM7jksuxl4OfGLj8oecmIYMwo+4perEa2dKaE8r6RIS2Z3uQSRl1"
+      "value": "SECRET:hKUJq99M5WwRa07zGTpVMsmc05oQHsURaGtXBS9mvlXZ3k9nSX+aSGzVAQkzlIWAnambBWzxHl78KQX7yvY+dkWFseU2UywLP72Hk1bHDvCz16tYOUJNsJ30h765/1MEjqrrbHS0AdcLWdKK85NuIwd25HuG8JvuLu43XzVasMmsZaLpI/R9KRIwABfaYcMEsXALVCkgg2xG3C0srvVd/dBMHcF/c9sSMJNTauNECjvZZX3p"
     },
     {
       "name": "AgenticAI.openai.LLM_Base_URL",

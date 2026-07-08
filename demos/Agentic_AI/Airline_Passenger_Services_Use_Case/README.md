@@ -1,6 +1,6 @@
 # Airline Passenger Services Use Case
 
-An agentic AI system built on TIBCO Flogo that handles flight disruption management for an airline hub. A customer service AI agent communicates with passengers via WebSocket chat, checks flight status, looks up bookings, identifies at-risk connections, and rebooks disrupted passengers -- all through natural language conversation.
+An agentic AI system built on TIBCO Flogo Enterprise that handles flight disruption management for a hub-and-spoke airline operating through Atlanta (ATL). The system uses a 3-tier architecture with an AI Orchestrator, MCP Server for data queries, and A2A Servers for business logic -- all communicating via standard protocols (MCP, A2A, WebSocket).
 
 ---
 
@@ -9,36 +9,41 @@ An agentic AI system built on TIBCO Flogo that handles flight disruption managem
 ```
                     ┌─────────────────────────┐
                     │     Chatbot UI          │
-                    │  (Chatbot app or HTML)  │
+                    │  (WebSocket Client)     │
                     └───────┬─────────────────┘
                             │ WebSocket
-                            │ /ws/passengerserviceagent
+                            │ ws://localhost:8083/ws/chat
                             ▼
+               ┌────────────────────────────────┐
+               │  Passenger Services            │
+               │  AI Orchestrator               │
+               │  (PassengerServicesAIOrch.)    │
+               │  Port 8083 (WebSocket)         │
+               │  LLM: OpenAI GPT-4o           │
+               └───────┬───────────┬────────────┘
+                       │           │
+          MCP (HTTP)   │           │  A2A Protocol
+                       ▼           ▼
+    ┌──────────────────────┐   ┌──────────────────────────────┐
+    │  Passenger Services  │   │  Passenger Services          │
+    │  MCP Server          │   │  A2A Servers                 │
+    │  Port 9093           │   │                              │
+    │  /airlinemcpserver   │   │  connection_risk_agent :8074 │
+    │                      │   │  rebook_passenger_agent:8075 │
+    │  Tools (read-only):  │   │  send_confirmation_email:8076│
+    │  - GetFlights        │   │                              │
+    │  - GetPassengers     │   │  Uses PostgreSQL for         │
+    │  - GetFrequentFlyer  │   │  data queries & updates      │
+    │  - GetBookings       │   │  + Gmail SMTP for email      │
+    │  - GetBookingSegments│   │                              │
+    └──────────┬───────────┘   └──────────────┬───────────────┘
+               │                              │
+               └──────────────┬───────────────┘
+                              ▼
                ┌────────────────────────────┐
-               │   Airline AI Agent         │
-               │   (airline-agent)          │
-               │   Port 8054 (WebSocket)    │
-               │   LLM: OpenAI GPT-5.5     │
-               └────────────┬───────────────┘
-                            │ MCP (Streamable HTTP)
-                            ▼
-               ┌────────────────────────────┐
-               │   Airline MCP Server       │
-               │   (airline-mcp-server)     │
-               │   Port 9044               │
-               │                            │
-               │   Tools:                   │
-               │   - CheckFlightStatus      │
-               │   - GetBooking             │
-               │   - RebookPassenger        │
-               └────────────┬───────────────┘
-                            │ (internal mock data
-                            │  or REST backend)
-                            ▼
-               ┌────────────────────────────┐
-               │   Airline REST API         │
-               │   (airline-rest-api)       │
-               │   Port 9111 / 3001         │
+               │  PostgreSQL Database       │
+               │  Database: airline         │
+               │  6 Tables                  │
                └────────────────────────────┘
 ```
 
@@ -46,121 +51,61 @@ An agentic AI system built on TIBCO Flogo that handles flight disruption managem
 
 ## Flogo Apps
 
-### 1. `airline-agent.flogo` -- AI Agent (Port 8054)
+### 1. `PassengerServicesMCPServer.flogo` -- MCP Server (Port 9093)
 
-The main agentic AI app. Exposes a WebSocket endpoint for natural language passenger service interactions. Uses OpenAI GPT-5.5 and connects to the MCP Server to access airline tools.
+Exposes 5 read-only AI tools via the Model Context Protocol over Streamable HTTP. Each tool queries the PostgreSQL `airline` database and returns the full result set as a string.
+
+| Tool | Description | SQL |
+|------|-------------|-----|
+| **GetFlights** | Flight schedule with real-time status, delays, gates | `SELECT * FROM flights` |
+| **GetPassengers** | Passenger contact details and identity | `SELECT * FROM passengers` |
+| **GetFrequentFlyer** | Loyalty tier, miles balance, YTD tier miles | `SELECT * FROM frequentflyer` |
+| **GetBookings** | PNR booking records with status | `SELECT * FROM bookings` |
+| **GetBookingSegments** | Individual flight legs per booking | `SELECT * FROM booking_segments` |
+
+### 2. `PassengerServicesA2AServers.flogo` -- A2A Servers (Ports 8074-8076)
+
+Three A2A agents that handle business logic. Each agent has its own LLM, system prompt, and tool handler.
+
+| Agent | Port | Description |
+|-------|------|-------------|
+| **connection_risk_agent** | 8074 | Analyzes passenger bookings to assess connection risk. Queries booking segments joined with flight data and all available flights. Calculates connection time and identifies alternatives. |
+| **rebook_passenger_agent** | 8075 | Rebooks disrupted passengers. Updates `booking_segments` table (new flight, seat, status=REBOOKED) and inserts into `rebooking_log`. |
+| **send_confirmation_email** | 8076 | Sends rebooking confirmation email via Gmail SMTP. Invoked only once after rebooking is complete and user requests it. |
+
+### 3. `PassengerServicesAIOrchestrator.flogo` -- AI Orchestrator (Port 8083)
+
+The main orchestration app. Exposes a WebSocket endpoint for natural language chat. Uses an AI Agent activity that routes requests to either MCP tools (for data queries) or A2A agents (for business logic).
 
 | Setting | Value |
 |---------|-------|
-| WebSocket Path | `/ws/passengerserviceagent` |
-| LLM | OpenAI GPT-5.5 |
-| Temperature | 0.1 |
-| MCP Server | `http://localhost:9044/mcp` |
-
-**Agent Capabilities:**
-- Check flight status for any flight number
-- Look up passenger booking by PNR confirmation code
-- Detect at-risk connections (< 60 min connection time)
-- Suggest and execute rebooking to alternative flights
-- Address passengers by name, acknowledge loyalty tier (Gold/Platinum VIP treatment)
-
-### 2. `airline-mcp-server.flogo` -- MCP Server (Port 9044)
-
-Exposes 3 AI tools via the Model Context Protocol over Streamable HTTP at `/mcp`:
-
-| Tool | Type | Description |
-|------|------|-------------|
-| **CheckFlightStatus** | Read-only | Look up flight by number -- returns origin, destination, times, status, delay, gate, aircraft |
-| **GetBooking** | Read-only | Look up booking by PNR -- returns passenger info, loyalty tier, all flight segments |
-| **RebookPassenger** | Write | Rebook a passenger to a new flight -- updates the affected segment |
-
-**Mock flight data built in:** FL801 (DELAYED 90 min), FL445 (ON_TIME), FL447 (ON_TIME), FL302 (DELAYED 45 min), FL510 (ON_TIME), FL612 (ON_TIME), FL215 (ON_TIME)
-
-**Mock bookings:** ABCDE1 (Carlos Martinez, Gold), FGHIJ2 (Ana Rodriguez, Platinum), KLMNO3 (Roberto Silva, Silver)
-
-### 3. `airline-rest-api.flogo` -- REST API Backend (Port 9111)
-
-Mock REST API backend with hardcoded dummy data. Can be used as the backend for the MCP server or as a standalone API.
-
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
-| GET | `/api/flights/{flightNumber}` | Get flight status |
-| GET | `/api/bookings/{pnr}` | Get booking details |
-| POST | `/api/bookings/{pnr}/rebook` | Rebook passenger (body: `{"newFlightNumber": "..."}`) |
-
+| WebSocket Path | `/ws/chat` |
+| LLM | OpenAI GPT-4o |
+| MCP Server | `http://localhost:9093/airlinemcpserver` |
+| A2A Agents | connection_risk (8074), rebook (8075), email (8076) |
 
 ---
 
-## Supporting Files
+## Database
 
-| File | Description |
-|------|-------------|
-| `swagger.json` | OpenAPI 3.0.3 spec for the Airline Passenger Services API |
-| `database.sql` | PostgreSQL schema -- 5 tables (flights, passengers, frequentflyer, bookings, booking_segments) with 10 passengers, 8 flights, 8 PNRs |
-| `reset_data.sql` | Data reset script using `CURRENT_DATE` for always-current flight times |
-| `airline-poc.md` | Full POC blueprint -- architecture, agent definition, MCP tools, REST APIs, end-to-end scenarios, demo script |
-| `airline-prompts.md` | Demo prompts organized by scenario + build prompts for citizen developers |
-| `airline-session-history.md` | Development session history with chronological action timeline |
+6 tables in the PostgreSQL `airline` database:
 
----
-
-## Database Setup
-
-The system includes a PostgreSQL database with 5 tables:
-
-| Table | Purpose | Sample Data |
-|-------|---------|-------------|
-| `flights` | Flight schedule and status | 8 flights through PTY hub |
-| `passengers` | Passenger records | 10 passengers from 6 countries |
-| `frequentflyer` | Loyalty program tiers and miles | Basic through Platinum |
+| Table | Purpose | Records |
+|-------|---------|---------|
+| `flights` | Flight schedule with status and delays | 8 flights through ATL hub |
+| `passengers` | Passenger master records | 10 passengers from 6 countries |
+| `frequentflyer` | Loyalty program (Basic/Silver/Gold/Platinum) | 10 members |
 | `bookings` | PNR booking records | 8 PNRs |
-| `booking_segments` | Multi-leg itineraries | Connecting flights through hub |
+| `booking_segments` | Multi-leg itineraries per booking | 14 segments |
+| `rebooking_log` | Tracks all rebookings (starts empty) | Populated by rebook agent |
 
 ```bash
-# Initialize schema and sample data
-psql -U <user> -d <database> -f database.sql
+# Initialize schema and demo data
+psql -U postgres -d airline -f database.sql
 
 # Reset with today-relative flight times (for live demos)
-psql -U <user> -d <database> -f reset_data.sql
+psql -U postgres -d airline -f reset_data.sql
 ```
-
-> **Note:** The MCP server includes built-in mock data, so the database is optional. It is needed if you configure the REST API to query PostgreSQL instead of returning hardcoded responses.
-
----
-
-## How to Run the Demo
-
-### Prerequisites
-
-- TIBCO Flogo Enterprise (v2.26+)
-- OpenAI API key (for the AI agent, configured as an app property)
-- PostgreSQL (optional, for database-backed REST API)
-
-### Step 1: Deploy the Flogo apps
-
-Import and deploy in this order:
-
-1. **`airline-rest-api.flogo`** (or one of the demo variants) -- Starts on port 9111 (or 3001 for demo variants)
-2. **`airline-mcp-server.flogo`** -- Configure the MCP server port. Starts on port 9044
-3. **`airline-agent.flogo`** -- Configure the OpenAI API key and MCP server URL. Starts on port 8054
-
-### Step 2: Start the chatbot UI
-
-```bash
-cd demos/Agentic_AI/Chatbot
-npm install
-npm start
-```
-
-Open http://localhost:3000 in your browser. Paste the WebSocket URL in the top-right input field and click **Connect**:
-
-```
-ws://localhost:8054/ws/passengerserviceagent
-```
-
-### Step 3: Run the demo
-
-Use natural language to interact with the agent. See the demo scenarios below.
 
 ---
 
@@ -168,67 +113,103 @@ Use natural language to interact with the agent. See the demo scenarios below.
 
 ### Scenario 1: Carlos Martinez (Gold) -- Missed Connection
 
-Carlos is on FL801 BOG->PTY (delayed 90 min) connecting to FL445 PTY->MIA. His new arrival at 12:45 means he'll miss FL445 departing at 12:30.
+Carlos is on FL801 DEN->ATL (delayed 90 min) connecting to FL445 ATL->MIA. His estimated arrival at ATL is 12:45 but FL445 departs at 12:30 -- he will miss his connection.
 
 ```
-Prompt 1: Hi, I'm on flight FL801 from Bogota. What's the status?
-Prompt 2: Oh no, I have a connection. My booking is ABCDE1. Will I make it?
-Prompt 3: Yes please rebook me on that flight.
+You:   Hi, I'm on flight FL801 from Denver. What's the status?
+Agent: FL801 is currently DELAYED by 90 minutes... estimated arrival at ATL is 12:45 PM.
+
+You:   Oh no, I have a connection. My booking is ABCDE1. Will I make it?
+Agent: Looking at your booking... your connecting flight FL445 ATL->MIA departs at 12:30.
+       With FL801 arriving at 12:45, you would MISS your connection. I recommend rebooking
+       you on FL447 ATL->MIA departing at 15:30.
+
+You:   Yes, please rebook me on FL447.
+Agent: Done! You've been rebooked from FL445 to FL447 ATL->MIA, seat 5A. Your new departure
+       is at 15:30 with arrival in Miami at 19:45.
+
+You:   Can you send me a confirmation email?
+Agent: Confirmation email sent to carlos.martinez@email.com.
 ```
 
-**Expected:** Agent detects delay, identifies missed connection, suggests FL447 (PTY->MIA, 15:30 departure), and rebooks after confirmation.
+### Scenario 2: Maria Fernandez (Basic) -- Tight Connection
 
-### Scenario 2: Ana Rodriguez (Platinum VIP) -- Tight Connection
-
-Ana is on FL302 PTY->JFK (delayed 45 min). Her booking is FGHIJ2.
+Maria is on FL510 SEA->ATL (delayed 45 min) connecting to FL612 ATL->ORD. Her estimated arrival is 13:30 and FL612 departs at 14:00 -- only 30 minutes, which is AT_RISK.
 
 ```
-Prompt 1: Can you check FL302 for me?
-Prompt 2: I'm a bit worried. My PNR is FGHIJ2. Am I going to miss my connection?
-Prompt 3: Please go ahead and rebook me.
+You:   What's happening with flight FL510?
+You:   My PNR is PQRST4. Am I going to make my connection to Chicago?
 ```
 
-**Expected:** Agent recognizes Platinum tier, provides VIP treatment, identifies the tight connection, and rebooks.
+### Scenario 3: Roberto Gonzalez (Platinum) -- No Disruption
 
-### Scenario 3: Roberto Silva (Silver) -- No Disruption
-
-Roberto is on FL445 PTY->MIA, which is on time. PNR: KLMNO3.
+Roberto has a direct flight FL445 ATL->MIA, which is on time. PNR: KLMNO3.
 
 ```
-Prompt 1: What's the status of FL445?
-Prompt 2: Great, my booking is KLMNO3. Can you confirm everything looks good?
+You:   What's the status of FL445?
+You:   Great, my booking is KLMNO3. Can you confirm everything looks good?
 ```
-
-**Expected:** Agent confirms flight is on time and booking is in order.
-
-### Direct Queries
-
-```
-What's the status of flight FL801?
-Can you check FL447 for me?
-What flights are available from PTY to MIA?
-```
-
-See [airline-prompts.md](airline-prompts.md) for the full prompt collection.
 
 ---
 
-## Sample Passengers
+## Sample Data Summary
 
-| PNR | Passenger | Loyalty | Route | Scenario |
-|-----|-----------|---------|-------|----------|
-| ABCDE1 | Carlos Martinez | Gold | BOG->PTY->MIA | FL801 delayed 90 min, misses FL445 connection |
-| FGHIJ2 | Ana Rodriguez | Platinum | GRU->PTY->JFK | FL302 delayed 45 min, tight connection |
-| KLMNO3 | Roberto Silva | Silver | PTY->MIA | FL445 on time, no disruption |
+### Passengers and Bookings
 
-## Sample Flights
+| PNR | Passenger | Loyalty | Route | Disruption |
+|-----|-----------|---------|-------|------------|
+| ABCDE1 | Carlos Martinez | Gold | DEN->ATL->MIA | FL801 delayed 90 min, MISSES FL445 |
+| FGHIJ2 | Ana Silva | Silver | LAX->ATL->JFK | On time, safe connection |
+| KLMNO3 | Roberto Gonzalez | Platinum | ATL->MIA (direct) | On time, no connection |
+| PQRST4 | Maria Fernandez | Basic | SEA->ATL->ORD | FL510 delayed 45 min, AT_RISK |
+| UVWXY5 | Jorge Lopez | Silver | BOS->ATL->MIA | On time, safe connection |
+| BCDEF6 | Isabella Ramirez | Gold | DEN->ATL (one-way) | FL801 delayed, no connection |
+| GHIJK7 | Diego Torres | Basic | DEN->ATL->JFK | FL801 delayed, has connection |
+| LMNOP8 | Camila Rojas | Gold | LAX->ATL->ORD | On time, safe connection |
 
-| Flight | Route | Status | Delay | Gate | Aircraft |
-|--------|-------|--------|-------|------|----------|
-| FL801 | BOG -> PTY | DELAYED | 90 min | B12 | Boeing 737 MAX 9 |
-| FL302 | PTY -> JFK | DELAYED | 45 min | A08 | Boeing 737 MAX 9 |
-| FL445 | PTY -> MIA | ON_TIME | -- | C03 | Boeing 737-800 |
-| FL447 | PTY -> MIA | ON_TIME | -- | C07 | Boeing 737 MAX 9 |
-| FL510 | SCL -> PTY | ON_TIME | -- | B05 | Boeing 737-800 |
-| FL612 | PTY -> ORD | ON_TIME | -- | A12 | Boeing 737 MAX 9 |
-| FL215 | GRU -> PTY | ON_TIME | -- | B09 | Boeing 737 MAX 9 |
+### Flights
+
+| Flight | Route | Status | Delay | Gate |
+|--------|-------|--------|-------|------|
+| FL801 | DEN -> ATL | DELAYED | 90 min | B12 |
+| FL510 | SEA -> ATL | DELAYED | 45 min | C08 |
+| FL445 | ATL -> MIA | ON_TIME | -- | A08 |
+| FL447 | ATL -> MIA | ON_TIME | -- | A12 |
+| FL215 | LAX -> ATL | ON_TIME | -- | C04 |
+| FL302 | ATL -> JFK | ON_TIME | -- | A15 |
+| FL612 | ATL -> ORD | ON_TIME | -- | A20 |
+| FL725 | BOS -> ATL | ON_TIME | -- | B06 |
+
+---
+
+## Port Summary
+
+| App | Port | Protocol |
+|-----|------|----------|
+| PassengerServicesMCPServer | 9093 | HTTP (MCP) |
+| PassengerServicesA2AServers - connection_risk | 8074 | HTTP (A2A) |
+| PassengerServicesA2AServers - rebook_passenger | 8075 | HTTP (A2A) |
+| PassengerServicesA2AServers - send_email | 8076 | HTTP (A2A) |
+| PassengerServicesAIOrchestrator | 8083 | WebSocket |
+
+---
+
+## Supporting Files
+
+| File | Description |
+|------|-------------|
+| `database.sql` | PostgreSQL schema with 6 tables and demo data |
+| `reset_data.sql` | Data reset script using `CURRENT_DATE` for today-relative flight times |
+| `prompts.md` | Demo prompts organized by scenario |
+| `manual-steps.md` | Step-by-step setup and deployment instructions |
+
+---
+
+## Legacy Files
+
+The following files are from an earlier 2-tier prototype and are kept for reference:
+
+| File | Description |
+|------|-------------|
+| `airline-agent.flogo` | Original 2-tier AI agent (WebSocket + MCP only, no A2A) |
+| `airline-mcp-server.flogo` | Original MCP server with mock data (no PostgreSQL) |

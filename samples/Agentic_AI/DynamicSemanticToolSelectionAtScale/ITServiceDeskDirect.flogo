@@ -247,7 +247,7 @@
     {
       "name": "AgenticAI.OpenAI.API_Key",
       "type": "string",
-      "value": "SECRET:asi97tDvuIV2l3Pn46WcNfvkuMk7W1k9hJPfHtVM7rU1NXgScEt4dBUghWhSNhRqKPH31xeQuMV5EhEXO9L0vOL8FnAkRrgOU/xXgNPu1O67AK7ucSXidmIuC+G98WxyfpQyEZg/o0netJSyqNo/ZDHp40DRHihTn6/GUMYTXOE+LP9MvC8mC6FNjtiehX+XD8sVAnfzcGB9qLiBtQj3QTWewqC8jzxSfCpVNOQWdhDYuc1J"
+      "value": "SECRET:n/sQ0Ryz2SY+4SzFUgikrqRB9eDuNEL3T49QcVVCBnSHyQLeiy0QFwhbj8bdv6f47CCDIfgBTFifsUqt8axI7DKfv6DfuQdlRO0+Z0Vc+f4F9C5GrI+z/wR8+q1CsA9tHKQuHrQVybhZ6vYWQo8o8qknv02gi/kH4CmLabNUL7/NMDdJiS8nivMHOdTbuzEw/sVeEV3LONTAQrn+D7DUOwqb0x5jP2XhNfw3/5Kn33PGanq1"
     },
     {
       "name": "AgenticAI.OpenAI.LLM_Base_URL",
@@ -333,7 +333,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTQiLCJ0YWciOiIxLjYuMTQtYjA0IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS4zIiwidGFnIjoiMC45LjMtYjA3LTAuOS4zIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTQiLCJ0YWciOiIxLjYuMTQtYjA0IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS4zIiwidGFnIjoiMC45LjMtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
   "metadata": {
     "endpoints": [
       {
