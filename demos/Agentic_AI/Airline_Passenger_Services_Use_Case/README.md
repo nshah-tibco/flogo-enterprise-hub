@@ -92,11 +92,11 @@ The main orchestration app. Exposes a WebSocket endpoint for natural language ch
 
 | Table | Purpose | Records |
 |-------|---------|---------|
-| `flights` | Flight schedule with status and delays | 8 flights through ATL hub |
-| `passengers` | Passenger master records | 10 passengers from 6 countries |
-| `frequentflyer` | Loyalty program (Basic/Silver/Gold/Platinum) | 10 members |
-| `bookings` | PNR booking records | 8 PNRs |
-| `booking_segments` | Multi-leg itineraries per booking | 14 segments |
+| `flights` | Flight schedule with status and delays | 32 flights through ATL hub (several delayed/cancelled, with alternatives) |
+| `passengers` | Passenger master records | 22 passengers from 8 countries |
+| `frequentflyer` | Loyalty program (Basic/Silver/Gold/Platinum) | 22 members |
+| `bookings` | PNR booking records | 22 PNRs |
+| `booking_segments` | Multi-leg itineraries per booking | 41 segments |
 | `rebooking_log` | Tracks all rebookings (starts empty) | Populated by rebook agent |
 
 ```bash
@@ -156,29 +156,64 @@ You:   Great, my booking is KLMNO3. Can you confirm everything looks good?
 
 ### Passengers and Bookings
 
-| PNR | Passenger | Loyalty | Route | Disruption |
-|-----|-----------|---------|-------|------------|
-| ABCDE1 | Carlos Martinez | Gold | DEN->ATL->MIA | FL801 delayed 90 min, MISSES FL445 |
-| FGHIJ2 | Ana Silva | Silver | LAX->ATL->JFK | On time, safe connection |
-| KLMNO3 | Roberto Gonzalez | Platinum | ATL->MIA (direct) | On time, no connection |
-| PQRST4 | Maria Fernandez | Basic | SEA->ATL->ORD | FL510 delayed 45 min, AT_RISK |
-| UVWXY5 | Jorge Lopez | Silver | BOS->ATL->MIA | On time, safe connection |
+| PNR | Passenger | Loyalty | Route | Connection scenario |
+|-----|-----------|---------|-------|---------------------|
+| ABCDE1 | Carlos Martinez | Gold | DEN->ATL->MIA | FL801 delayed 90 min → **MISSED** FL445 (alt FL447/FL449) |
+| FGHIJ2 | Ana Silva | Silver | LAX->ATL->JFK | On time → SAFE (90 min) |
+| KLMNO3 | Roberto Gonzalez | Platinum | ATL->MIA (direct) | Direct, no connection |
+| PQRST4 | Maria Fernandez | Basic | SEA->ATL->ORD | FL510 delayed 45 min → **AT_RISK** (30 min) |
+| UVWXY5 | Jorge Lopez | Silver | BOS->ATL->MIA | On time → SAFE (120 min) |
 | BCDEF6 | Isabella Ramirez | Gold | DEN->ATL (one-way) | FL801 delayed, no connection |
-| GHIJK7 | Diego Torres | Basic | DEN->ATL->JFK | FL801 delayed, has connection |
-| LMNOP8 | Camila Rojas | Gold | LAX->ATL->ORD | On time, safe connection |
+| GHIJK7 | Diego Torres | Basic | DEN->ATL->JFK | FL801 delayed 90 min → **MISSED** FL302 (alt FL304/FL306) |
+| LMNOP8 | Camila Rojas | Gold | LAX->ATL->ORD | On time → SAFE (150 min) |
+| HIJKL9 | Lucas Pereira | Silver | LAX->ATL->JFK | FL217 delayed 120 min → **MISSED** FL304 (alt FL306) |
+| MNOPQ0 | Sofia Castro | Gold | SFO->ATL->SEA | FL620 delayed 180 min → **MISSED** FL717 (no same-day alt) |
+| RSTUV1 | Mateo Ramos | Basic | JFK->ATL->ORD | FL412 delayed 75 min → **AT_RISK** (45 min; alt FL616) |
+| WXYZA2 | Valeria Cruz | Platinum | BOS->ATL->MIA | FL727 delayed 60 min → **MISSED** FL447 (alt FL449) |
+| BCDFG3 | Nicolas Vargas | Silver | SEA->ATL->LAX | On time → SAFE (120 min) |
+| HJKLM4 | Gabriela Mendez | Gold | DEN->ATL->SEA | FL801 delayed 90 min but SAFE (105 min) |
+| NPQRS5 | Daniel Ortiz | Basic | ORD->ATL->MIA | Inbound FL932 **CANCELLED** (rebook needed) |
+| TVWXY6 | Renata Alves | Silver | JFK->ATL->MIA | On time → **AT_RISK** (45 min; alt FL447) |
+| ZABCD7 | Tomas Reyes | Gold | LAX->ATL->SEA | On time → SAFE (180 min) |
+| EFGHI8 | Elena Navarro | Platinum | SFO->ATL->DEN | FL620 delayed 180 min but SAFE (60 min) |
+| JKLMN9 | Felipe Guerrero | Basic | DEN->ATL->BOS | Tight schedule → **MISSED** FL730 (0 min; alt FL732) |
+| OPQRS0 | Paula Rios | Silver | ATL->SFO (direct) | Direct, no connection |
+| UVWXZ1 | Valentina Herrera | Platinum | MIA->ATL->DEN | On time → SAFE (225 min, long layover) |
+| CDEFH2 | Andres Morales | Silver | BOS->ATL->JFK | FL727 delayed 60 min → **AT_RISK** (30 min; alt FL306) |
 
-### Flights
+### Flights (32 total)
+
+**Inbound to ATL** (delays here drive connection risk):
 
 | Flight | Route | Status | Delay | Gate |
 |--------|-------|--------|-------|------|
 | FL801 | DEN -> ATL | DELAYED | 90 min | B12 |
-| FL510 | SEA -> ATL | DELAYED | 45 min | C08 |
-| FL445 | ATL -> MIA | ON_TIME | -- | A08 |
-| FL447 | ATL -> MIA | ON_TIME | -- | A12 |
+| FL803 | DEN -> ATL | ON_TIME | -- | B14 |
 | FL215 | LAX -> ATL | ON_TIME | -- | C04 |
-| FL302 | ATL -> JFK | ON_TIME | -- | A15 |
-| FL612 | ATL -> ORD | ON_TIME | -- | A20 |
+| FL217 | LAX -> ATL | DELAYED | 120 min | C06 |
+| FL510 | SEA -> ATL | DELAYED | 45 min | C08 |
+| FL512 | SEA -> ATL | ON_TIME | -- | C10 |
 | FL725 | BOS -> ATL | ON_TIME | -- | B06 |
+| FL727 | BOS -> ATL | DELAYED | 60 min | B08 |
+| FL930 | ORD -> ATL | ON_TIME | -- | B10 |
+| FL932 | ORD -> ATL | CANCELLED | -- | B11 |
+| FL410 | JFK -> ATL | ON_TIME | -- | A05 |
+| FL412 | JFK -> ATL | DELAYED | 75 min | A07 |
+| FL620 | SFO -> ATL | DELAYED | 180 min | C12 |
+| FL450 | MIA -> ATL | ON_TIME | -- | A09 |
+
+**Outbound from ATL** (multiple frequencies per route give rebooking alternatives):
+
+| Flight | Route | Dep (ATL) | Gate |
+|--------|-------|-----------|------|
+| FL445 / FL447 / FL449 | ATL -> MIA | 12:30 / 15:30 / 18:30 | A08 / A12 / A10 |
+| FL302 / FL304 / FL306 | ATL -> JFK | 13:00 / 16:00 / 19:30 | A15 / A16 / A17 |
+| FL612 / FL614 / FL616 | ATL -> ORD | 14:00 / 17:00 / 20:00 | A20 / A21 / A23 |
+| FL520 / FL522 | ATL -> LAX | 15:00 / 18:00 | A22 / A24 |
+| FL715 / FL717 | ATL -> SEA | 14:30 / 18:15 | C14 / C16 |
+| FL810 / FL812 | ATL -> DEN | 16:00 / 19:00 | B16 / B18 |
+| FL730 / FL732 | ATL -> BOS | 15:45 / 19:15 | B20 / B22 |
+| FL625 | ATL -> SFO | 16:30 | C18 |
 
 ---
 

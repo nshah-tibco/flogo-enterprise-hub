@@ -135,12 +135,12 @@ ws://localhost:9500/telecom
 
 Use the prompts from `prompts.md`. The recommended demo flow:
 
-1. **Bill explanation** -- "Why is my bill so high? My number is +971-50-123-4567." (MCP: profile → invoice → usage)
-2. **Payment history** -- "Show me my last 3 payments. My number is +971-52-567-8901." (MCP)
-3. **Dispute** -- "I was charged for roaming but I didn't travel. +971-50-234-5678" → agent detects 0 roaming days → files dispute via billing_dispute_agent
-4. **Recharge** -- "I need more data. +971-55-345-6789" → shows offers → applies pack via recharge_agent
+1. **Bill explanation** -- "Why is my bill so high? My number is +62-812-3456-7890." (MCP: profile → invoice → usage)
+2. **Payment history** -- "Show me my last 3 payments. My number is +62-811-5678-9012." (MCP)
+3. **Dispute** -- "I was charged for roaming in Thailand but I didn't travel. +62-813-2345-6789" → agent detects 0 roaming days → files dispute via billing_dispute_agent
+4. **Recharge** -- "I need more data. +62-852-3456-7891" → shows offers → applies pack via recharge_agent
 5. **Email confirmation** -- "Send me a confirmation email" → send_confirmation_email
-6. **Dispute status** -- "What's the status of my dispute? +971-50-678-9012" (MCP: GetDisputes)
+6. **Dispute status** -- "What's the status of my dispute? +62-812-6789-0123" (MCP: GetDisputes)
 
 ---
 
@@ -166,7 +166,7 @@ This restores all tables, clears agent-written rows from `disputes` (new ones) a
 | Email not sending | Verify the Gmail App Password is correct (not the regular password). Enable 2FA on the Google account first. |
 | Agent gives stale/wrong data | Run `reset_data.sql` to restore demo data |
 | WebSocket disconnects | Ensure the Orchestrator app is running on port 9500 |
-| Agent can't find a subscriber | Make sure the mobile number matches one in the `customers` table (format `+971-5X-XXX-XXXX`) |
+| Agent can't find a subscriber | Make sure the mobile number matches one in the `customers` table (format `+62-8XX-XXXX-XXXX`) |
 
 ---
 

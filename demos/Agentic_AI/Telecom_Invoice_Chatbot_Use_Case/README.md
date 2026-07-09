@@ -2,6 +2,8 @@
 
 An AI-powered billing chatbot for telecom subscribers, built on TIBCO Flogo Enterprise. Subscribers ask natural-language questions ("Why is my bill so high?", "Get me a data pack", "Dispute this charge") over a WebSocket streaming chat. The system uses a 3-tier agentic architecture — an AI Orchestrator, an MCP Server for read-only BSS lookups, and A2A Servers for write workflows — all communicating via standard protocols (MCP, A2A, WebSocket).
 
+> **Demo dataset:** an Indonesian telecom provider — currency **IDR** (Indonesian Rupiah), VAT **PPN 11%**, subscribers with `+62` mobile numbers, and Southeast-Asia / Umrah roaming destinations (Singapore, Malaysia, Thailand, Japan, Australia, Saudi Arabia).
+
 ---
 
 ## Architecture Overview
@@ -96,14 +98,14 @@ The main orchestration app. Exposes a WebSocket endpoint for natural-language ch
 
 | Table | Purpose | Records |
 |-------|---------|---------|
-| `customers` | CRM master records (mobile = subscriber id) | 8 subscribers |
-| `invoices` | Monthly invoice headers | 6 (June 2026) |
-| `invoice_line_items` | Charges per invoice | 19 line items |
-| `usage_records` | Metered usage vs limits | 8 (one per subscriber) |
-| `plans` | Base plans + add-ons | 11 |
-| `payments` | Payment / top-up history | 19 |
-| `recharge_offers` | Global recharge catalog | 6 offers |
-| `disputes` | Dispute tickets (pre-seeded + written by agent) | 2 seeded |
+| `customers` | CRM master records (mobile = subscriber id) | 16 subscribers |
+| `invoices` | Monthly invoice headers | 12 (June 2026, postpaid) |
+| `invoice_line_items` | Charges per invoice (incl. PPN 11%) | 41 line items |
+| `usage_records` | Metered usage vs limits | 16 (one per subscriber) |
+| `plans` | Base plans + add-ons | 21 |
+| `payments` | Payment / top-up history | 38 |
+| `recharge_offers` | Global recharge catalog | 8 offers |
+| `disputes` | Dispute tickets (pre-seeded + written by agent) | 3 seeded |
 | `recharges` | Recharge activation log (written by agent) | starts empty |
 
 ```bash
@@ -120,25 +122,25 @@ psql -U postgres -d telecom -f reset_data.sql
 
 ### Scenario 1: "Why is my bill so high?" (MCP only)
 
-Ahmed Al Rashid (+971-50-123-4567, Premium) has a June 2026 bill of **AED 487.50**. The agent looks up his profile, invoice, and usage and explains each line item — Plan AED 299, IDD India AED 85, Data Add-on 10GB AED 49, Roaming Saudi Arabia AED 54.50 — confirming the roaming is valid (3 roaming days recorded).
+Budi Santoso (+62-812-3456-7890, Premium, Jakarta) has a June 2026 bill of **IDR 499,500**. The agent looks up his profile, invoice, and usage and explains each line item — Plan IDR 150,000, IDD Singapore IDR 85,000, Data Add-on 10GB IDR 50,000, Roaming Singapore IDR 165,000, PPN 11% IDR 49,500 — confirming the roaming is valid (3 roaming days recorded).
 
 ```
-You:   Why is my bill so high this month? My number is +971-50-123-4567.
-Agent: Your June bill is AED 487.50, made up of: Plan Premium 500 (AED 299),
-       International Calls to India (AED 85), a 10GB Data Add-on (AED 49), and
-       Roaming Saudi Arabia for 3 days (AED 54.50). Your usage shows 3 roaming
-       days in Saudi Arabia, so the roaming charge is valid.
+You:   Why is my bill so high this month? My number is +62-812-3456-7890.
+Agent: Your June bill is IDR 499,500, made up of: Pascabayar Prime 100 (IDR 150,000),
+       International Calls to Singapore (IDR 85,000), a 10GB Data Add-on (IDR 50,000),
+       Roaming Singapore for 3 days (IDR 165,000), and VAT/PPN 11% (IDR 49,500). Your
+       usage shows 3 roaming days in Singapore, so the roaming charge is valid.
 ```
 
 ### Scenario 2: "I was charged for roaming but I didn't travel" (MCP + A2A dispute)
 
-Fatima Al Zaabi (+971-50-234-5678) is billed **AED 120 Roaming Europe**, but her usage shows **0 roaming days**. The agent detects the discrepancy and, on confirmation, files a dispute via `billing_dispute_agent`.
+Siti Nurhaliza (+62-813-2345-6789) is billed **IDR 220,000 Roaming Thailand**, but her usage shows **0 roaming days**. The agent detects the discrepancy and, on confirmation, files a dispute via `billing_dispute_agent`.
 
 ```
-You:   I was charged for roaming in Europe but I never left the country.
-       My number is +971-50-234-5678.
-Agent: I checked invoice INV-2026-06-872: it has a Roaming Europe charge of
-       AED 120, but your usage shows 0 roaming days. That's a clear discrepancy.
+You:   I was charged for roaming in Thailand but I never left Indonesia.
+       My number is +62-813-2345-6789.
+Agent: I checked invoice INV-2026-06-872: it has a Roaming Thailand charge of
+       IDR 220,000, but your usage shows 0 roaming days. That's a clear discrepancy.
        Would you like me to file a dispute?
 You:   Yes please.
 Agent: Done. Dispute DSP-2026-XXXX is now OPEN, estimated resolution within
@@ -147,20 +149,20 @@ Agent: Done. Dispute DSP-2026-XXXX is now OPEN, estimated resolution within
 
 ### Scenario 3: "I need more data" (MCP + A2A recharge)
 
-Mohammed Hassan (+971-55-345-6789) has used 14.8 of 15 GB. The agent shows recharge offers and, on confirmation, applies one via `recharge_agent`.
+Ahmad Wijaya (+62-852-3456-7891) has used 19.6 of 20 GB. The agent shows recharge offers and, on confirmation, applies one via `recharge_agent`.
 
 ```
-You:   I'm almost out of data. My number is +971-55-345-6789.
-Agent: You've used 14.8 of your 15 GB. Here are recharge packs: Data Booster 5GB
-       (AED 29), Data Booster 10GB (AED 49), Data Max 20GB (AED 79).
+You:   I'm almost out of data. My number is +62-852-3456-7891.
+Agent: You've used 19.6 of your 20 GB. Here are recharge packs: Data Booster 5GB
+       (IDR 30,000), Data Booster 10GB (IDR 50,000), Data Max 25GB (IDR 100,000).
 You:   Give me the 10GB one.
-Agent: Applied! Recharge RCG-2026-XXXX — Data Booster 10GB (AED 49), 10 GB added,
+Agent: Applied! Recharge RCG-2026-XXXX — Data Booster 10GB (IDR 50,000), 10 GB added,
        active for 30 days.
 ```
 
 ### Scenario 4: "Show my last 3 payments" (MCP only)
 
-Omar Khalil (+971-52-567-8901, Business) — the agent returns his most recent Auto-Debit payments.
+Rudi Hartono (+62-811-5678-9012, Business, Jakarta) — the agent returns his most recent Auto-Debit payments.
 
 ### Scenario 5: "What plan am I on?" (MCP only)
 
@@ -168,7 +170,7 @@ Any subscriber — the agent summarizes the base plan and any active add-ons wit
 
 ### Scenario 6: "What's the status of my dispute?" (MCP only)
 
-Layla Ibrahim (+971-50-678-9012, VIP) has a pre-seeded dispute (DSP-2026-0001, UNDER_REVIEW). The agent looks it up via `GetDisputes`.
+Maya Sari (+62-812-6789-0123, VIP, Denpasar) has a pre-seeded dispute (DSP-2026-0001, UNDER_REVIEW). The agent looks it up via `GetDisputes`.
 
 ---
 
@@ -176,28 +178,37 @@ Layla Ibrahim (+971-50-678-9012, VIP) has a pre-seeded dispute (DSP-2026-0001, U
 
 ### Subscribers
 
-| Customer ID | Name | Mobile | Segment | Type | Demo role |
-|-------------|------|--------|---------|------|-----------|
-| CUST-10042871 | Ahmed Al Rashid | +971-50-123-4567 | Premium | Postpaid | "Why is my bill high" (roaming valid) |
-| CUST-10042872 | Fatima Al Zaabi | +971-50-234-5678 | Consumer | Postpaid | Dispute (roaming charged, 0 roaming days) |
-| CUST-10042873 | Mohammed Hassan | +971-55-345-6789 | Consumer | Postpaid | Recharge (14.8/15 GB) |
-| CUST-10042874 | Sara Abdullah | +971-56-456-7890 | Consumer | Prepaid | Plan lookup |
-| CUST-10042875 | Omar Khalil | +971-52-567-8901 | Business | Postpaid | Payment history |
-| CUST-10042876 | Layla Ibrahim | +971-50-678-9012 | VIP | Postpaid | Dispute status (pre-seeded) |
-| CUST-10042877 | Yusuf Ahmed | +971-54-789-0123 | Consumer | Prepaid | Prepaid / general |
-| CUST-10042878 | Noura Saeed | +971-58-890-1234 | Premium | Postpaid | Clean bill |
+| Customer ID | Name | Mobile | City | Segment | Type | Demo role |
+|-------------|------|--------|------|---------|------|-----------|
+| CUST-10042871 | Budi Santoso | +62-812-3456-7890 | Jakarta | Premium | Postpaid | "Why is my bill high" (roaming Singapore valid) |
+| CUST-10042872 | Siti Nurhaliza | +62-813-2345-6789 | Bandung | Consumer | Postpaid | Dispute (roaming Thailand charged, 0 roaming days) |
+| CUST-10042873 | Ahmad Wijaya | +62-852-3456-7891 | Surabaya | Consumer | Postpaid | Recharge (19.6/20 GB) + OPEN dispute DSP-2026-0003 |
+| CUST-10042874 | Dewi Lestari | +62-857-4567-8901 | Yogyakarta | Consumer | Prepaid | Plan lookup |
+| CUST-10042875 | Rudi Hartono | +62-811-5678-9012 | Jakarta | Business | Postpaid | Payment history |
+| CUST-10042876 | Maya Sari | +62-812-6789-0123 | Denpasar | VIP | Postpaid | Dispute status (DSP-2026-0001, UNDER_REVIEW) |
+| CUST-10042877 | Andi Pratama | +62-853-7890-1234 | Makassar | Consumer | Prepaid | Prepaid / general |
+| CUST-10042878 | Rina Melati | +62-878-8901-2345 | Medan | Premium | Postpaid | Clean bill |
+| CUST-10042879 | Joko Susilo | +62-856-9012-3456 | Semarang | Consumer | Postpaid | Dispute (IDD China charged, 0 intl minutes) |
+| CUST-10042880 | Putri Anggraini | +62-838-0123-4567 | Jakarta | Premium | Postpaid | High roaming (Australia, valid) |
+| CUST-10042881 | Bambang Kusuma | +62-817-1234-5678 | Palembang | Business | Postpaid | Recharge (96.5/100 GB) |
+| CUST-10042882 | Sri Wahyuni | +62-819-2345-6780 | Batam | Consumer | Prepaid | Prepaid top-ups |
+| CUST-10042883 | Agus Salim | +62-822-3456-7801 | Surabaya | Consumer | Postpaid | Resolved dispute (DSP-2026-0002) |
+| CUST-10042884 | Fitri Handayani | +62-812-4567-8902 | Bandung | Premium | Postpaid | Roaming Malaysia (valid) |
+| CUST-10042885 | Hendra Gunawan | +62-813-5678-9013 | Jakarta | VIP | Postpaid | Umrah roaming Saudi Arabia (valid), highest bill |
+| CUST-10042886 | Lia Permata | +62-858-6789-0124 | Denpasar | Consumer | Prepaid | Clean prepaid |
 
-### Flagship Invoice — Ahmed Al Rashid (INV-2026-06-871)
+### Flagship Invoice — Budi Santoso (INV-2026-06-871)
 
-| Line item | Category | Amount (AED) |
+| Line item | Category | Amount (IDR) |
 |-----------|----------|--------------|
-| Postpaid Plan Premium 500 (monthly) | PLAN | 299.00 |
-| International Calls (India) | IDD | 85.00 |
-| Data Add-on 10GB | ADDON | 49.00 |
-| Roaming Saudi Arabia (3 days) | ROAMING | 54.50 |
-| **Total** | | **487.50** |
+| Pascabayar Prime 100 (monthly) | PLAN | 150,000 |
+| International Calls (Singapore) | IDD | 85,000 |
+| Data Add-on 10GB | ADDON | 50,000 |
+| Roaming Singapore (3 days) | ROAMING | 165,000 |
+| VAT (PPN) 11% | TAX | 49,500 |
+| **Total** | | **499,500** |
 
-Usage: Data 38.7 / 50 GB · Local 342 min · International 47 min · SMS 12 · Roaming 3 days (Saudi Arabia)
+Usage: Data 38.7 / 50 GB · Local 342 min · International 47 min · SMS 12 · Roaming 3 days (Singapore)
 
 ---
 

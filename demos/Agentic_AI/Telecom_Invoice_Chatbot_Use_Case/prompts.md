@@ -1,17 +1,17 @@
 # Telecom Invoice Chatbot -- Demo Prompts
 
-Subscribers are identified by mobile number. The agent looks up the customer ID from the number, then uses it for all other tools. Currency is AED.
+Indonesian telecom provider. Subscribers are identified by their `+62` mobile number; the agent looks up the customer ID from the number, then uses it for all other tools. Currency is **IDR** (VAT/PPN 11%).
 
 ## 1. Bill Explanation (MCP Only)
 
 ```
-Why is my bill so high this month? My number is +971-50-123-4567.
+Why is my bill so high this month? My number is +62-812-3456-7890.
 ```
 ```
-Can you break down my June invoice? My mobile is +971-50-123-4567.
+Can you break down my June invoice? My mobile is +62-813-5678-9013.
 ```
 ```
-What am I being charged for? +971-58-890-1234
+What am I being charged for? +62-878-8901-2345
 ```
 
 ---
@@ -19,10 +19,10 @@ What am I being charged for? +971-58-890-1234
 ## 2. Usage (MCP Only)
 
 ```
-How much data have I used this month? My number is +971-55-345-6789.
+How much data have I used this month? My number is +62-852-3456-7891.
 ```
 ```
-Am I close to my data limit? +971-50-123-4567
+Am I close to my data limit? +62-817-1234-5678
 ```
 
 ---
@@ -30,10 +30,10 @@ Am I close to my data limit? +971-50-123-4567
 ## 3. Plans (MCP Only)
 
 ```
-What plan am I on? My number is +971-56-456-7890.
+What plan am I on? My number is +62-857-4567-8901.
 ```
 ```
-What add-ons do I have? +971-50-123-4567
+What add-ons do I have? +62-812-3456-7890
 ```
 
 ---
@@ -41,56 +41,62 @@ What add-ons do I have? +971-50-123-4567
 ## 4. Payment History (MCP Only)
 
 ```
-Show me my last 3 payments. My number is +971-52-567-8901.
+Show me my last 3 payments. My number is +62-811-5678-9012.
 ```
 ```
-When did I last pay my bill? +971-50-123-4567
+When did I last pay my bill? +62-812-6789-0123
 ```
 
 ---
 
 ## 5. Billing Dispute (MCP + A2A: billing_dispute_agent)
 
-### Fatima Al Zaabi -- Roaming charged but never travelled (0 roaming days)
+### Siti Nurhaliza -- Roaming charged but never travelled (0 roaming days)
 ```
-Prompt 1: I was charged for roaming in Europe but I never left the country. My number is +971-50-234-5678.
+Prompt 1: I was charged for roaming in Thailand but I never left Indonesia. My number is +62-813-2345-6789.
 Prompt 2: Yes, please file a dispute.
 ```
 
-### Generic dispute
+### Joko Susilo -- International calls charged but no intl minutes used
 ```
-There's a charge on my bill I don't recognise. My mobile is +971-50-234-5678. Can you dispute it?
+Prompt 1: There's an international calls charge to China on my bill but I never called overseas. My number is +62-856-9012-3456.
+Prompt 2: Please dispute it.
 ```
 
 ---
 
 ## 6. Recharge (MCP + A2A: recharge_agent)
 
-### Mohammed Hassan -- near data limit
+### Ahmad Wijaya -- near data limit (19.6 / 20 GB)
 ```
-Prompt 1: I'm almost out of data. My number is +971-55-345-6789.
+Prompt 1: I'm almost out of data. My number is +62-852-3456-7891.
 Prompt 2: What recharge packs do you have?
 Prompt 3: Get me the Data Booster 10GB pack.
 ```
 
-### Direct recharge
+### Bambang Kusuma -- business, near 100 GB
 ```
-Prompt 1: I need more data on +971-56-456-7890.
-Prompt 2: Add the 5GB booster please.
+Prompt 1: I need more data on +62-817-1234-5678.
+Prompt 2: Add the Data Max 25GB pack please.
 ```
 
 ---
 
 ## 7. Dispute Status (MCP Only: GetDisputes)
 
-### Layla Ibrahim -- pre-seeded dispute DSP-2026-0001 (UNDER_REVIEW)
+### Maya Sari -- pre-seeded dispute DSP-2026-0001 (UNDER_REVIEW)
 ```
-What's the status of my dispute? My number is +971-50-678-9012.
+What's the status of my dispute? My number is +62-812-6789-0123.
 ```
 
-### Mohammed Hassan -- resolved dispute DSP-2026-0002
+### Agus Salim -- resolved dispute DSP-2026-0002
 ```
-Did my dispute get resolved? +971-55-345-6789
+Did my dispute get resolved? +62-822-3456-7801
+```
+
+### Ahmad Wijaya -- open dispute DSP-2026-0003 (data add-on charged twice)
+```
+Is there any update on my billing dispute? +62-852-3456-7891
 ```
 
 ---
@@ -98,23 +104,41 @@ Did my dispute get resolved? +971-55-345-6789
 ## 8. Full Workflow with Email (All Agents)
 
 ```
-Prompt 1: I was charged AED 120 for roaming in Europe but I didn't travel. My number is +971-50-234-5678.
-Prompt 2: Yes, file the dispute and send me email confirmation.
-Prompt 3: Can you email me a confirmation?
+Prompt 1: I was charged IDR 220,000 for roaming in Thailand but I didn't travel. My number is +62-813-2345-6789.
+Prompt 2: Yes, file the dispute and send me an email confirmation.
 ```
 
 ```
-Prompt 1: I need more data. My number is +971-55-345-6789.
+Prompt 1: I need more data. My number is +62-852-3456-7891.
 Prompt 2: Apply the Data Booster 10GB.
 Prompt 3: Please send me a confirmation email.
 ```
 
 ---
 
-## 9. Multi-Turn Conversation
+## 9. Roaming Bill Explanations (MCP Only)
+
+### Hendra Gunawan (VIP) -- Umrah roaming to Saudi Arabia (valid, highest bill)
+```
+Why is my bill so high? My number is +62-813-5678-9013.
+```
+
+### Putri Anggraini -- roaming Australia (valid)
+```
+Can you explain the roaming charge on my bill? +62-838-0123-4567
+```
+
+### Fitri Handayani -- roaming Malaysia (valid)
+```
+I see a roaming charge for Malaysia -- is that correct? My number is +62-812-4567-8902.
+```
+
+---
+
+## 10. Multi-Turn Conversation
 
 ```
-Turn 1: Hi, my number is +971-50-123-4567. Why is my bill higher than usual?
+Turn 1: Hi, my number is +62-812-3456-7890. Why is my bill higher than usual?
 Turn 2: Is the roaming charge correct?
 Turn 3: What plan am I on again?
 Turn 4: Show me my last 3 payments.
@@ -122,18 +146,18 @@ Turn 4: Show me my last 3 payments.
 
 ---
 
-## 10. Edge Cases & Out of Scope
+## 11. Edge Cases & Out of Scope
 
 ### Unknown subscriber
 ```
-Why is my bill high? My number is +971-99-000-0000.
+Why is my bill high? My number is +62-800-0000-0000.
 ```
 
 ### Out of scope (agent should politely decline)
 ```
 I want to swap my SIM card.
 Can you port my number to another operator?
-Is there a network outage in Dubai?
-I want to buy a new iPhone.
-My internet at home is down, can you fix it?
+Is there a network outage in Jakarta?
+I want to buy a new phone.
+My home internet is down, can you fix it?
 ```
