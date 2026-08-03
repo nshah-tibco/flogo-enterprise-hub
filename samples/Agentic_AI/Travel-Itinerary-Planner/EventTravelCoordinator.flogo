@@ -521,7 +521,7 @@
     {
       "name": "AgenticAI.openai.API_Key",
       "type": "string",
-      "value": "SECRET:0nTpGHzs9LTg9w4rEHVe+fHL03dj7r1JEENfgc+3/VQ1frkroUBCaVBBJ1V7mUSmxvkx5nYDYTnriWtPkY3xHF5H9SpMnAgwcDNA+gxqWgl2qEjvXYvQ/Fr96YSyTxzvD2Op68fCf+EpaMj+wVBwX2B9CveTmzFlwdaICUKp4Xlt7QBNbdERy41D+Ze00mXk3FSfeU8ueVpNow3ETNfdoD+ko2lwfPPPdkVnsVOemCcFhi6C"
+      "value": "SECRET:Zr0HQT+SrRwXX615pxacYMuM7tAaQLBlzC/EHJEhB8F+w2xc8EjywQ4pn1ZAp2dSlG0BY9bUVuERugG7+l0WHFcW3Bs/CoelYhubuXWd8ZZhIPBUrUfzIIlwaqdjTOltWYA2P2gkqFD/3vq0PIcMRNbUqxlQQxlTMFOG70EgHKlsRRcY9qR9ozCsJ8YbmZlgHr2w8VMtosEoc7+4F8Id41VeDI5XQ70NQxJ2W4SzDv4ksVrW"
     },
     {
       "name": "AgenticAI.openai.LLM_Base_URL",
@@ -598,11 +598,24 @@
         "description": "Connection to the TravelItineraryPlanner A2A Server on port 9898",
         "serverUrl": "http://localhost:9898",
         "authType": "Static Token",
-        "authToken": "SECRET:T80eRTS4CeiuYIpXg+El5U5XfzkOermOH0TtXs2TTCiR4QnLZ6iNaL6eq+A="
+        "authToken": "SECRET:UGunCutakmdQkX/JWC5TDfRhGll7y/Lv589zdahsATiLwti2Lo3t+9NYQjw="
+      }
+    },
+    "f97616a4-d66d-4151-8bae-26541f00fb74": {
+      "id": "f97616a4-d66d-4151-8bae-26541f00fb74",
+      "name": "a2a_cp",
+      "ref": "#a2aserverconnection",
+      "isGlobal": false,
+      "settings": {
+        "name": "a2a_cp",
+        "description": "",
+        "serverUrl": "https://pltdemo.pmorg.int-pm.dataplanes.pro/tibco/apps/d9c9000ktegs73dr1vrg/TravelPlannerA2AServer",
+        "authType": "Static Token",
+        "authToken": "SECRET:tNSMMg+h9gNopJF2YYfYLy5+C3IJZk05xSsCVQTodE7uqA+73omwj9kTztM="
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTQtSEYxIiwidGFnIjoiMS42LjE0LWhmMS1iMDMiLCJuYW1lIjoiR2VuZXJhbCIsInMzbG9jYXRpb24iOiJUaWJjby9HZW5lcmFsIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWFpLWFnZW50L3NyYy9hcHAvQWdlbnRpY0FJIiwiaWQiOiJBZ2VudGljQUkiLCJ2ZXJzaW9uIjoiMC45LjMiLCJ0YWciOiIwLjkuMy1iMDIiLCJuYW1lIjoiQWdlbnRpYyBBSSAoVGVjaCBQcmV2aWV3KSIsInMzbG9jYXRpb24iOiJUaWJjby9BZ2VudGljQUkiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTQiLCJ0YWciOiIxLjYuMTQtYjA0IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS4zIiwidGFnIjoiMC45LjMtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
   "metadata": {
     "endpoints": [
       {

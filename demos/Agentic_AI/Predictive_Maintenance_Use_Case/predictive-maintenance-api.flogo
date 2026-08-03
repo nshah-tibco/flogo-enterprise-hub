@@ -383,7 +383,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "0e8be336-69ff-4915-8d38-bee2cd4b3755SELECT a.asset_id, a.asset_type, a.well_site_id, a.description, a.status, sr.reading_timestamp, sr.vibration_rms, sr.temperature_c, sr.pressure_psi, sr.flow_rate, sr.power_consumption FROM public.assets a LEFT JOIN public.sensor_readings sr ON a.asset_id = sr.asset_id WHERE a.asset_id = $1 ORDER BY sr.id DESC LIMIT 1",
+                "State": "4dab2090-8a1e-48b5-85a0-92cf824ac67c",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -458,6 +458,14 @@
                 "type": "json",
                 "value": "{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Authorization\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}}"
               }
+            },
+            {
+              "name": "requestURI",
+              "type": "string"
+            },
+            {
+              "name": "method",
+              "type": "string"
             }
           ],
           "output": [
@@ -466,17 +474,17 @@
               "type": "integer"
             },
             {
-              "name": "data",
+              "name": "responseBody",
               "type": "object",
               "schema": {
                 "type": "json",
-                "value": "{\"asset_id\":{\"type\":\"string\"},\"asset_type\":{\"type\":\"string\"},\"well_site_id\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"status\":{\"type\":\"string\"},\"reading_timestamp\":{\"type\":\"string\"},\"vibration_rms\":{\"type\":\"string\"},\"temperature_c\":{\"type\":\"string\"},\"pressure_psi\":{\"type\":\"string\"},\"flow_rate\":{\"type\":\"string\"},\"power_consumption\":{\"type\":\"string\"}}"
+                "value": "{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}"
               }
             }
           ],
           "fe_metadata": {
-            "input": "{\"type\":\"object\",\"title\":\"ReceiveHTTPMessage\",\"properties\":{\"pathParams\":{\"type\":\"object\",\"properties\":{\"asset_id\":{\"type\":\"string\"}},\"required\":[]},\"headers\":{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Authorization\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}}}",
-            "output": "{\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"code\":{\"type\":\"integer\"},\"data\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"asset_id\":{\"type\":\"string\"},\"asset_type\":{\"type\":\"string\"},\"well_site_id\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"status\":{\"type\":\"string\"},\"reading_timestamp\":{\"type\":\"string\"},\"vibration_rms\":{\"type\":\"string\"},\"temperature_c\":{\"type\":\"string\"},\"pressure_psi\":{\"type\":\"string\"},\"flow_rate\":{\"type\":\"string\"},\"power_consumption\":{\"type\":\"string\"}}}},\"required\":[]}"
+            "input": "{\"type\":\"object\",\"title\":\"ReceiveHTTPMessage\",\"properties\":{\"pathParams\":{\"type\":\"object\",\"properties\":{\"asset_id\":{\"type\":\"string\"}},\"required\":[]},\"headers\":{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Authorization\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]},\"requestURI\":{\"type\":\"string\",\"required\":false},\"method\":{\"type\":\"string\",\"required\":false}}}",
+            "output": "{\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"code\":{\"type\":\"integer\"},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}},\"required\":[]}"
           }
         },
         "explicitReply": true
@@ -596,7 +604,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "4e5a2571-ab66-49e7-b757-596c0b2f983a",
+                "State": "3b59dc8d-f0a4-4133-b7ab-57ad0d97884a",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -788,7 +796,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "e5805974-158d-4e26-ab2b-dfb0eea6ee16",
+                "State": "cb70b4c1-4c57-430b-8bbf-24623840f182",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -971,7 +979,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "bdc188d1-284e-482b-908f-b3eda5321e9e",
+                "State": "f6388bba-37bd-437d-a306-8120f675b477",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -1083,7 +1091,7 @@
     {
       "name": "PostgreSQL.PredMaintConn.Password",
       "type": "string",
-      "value": "SECRET:C8eHQX0aATyBkaBctqV28kPjGuJh"
+      "value": "SECRET:5qGwvgAAUMsxzsLvxDCp3FugJ0UP"
     },
     {
       "name": "PostgreSQL.PredMaintConn.Maximum_Open_Connections",

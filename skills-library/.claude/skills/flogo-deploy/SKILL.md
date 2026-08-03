@@ -6,86 +6,130 @@ user-invocable: true
 
 # Deploy a Flogo Application to the TIBCO Platform
 
-This skill deploys a `.flogo` application file to a TIBCO Platform dataplane using the `tibcop` CLI.
-Use the TIBCO Platform CLI profile configured for your environment (e.g. set in your project's `CLAUDE.md` as `<YOUR_PROFILE>`).
+This skill builds a `.flogo` application into a TIBCO Platform deployment zip with the
+`flogobuild` CLI, then imports and deploys it to a dataplane using the `tibcop` CLI.
 
-## Required Inputs
+## Before You Start — Read the Config
 
-- **Flogo app file**: Path to the `.flogo` file (check the Flogo apps folder if not specified, e.g. `./Flogo_Apps/`)
-- **Dataplane name**: The target dataplane to deploy to
-- **Profile**: The TIBCO Platform CLI profile to authenticate with
+Always read `skills-library/.claude/skills/config.md` first for the values below. Print each
+CLI's path and version before running it. Never run `flogobuild`/`tibcop` in the background —
+the user wants real-time output.
+
+| Config key | Used for |
+|---|---|
+| `FLOGOBUILD_PATH` | building the deployment zip and managing build contexts |
+| `FLOGO_VERSION` | the target Flogo version (e.g. `2.26.5`) |
+| `VSIX_FILE_PATH` | the Flogo VSCode extension VSIX used to create the build context |
+| `TIBCOP_PATH` | importing and deploying to the platform |
+| `CP_URL` / `DATAPLANE_NAME` | the target control plane and dataplane |
+
+**Flogo version:** Use the `FLOGO_VERSION` value from config (e.g. `2.26.5`). If it is missing,
+fall back to the version embedded in `VSIX_FILE_PATH`. If you still cannot determine it, **ask the user**.
+
+**VSIX file:** Use the **latest** `VSIX_FILE_PATH` in the config. If it is missing from the config
+or the file does not exist on disk, **ask the user** for the VSIX file path.
 
 ## Deployment Steps
 
-Follow these steps in order:
-
 ### Step 1: Locate the Flogo app file
 
-Find the `.flogo` file. If the user provides just an app name, look for it in the configured apps folder (e.g. `./Flogo_Apps/<appName>.flogo`) first, then search the project.
+Find the `.flogo` file. If the user provides just an app name, look for it in the configured apps
+folder (e.g. `./Flogo_Apps/<appName>.flogo`) first, then search the project.
 
-### Step 2: List available Flogo versions on the dataplane
+### Step 2: Ensure a build context exists (create from the config VSIX)
 
-```shell
-tibcop flogo:list-flogo-versions --profile <YOUR_PROFILE> --dataplane-name <DATAPLANE_NAME> --json
-```
-
-Pick the available `buildtypeTag` from the response (e.g. `2.25.9-b300`).
-
-### Step 3: Create a build
+List existing contexts:
 
 ```shell
-tibcop flogo:create-build --profile <YOUR_PROFILE> --dataplane-name <DATAPLANE_NAME> --flogo-version <FLOGO_VERSION> --json <PATH_TO_FLOGO_FILE>
+flogobuild list-context
 ```
 
-This will return a `buildId` and `status`. Wait for status `Success` before proceeding.
-
-### Step 4: Generate values.yaml from the build
+If there is no context matching the config's VSIX/Flogo version, create one from the config's
+`VSIX_FILE_PATH` and set it as default:
 
 ```shell
-tibcop flogo:generate-values-from-build --profile <YOUR_PROFILE> --dataplane-name <DATAPLANE_NAME> --build-id <BUILD_ID> --output-dir <OUTPUT_DIR>
+flogobuild create-context -n <CONTEXT_NAME> -v "<VSIX_FILE_PATH>" --set-default
 ```
 
-Use the same directory as the flogo file for the output. This generates a `values.yaml` with all the correct deployment configuration.
+**Context name rules** (the CLI rejects invalid names): must start with a letter; may contain only
+letters, digits, underscores, and hyphens (**no dots**); length 3–30 chars. Derive a valid name
+from the VSIX version — e.g. VSIX `...-2.26.5-ENGR-001-...vsix` → context `flogo-vscode-2265-ENGR-001`.
+(The `FLOGOBUILD_CONTEXT_NAME` in config may contain dots and be invalid — sanitize it.)
 
-### Step 5: Set the app name in values.yaml
+If the VSIX is not in config or the file is missing, **ask the user** for the VSIX path.
 
-If the user specified a custom app name, update **both** of these fields in `values.yaml` before deploying:
+### Step 3: Build the TIBCO Platform deployment zip
+
+Create the output directory first — the build fails with "Output directory does not exist" if it
+is absent:
+
+```shell
+mkdir -p <OUTPUT_DIR>
+flogobuild build-tp-deployment -f "<PATH_TO_FLOGO_FILE>" -c <CONTEXT_NAME> -o "<OUTPUT_DIR>" -z <APP_NAME>.zip
+```
+
+### Step 4: Import the build to the control plane
+
+The zip is a **positional** argument (not `--file`):
+
+```shell
+tibcop flogo:import-build "<OUTPUT_DIR>/<APP_NAME>.zip" --profile <PROFILE> --dataplane-name <DATAPLANE_NAME> --json
+```
+
+This returns a `buildId`. Capture it for the next steps.
+
+### Step 5: Generate values.yaml from the build
+
+```shell
+tibcop flogo:generate-values-from-build --build-id <BUILD_ID> --profile <PROFILE> --dataplane-name <DATAPLANE_NAME> --output-dir "<OUTPUT_DIR>"
+```
+
+The generated `values.yaml` has `appConfig.appId: ""` (fresh deploy) and `replicaCount: 0`, so the
+app deploys **without starting**.
+
+### Step 6: (Optional) Set the app name in values.yaml
+
+If the user wants a custom app name, update **both** fields before deploying:
 
 - `appConfig.originalAppName` — the display name in the platform
-- `fullnameOverride` — the runtime name (Kubernetes release name)
+- `fullnameOverride` — the runtime (Kubernetes release) name
 
-If you skip `fullnameOverride`, the app will appear as the generic `flogo-project` in the runtime even though `originalAppName` is correct.
+### Step 7: Deploy using deploy-app-release with EULA acceptance
 
-### Step 6: Deploy using deploy-app-release with EULA acceptance
-
-**Important**: Use `deploy-app-release` (NOT `deploy-app`) because it supports the required `--eula` flag. The `deploy-app` command will fail with a "TIBCO End User Agreement (EUA)" error.
-
-```shell
-tibcop flogo:deploy-app-release --profile <YOUR_PROFILE> --dataplane-name <DATAPLANE_NAME> --eula --json <PATH_TO_VALUES_YAML>
-```
-
-This will return an `appId` and success status.
-
-### Step 7: Start the app (scale to 1 replica)
-
-The app is deployed with 0 replicas by default. Scale it to 1 to start it:
+**Important:** Use `deploy-app-release` (NOT `deploy-app`). `deploy-app` has no way to accept the
+EULA — it always fails with `To deploy the app you must accept TIBCO End User Agreement (EUA)`,
+and there is no `--eula` flag or payload field for it.
 
 ```shell
-tibcop flogo:scale-app --profile <YOUR_PROFILE> --dataplane-name <DATAPLANE_NAME> --app-id <APP_ID> --count 1 --json
+tibcop flogo:deploy-app-release "<OUTPUT_DIR>/values.yaml" --eula --profile <PROFILE> --dataplane-name <DATAPLANE_NAME> --json
 ```
 
-This accepts the scale request asynchronously. The app will start running shortly after.
+This returns an `appId` and success status. Because `replicaCount` is 0, the app is deployed but
+**not started**.
 
-### Step 8: Report results
+### Step 8: (Optional) Start the app — only if the user asks
 
-Provide the user with:
-- The build ID
-- The app ID
-- The deployment and start status
+Do **not** scale unless the user asks to start the app.
+
+```shell
+tibcop flogo:scale-app --app-id <APP_ID> --count 1 --profile <PROFILE> --dataplane-name <DATAPLANE_NAME> --json
+```
+
+### Step 9: Report results
+
+Provide the user with the build ID, the app ID, the deployment status, and whether the app was
+started (scaled to 1) or left stopped (0 replicas).
 
 ## Troubleshooting
 
-- **Authentication errors**: Ask the user to run `tibcop login --profile <YOUR_PROFILE>` to re-authenticate.
-- **EUA error on deploy-app**: Switch to `deploy-app-release` with the `--eula` flag. The `deploy-app` command does not support EUA acceptance in its JSON payload.
-- **Build failure**: Check the build status with `tibcop flogo:get-build-status --profile <YOUR_PROFILE> --dataplane-name <DATAPLANE_NAME> --build-id <BUILD_ID> --json`
-- **No flogo versions**: The dataplane may not have a Flogo version provisioned. Use `tibcop flogo:provision-flogo-version` to provision one first.
+- **`--json` hides the real error**: many `tibcop` commands print only `{"error":{"oclif":{"exit":2}}}`
+  with `--json`. Re-run the **same command without `--json`** to see the actual message.
+- **Authentication / `Refresh token expired`**: run `tibcop login --profile <PROFILE>` (opens a
+  browser) to re-authenticate, then retry.
+- **EUA error on `deploy-app`**: switch to `deploy-app-release` with `--eula` (see Step 7).
+- **`Output directory does not exist`** during build: `mkdir -p` the output dir first (Step 3).
+- **`invalid context name provided`**: the name has a dot or is out of the 3–30 char range — use
+  only letters/digits/underscores/hyphens starting with a letter (Step 2).
+- **Build failure**: check status with
+  `tibcop flogo:get-build-status --profile <PROFILE> --dataplane-name <DATAPLANE_NAME> --build-id <BUILD_ID> --json`.
+- **No flogo versions on the dataplane**: provision one with `tibcop flogo:provision-flogo-version`.

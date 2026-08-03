@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "properties": {
+    "Doc_Details": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "File_URL": { "type": "string" },
+          "InvoiceId": { "type": "string" }
+        }
+      }
+    }
+  }
+}

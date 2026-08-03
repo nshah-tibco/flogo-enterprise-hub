@@ -135,12 +135,13 @@ ws://localhost:9500/telecom
 
 Use the prompts from `prompts.md`. The recommended demo flow:
 
-1. **Bill explanation** -- "Why is my bill so high? My number is +62-812-3456-7890." (MCP: profile → invoice → usage)
-2. **Payment history** -- "Show me my last 3 payments. My number is +62-811-5678-9012." (MCP)
-3. **Dispute** -- "I was charged for roaming in Thailand but I didn't travel. +62-813-2345-6789" → agent detects 0 roaming days → files dispute via billing_dispute_agent
-4. **Recharge** -- "I need more data. +62-852-3456-7891" → shows offers → applies pack via recharge_agent
+1. **Bill explanation** -- "Why is my bill so high? My number is +1-415-555-0142." (MCP: profile → invoice → usage)
+2. **Payment history** -- "Show me my last 3 payments. My number is +1-617-555-0187." (MCP)
+3. **Dispute** -- "I was charged for roaming in Mexico but I didn't travel. +1-212-555-0178" → agent detects 0 roaming days → files dispute via billing_dispute_agent
+4. **Recharge** -- "I need more data. +1-312-555-0163" → shows offers → applies pack via recharge_agent
 5. **Email confirmation** -- "Send me a confirmation email" → send_confirmation_email
-6. **Dispute status** -- "What's the status of my dispute? +62-812-6789-0123" (MCP: GetDisputes)
+6. **Dispute status** -- "What's the status of my dispute? +1-305-555-0134" (MCP: GetDisputes)
+7. **More wrong-charge disputes** -- see `prompts.md` §10 for six accounts (+1-408-555-0102 … +1-303-555-0157) each carrying an incorrect charge (duplicate plan fee, unauthorized premium content, false data overage, wrong late fee, etc.)
 
 ---
 
@@ -166,7 +167,7 @@ This restores all tables, clears agent-written rows from `disputes` (new ones) a
 | Email not sending | Verify the Gmail App Password is correct (not the regular password). Enable 2FA on the Google account first. |
 | Agent gives stale/wrong data | Run `reset_data.sql` to restore demo data |
 | WebSocket disconnects | Ensure the Orchestrator app is running on port 9500 |
-| Agent can't find a subscriber | Make sure the mobile number matches one in the `customers` table (format `+62-8XX-XXXX-XXXX`) |
+| Agent can't find a subscriber | Make sure the mobile number matches one in the `customers` table (format `+1-XXX-555-01XX`) |
 
 ---
 

@@ -431,10 +431,17 @@
                     "Selected": true,
                     "Parameter": false,
                     "isEditable": false
+                  },
+                  {
+                    "FieldName": "created_at",
+                    "Type": "TIMESTAMP",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "69d35998-b1b2-4082-8fee-69677c75fdc3SELECT * FROM public.flights ORDER BY flight_number ASC;"
+                "State": "da0ec9a1-986d-4251-a11a-c90595a3accdSELECT * FROM public.flights ORDER BY flight_number ASC;"
               },
               "schemas": {
                 "input": {
@@ -447,8 +454,8 @@
                 "output": {
                   "Output": {
                     "type": "json",
-                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"flight_number\":{\"type\":\"string\"},\"origin\":{\"type\":\"string\"},\"origin_city\":{\"type\":\"string\"},\"destination\":{\"type\":\"string\"},\"destination_city\":{\"type\":\"string\"},\"scheduled_departure\":{\"type\":\"string\"},\"estimated_departure\":{\"type\":\"string\"},\"scheduled_arrival\":{\"type\":\"string\"},\"estimated_arrival\":{\"type\":\"string\"},\"status\":{\"type\":\"string\"},\"gate\":{\"type\":\"string\"},\"delay_minutes\":{\"type\":\"integer\"},\"delay_reason\":{\"type\":\"string\"},\"aircraft\":{\"type\":\"string\"}}}}}}",
-                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"flight_number\":{\"type\":\"string\"},\"origin\":{\"type\":\"string\"},\"origin_city\":{\"type\":\"string\"},\"destination\":{\"type\":\"string\"},\"destination_city\":{\"type\":\"string\"},\"scheduled_departure\":{\"type\":\"string\"},\"estimated_departure\":{\"type\":\"string\"},\"scheduled_arrival\":{\"type\":\"string\"},\"estimated_arrival\":{\"type\":\"string\"},\"status\":{\"type\":\"string\"},\"gate\":{\"type\":\"string\"},\"delay_minutes\":{\"type\":\"integer\"},\"delay_reason\":{\"type\":\"string\"},\"aircraft\":{\"type\":\"string\"}}}}}}"
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"flight_number\":{\"type\":\"string\"},\"origin\":{\"type\":\"string\"},\"origin_city\":{\"type\":\"string\"},\"destination\":{\"type\":\"string\"},\"destination_city\":{\"type\":\"string\"},\"scheduled_departure\":{\"type\":\"string\",\"format\":\"time\"},\"estimated_departure\":{\"type\":\"string\",\"format\":\"time\"},\"scheduled_arrival\":{\"type\":\"string\",\"format\":\"time\"},\"estimated_arrival\":{\"type\":\"string\",\"format\":\"time\"},\"status\":{\"type\":\"string\"},\"gate\":{\"type\":\"string\"},\"delay_minutes\":{\"type\":\"integer\"},\"delay_reason\":{\"type\":\"string\"},\"aircraft\":{\"type\":\"string\"},\"created_at\":{\"type\":\"string\",\"format\":\"time\"}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"flight_number\":{\"type\":\"string\"},\"origin\":{\"type\":\"string\"},\"origin_city\":{\"type\":\"string\"},\"destination\":{\"type\":\"string\"},\"destination_city\":{\"type\":\"string\"},\"scheduled_departure\":{\"type\":\"string\",\"format\":\"time\"},\"estimated_departure\":{\"type\":\"string\",\"format\":\"time\"},\"scheduled_arrival\":{\"type\":\"string\",\"format\":\"time\"},\"estimated_arrival\":{\"type\":\"string\",\"format\":\"time\"},\"status\":{\"type\":\"string\"},\"gate\":{\"type\":\"string\"},\"delay_minutes\":{\"type\":\"integer\"},\"delay_reason\":{\"type\":\"string\"},\"aircraft\":{\"type\":\"string\"},\"created_at\":{\"type\":\"string\",\"format\":\"time\"}}}}}}"
                   }
                 }
               },
@@ -599,10 +606,17 @@
                     "Selected": true,
                     "Parameter": false,
                     "isEditable": false
+                  },
+                  {
+                    "FieldName": "created_at",
+                    "Type": "TIMESTAMP",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "08c433f8-9500-4997-9bab-d9a0742c45cfSELECT * FROM public.passengers ORDER BY passenger_id ASC;"
+                "State": "f6f0f53a-3ef8-4695-9743-e8e726393423SELECT * FROM public.passengers ORDER BY passenger_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -615,8 +629,8 @@
                 "output": {
                   "Output": {
                     "type": "json",
-                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"passenger_id\":{\"type\":\"string\"},\"first_name\":{\"type\":\"string\"},\"last_name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"},\"phone\":{\"type\":\"string\"},\"nationality\":{\"type\":\"string\"}}}}}}",
-                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"passenger_id\":{\"type\":\"string\"},\"first_name\":{\"type\":\"string\"},\"last_name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"},\"phone\":{\"type\":\"string\"},\"nationality\":{\"type\":\"string\"}}}}}}"
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"passenger_id\":{\"type\":\"string\"},\"first_name\":{\"type\":\"string\"},\"last_name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"},\"phone\":{\"type\":\"string\"},\"nationality\":{\"type\":\"string\"},\"created_at\":{\"type\":\"string\",\"format\":\"time\"}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"passenger_id\":{\"type\":\"string\"},\"first_name\":{\"type\":\"string\"},\"last_name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"},\"phone\":{\"type\":\"string\"},\"nationality\":{\"type\":\"string\"},\"created_at\":{\"type\":\"string\",\"format\":\"time\"}}}}}}"
                   }
                 }
               },
@@ -763,7 +777,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "3a460f2a-f8b2-4f20-96b3-aaafe8bdc4a6SELECT * FROM public.frequentflyer ORDER BY passenger_id ASC;"
+                "State": "a38e8a18-3af9-4ba5-82e4-73b5c2332bf8SELECT * FROM public.frequentflyer ORDER BY passenger_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -914,10 +928,17 @@
                     "Selected": true,
                     "Parameter": false,
                     "isEditable": false
+                  },
+                  {
+                    "FieldName": "created_at",
+                    "Type": "TIMESTAMP",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "99d3aad0-1c1c-4a59-88b5-68b7b0ce1096SELECT * FROM public.bookings ORDER BY pnr ASC;"
+                "State": "134b4c0e-9dd1-4550-a4e7-343030627874SELECT * FROM public.bookings ORDER BY pnr ASC;"
               },
               "schemas": {
                 "input": {
@@ -930,8 +951,8 @@
                 "output": {
                   "Output": {
                     "type": "json",
-                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"pnr\":{\"type\":\"string\"},\"passenger_id\":{\"type\":\"string\"},\"booking_date\":{\"type\":\"string\"},\"booking_status\":{\"type\":\"string\"}}}}}}",
-                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"pnr\":{\"type\":\"string\"},\"passenger_id\":{\"type\":\"string\"},\"booking_date\":{\"type\":\"string\"},\"booking_status\":{\"type\":\"string\"}}}}}}"
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"pnr\":{\"type\":\"string\"},\"passenger_id\":{\"type\":\"string\"},\"booking_date\":{\"type\":\"string\",\"format\":\"date\"},\"booking_status\":{\"type\":\"string\"},\"created_at\":{\"type\":\"string\",\"format\":\"time\"}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"pnr\":{\"type\":\"string\"},\"passenger_id\":{\"type\":\"string\"},\"booking_date\":{\"type\":\"string\",\"format\":\"date\"},\"booking_status\":{\"type\":\"string\"},\"created_at\":{\"type\":\"string\",\"format\":\"time\"}}}}}}"
                   }
                 }
               },
@@ -1113,7 +1134,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "0c2f1632-57cb-4c78-9e1b-6ce1a9271dffSELECT * FROM public.booking_segments ORDER BY booking_id, segment_order ASC;"
+                "State": "419c94e4-1336-4eb2-941d-817117c8cffaSELECT * FROM public.booking_segments ORDER BY booking_id, segment_order ASC;"
               },
               "schemas": {
                 "input": {
@@ -1126,8 +1147,8 @@
                 "output": {
                   "Output": {
                     "type": "json",
-                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"booking_id\":{\"type\":\"integer\"},\"segment_order\":{\"type\":\"integer\"},\"flight_number\":{\"type\":\"string\"},\"origin\":{\"type\":\"string\"},\"destination\":{\"type\":\"string\"},\"departure_time\":{\"type\":\"string\"},\"arrival_time\":{\"type\":\"string\"},\"seat_number\":{\"type\":\"string\"},\"cabin\":{\"type\":\"string\"},\"segment_status\":{\"type\":\"string\"}}}}}}",
-                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"booking_id\":{\"type\":\"integer\"},\"segment_order\":{\"type\":\"integer\"},\"flight_number\":{\"type\":\"string\"},\"origin\":{\"type\":\"string\"},\"destination\":{\"type\":\"string\"},\"departure_time\":{\"type\":\"string\"},\"arrival_time\":{\"type\":\"string\"},\"seat_number\":{\"type\":\"string\"},\"cabin\":{\"type\":\"string\"},\"segment_status\":{\"type\":\"string\"}}}}}}"
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"booking_id\":{\"type\":\"integer\"},\"segment_order\":{\"type\":\"integer\"},\"flight_number\":{\"type\":\"string\"},\"origin\":{\"type\":\"string\"},\"destination\":{\"type\":\"string\"},\"departure_time\":{\"type\":\"string\",\"format\":\"time\"},\"arrival_time\":{\"type\":\"string\",\"format\":\"time\"},\"seat_number\":{\"type\":\"string\"},\"cabin\":{\"type\":\"string\"},\"segment_status\":{\"type\":\"string\"}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"booking_id\":{\"type\":\"integer\"},\"segment_order\":{\"type\":\"integer\"},\"flight_number\":{\"type\":\"string\"},\"origin\":{\"type\":\"string\"},\"destination\":{\"type\":\"string\"},\"departure_time\":{\"type\":\"string\",\"format\":\"time\"},\"arrival_time\":{\"type\":\"string\",\"format\":\"time\"},\"seat_number\":{\"type\":\"string\"},\"cabin\":{\"type\":\"string\"},\"segment_status\":{\"type\":\"string\"}}}}}}"
                   }
                 }
               },
@@ -1206,7 +1227,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:CqaulYPXS93BR5FWaLd+MUgqVig/"
+      "value": "SECRET:siacC5G2BB1DdxRVc3MiH42aO4Rx"
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",

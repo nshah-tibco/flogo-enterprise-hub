@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "properties": {
+    "RunType": { "type": "string" },
+    "FileData": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "Filename": { "type": "string" },
+          "InvoiceId": { "type": "string" },
+          "FileContent": { "type": "string" }
+        }
+      }
+    },
+    "StatusCode": { "type": "string" },
+    "StatusDescription": { "type": "string" }
+  }
+}

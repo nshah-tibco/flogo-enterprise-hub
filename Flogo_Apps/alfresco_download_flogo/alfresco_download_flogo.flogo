@@ -1,0 +1,758 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/tibco/flogo-general/src/app/General/activity/log",
+    "github.com/tibco/flogo-general/src/app/General/activity/mapper",
+    "github.com/tibco/wi-plugins/contributions/http/src/app/HTTP/activity/client",
+    "github.com/project-flogo/contrib/activity/actreturn",
+    "github.com/tibco/flogo-general/src/app/General/trigger/rest",
+    "github.com/project-flogo/contrib/function/array",
+    "github.com/project-flogo/contrib/function/coerce",
+    "github.com/project-flogo/contrib/function/json",
+    "github.com/project-flogo/contrib/function/string",
+    "github.com/project-flogo/contrib/function/utils"
+  ],
+  "name": "alfresco_download_flogo",
+  "description": "Flogo Project created with Flogo Design",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#rest",
+      "name": "tibco-wi-rest",
+      "description": "Receives Oracle download request",
+      "settings": {
+        "port": "=$property[\"server.port\"]",
+        "APISpecUpdate": false,
+        "swagger": "{\n  \"swagger\": \"2.0\",\n  \"info\": {\n    \"title\": \"Alfresco Download Interface\",\n    \"description\": \"Oracle to Alfresco download (REST/JSON equivalent of BW SOAP interface)\",\n    \"version\": \"1.0.0\"\n  },\n  \"basePath\": \"/\",\n  \"schemes\": [\n    \"http\"\n  ],\n  \"consumes\": [\n    \"application/json\"\n  ],\n  \"produces\": [\n    \"application/json\"\n  ],\n  \"paths\": {\n    \"/alfresco/download\": {\n      \"post\": {\n        \"summary\": \"Download an Alfresco document as Base64\",\n        \"operationId\": \"alfrescoDownload\",\n        \"parameters\": [\n          {\n            \"name\": \"body\",\n            \"in\": \"body\",\n            \"required\": true,\n            \"schema\": {\n              \"$ref\": \"#/definitions/AlfrescoDownloadRequest\"\n            }\n          }\n        ],\n        \"responses\": {\n          \"200\": {\n            \"description\": \"Download result\",\n            \"schema\": {\n              \"$ref\": \"#/definitions/AlfrescoDownloadResponse\"\n            }\n          }\n        }\n      }\n    }\n  },\n  \"definitions\": {\n    \"AlfrescoDownloadRequest\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"Doc_Details\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"File_URL\": {\n                \"type\": \"string\"\n              },\n              \"InvoiceId\": {\n                \"type\": \"string\"\n              }\n            }\n          }\n        }\n      }\n    },\n    \"AlfrescoDownloadResponse\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"RunType\": {\n          \"type\": \"string\"\n        },\n        \"FileData\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"Filename\": {\n                \"type\": \"string\"\n              },\n              \"InvoiceId\": {\n                \"type\": \"string\"\n              },\n              \"FileContent\": {\n                \"type\": \"string\"\n              }\n            }\n          }\n        },\n        \"StatusCode\": {\n          \"type\": \"string\"\n        },\n        \"StatusDescription\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}",
+        "swaggerVersion": "v2",
+        "authenticationType": "None",
+        "username": "",
+        "password": "",
+        "apiVersion": "1.0.0",
+        "secureConnection": false,
+        "serverKey": "",
+        "caCertificate": ""
+      },
+      "id": "AlfrescoDownloadTrigger",
+      "handlers": [
+        {
+          "description": "Flogo Flow created with Flogo Design",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "POST",
+            "reqType": "application/json",
+            "Path": "/alfresco/download",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:MainFlow"
+            },
+            "input": {
+              "body": "=$.body"
+            },
+            "output": {
+              "data": "=$.data"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "data": "schema://AlfrescoDownloadResponse",
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Authorization\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Authorization\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+              },
+              "body": "schema://AlfrescoDownloadRequest"
+            }
+          },
+          "name": "MainFlow"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:MainFlow",
+      "data": {
+        "name": "MainFlow",
+        "description": "Flogo Flow created with Flogo Design",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogTxnStart",
+            "type": "label",
+            "label": "StartActivity to LogTxnStart"
+          },
+          {
+            "id": 2,
+            "from": "LogTxnStart",
+            "to": "DeriveNodeRef",
+            "type": "label",
+            "label": "LogTxnStart to DeriveNodeRef"
+          },
+          {
+            "id": 3,
+            "from": "DeriveNodeRef",
+            "to": "CallAlfresco",
+            "type": "expression",
+            "label": "DeriveNodeRef to CallAlfresco",
+            "value": "string.contains($activity[DeriveNodeRef].output.File_URL, \"SpacesStore/\") && string.length($activity[DeriveNodeRef].output.NodeRefId) > 0"
+          },
+          {
+            "id": 4,
+            "from": "CallAlfresco",
+            "to": "BuildSuccessResponse",
+            "type": "expression",
+            "label": "CallAlfresco to BuildSuccessResponse",
+            "value": "$activity[CallAlfresco].statusCode == 200"
+          },
+          {
+            "id": 5,
+            "from": "BuildSuccessResponse",
+            "to": "LogTxnEnd",
+            "type": "label",
+            "label": "BuildSuccessResponse to LogTxnEnd"
+          },
+          {
+            "id": 6,
+            "from": "LogTxnEnd",
+            "to": "ReturnSuccess",
+            "type": "label",
+            "label": "LogTxnEnd to ReturnSuccess"
+          },
+          {
+            "id": 7,
+            "from": "CallAlfresco",
+            "to": "BuildAlfrescoError",
+            "type": "expression",
+            "label": "CallAlfresco to BuildAlfrescoError",
+            "value": "$activity[CallAlfresco].statusCode != 200"
+          },
+          {
+            "id": 8,
+            "from": "BuildAlfrescoError",
+            "to": "LogAlfrescoError",
+            "type": "label",
+            "label": "BuildAlfrescoError to LogAlfrescoError"
+          },
+          {
+            "id": 9,
+            "from": "LogAlfrescoError",
+            "to": "ReturnAlfrescoError",
+            "type": "label",
+            "label": "LogAlfrescoError to ReturnAlfrescoError"
+          },
+          {
+            "id": 10,
+            "from": "CallAlfresco",
+            "to": "BuildTransportError",
+            "type": "error",
+            "label": "CallAlfresco to BuildTransportError"
+          },
+          {
+            "id": 11,
+            "from": "BuildTransportError",
+            "to": "LogTransportError",
+            "type": "label",
+            "label": "BuildTransportError to LogTransportError"
+          },
+          {
+            "id": 12,
+            "from": "LogTransportError",
+            "to": "ReturnTransportError",
+            "type": "label",
+            "label": "LogTransportError to ReturnTransportError"
+          },
+          {
+            "id": 13,
+            "from": "DeriveNodeRef",
+            "to": "BuildValidationError",
+            "type": "expression",
+            "label": "DeriveNodeRef to BuildValidationError",
+            "value": "string.contains($activity[DeriveNodeRef].output.File_URL, \"SpacesStore/\") == false || string.length($activity[DeriveNodeRef].output.NodeRefId) == 0"
+          },
+          {
+            "id": 14,
+            "from": "BuildValidationError",
+            "to": "LogValidationError",
+            "type": "label",
+            "label": "BuildValidationError to LogValidationError"
+          },
+          {
+            "id": 15,
+            "from": "LogValidationError",
+            "to": "ReturnValidationError",
+            "type": "label",
+            "label": "LogValidationError to ReturnValidationError"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogTxnStart",
+            "name": "LogTxnStart",
+            "description": "Log transaction start",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"Transaction start. InvoiceId=\", coerce.toString(json.get(coerce.toObject(array.get($flow.body.Doc_Details, 0)), \"InvoiceId\")), \" File_URL=\", coerce.toString(json.get(coerce.toObject(array.get($flow.body.Doc_Details, 0)), \"File_URL\")))",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "DeriveNodeRef",
+            "name": "DeriveNodeRef",
+            "description": "Derive NodeRefId from File_URL",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "File_URL": "=coerce.toString(json.get(coerce.toObject(array.get($flow.body.Doc_Details, 0)), \"File_URL\"))",
+                    "InvoiceId": "=coerce.toString(json.get(coerce.toObject(array.get($flow.body.Doc_Details, 0)), \"InvoiceId\"))",
+                    "NodeRefId": "=string.substringAfter(coerce.toString(json.get(coerce.toObject(array.get($flow.body.Doc_Details, 0)), \"File_URL\")), \"SpacesStore/\")"
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://DeriveNodeRefSchema"
+                },
+                "output": {
+                  "output": "schema://DeriveNodeRefSchema"
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "CallAlfresco",
+            "name": "CallAlfresco",
+            "description": "Call Alfresco download API (GET, Basic Auth, retry)",
+            "settings": {
+              "retryOnError": {
+                "count": "=$property[\"Retry_Count\"]",
+                "interval": "=$property[\"SocketTimeout\"]"
+              }
+            },
+            "activity": {
+              "ref": "#client",
+              "settings": {
+                "host": "=$property[\"Alfresco_ServiceEndpoint\"]",
+                "mode": "Data",
+                "timeout": "=$property[\"ConnectionTimeout\"]"
+              },
+              "input": {
+                "contextPath": "",
+                "excludeRequestHeaders": "",
+                "excludeResponseHeaders": "",
+                "method": "GET",
+                "pathParams": {
+                  "mapping": {
+                    "nodeRef": "=$activity[DeriveNodeRef].output.NodeRefId"
+                  }
+                },
+                "headers": {
+                  "mapping": {
+                    "Authorization": "=string.concat(\"Basic \", utils.encodeBase64(coerce.toBytes(string.concat($property[\"Alfresco_Username\"], \":\", $property[\"Alfresco_Password\"]))))"
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "proxyData": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"\",\"type\":\"undefined\"}",
+                    "fe_metadata": "\"\""
+                  },
+                  "pathParams": "schema://HttpPathParams",
+                  "headers": "schema://HttpHeaders"
+                },
+                "output": {
+                  "headers": "schema://HttpHeaders"
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "BuildSuccessResponse",
+            "name": "BuildSuccessResponse",
+            "description": "Build SUCCESS response with Base64 content",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "RunType": "",
+                    "StatusCode": "SUCCESS",
+                    "StatusDescription": "Document downloaded successfully",
+                    "FileData": {
+                      "@foreach($flow.body.Doc_Details,doc)": {
+                        "InvoiceId": "=$loop[doc].InvoiceId",
+                        "FileContent": "=string.stringToBase64(coerce.toString($activity[CallAlfresco].responseBody))",
+                        "Filename": "=string.replaceAll(string.substringAfter(coerce.toString(json.get(coerce.toObject($activity[CallAlfresco].headers), \"Content-Disposition\")), \"filename=\"), \"\\\"\", \"\")"
+                      }
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://AlfrescoDownloadResponse"
+                },
+                "output": {
+                  "output": "schema://AlfrescoDownloadResponse"
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LogTxnEnd",
+            "name": "LogTxnEnd",
+            "description": "Log transaction end (success)",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"Transaction end SUCCESS. InvoiceId=\", $activity[DeriveNodeRef].output.InvoiceId, \" NodeRefId=\", $activity[DeriveNodeRef].output.NodeRefId)",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "ReturnSuccess",
+            "name": "ReturnSuccess",
+            "description": "Return success response",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "data": "=$activity[BuildSuccessResponse].output"
+                }
+              }
+            }
+          },
+          {
+            "id": "BuildAlfrescoError",
+            "name": "BuildAlfrescoError",
+            "description": "Build ERROR response for Alfresco failure",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "RunType": "",
+                    "StatusCode": "ERROR",
+                    "StatusDescription": "Alfresco download failed (connection error, timeout, or non-2xx after retries)"
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://AlfrescoDownloadResponse"
+                },
+                "output": {
+                  "output": "schema://AlfrescoDownloadResponse"
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LogAlfrescoError",
+            "name": "LogAlfrescoError",
+            "description": "Log Alfresco error",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"Alfresco call failed after retries. InvoiceId=\", $activity[DeriveNodeRef].output.InvoiceId, \" NodeRefId=\", $activity[DeriveNodeRef].output.NodeRefId)",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "ReturnAlfrescoError",
+            "name": "ReturnAlfrescoError",
+            "description": "Return Alfresco error response",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "data": "=$activity[BuildAlfrescoError].output"
+                }
+              }
+            }
+          },
+          {
+            "id": "BuildTransportError",
+            "name": "BuildTransportError",
+            "description": "Build ERROR response for Alfresco connection failure",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "RunType": "",
+                    "StatusCode": "ERROR",
+                    "StatusDescription": "Alfresco unavailable - connection error or timeout"
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://AlfrescoDownloadResponse"
+                },
+                "output": {
+                  "output": "schema://AlfrescoDownloadResponse"
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LogTransportError",
+            "name": "LogTransportError",
+            "description": "Log Alfresco connection error",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"Alfresco connection error. InvoiceId=\", $activity[DeriveNodeRef].output.InvoiceId, \" NodeRefId=\", $activity[DeriveNodeRef].output.NodeRefId)",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "ReturnTransportError",
+            "name": "ReturnTransportError",
+            "description": "Return connection error response",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "data": "=$activity[BuildTransportError].output"
+                }
+              }
+            }
+          },
+          {
+            "id": "BuildValidationError",
+            "name": "BuildValidationError",
+            "description": "Build ERROR response for invalid File_URL",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "RunType": "",
+                    "StatusCode": "ERROR",
+                    "StatusDescription": "Invalid or missing File_URL"
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://AlfrescoDownloadResponse"
+                },
+                "output": {
+                  "output": "schema://AlfrescoDownloadResponse"
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LogValidationError",
+            "name": "LogValidationError",
+            "description": "Log validation error",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "Validation error: invalid or missing File_URL - Alfresco not called",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "ReturnValidationError",
+            "name": "ReturnValidationError",
+            "description": "Return validation error response",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "data": "=$activity[BuildValidationError].output"
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkxvZ1R4blN0YXJ0Ijp7IngiOjI1MCwieSI6MTUwfSwiRGVyaXZlTm9kZVJlZiI6eyJ4Ijo0NTAsInkiOjI1MH0sIkNhbGxBbGZyZXNjbyI6eyJ4Ijo2NTAsInkiOjM1MH0sIkJ1aWxkU3VjY2Vzc1Jlc3BvbnNlIjp7IngiOjg1MCwieSI6NDUwfSwiTG9nVHhuRW5kIjp7IngiOjEwNTAsInkiOjU1MH0sIlJldHVyblN1Y2Nlc3MiOnsieCI6MTI1MCwieSI6NjUwfSwiQnVpbGRBbGZyZXNjb0Vycm9yIjp7IngiOjg1MCwieSI6NzUwfSwiTG9nQWxmcmVzY29FcnJvciI6eyJ4IjoxMDUwLCJ5Ijo4NTB9LCJSZXR1cm5BbGZyZXNjb0Vycm9yIjp7IngiOjEyNTAsInkiOjk1MH0sIkJ1aWxkVHJhbnNwb3J0RXJyb3IiOnsieCI6ODUwLCJ5IjoxMDUwfSwiTG9nVHJhbnNwb3J0RXJyb3IiOnsieCI6MTA1MCwieSI6MTE1MH0sIlJldHVyblRyYW5zcG9ydEVycm9yIjp7IngiOjEyNTAsInkiOjEyNTB9LCJCdWlsZFZhbGlkYXRpb25FcnJvciI6eyJ4Ijo2NTAsInkiOjEzNTB9LCJMb2dWYWxpZGF0aW9uRXJyb3IiOnsieCI6ODUwLCJ5IjoxNDUwfSwiUmV0dXJuVmFsaWRhdGlvbkVycm9yIjp7IngiOjEwNTAsInkiOjE1NTB9fQ==",
+        "metadata": {
+          "input": [
+            {
+              "name": "headers",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Authorization\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}}"
+              }
+            },
+            {
+              "name": "body",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"Doc_Details\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"File_URL\":{\"type\":\"string\"},\"InvoiceId\":{\"type\":\"string\"}}}}}"
+              }
+            },
+            {
+              "name": "requestURI",
+              "type": "string"
+            },
+            {
+              "name": "method",
+              "type": "string"
+            }
+          ],
+          "output": [
+            {
+              "name": "data",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"AlfrescoDownloadTrigger\",\"properties\":{\"headers\":{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Authorization\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]},\"body\":{\"type\":\"object\",\"properties\":{\"Doc_Details\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"File_URL\":{\"type\":\"string\"},\"InvoiceId\":{\"type\":\"string\"}}}}}},\"requestURI\":{\"type\":\"string\",\"required\":false},\"method\":{\"type\":\"string\",\"required\":false}}}",
+            "output": "{\"type\":\"object\",\"properties\":{\"data\":{\"type\":\"object\"}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "server.port",
+      "type": "float64",
+      "value": 8068
+    },
+    {
+      "name": "server.host",
+      "type": "string",
+      "value": "localhost"
+    },
+    {
+      "name": "LogLevel",
+      "type": "string",
+      "value": "DEBUG"
+    },
+    {
+      "name": "SocketTimeout",
+      "type": "float64",
+      "value": 1000
+    },
+    {
+      "name": "ConnectionTimeout",
+      "type": "float64",
+      "value": 30000
+    },
+    {
+      "name": "Retry_Count",
+      "type": "float64",
+      "value": 3
+    },
+    {
+      "name": "Alfresco_Username",
+      "type": "string",
+      "value": "SVC.ofcs.qa"
+    },
+    {
+      "name": "Alfresco_Password",
+      "type": "string",
+      "value": "changeit"
+    },
+    {
+      "name": "Alfresco_ServiceEndpoint",
+      "type": "string",
+      "value": "http://alfrescocontint:8080/alfresco/service/trafigura/1_3/contentRetrieve/workspace/SpacesStore/{nodeRef}"
+    }
+  ],
+  "schemas": {
+    "AlfrescoDownloadRequest": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"Doc_Details\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"File_URL\": {\n            \"type\": \"string\"\n          },\n          \"InvoiceId\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"Doc_Details\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"File_URL\": {\n            \"type\": \"string\"\n          },\n          \"InvoiceId\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}"
+    },
+    "AlfrescoDownloadResponse": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"RunType\": {\n      \"type\": \"string\"\n    },\n    \"FileData\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"Filename\": {\n            \"type\": \"string\"\n          },\n          \"InvoiceId\": {\n            \"type\": \"string\"\n          },\n          \"FileContent\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    },\n    \"StatusCode\": {\n      \"type\": \"string\"\n    },\n    \"StatusDescription\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"RunType\": {\n      \"type\": \"string\"\n    },\n    \"FileData\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"Filename\": {\n            \"type\": \"string\"\n          },\n          \"InvoiceId\": {\n            \"type\": \"string\"\n          },\n          \"FileContent\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    },\n    \"StatusCode\": {\n      \"type\": \"string\"\n    },\n    \"StatusDescription\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+    },
+    "HttpHeaders": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"Authorization\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"Authorization\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+    },
+    "HttpPathParams": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"nodeRef\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"nodeRef\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+    },
+    "DeriveNodeRefSchema": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"File_URL\": {\n      \"type\": \"string\"\n    },\n    \"InvoiceId\": {\n      \"type\": \"string\"\n    },\n    \"NodeRefId\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"File_URL\": {\n      \"type\": \"string\"\n    },\n    \"InvoiceId\": {\n      \"type\": \"string\"\n    },\n    \"NodeRefId\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+    }
+  },
+  "connections": {},
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTQiLCJ0YWciOiIxLjYuMTQtYjA0IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wbHVnaW5zL2NvbnRyaWJ1dGlvbnMvaHR0cC9zcmMvYXBwL0hUVFAiLCJpZCI6IkhUVFAiLCJ2ZXJzaW9uIjoiMS4xLjEiLCJ0YWciOiIxLjEuMS1iMDMiLCJuYW1lIjoiSFRUUCIsInMzbG9jYXRpb24iOiJUaWJjby9IVFRQIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
+  "metadata": {
+    "endpoints": [
+      {
+        "protocol": "http",
+        "port": "8068",
+        "spec": {
+          "name": "alfresco_download_flogo",
+          "version": "1.0.0"
+        },
+        "title": "AlfrescoDownloadTrigger",
+        "swagger": {
+          "swagger": "2.0",
+          "info": {
+            "title": "alfresco_download_flogo",
+            "version": "1.0.0",
+            "description": "Receives Oracle download request"
+          },
+          "paths": {
+            "/alfresco/download": {
+              "post": {
+                "summary": "MainFlow",
+                "operationId": "post_alfresco_download",
+                "parameters": [
+                  {
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "Request parameter",
+                    "required": false,
+                    "type": "string"
+                  },
+                  {
+                    "name": "body",
+                    "in": "body",
+                    "description": "request body parameter",
+                    "required": true,
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "$ref": "#/definitions/schema2"
+                    }
+                  }
+                },
+                "description": "Flogo Flow created with Flogo Design",
+                "consumes": [
+                  "application/json"
+                ]
+              }
+            }
+          },
+          "definitions": {
+            "schema1": {
+              "type": "object",
+              "properties": {
+                "Doc_Details": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "File_URL": {
+                        "type": "string"
+                      },
+                      "InvoiceId": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "schema2": {
+              "type": "object",
+              "properties": {
+                "RunType": {
+                  "type": "string"
+                },
+                "FileData": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "Filename": {
+                        "type": "string"
+                      },
+                      "InvoiceId": {
+                        "type": "string"
+                      },
+                      "FileContent": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "StatusCode": {
+                  "type": "string"
+                },
+                "StatusDescription": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    ],
+    "flogoVersion": "2.26.5"
+  }
+}

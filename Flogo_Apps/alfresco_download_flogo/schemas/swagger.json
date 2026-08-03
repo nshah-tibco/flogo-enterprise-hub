@@ -1,0 +1,96 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Alfresco Download Interface",
+    "description": "Oracle to Alfresco download (REST/JSON equivalent of BW SOAP interface)",
+    "version": "1.0.0"
+  },
+  "basePath": "/",
+  "schemes": [
+    "http"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/alfresco/download": {
+      "post": {
+        "summary": "Download an Alfresco document as Base64",
+        "operationId": "alfrescoDownload",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AlfrescoDownloadRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Download result",
+            "schema": {
+              "$ref": "#/definitions/AlfrescoDownloadResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "AlfrescoDownloadRequest": {
+      "type": "object",
+      "properties": {
+        "Doc_Details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "File_URL": {
+                "type": "string"
+              },
+              "InvoiceId": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "AlfrescoDownloadResponse": {
+      "type": "object",
+      "properties": {
+        "RunType": {
+          "type": "string"
+        },
+        "FileData": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "Filename": {
+                "type": "string"
+              },
+              "InvoiceId": {
+                "type": "string"
+              },
+              "FileContent": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "StatusCode": {
+          "type": "string"
+        },
+        "StatusDescription": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

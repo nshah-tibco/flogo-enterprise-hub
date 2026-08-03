@@ -1,0 +1,1042 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/tibco/wi-postgres/src/app/PostgreSQL/activity/query",
+    "github.com/project-flogo/contrib/activity/actreturn",
+    "github.com/tibco/flogo-mcp/src/app/MCP/trigger/mcpserver",
+    "github.com/tibco/wi-postgres/src/app/PostgreSQL/connector/connection"
+  ],
+  "name": "HospitalMCPServer",
+  "description": "Hospital BSS MCP Server - read-only lookup tools over PostgreSQL",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#mcpserver",
+      "name": "flogo-mcp-mcpsever",
+      "description": "Hospital BSS MCP server",
+      "settings": {
+        "serverName": "HospitalBSS",
+        "serverVersion": "1.0.0",
+        "serverType": "HTTP",
+        "serverPort": "=$property[\"MCP_SERVER_PORT\"]",
+        "statelessServer": false,
+        "serverEndpointPath": "/hospital-bss",
+        "enableTLS": false,
+        "serverCertificate": "",
+        "serverPrivateKey": "",
+        "authType": "None",
+        "authToken": ""
+      },
+      "id": "MCP",
+      "handlers": [
+        {
+          "description": "Get discharge summary with medications",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "GetDischargeSummary",
+            "handlerDescription": "Get a patient's discharge summary joined with prescribed medications by patient_id: follow_up_required, specialty_code, discharge_date, ward_id, bed_id, medication_code, days_supply.",
+            "toolTitle": "",
+            "readOnlyToolHint": true,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getDischargeSummary"
+            },
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "output": {
+              "arguments": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            }
+          },
+          "name": "getDischargeSummary"
+        },
+        {
+          "description": "Get patient master profile by patient_id: first_name, last_name, phone_number, email.",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "GetPatientProfile",
+            "handlerDescription": "Get patient master profile by patient_id: first_name, last_name, phone_number, email.",
+            "toolTitle": "",
+            "readOnlyToolHint": true,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getPatientProfile"
+            },
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "output": {
+              "arguments": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            }
+          },
+          "name": "getPatientProfile"
+        },
+        {
+          "description": "Get bed status across wards (bed_id, ward_id, patient_id, status, updated_at, estimated_ready). Filter by ward_id or bed_id.",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "GetBedStatus",
+            "handlerDescription": "Get bed status across wards (bed_id, ward_id, patient_id, status, updated_at, estimated_ready). Filter by ward_id or bed_id.",
+            "toolTitle": "",
+            "readOnlyToolHint": true,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getBedStatus"
+            },
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "output": {
+              "arguments": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            }
+          },
+          "name": "getBedStatus"
+        },
+        {
+          "description": "Get follow-up appointments (patient_id, specialty, scheduled_date, scheduled_time, status).",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "GetAppointments",
+            "handlerDescription": "Get follow-up appointments (patient_id, specialty, scheduled_date, scheduled_time, status).",
+            "toolTitle": "",
+            "readOnlyToolHint": true,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getAppointments"
+            },
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "output": {
+              "arguments": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            }
+          },
+          "name": "getAppointments"
+        },
+        {
+          "description": "Get the medication catalog (medication_code, medication_name, ready_hours).",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "GetMedicationCatalog",
+            "handlerDescription": "Get the medication catalog (medication_code, medication_name, ready_hours).",
+            "toolTitle": "",
+            "readOnlyToolHint": true,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getMedicationCatalog"
+            },
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "output": {
+              "arguments": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            }
+          },
+          "name": "getMedicationCatalog"
+        },
+        {
+          "description": "Get pharmacy orders (patient_id, medication_code, medication_name, days_supply, pickup_location, ready_by, status).",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "GetPharmacyOrders",
+            "handlerDescription": "Get pharmacy orders (patient_id, medication_code, medication_name, days_supply, pickup_location, ready_by, status).",
+            "toolTitle": "",
+            "readOnlyToolHint": true,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getPharmacyOrders"
+            },
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "output": {
+              "arguments": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            }
+          },
+          "name": "getPharmacyOrders"
+        },
+        {
+          "description": "Get the medical specialty reference (specialty_code, specialty_name).",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "GetSpecialties",
+            "handlerDescription": "Get the medical specialty reference (specialty_code, specialty_name).",
+            "toolTitle": "",
+            "readOnlyToolHint": true,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getSpecialties"
+            },
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "output": {
+              "arguments": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            }
+          },
+          "name": "getSpecialties"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:getDischargeSummary",
+      "data": {
+        "name": "getDischargeSummary",
+        "description": "Get discharge summary with medications",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Query",
+            "type": "label",
+            "label": "StartActivity to Query"
+          },
+          {
+            "id": 2,
+            "from": "Query",
+            "to": "Return",
+            "type": "label",
+            "label": "Query to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "Query",
+            "name": "Query",
+            "description": "Query discharge summary",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#query",
+              "input": {
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT p.patient_id, pd.discharge_id, pd.follow_up_required, pd.specialty_code, pd.discharge_date, pd.ward_id, pd.bed_id, dm.medication_code, dm.days_supply FROM patients p JOIN patient_discharges pd ON p.patient_id = pd.patient_id LEFT JOIN discharge_medications dm ON pd.discharge_id = dm.discharge_id ORDER BY p.patient_id, dm.id;",
+                "manualmode": false,
+                "fetchMetadata": "",
+                "Fields": [],
+                "RuntimeQuery": "",
+                "State": "",
+                "input": {
+                  "mapping": {}
+                }
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Return",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[Query].Output)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlF1ZXJ5Ijp7IngiOjI1MCwieSI6MTUwfSwiUmV0dXJuIjp7IngiOjQ1MCwieSI6MjUwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"MCP\",\"properties\":{\"arguments\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:getPatientProfile",
+      "data": {
+        "name": "getPatientProfile",
+        "description": "Get patient master profile by patient_id: first_name, last_name, phone_number, email.",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Query",
+            "type": "label",
+            "label": "StartActivity to Query"
+          },
+          {
+            "id": 2,
+            "from": "Query",
+            "to": "Return",
+            "type": "label",
+            "label": "Query to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "Query",
+            "name": "Query",
+            "description": "Query",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#query",
+              "input": {
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT * FROM patients ORDER BY patient_id;",
+                "manualmode": false,
+                "fetchMetadata": "",
+                "Fields": [],
+                "RuntimeQuery": "",
+                "State": "",
+                "input": {
+                  "mapping": {}
+                }
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Return",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[Query].Output)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlF1ZXJ5Ijp7IngiOjI1MCwieSI6MTUwfSwiUmV0dXJuIjp7IngiOjQ1MCwieSI6MjUwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"MCP\",\"properties\":{\"arguments\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:getBedStatus",
+      "data": {
+        "name": "getBedStatus",
+        "description": "Get bed status across wards (bed_id, ward_id, patient_id, status, updated_at, estimated_ready). Filter by ward_id or bed_id.",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Query",
+            "type": "label",
+            "label": "StartActivity to Query"
+          },
+          {
+            "id": 2,
+            "from": "Query",
+            "to": "Return",
+            "type": "label",
+            "label": "Query to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "Query",
+            "name": "Query",
+            "description": "Query",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#query",
+              "input": {
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT * FROM beds ORDER BY ward_id, bed_id;",
+                "manualmode": false,
+                "fetchMetadata": "",
+                "Fields": [],
+                "RuntimeQuery": "",
+                "State": "",
+                "input": {
+                  "mapping": {}
+                }
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Return",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[Query].Output)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlF1ZXJ5Ijp7IngiOjI1MCwieSI6MTUwfSwiUmV0dXJuIjp7IngiOjQ1MCwieSI6MjUwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"MCP\",\"properties\":{\"arguments\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:getAppointments",
+      "data": {
+        "name": "getAppointments",
+        "description": "Get follow-up appointments (patient_id, specialty, scheduled_date, scheduled_time, status).",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Query",
+            "type": "label",
+            "label": "StartActivity to Query"
+          },
+          {
+            "id": 2,
+            "from": "Query",
+            "to": "Return",
+            "type": "label",
+            "label": "Query to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "Query",
+            "name": "Query",
+            "description": "Query",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#query",
+              "input": {
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT * FROM appointments ORDER BY patient_id, scheduled_date;",
+                "manualmode": false,
+                "fetchMetadata": "",
+                "Fields": [],
+                "RuntimeQuery": "",
+                "State": "",
+                "input": {
+                  "mapping": {}
+                }
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Return",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[Query].Output)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlF1ZXJ5Ijp7IngiOjI1MCwieSI6MTUwfSwiUmV0dXJuIjp7IngiOjQ1MCwieSI6MjUwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"MCP\",\"properties\":{\"arguments\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:getMedicationCatalog",
+      "data": {
+        "name": "getMedicationCatalog",
+        "description": "Get the medication catalog (medication_code, medication_name, ready_hours).",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Query",
+            "type": "label",
+            "label": "StartActivity to Query"
+          },
+          {
+            "id": 2,
+            "from": "Query",
+            "to": "Return",
+            "type": "label",
+            "label": "Query to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "Query",
+            "name": "Query",
+            "description": "Query",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#query",
+              "input": {
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT * FROM medication_catalog ORDER BY medication_code;",
+                "manualmode": false,
+                "fetchMetadata": "",
+                "Fields": [],
+                "RuntimeQuery": "",
+                "State": "",
+                "input": {
+                  "mapping": {}
+                }
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Return",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[Query].Output)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlF1ZXJ5Ijp7IngiOjI1MCwieSI6MTUwfSwiUmV0dXJuIjp7IngiOjQ1MCwieSI6MjUwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"MCP\",\"properties\":{\"arguments\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:getPharmacyOrders",
+      "data": {
+        "name": "getPharmacyOrders",
+        "description": "Get pharmacy orders (patient_id, medication_code, medication_name, days_supply, pickup_location, ready_by, status).",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Query",
+            "type": "label",
+            "label": "StartActivity to Query"
+          },
+          {
+            "id": 2,
+            "from": "Query",
+            "to": "Return",
+            "type": "label",
+            "label": "Query to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "Query",
+            "name": "Query",
+            "description": "Query",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#query",
+              "input": {
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT * FROM pharmacy_orders ORDER BY patient_id;",
+                "manualmode": false,
+                "fetchMetadata": "",
+                "Fields": [],
+                "RuntimeQuery": "",
+                "State": "",
+                "input": {
+                  "mapping": {}
+                }
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Return",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[Query].Output)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlF1ZXJ5Ijp7IngiOjI1MCwieSI6MTUwfSwiUmV0dXJuIjp7IngiOjQ1MCwieSI6MjUwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"MCP\",\"properties\":{\"arguments\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:getSpecialties",
+      "data": {
+        "name": "getSpecialties",
+        "description": "Get the medical specialty reference (specialty_code, specialty_name).",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Query",
+            "type": "label",
+            "label": "StartActivity to Query"
+          },
+          {
+            "id": 2,
+            "from": "Query",
+            "to": "Return",
+            "type": "label",
+            "label": "Query to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "Query",
+            "name": "Query",
+            "description": "Query",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#query",
+              "input": {
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT * FROM specialties ORDER BY specialty_code;",
+                "manualmode": false,
+                "fetchMetadata": "",
+                "Fields": [],
+                "RuntimeQuery": "",
+                "State": "",
+                "input": {
+                  "mapping": {}
+                }
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Return",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[Query].Output)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlF1ZXJ5Ijp7IngiOjI1MCwieSI6MTUwfSwiUmV0dXJuIjp7IngiOjQ1MCwieSI6MjUwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"MCP\",\"properties\":{\"arguments\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "MCP_SERVER_PORT",
+      "type": "string",
+      "value": "9092"
+    }
+  ],
+  "connections": {
+    "f33c1052-d082-4a17-b675-6b2891621e8b": {
+      "id": "f33c1052-d082-4a17-b675-6b2891621e8b",
+      "name": "PostgresConn",
+      "ref": "#connection",
+      "isGlobal": false,
+      "settings": {
+        "databaseType": "PostgreSQL",
+        "name": "PostgresConn",
+        "description": "Your PostgreSQL Connector",
+        "host": "localhost",
+        "port": 5432,
+        "databaseName": "hospital",
+        "user": "postgres",
+        "password": "SECRET:s4NIg8/vXKtMyiu0dgqi0zDW6nkS",
+        "maxopenconnection": 0,
+        "maxidleconnection": 2,
+        "connmaxlifetime": 0,
+        "maxconnectattempts": 3,
+        "connectionretrydelay": 5,
+        "connectiontimeout": 20,
+        "onprem": false,
+        "tlsconfig": false,
+        "tlsparam": "VerifyCA",
+        "cacert": "",
+        "clientcert": "",
+        "clientkey": ""
+      }
+    }
+  },
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuMyIsInRhZyI6IjEuMC4zLWIwMiIsIm5hbWUiOiJNb2RlbCBDb250ZXh0IFByb3RvY29sIChNQ1ApIiwiczNsb2NhdGlvbiI6IlRpYmNvL01DUCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjEiLCJ0YWciOiIyLjcuMS1iMDEiLCJuYW1lIjoiUG9zdGdyZVNRTCIsInMzbG9jYXRpb24iOiJUaWJjby9Qb3N0Z3JlU1FMIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
+  "metadata": {
+    "endpoints": [
+      {
+        "protocol": "http",
+        "port": "9092",
+        "title": "MCP",
+        "type": "public"
+      }
+    ],
+    "flogoVersion": "2.26.5"
+  }
+}

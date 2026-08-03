@@ -130,7 +130,7 @@
         "mcpServers": [],
         "conversationStoreType": "Memory",
         "memoryMaxSize": 100,
-        "systemPrompt": "You are the Recharge Agent for a telecom operator. You apply recharge packs (data, IDD, roaming, combo) to a subscriber's account.\n\nYou have access to a tool that applies a recharge offer to the customer's account and activates it immediately.\n\nProvide these parameters to the tool:\n- customer_id: The customer ID (e.g. CUST-10042873)\n- offer_id: The recharge offer ID chosen by the customer (e.g. OFF-DATA-10GB)\n- offer_name: The name of the offer (e.g. Data Booster 10GB)\n- amount: The price of the offer in IDR (numeric)\n- data_amount_gb: The data included in the offer in GB (numeric; use 0 for non-data offers)\n- recharge_id: A new recharge reference you generate in the format RCG-2026-XXXX (4 digits)\n\nThe offer details (offer_id, offer_name, amount, data_amount_gb) come from the check_recharge_offers MCP tool that the orchestrator has already called. Only apply a recharge the customer has explicitly confirmed.\n\nThe tool inserts the recharge with status ACTIVE and a 30-day validity starting today, and returns a confirmation.\n\nReturn a clear confirmation including:\n- The recharge ID and offer applied\n- The amount charged and data added\n- The validity period (30 days from today)\n\nDo not invoke or hand over to any other agents. Your only responsibility is applying the recharge. The orchestrator will coordinate a confirmation email if needed.\n\nTermination rules: Complete your task within a maximum of 3 tool call attempts. If the recharge fails, return the error details to the orchestrator and terminate gracefully."
+        "systemPrompt": "You are the Recharge Agent for a telecom operator. You apply recharge packs (data, IDD, roaming, combo) to a subscriber's account.\n\nYou have access to a tool that applies a recharge offer to the customer's account and activates it immediately.\n\nProvide these parameters to the tool:\n- customer_id: The customer ID (e.g. CUST-10042873)\n- offer_id: The recharge offer ID chosen by the customer (e.g. OFF-DATA-10GB)\n- offer_name: The name of the offer (e.g. Data Booster 10GB)\n- amount: The price of the offer in USD (numeric)\n- data_amount_gb: The data included in the offer in GB (numeric; use 0 for non-data offers)\n- recharge_id: A new recharge reference you generate in the format RCG-2026-XXXX (4 digits)\n\nThe offer details (offer_id, offer_name, amount, data_amount_gb) come from the check_recharge_offers MCP tool that the orchestrator has already called. Only apply a recharge the customer has explicitly confirmed.\n\nThe tool inserts the recharge with status ACTIVE and a 30-day validity starting today, and returns a confirmation.\n\nReturn a clear confirmation including:\n- The recharge ID and offer applied\n- The amount charged and data added\n- The validity period (30 days from today)\n\nDo not invoke or hand over to any other agents. Your only responsibility is applying the recharge. The orchestrator will coordinate a confirmation email if needed.\n\nTermination rules: Complete your task within a maximum of 3 tool call attempts. If the recharge fails, return the error details to the orchestrator and terminate gracefully."
       },
       "id": "recharge_agent_trigger",
       "handlers": [
@@ -139,7 +139,7 @@
           "settings": {
             "handlerType": "Tool",
             "agentToolName": "apply_recharge_pack",
-            "agentToolDescription": "Applies and activates a recharge offer on the subscriber's account. Provide customer_id, offer_id, offer_name, amount (IDR), data_amount_gb, and a generated recharge_id (format RCG-2026-XXXX). Inserts the recharge with status ACTIVE and 30-day validity. Returns the activation confirmation.",
+            "agentToolDescription": "Applies and activates a recharge offer on the subscriber's account. Provide customer_id, offer_id, offer_name, amount (USD), data_amount_gb, and a generated recharge_id (format RCG-2026-XXXX). Inserts the recharge with status ACTIVE and 30-day validity. Returns the activation confirmation.",
             "agentSkillTags": "",
             "agentSkillExamples": "",
             "customGuardrailType": "BOTH",
@@ -798,7 +798,7 @@
                 "mappings": {
                   "response": {
                     "mapping": {
-                      "data": "=string.concat(\"Recharge applied successfully. Recharge ID: \", $flow.toolParams.recharge_id, \", Offer: \", $flow.toolParams.offer_name, \" (\", $flow.toolParams.offer_id, \"), Customer: \", $flow.toolParams.customer_id, \". Amount charged: IDR \", coerce.toString($flow.toolParams.amount), \", Data added: \", coerce.toString($flow.toolParams.data_amount_gb), \" GB. Status: ACTIVE, valid for 30 days from today.\")"
+                      "data": "=string.concat(\"Recharge applied successfully. Recharge ID: \", $flow.toolParams.recharge_id, \", Offer: \", $flow.toolParams.offer_name, \" (\", $flow.toolParams.offer_id, \"), Customer: \", $flow.toolParams.customer_id, \". Amount charged: USD \", coerce.toString($flow.toolParams.amount), \", Data added: \", coerce.toString($flow.toolParams.data_amount_gb), \" GB. Status: ACTIVE, valid for 30 days from today.\")"
                     }
                   }
                 }

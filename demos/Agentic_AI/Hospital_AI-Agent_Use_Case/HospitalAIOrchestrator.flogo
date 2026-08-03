@@ -22,7 +22,7 @@
       "name": "wsserver",
       "description": "Websocket server listens for connection request from the client",
       "settings": {
-        "port": 8082,
+        "port": "=$property[\"WebSocket_PORT\"]",
         "enableTLS": false,
         "serverCert": "",
         "serverKey": "",
@@ -161,7 +161,7 @@
             }
           }
         ],
-        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiQUlBZ2VudCI6eyJ4IjoyNDgsInkiOjk2fSwiV2Vic29ja2V0V3JpdGVEYXRhIjp7IngiOjQ2OCwieSI6OTV9fQ==",
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiQUlBZ2VudCI6eyJ4IjoyNTEsInkiOjk2fSwiV2Vic29ja2V0V3JpdGVEYXRhIjp7IngiOjQ2OCwieSI6OTV9fQ==",
         "metadata": {
           "input": [
             {
@@ -206,7 +206,7 @@
     {
       "name": "AgenticAI.OpenAIConn.API_Key",
       "type": "string",
-      "value": "SECRET:sPSzFxY/QwPLtFDSYJfE0+U0HsIbJ2Ggf51m7ai/ZIGNyzEr2lhZeuHhTiGi71MsjtVaE0a+1nR88bCueuKsVzuJjoBv4uA9tSEWGa+qTbbQJPqzUAD/lX/jTlM9UZ8dcYheumGS3tFZrntEv53st+MvYVx2jMTpJR1GccRzzVwZQdswADSLS2dGr1/2whVL7QFyQNQNOccpquu9v22KIbG2uaU8qI0rZaVAW0cqZe7JqdiZ"
+      "value": "SECRET:gxPCf4aWyrYd5cu5+3Wdw63/dyWD/B64oQwtNx42aezCT3ltItAa/kkZANWyJ9EDapKUVwVnnTMCg3UUSV9rxkwActZPADkGoz9HaQ8Hx/fWLOVGEE5G2xWIC6vDKR796RoWdBEpAmz6kE/gLrEx+AoBrozVOAQRCXnjVG4dyVUCehkRdh3h6APw00myp0iaHSZ+nUzFNMOevM6dkD34c9EN2JHGLvWCnBH1LTWPVBdZckKm"
     },
     {
       "name": "AgenticAI.OpenAIConn.LLM_Base_URL",
@@ -257,6 +257,11 @@
       "name": "Email_App_Password",
       "type": "string",
       "value": "zngg pcba nntl thex"
+    },
+    {
+      "name": "WebSocket_PORT",
+      "type": "float64",
+      "value": 8652
     }
   ],
   "connections": {
@@ -288,7 +293,7 @@
         "description": "Key to use with claude ",
         "llmProvider": "Anthropic",
         "anthropicProvider": "Default",
-        "apiKey": "SECRET:c8gdUXgb9207bg9g4yH59aHT4iMU/z3akR1Z5Ie9Wg==",
+        "apiKey": "SECRET:E5D+u4iSP+a2gdcX+hQz1MGkcYH1/gnw2YDwljTtBQ==",
         "llmProviderUrl": "",
         "azureDeployment": "",
         "azureRegion": "",
@@ -370,7 +375,7 @@
     "endpoints": [
       {
         "protocol": "http",
-        "port": "8082",
+        "port": "8652",
         "title": "WebsocketServer",
         "type": "public"
       }

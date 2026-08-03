@@ -1,7 +1,15 @@
 # Environment Configuration
 
 All skills reference this file for environment-specific values.
-**Users must update these values to match their environment before running any skills.**
+
+**This is a TEMPLATE. Copy it to `config.md` and fill in your own values:**
+
+```
+cp config.example.md config.md
+```
+
+`config.md` is git-ignored so your real credentials are never committed.
+Never put real secrets in this template.
 
 ---
 
@@ -14,16 +22,32 @@ All skills reference this file for environment-specific values.
 | PG_HOST | `localhost` |
 | PG_PORT | `5432` |
 | PG_USER | `postgres` |
-| PG_PASSWORD | `admin` |
+| PG_PASSWORD | `<your-postgres-password>` |
 
 ---
+
+## LLM Provider Connection  or LLM Client Activity Configuration
+LLM Provider: OpenAI
+
+API Key: <your-openai-api-key>
+
+LLM Model: gpt-5.5
+---
+
+## Email Server, Username and app password
+
+Server: smtp.gmail.com
+Username: <your-email-address>
+Port: 465
+Password: <your-app-password>
 
 ## Flogo VSCode Extension
 
 | Key | Value |
 |---|---|
-| VSIX_FILE_PATH | `"C:\Work\flogo-vscode-win32-x64-2.26.4-ENGR-002-2942-wip-fda-mapper.vsix"` |
-| FLOGOBUILD_CONTEXT_NAME | `flogo-vscode-wip-fda-mapper` |
+| VSIX_FILE_PATH | `"C:\Users\<you>\Downloads\flogo-vscode-win32-x64-2.26.5-ENGR-001-3035.vsix"` |
+| FLOGOBUILD_CONTEXT_NAME | `flogo-vscode-2.26.5-ENGR-001` |
+| FLOGO_VERSION  | `2.26.5` |
 
 ---
 
@@ -31,7 +55,7 @@ All skills reference this file for environment-specific values.
 
 | Key | Value |
 |---|---|
-| FLOGODESIGN_CLI_PATH | `"C:\Users\nshah\.vscode\extensions\tibco.flogo-2.26.4-ENGR-002-2942-wip-fda-mapper\bin\flogodesign-cli.exe"` |
+| FLOGODESIGN_CLI_PATH | `"C:\Users\<you>\.vscode\extensions\tibco.flogo-2.26.5-ENGR-001-3035\bin\flogodesign-cli.exe"` |
 | FLOGODESIGN_CLI_VERSION | `v0.9.3` |
 
 
@@ -53,8 +77,8 @@ All skills reference this file for environment-specific values.
 | TIBCOP_PATH | `C:\tibco\tibco-platform-cli_1.8.0-win-amd64\tibcop.exe` |
 | TIBCOP_VERSION | `v1.8.0` |
 | CP_URL | `https://tibcopm.us-west.my.tibco.com` |
-| DATAPLANE_NAME | `<DP NAme>` |
-| TIBCOP_TOKEN | `<Token Value>` |
+| DATAPLANE_NAME | `<your-dataplane-name>` |
+| TIBCOP_TOKEN | `<your-platform-token>` |
 
 ---
 

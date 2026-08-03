@@ -19,3 +19,21 @@ Flogo_Apps/*
 !Flogo_Apps/*/
 !Flogo_Apps/*.flogo
 !Flogo_Apps/.gitignore
+
+# Flogo build output: any "builds/" directory holds packaged artifacts
+# (flogo-engine binaries, .zip bundles, values.yaml, deploy payloads).
+builds/
+# Extension-less Flogo engine binaries wherever they land.
+flogo-engine
+*_linux
+*_darwin
+# Runtime / build logs.
+*.log
+# Packaged archives (build outputs, backups).
+*.zip
+# Test run output.
+test-results/
+
+# Local skills config holds real credentials (API keys, tokens, passwords).
+# Track config.example.md instead; each user copies it to config.md locally.
+skills-library/.claude/skills/config.md

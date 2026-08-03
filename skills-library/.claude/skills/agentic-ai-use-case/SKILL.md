@@ -35,9 +35,29 @@ Chatbot UI --WebSocket--> AI Orchestrator --MCP(HTTP)--> MCP Server --\
 
 ## Reference files (read before building)
 
+- [references/use-case-spec-template.md](references/use-case-spec-template.md) — the **spec** the user fills (spec-driven development). Defines the WHAT/WHY; this skill supplies the HOW. See "Spec-driven development" below.
 - [references/flogo-app-templates.md](references/flogo-app-templates.md) — exact JSON structure of all 3 apps: triggers, flows, connections, `contrib` blobs, ports, UUID rules.
 - [references/postgres-activity-patterns.md](references/postgres-activity-patterns.md) — **the critical gotchas**: how to parameterize `#query` and (especially) `#insert`/UPDATE so the Flogo mapper doesn't break. Read this every time — it is the #1 source of errors.
 - [references/data-and-docs.md](references/data-and-docs.md) — conventions for `database.sql`, `reset_data.sql`, `prompts.md`, and the combined `README.md`.
+
+## Spec-driven development (recommended input)
+
+This skill is the **constitution + plan + implementer**; the user supplies the **spec**. SDD separates
+WHAT/WHY (spec) from HOW (plan/implementation):
+
+| SDD phase | Owned by | Artifact |
+|---|---|---|
+| Constitution (invariants: MCP=reads, A2A=writes, WebSocket orchestrator, PostgreSQL param patterns) | this skill | "Key facts" + "Top gotchas" below |
+| Specify / Clarify (requirements, scenarios, acceptance, interface contracts) | the **user** | a filled `*.spec.md` from [references/use-case-spec-template.md](references/use-case-spec-template.md) |
+| Plan → Tasks → Implement → Validate | this skill | Workflow Phases 3–5 |
+
+**If the user provides a filled spec** (e.g. "build the X use case from `x.spec.md`"), read it and treat
+it as Phase 1–2 input: frame it back (Phase 1) from the spec's Intent/actors, and in Phase 2 ask only
+about its "Assumptions & open questions" and any missing sections — do not re-ask what the spec already
+answers. Map spec → build: information lookups → MCP tools, actions/workflows → A2A agents, entities →
+PostgreSQL tables, scenarios/seed-data → `database.sql` + `prompts.md`, acceptance criteria → the Phase 5
+verification. A worked example is `demos/Agentic_AI/Hospital_AI-Agent_Use_Case/hospital.spec.md`.
+**If the user has no spec**, offer the template or just run the interactive Phase 1–2 questions (they cover the same fields).
 
 ---
 

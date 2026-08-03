@@ -1,6 +1,7 @@
 -- =============================================
 -- Hospital Agent POC - Reset & Fresh Test Data
 -- Run this script to reset all tables to baseline
+-- Dates anchored to "today" = 2026-07-28
 -- =============================================
 
 -- =============================================
@@ -64,16 +65,16 @@ INSERT INTO patients (patient_id, first_name, last_name, phone_number, email) VA
 -- =============================================
 
 INSERT INTO patient_discharges (patient_id, discharge_date, ward_id, bed_id, follow_up_required, specialty_code) VALUES
-('P-2024-00121', '2026-07-04', 'WARD-2A', 'BED-2A-001', FALSE, 'GENERAL'),         -- 3 days ago (past)
-('P-2024-00122', '2026-07-07', 'WARD-3B', 'BED-3B-001', TRUE, 'ORTHOPEDICS'),      -- today
-('P-2024-00123', '2026-07-07', 'WARD-4A', 'BED-4A-010', TRUE, 'CARDIOLOGY'),       -- today
-('P-2024-00124', '2026-07-08', 'WARD-3B', 'BED-3B-002', TRUE, 'ORTHOPEDICS'),      -- tomorrow
-('P-2024-00125', '2026-07-07', 'WARD-2A', 'BED-2A-002', FALSE, 'GENERAL'),         -- today
-('P-2024-00126', '2026-07-09', 'WARD-5C', 'BED-5C-001', TRUE, 'NEUROLOGY'),        -- day after tomorrow
-('P-2024-00127', '2026-07-11', 'WARD-4A', 'BED-4A-012', TRUE, 'CARDIOLOGY'),       -- 4 days from now
-('P-2024-00128', '2026-07-12', 'WARD-1A', 'BED-1A-001', TRUE, 'GENERAL'),          -- 5 days from now
-('P-2024-00129', '2026-07-05', 'WARD-6B', 'BED-6B-001', TRUE, 'ONCOLOGY'),         -- 2 days ago (past)
-('P-2024-00130', '2026-07-06', 'WARD-4A', 'BED-4A-011', FALSE, 'GENERAL');         -- yesterday (past)
+('P-2024-00121', '2026-07-25', 'WARD-2A', 'BED-2A-001', FALSE, 'GENERAL'),         -- 3 days ago (past)
+('P-2024-00122', '2026-07-28', 'WARD-3B', 'BED-3B-001', TRUE, 'ORTHOPEDICS'),      -- today
+('P-2024-00123', '2026-07-28', 'WARD-4A', 'BED-4A-010', TRUE, 'CARDIOLOGY'),       -- today
+('P-2024-00124', '2026-07-29', 'WARD-3B', 'BED-3B-002', TRUE, 'ORTHOPEDICS'),      -- tomorrow
+('P-2024-00125', '2026-07-28', 'WARD-2A', 'BED-2A-002', FALSE, 'GENERAL'),         -- today
+('P-2024-00126', '2026-07-30', 'WARD-5C', 'BED-5C-001', TRUE, 'NEUROLOGY'),        -- day after tomorrow
+('P-2024-00127', '2026-08-01', 'WARD-4A', 'BED-4A-012', TRUE, 'CARDIOLOGY'),       -- 4 days from now
+('P-2024-00128', '2026-08-02', 'WARD-1A', 'BED-1A-001', TRUE, 'GENERAL'),          -- 5 days from now
+('P-2024-00129', '2026-07-26', 'WARD-6B', 'BED-6B-001', TRUE, 'ONCOLOGY'),         -- 2 days ago (past)
+('P-2024-00130', '2026-07-27', 'WARD-4A', 'BED-4A-011', FALSE, 'GENERAL');         -- yesterday (past)
 
 -- =============================================
 -- DISCHARGE MEDICATIONS (10 entries)
@@ -97,11 +98,11 @@ INSERT INTO discharge_medications (discharge_id, medication_code, days_supply) V
 -- =============================================
 
 INSERT INTO appointments (patient_id, specialty, scheduled_date, scheduled_time, status) VALUES
-('P-2024-00129', 'ONCOLOGY', '2026-07-12', '10:30', 'CONFIRMED'),      -- follow-up 7d after 07-05 discharge
-('P-2024-00121', 'GENERAL', '2026-07-18', '09:00', 'CONFIRMED'),       -- routine visit (not from discharge)
-('P-2024-00130', 'GENERAL', '2026-07-15', '14:00', 'CONFIRMED'),       -- routine visit
-('P-2024-00127', 'CARDIOLOGY', '2026-07-04', '14:00', 'CONFIRMED'),    -- past visit (before admission)
-('P-2024-00128', 'GENERAL', '2026-06-30', '10:00', 'CONFIRMED');       -- past visit (before admission)
+('P-2024-00129', 'ONCOLOGY', '2026-08-02', '10:30', 'CONFIRMED'),      -- follow-up 7d after 07-26 discharge
+('P-2024-00121', 'GENERAL', '2026-08-08', '09:00', 'CONFIRMED'),       -- routine visit (not from discharge)
+('P-2024-00130', 'GENERAL', '2026-08-05', '14:00', 'CONFIRMED'),       -- routine visit
+('P-2024-00127', 'CARDIOLOGY', '2026-07-25', '14:00', 'CONFIRMED'),    -- past visit (before admission)
+('P-2024-00128', 'GENERAL', '2026-07-21', '10:00', 'CONFIRMED');       -- past visit (before admission)
 
 -- =============================================
 -- PHARMACY ORDERS (4 entries - historical only, all completed)
@@ -109,26 +110,26 @@ INSERT INTO appointments (patient_id, specialty, scheduled_date, scheduled_time,
 -- =============================================
 
 INSERT INTO pharmacy_orders (patient_id, medication_code, medication_name, days_supply, pickup_location, ready_by, status) VALUES
-('P-2024-00121', 'MED001', 'Aspirin 100mg', '30', 'PHARMACY_A', '2026-06-25 10:00', 'DISPENSED'),       -- past prescription
-('P-2024-00121', 'MED008', 'Metformin 500mg', '30', 'PHARMACY_A', '2026-06-30 14:00', 'DISPENSED'),      -- past prescription
-('P-2024-00129', 'MED003', 'Lisinopril 10mg', '30', 'PHARMACY_A', '2026-07-02 16:00', 'DISPENSED'),      -- past prescription
-('P-2024-00130', 'MED007', 'Amoxicillin 500mg', '7', 'PHARMACY_B', '2026-07-04 11:00', 'DISPENSED');     -- past prescription
+('P-2024-00121', 'MED001', 'Aspirin 100mg', '30', 'PHARMACY_A', '2026-07-16 10:00', 'DISPENSED'),       -- past prescription
+('P-2024-00121', 'MED008', 'Metformin 500mg', '30', 'PHARMACY_A', '2026-07-21 14:00', 'DISPENSED'),      -- past prescription
+('P-2024-00129', 'MED003', 'Lisinopril 10mg', '30', 'PHARMACY_A', '2026-07-23 16:00', 'DISPENSED'),      -- past prescription
+('P-2024-00130', 'MED007', 'Amoxicillin 500mg', '7', 'PHARMACY_B', '2026-07-25 11:00', 'DISPENSED');     -- past prescription
 
 -- =============================================
 -- BEDS (10 entries)
 -- =============================================
 
 INSERT INTO beds (bed_id, ward_id, patient_id, status, updated_at, estimated_ready) VALUES
-('BED-1A-001', 'WARD-1A', 'P-2024-00128', 'OCCUPIED', '2026-07-04 08:00', NULL),              -- P-128 discharge 07-12 (future)
-('BED-2A-001', 'WARD-2A', NULL, 'AVAILABLE', '2026-07-04 15:00', NULL),                        -- P-121 discharged 07-04, bed cleaned
-('BED-2A-002', 'WARD-2A', 'P-2024-00125', 'OCCUPIED', '2026-07-05 09:00', NULL),              -- P-125 discharging today
-('BED-3B-001', 'WARD-3B', 'P-2024-00122', 'OCCUPIED', '2026-07-03 10:00', NULL),              -- P-122 discharging today
-('BED-3B-002', 'WARD-3B', 'P-2024-00124', 'OCCUPIED', '2026-07-04 11:00', NULL),              -- P-124 discharge tomorrow
-('BED-4A-010', 'WARD-4A', 'P-2024-00123', 'OCCUPIED', '2026-07-02 07:00', NULL),              -- P-123 discharging today
-('BED-4A-011', 'WARD-4A', NULL, 'AVAILABLE', '2026-07-06 16:00', NULL),                        -- P-130 discharged yesterday, bed cleaned
-('BED-4A-012', 'WARD-4A', 'P-2024-00127', 'OCCUPIED', '2026-07-04 07:00', NULL),              -- P-127 discharge 07-11 (future)
-('BED-5C-001', 'WARD-5C', 'P-2024-00126', 'OCCUPIED', '2026-07-05 08:30', NULL),              -- P-126 discharge 07-09 (future)
-('BED-6B-001', 'WARD-6B', NULL, 'AVAILABLE', '2026-07-06 09:30', NULL);                        -- P-129 discharged 07-05, bed cleaned
+('BED-1A-001', 'WARD-1A', 'P-2024-00128', 'OCCUPIED', '2026-07-25 08:00', NULL),              -- P-128 discharge 08-02 (future)
+('BED-2A-001', 'WARD-2A', NULL, 'AVAILABLE', '2026-07-25 15:00', NULL),                        -- P-121 discharged 07-25, bed cleaned
+('BED-2A-002', 'WARD-2A', 'P-2024-00125', 'OCCUPIED', '2026-07-26 09:00', NULL),              -- P-125 discharging today
+('BED-3B-001', 'WARD-3B', 'P-2024-00122', 'OCCUPIED', '2026-07-24 10:00', NULL),              -- P-122 discharging today
+('BED-3B-002', 'WARD-3B', 'P-2024-00124', 'OCCUPIED', '2026-07-25 11:00', NULL),              -- P-124 discharge tomorrow
+('BED-4A-010', 'WARD-4A', 'P-2024-00123', 'OCCUPIED', '2026-07-23 07:00', NULL),              -- P-123 discharging today
+('BED-4A-011', 'WARD-4A', NULL, 'AVAILABLE', '2026-07-27 16:00', NULL),                        -- P-130 discharged yesterday, bed cleaned
+('BED-4A-012', 'WARD-4A', 'P-2024-00127', 'OCCUPIED', '2026-07-25 07:00', NULL),              -- P-127 discharge 08-01 (future)
+('BED-5C-001', 'WARD-5C', 'P-2024-00126', 'OCCUPIED', '2026-07-26 08:30', NULL),              -- P-126 discharge 07-30 (future)
+('BED-6B-001', 'WARD-6B', NULL, 'AVAILABLE', '2026-07-27 09:30', NULL);                        -- P-129 discharged 07-26, bed cleaned
 
 -- =============================================
 -- VERIFY DATA

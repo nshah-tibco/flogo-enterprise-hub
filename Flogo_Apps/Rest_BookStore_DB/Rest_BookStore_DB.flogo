@@ -1,0 +1,419 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/tibco/flogo-general/src/app/General/activity/log",
+    "github.com/tibco/wi-postgres/src/app/PostgreSQL/activity/query",
+    "github.com/tibco/flogo-general/src/app/General/activity/reply",
+    "github.com/tibco/flogo-general/src/app/General/trigger/rest",
+    "github.com/tibco/wi-postgres/src/app/PostgreSQL/connector/connection"
+  ],
+  "name": "Rest_BookStore_DB",
+  "description": "Bookstore REST API backed by PostgreSQL - GET /books/{BookId}",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#rest",
+      "name": "tibco-wi-rest",
+      "description": "Bookstore REST trigger",
+      "settings": {
+        "port": 9999,
+        "APISpecUpdate": false,
+        "swagger": "",
+        "swaggerVersion": "v2",
+        "authenticationType": "None",
+        "username": "",
+        "password": "",
+        "apiVersion": "1.0.0",
+        "secureConnection": false,
+        "serverKey": "",
+        "caCertificate": ""
+      },
+      "id": "RestTrigger",
+      "handlers": [
+        {
+          "description": "Get book by ID from PostgreSQL",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "GET",
+            "reqType": "application/json",
+            "Path": "/books/{BookId}",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:GetBook"
+            },
+            "input": {
+              "BookId": "=$.pathParams.BookId"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              }
+            },
+            "output": {
+              "pathParams": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"BookId\":{\"type\":\"string\"}},\"required\":[]}",
+                "fe_metadata": "[{\"parameterName\":\"BookId\",\"type\":\"string\"}]"
+              },
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Authorization\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Authorization\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+              }
+            }
+          },
+          "name": "GetBook"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:GetBook",
+      "data": {
+        "name": "GetBook",
+        "description": "Get book by ID from PostgreSQL",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogRequest",
+            "type": "label",
+            "label": "StartActivity to LogRequest"
+          },
+          {
+            "id": 2,
+            "from": "LogRequest",
+            "to": "QueryBook",
+            "type": "label",
+            "label": "LogRequest to QueryBook"
+          },
+          {
+            "id": 3,
+            "from": "QueryBook",
+            "to": "LogResult",
+            "type": "label",
+            "label": "QueryBook to LogResult"
+          },
+          {
+            "id": 4,
+            "from": "LogResult",
+            "to": "ReplyBookData",
+            "type": "label",
+            "label": "LogResult to ReplyBookData"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "LogRequest",
+            "name": "LogRequest",
+            "description": "Log incoming request",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "string(\"Received request for Book ID: \") + coerce.toString($flow.BookId)",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "QueryBook",
+            "name": "QueryBook",
+            "description": "Query book from PostgreSQL",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#query",
+              "input": {
+                "Connection": "conn://0eb47f2b-a5ac-4b4a-919e-7fa0cb20e533",
+                "QueryName": "GetBookById",
+                "Schema": "public",
+                "Query": "SELECT book_id, title, author FROM books WHERE book_id = ?BookId;",
+                "manualmode": false,
+                "fetchMetadata": "",
+                "Fields": [
+                  {
+                    "FieldName": "BookId",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "book_id",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "title",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "author",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  }
+                ],
+                "RuntimeQuery": "",
+                "State": "4c4a85b1-933f-49a1-a0dc-369f4bf8e93aSELECT book_id, title, author FROM books WHERE book_id = ?BookId;",
+                "input": {
+                  "mapping": {
+                    "parameters": {
+                      "BookId": "=$flow.BookId"
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{\"BookId\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{\"BookId\":{\"type\":\"string\"}}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"book_id\":{\"type\":\"string\"},\"title\":{\"type\":\"string\"},\"author\":{\"type\":\"string\"}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"book_id\":{\"type\":\"string\"},\"title\":{\"type\":\"string\"},\"author\":{\"type\":\"string\"}}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LogResult",
+            "name": "LogResult",
+            "description": "Log query result",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "string(\"Book data retrieved: \") + coerce.toString($activity[QueryBook].Output)",
+                "logLevel": ""
+              }
+            }
+          },
+          {
+            "id": "ReplyBookData",
+            "name": "ReplyBookData",
+            "description": "Reply with book data",
+            "activity": {
+              "ref": "#reply",
+              "input": {
+                "Reply": "Success with Data",
+                "code": 200,
+                "message": "",
+                "data": {
+                  "mapping": {
+                    "BookId": "=$activity[QueryBook].Output.records[0].book_id",
+                    "Title": "=$activity[QueryBook].Output.records[0].title",
+                    "Author": "=$activity[QueryBook].Output.records[0].author"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo0NX0sIkxvZ1JlcXVlc3QiOnsieCI6MjUwLCJ5Ijo0NX0sIlF1ZXJ5Qm9vayI6eyJ4Ijo0NDksInkiOjQ1fSwiTG9nUmVzdWx0Ijp7IngiOjY1MCwieSI6NDV9LCJSZXBseUJvb2tEYXRhIjp7IngiOjI1MCwieSI6MTk1fX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "BookId",
+              "type": "string"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"BookId\":{\"type\":\"string\"}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "PostgreSQL.PostgreSQLConnection.Host",
+      "type": "string",
+      "value": "localhost"
+    },
+    {
+      "name": "PostgreSQL.PostgreSQLConnection.Port",
+      "type": "float64",
+      "value": "5432"
+    },
+    {
+      "name": "PostgreSQL.PostgreSQLConnection.Database_Name",
+      "type": "string",
+      "value": "bookstore"
+    },
+    {
+      "name": "PostgreSQL.PostgreSQLConnection.User",
+      "type": "string",
+      "value": "postgres"
+    },
+    {
+      "name": "PostgreSQL.PostgreSQLConnection.Password",
+      "type": "string",
+      "value": "SECRET:OtoDP4sfe9e/W5JbFwtznQeKjGSZ"
+    },
+    {
+      "name": "PostgreSQL.PostgreSQLConnection.Maximum_Open_Connections",
+      "type": "float64",
+      "value": 0
+    },
+    {
+      "name": "PostgreSQL.PostgreSQLConnection.Maximum_Idle_Connections",
+      "type": "float64",
+      "value": 2
+    },
+    {
+      "name": "PostgreSQL.PostgreSQLConnection.Maximum_Connection_Lifetime",
+      "type": "string",
+      "value": 0
+    },
+    {
+      "name": "PostgreSQL.PostgreSQLConnection.Maximum_Connection_Retry_Attempts",
+      "type": "float64",
+      "value": 3
+    },
+    {
+      "name": "PostgreSQL.PostgreSQLConnection.Connection_Retry_Delay",
+      "type": "float64",
+      "value": 5
+    },
+    {
+      "name": "PostgreSQL.PostgreSQLConnection.Connection_Timeout",
+      "type": "float64",
+      "value": 20
+    }
+  ],
+  "connections": {
+    "0eb47f2b-a5ac-4b4a-919e-7fa0cb20e533": {
+      "id": "0eb47f2b-a5ac-4b4a-919e-7fa0cb20e533",
+      "name": "PostgreSQLConnection",
+      "ref": "#connection",
+      "isGlobal": false,
+      "settings": {
+        "databaseType": "PostgreSQL",
+        "name": "PostgreSQLConnection",
+        "description": "Your PostgreSQL Connector",
+        "host": "=$property[\"PostgreSQL.PostgreSQLConnection.Host\"]",
+        "port": "=$property[\"PostgreSQL.PostgreSQLConnection.Port\"]",
+        "databaseName": "=$property[\"PostgreSQL.PostgreSQLConnection.Database_Name\"]",
+        "user": "=$property[\"PostgreSQL.PostgreSQLConnection.User\"]",
+        "password": "=$property[\"PostgreSQL.PostgreSQLConnection.Password\"]",
+        "maxopenconnection": "=$property[\"PostgreSQL.PostgreSQLConnection.Maximum_Open_Connections\"]",
+        "maxidleconnection": "=$property[\"PostgreSQL.PostgreSQLConnection.Maximum_Idle_Connections\"]",
+        "connmaxlifetime": "=$property[\"PostgreSQL.PostgreSQLConnection.Maximum_Connection_Lifetime\"]",
+        "maxconnectattempts": "=$property[\"PostgreSQL.PostgreSQLConnection.Maximum_Connection_Retry_Attempts\"]",
+        "connectionretrydelay": "=$property[\"PostgreSQL.PostgreSQLConnection.Connection_Retry_Delay\"]",
+        "connectiontimeout": "=$property[\"PostgreSQL.PostgreSQLConnection.Connection_Timeout\"]",
+        "onprem": false,
+        "tlsconfig": false,
+        "tlsparam": "VerifyCA",
+        "cacert": "",
+        "clientcert": "",
+        "clientkey": ""
+      }
+    }
+  },
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTQiLCJ0YWciOiIxLjYuMTQtYjA0IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjEiLCJ0YWciOiIyLjcuMS1iMDEiLCJuYW1lIjoiUG9zdGdyZVNRTCIsInMzbG9jYXRpb24iOiJUaWJjby9Qb3N0Z3JlU1FMIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
+  "metadata": {
+    "endpoints": [
+      {
+        "protocol": "http",
+        "port": "9999",
+        "spec": {
+          "name": "Rest_BookStore_DB",
+          "version": "1.0.0"
+        },
+        "title": "RestTrigger",
+        "swagger": {
+          "swagger": "2.0",
+          "info": {
+            "title": "Rest_BookStore_DB",
+            "version": "1.0.0",
+            "description": "Bookstore REST trigger"
+          },
+          "paths": {
+            "/books/{BookId}": {
+              "get": {
+                "summary": "GetBook",
+                "operationId": "get_books_BookId",
+                "parameters": [
+                  {
+                    "name": "BookId",
+                    "in": "path",
+                    "description": "Request parameter",
+                    "required": true,
+                    "type": "string"
+                  },
+                  {
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "Request parameter",
+                    "required": false,
+                    "type": "string"
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "description": "Get book by ID from PostgreSQL"
+              }
+            }
+          },
+          "definitions": {}
+        }
+      }
+    ],
+    "flogoVersion": "2.26.5"
+  }
+}
