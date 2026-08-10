@@ -30,7 +30,13 @@
         "serverCertificate": "",
         "serverPrivateKey": "",
         "authType": "None",
-        "authToken": ""
+        "authToken": "",
+        "oauthIssuer": "",
+        "oauthJWKSURL": "",
+        "oauthAudience": "",
+        "oauthAuthorizationServers": "",
+        "oauthRequiredScopes": "",
+        "oauthResourceURL": ""
       },
       "id": "HospitalMCPServer",
       "handlers": [
@@ -508,7 +514,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "ce34fcb1-1e20-4dfd-9d76-231810e19847SELECT * \n  FROM public.patients \n  ORDER BY patient_id ASC;"
+                "State": "dc7fb911-fe34-484e-b5d9-ead72640e9f5SELECT * \n  FROM public.patients \n  ORDER BY patient_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -547,7 +553,7 @@
             }
           }
         ],
-        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiUG9zdGdyZVNRTFF1ZXJ5Ijp7IngiOjIxMywieSI6OTF9LCJSZXR1cm4iOnsieCI6NDQ3LCJ5Ijo5Mn19",
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiUG9zdGdyZVNRTFF1ZXJ5Ijp7IngiOjIxMiwieSI6OTF9LCJSZXR1cm4iOnsieCI6NDQ3LCJ5Ijo5Mn19",
         "metadata": {
           "input": [
             {
@@ -676,7 +682,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "c657b3f3-5c5e-49fc-b2cb-d9fdd0e2b9c0SELECT * FROM public.beds\nORDER BY bed_id ASC;"
+                "State": "3197734c-9f9e-4e8d-940c-26b6d91ae086SELECT * FROM public.beds\nORDER BY bed_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -837,7 +843,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "0038ac66-57f6-4796-bd7f-b8097649f9c2SELECT * FROM public.appointments\nORDER BY patient_id ASC;"
+                "State": "ce86f72e-d6d7-4bc0-8e42-a59b7e751785SELECT * FROM public.appointments\nORDER BY patient_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -984,7 +990,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "364fb1c0-843d-4d43-9aaa-4198ae431756SELECT * FROM public.discharge_medications\nORDER BY discharge_id ASC;"
+                "State": "e973ad45-99b7-42d6-a840-bd1ad8d427b4SELECT * FROM public.discharge_medications\nORDER BY discharge_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -1124,7 +1130,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "eae6dc1f-6538-4009-ac06-aafb8fc56545SELECT * FROM public.medication_catalog\nORDER BY medication_code ASC;"
+                "State": "a73c306c-d9c5-4d9c-8596-3d3be203ce37SELECT * FROM public.medication_catalog\nORDER BY medication_code ASC;"
               },
               "schemas": {
                 "input": {
@@ -1292,7 +1298,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "54a9bafc-c67d-40e4-b7a0-3754e1aef37fSELECT * FROM public.patient_discharges\nORDER BY discharge_id ASC;"
+                "State": "9e045161-097b-4e70-ac0b-966cd87c1dbeSELECT * FROM public.patient_discharges\nORDER BY discharge_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -1467,7 +1473,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "ec056c74-89fe-4cca-a3cc-67cd11764b85SELECT * FROM public.pharmacy_orders\nORDER BY order_id ASC;"
+                "State": "de90650f-e3cc-40bf-b8fa-6cc8e9b95f1dSELECT * FROM public.pharmacy_orders\nORDER BY order_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -1600,7 +1606,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "03a5a529-292e-4f87-94f1-2af87a2f453bSELECT * FROM public.specialties\nORDER BY specialty_code ASC;"
+                "State": "3d0ee900-cbf9-4086-b5cd-31e0eb040789SELECT * FROM public.specialties\nORDER BY specialty_code ASC;"
               },
               "schemas": {
                 "input": {
@@ -1693,7 +1699,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:HJfMcxspoLMlobR1wnWkvzfEaTwW"
+      "value": "SECRET:375G+lWRSoQFkb8WFbLuVjqTuEEM"
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",
@@ -1761,7 +1767,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuMyIsInRhZyI6IjEuMC4zLWIwMiIsIm5hbWUiOiJNb2RlbCBDb250ZXh0IFByb3RvY29sIChNQ1ApIiwiczNsb2NhdGlvbiI6IlRpYmNvL01DUCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjEiLCJ0YWciOiIyLjcuMS1iMDEiLCJuYW1lIjoiUG9zdGdyZVNRTCIsInMzbG9jYXRpb24iOiJUaWJjby9Qb3N0Z3JlU1FMIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuNCIsInRhZyI6IjEuMC40LWIwMiIsIm5hbWUiOiJNb2RlbCBDb250ZXh0IFByb3RvY29sIChNQ1ApIiwiczNsb2NhdGlvbiI6IlRpYmNvL01DUCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjEiLCJ0YWciOiIyLjcuMS1iMDEiLCJuYW1lIjoiUG9zdGdyZVNRTCIsInMzbG9jYXRpb24iOiJUaWJjby9Qb3N0Z3JlU1FMIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
   "metadata": {
     "endpoints": [
       {
@@ -1771,6 +1777,6 @@
         "type": "public"
       }
     ],
-    "flogoVersion": "2.26.5"
+    "flogoVersion": "2.26.6"
   }
 }

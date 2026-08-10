@@ -1,0 +1,996 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/tibco/wi-postgres/src/app/PostgreSQL/activity/query",
+    "github.com/project-flogo/contrib/activity/actreturn",
+    "github.com/tibco/flogo-mcp/src/app/MCP/trigger/mcpserver",
+    "github.com/tibco/wi-postgres/src/app/PostgreSQL/connector/connection"
+  ],
+  "name": "LogisticsMCPServer",
+  "description": "Logistics MCP Server",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#mcpserver",
+      "name": "flogo-mcp-mcpsever",
+      "description": "Logistics MCP server",
+      "settings": {
+        "serverName": "Logistics",
+        "serverVersion": "1.0.0",
+        "serverType": "HTTP",
+        "serverPort": "=$property[\"MCP_SERVER_PORT\"]",
+        "statelessServer": false,
+        "serverEndpointPath": "/logisticsmcpserver",
+        "enableTLS": false,
+        "serverCertificate": "",
+        "serverPrivateKey": "",
+        "authType": "None",
+        "authToken": "",
+        "oauthIssuer": "",
+        "oauthJWKSURL": "",
+        "oauthAudience": "",
+        "oauthAuthorizationServers": "",
+        "oauthRequiredScopes": "",
+        "oauthResourceURL": ""
+      },
+      "id": "LogisticsMCPServer",
+      "handlers": [
+        {
+          "description": "Get the shipper/customer profile: name, account type (Individual/Business), loyalty tier, email and phone. Use to identify who the customer is.",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "GetCustomerProfile",
+            "handlerDescription": "Get the shipper/customer profile: name, account type (Individual/Business), loyalty tier, email and phone. Use to identify who the customer is.",
+            "toolTitle": "",
+            "readOnlyToolHint": false,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getCustomers"
+            },
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "reply": {
+              "response": "schema://ToolResponse"
+            },
+            "output": {
+              "arguments": "schema://EmptyArgs"
+            }
+          },
+          "name": "getCustomers"
+        },
+        {
+          "description": "List shipments with tracking number, status (Label Created/In Transit/Out for Delivery/Delivered/Delayed/Exception), service level, origin, destination, carrier, weight, declared value and estimated/actual delivery dates. Use to find a shipment or check its status.",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "GetShipments",
+            "handlerDescription": "List shipments with tracking number, status (Label Created/In Transit/Out for Delivery/Delivered/Delayed/Exception), service level, origin, destination, carrier, weight, declared value and estimated/actual delivery dates. Use to find a shipment or check its status.",
+            "toolTitle": "",
+            "readOnlyToolHint": false,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getShipments"
+            },
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "reply": {
+              "response": "schema://ToolResponse"
+            },
+            "output": {
+              "arguments": "schema://EmptyArgs"
+            }
+          },
+          "name": "getShipments"
+        },
+        {
+          "description": "Get the scan-by-scan tracking history for shipments: event time, location, status and description. Use to trace where a package is and whether it is delayed.",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "TrackShipment",
+            "handlerDescription": "Get the scan-by-scan tracking history for shipments: event time, location, status and description. Use to trace where a package is and whether it is delayed.",
+            "toolTitle": "",
+            "readOnlyToolHint": false,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getTrackingEvents"
+            },
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "reply": {
+              "response": "schema://ToolResponse"
+            },
+            "output": {
+              "arguments": "schema://EmptyArgs"
+            }
+          },
+          "name": "getTrackingEvents"
+        },
+        {
+          "description": "Get the shipping service-level rate card: Same-Day, Express, Standard, Eco with transit-day ranges, price per kg and max weight. Use to compare shipping options.",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "GetServiceLevels",
+            "handlerDescription": "Get the shipping service-level rate card: Same-Day, Express, Standard, Eco with transit-day ranges, price per kg and max weight. Use to compare shipping options.",
+            "toolTitle": "",
+            "readOnlyToolHint": false,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getServiceLevels"
+            },
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "reply": {
+              "response": "schema://ToolResponse"
+            },
+            "output": {
+              "arguments": "schema://EmptyArgs"
+            }
+          },
+          "name": "getServiceLevels"
+        },
+        {
+          "description": "List delivery change requests already on file (reschedule/redirect/hold) with new date, new address, reason and status. Use to check pending delivery changes.",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "GetDeliveryChanges",
+            "handlerDescription": "List delivery change requests already on file (reschedule/redirect/hold) with new date, new address, reason and status. Use to check pending delivery changes.",
+            "toolTitle": "",
+            "readOnlyToolHint": false,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getDeliveryChanges"
+            },
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "reply": {
+              "response": "schema://ToolResponse"
+            },
+            "output": {
+              "arguments": "schema://EmptyArgs"
+            }
+          },
+          "name": "getDeliveryChanges"
+        },
+        {
+          "description": "List claims already filed (Lost/Damaged) with description, amount and status. Use to check existing claims for a shipment or customer.",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "GetClaims",
+            "handlerDescription": "List claims already filed (Lost/Damaged) with description, amount and status. Use to check existing claims for a shipment or customer.",
+            "toolTitle": "",
+            "readOnlyToolHint": false,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getClaims"
+            },
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "reply": {
+              "response": "schema://ToolResponse"
+            },
+            "output": {
+              "arguments": "schema://EmptyArgs"
+            }
+          },
+          "name": "getClaims"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:getCustomers",
+      "data": {
+        "name": "getCustomers",
+        "description": "Get the shipper/customer profile: name, account type (Individual/Business), loyalty tier, email and phone. Use to identify who the customer is.",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "PostgreSQLQuery",
+            "type": "label",
+            "label": "StartActivity to PostgreSQLQuery"
+          },
+          {
+            "id": 2,
+            "from": "PostgreSQLQuery",
+            "to": "Return",
+            "type": "label",
+            "label": "PostgreSQLQuery to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "PostgreSQL Query",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#query",
+              "input": {
+                "Connection": "conn://24cd6f8c-7cc2-42d2-a4f7-e5cf20586f9f",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT * FROM public.customers ORDER BY customer_id ASC;",
+                "manualmode": false,
+                "fetchMetadata": "",
+                "Fields": [],
+                "RuntimeQuery": "",
+                "State": "4f8f412c-9a7b-47ad-85a4-1ee7929a4e1eSELECT * FROM public.customers ORDER BY customer_id ASC;",
+                "input": {
+                  "mapping": {}
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[PostgreSQLQuery].Output)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlBvc3RncmVTUUxRdWVyeSI6eyJ4IjoyNTAsInkiOjE1MH0sIlJldHVybiI6eyJ4Ijo0NTAsInkiOjI1MH19",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"LogisticsMCPServer\",\"properties\":{\"arguments\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:getShipments",
+      "data": {
+        "name": "getShipments",
+        "description": "List shipments with tracking number, status (Label Created/In Transit/Out for Delivery/Delivered/Delayed/Exception), service level, origin, destination, carrier, weight, declared value and estimated/actual delivery dates. Use to find a shipment or check its status.",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "PostgreSQLQuery",
+            "type": "label",
+            "label": "StartActivity to PostgreSQLQuery"
+          },
+          {
+            "id": 2,
+            "from": "PostgreSQLQuery",
+            "to": "Return",
+            "type": "label",
+            "label": "PostgreSQLQuery to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "PostgreSQL Query",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#query",
+              "input": {
+                "Connection": "conn://24cd6f8c-7cc2-42d2-a4f7-e5cf20586f9f",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT * FROM public.shipments ORDER BY tracking_number ASC;",
+                "manualmode": false,
+                "fetchMetadata": "",
+                "Fields": [],
+                "RuntimeQuery": "",
+                "State": "4a614851-25d1-4df1-b0cd-f85028b4bbc5SELECT * FROM public.shipments ORDER BY tracking_number ASC;",
+                "input": {
+                  "mapping": {}
+                }
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[PostgreSQLQuery].Output)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlBvc3RncmVTUUxRdWVyeSI6eyJ4IjoyNTAsInkiOjE1MH0sIlJldHVybiI6eyJ4Ijo0NTAsInkiOjI1MH19",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"LogisticsMCPServer\",\"properties\":{\"arguments\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:getTrackingEvents",
+      "data": {
+        "name": "getTrackingEvents",
+        "description": "Get the scan-by-scan tracking history for shipments: event time, location, status and description. Use to trace where a package is and whether it is delayed.",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "PostgreSQLQuery",
+            "type": "label",
+            "label": "StartActivity to PostgreSQLQuery"
+          },
+          {
+            "id": 2,
+            "from": "PostgreSQLQuery",
+            "to": "Return",
+            "type": "label",
+            "label": "PostgreSQLQuery to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "PostgreSQL Query",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#query",
+              "input": {
+                "Connection": "conn://24cd6f8c-7cc2-42d2-a4f7-e5cf20586f9f",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT * FROM public.tracking_events ORDER BY event_id ASC;",
+                "manualmode": false,
+                "fetchMetadata": "",
+                "Fields": [],
+                "RuntimeQuery": "",
+                "State": "ed72bb6c-91ce-4265-ae2d-282e85b1b803SELECT * FROM public.tracking_events ORDER BY event_id ASC;",
+                "input": {
+                  "mapping": {}
+                }
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[PostgreSQLQuery].Output)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlBvc3RncmVTUUxRdWVyeSI6eyJ4IjoyNTAsInkiOjE1MH0sIlJldHVybiI6eyJ4Ijo0NTAsInkiOjI1MH19",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"LogisticsMCPServer\",\"properties\":{\"arguments\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:getServiceLevels",
+      "data": {
+        "name": "getServiceLevels",
+        "description": "Get the shipping service-level rate card: Same-Day, Express, Standard, Eco with transit-day ranges, price per kg and max weight. Use to compare shipping options.",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "PostgreSQLQuery",
+            "type": "label",
+            "label": "StartActivity to PostgreSQLQuery"
+          },
+          {
+            "id": 2,
+            "from": "PostgreSQLQuery",
+            "to": "Return",
+            "type": "label",
+            "label": "PostgreSQLQuery to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "PostgreSQL Query",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#query",
+              "input": {
+                "Connection": "conn://24cd6f8c-7cc2-42d2-a4f7-e5cf20586f9f",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT * FROM public.service_levels ORDER BY service_code ASC;",
+                "manualmode": false,
+                "fetchMetadata": "",
+                "Fields": [],
+                "RuntimeQuery": "",
+                "State": "cd770aa7-1b24-4fae-93e6-c511eb17037dSELECT * FROM public.service_levels ORDER BY service_code ASC;",
+                "input": {
+                  "mapping": {}
+                }
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[PostgreSQLQuery].Output)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlBvc3RncmVTUUxRdWVyeSI6eyJ4IjoyNTAsInkiOjE1MH0sIlJldHVybiI6eyJ4Ijo0NTAsInkiOjI1MH19",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"LogisticsMCPServer\",\"properties\":{\"arguments\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:getDeliveryChanges",
+      "data": {
+        "name": "getDeliveryChanges",
+        "description": "List delivery change requests already on file (reschedule/redirect/hold) with new date, new address, reason and status. Use to check pending delivery changes.",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "PostgreSQLQuery",
+            "type": "label",
+            "label": "StartActivity to PostgreSQLQuery"
+          },
+          {
+            "id": 2,
+            "from": "PostgreSQLQuery",
+            "to": "Return",
+            "type": "label",
+            "label": "PostgreSQLQuery to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "PostgreSQL Query",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#query",
+              "input": {
+                "Connection": "conn://24cd6f8c-7cc2-42d2-a4f7-e5cf20586f9f",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT * FROM public.delivery_changes ORDER BY change_id ASC;",
+                "manualmode": false,
+                "fetchMetadata": "",
+                "Fields": [],
+                "RuntimeQuery": "",
+                "State": "c96e179e-586a-49da-bcb4-79db1b05676dSELECT * FROM public.delivery_changes ORDER BY change_id ASC;",
+                "input": {
+                  "mapping": {}
+                }
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[PostgreSQLQuery].Output)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlBvc3RncmVTUUxRdWVyeSI6eyJ4IjoyNTAsInkiOjE1MH0sIlJldHVybiI6eyJ4Ijo0NTAsInkiOjI1MH19",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"LogisticsMCPServer\",\"properties\":{\"arguments\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:getClaims",
+      "data": {
+        "name": "getClaims",
+        "description": "List claims already filed (Lost/Damaged) with description, amount and status. Use to check existing claims for a shipment or customer.",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "PostgreSQLQuery",
+            "type": "label",
+            "label": "StartActivity to PostgreSQLQuery"
+          },
+          {
+            "id": 2,
+            "from": "PostgreSQLQuery",
+            "to": "Return",
+            "type": "label",
+            "label": "PostgreSQLQuery to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "PostgreSQL Query",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#query",
+              "input": {
+                "Connection": "conn://24cd6f8c-7cc2-42d2-a4f7-e5cf20586f9f",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT * FROM public.claims ORDER BY claim_id ASC;",
+                "manualmode": false,
+                "fetchMetadata": "",
+                "Fields": [],
+                "RuntimeQuery": "",
+                "State": "be8bb6ef-86c3-4931-bcb4-fbfe29841071SELECT * FROM public.claims ORDER BY claim_id ASC;",
+                "input": {
+                  "mapping": {}
+                }
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[PostgreSQLQuery].Output)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlBvc3RncmVTUUxRdWVyeSI6eyJ4IjoyNTAsInkiOjE1MH0sIlJldHVybiI6eyJ4Ijo0NTAsInkiOjI1MH19",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"LogisticsMCPServer\",\"properties\":{\"arguments\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "PostgreSQL.PostgresConn.Host",
+      "type": "string",
+      "value": "localhost"
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Port",
+      "type": "float64",
+      "value": 5432
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Database_Name",
+      "type": "string",
+      "value": "logistics"
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.User",
+      "type": "string",
+      "value": "postgres"
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Password",
+      "type": "string",
+      "value": "SECRET:xnD5STm/qA2zMlnBwvHUkNiaiQiw"
+    },
+    {
+      "name": "MCP_SERVER_PORT",
+      "type": "string",
+      "value": "9790"
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",
+      "type": "float64",
+      "value": 0
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Maximum_Idle_Connections",
+      "type": "float64",
+      "value": 2
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Maximum_Connection_Lifetime",
+      "type": "string",
+      "value": 0
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Maximum_Connection_Retry_Attempts",
+      "type": "float64",
+      "value": 3
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Connection_Retry_Delay",
+      "type": "float64",
+      "value": 5
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Connection_Timeout",
+      "type": "float64",
+      "value": 20
+    }
+  ],
+  "schemas": {
+    "EmptyArgs": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {}\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {}\n}"
+    },
+    "ToolResponse": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"data\": {\n      \"type\": \"string\"\n    },\n    \"error\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"data\": {\n      \"type\": \"string\"\n    },\n    \"error\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+    }
+  },
+  "connections": {
+    "24cd6f8c-7cc2-42d2-a4f7-e5cf20586f9f": {
+      "id": "24cd6f8c-7cc2-42d2-a4f7-e5cf20586f9f",
+      "name": "PostgresConn",
+      "ref": "#connection",
+      "isGlobal": false,
+      "settings": {
+        "databaseType": "PostgreSQL",
+        "name": "PostgresConn",
+        "description": "Your PostgreSQL Connector",
+        "host": "=$property[\"PostgreSQL.PostgresConn.Host\"]",
+        "port": "=$property[\"PostgreSQL.PostgresConn.Port\"]",
+        "databaseName": "=$property[\"PostgreSQL.PostgresConn.Database_Name\"]",
+        "user": "=$property[\"PostgreSQL.PostgresConn.User\"]",
+        "password": "=$property[\"PostgreSQL.PostgresConn.Password\"]",
+        "maxopenconnection": "=$property[\"PostgreSQL.PostgresConn.Maximum_Open_Connections\"]",
+        "maxidleconnection": "=$property[\"PostgreSQL.PostgresConn.Maximum_Idle_Connections\"]",
+        "connmaxlifetime": "=$property[\"PostgreSQL.PostgresConn.Maximum_Connection_Lifetime\"]",
+        "maxconnectattempts": "=$property[\"PostgreSQL.PostgresConn.Maximum_Connection_Retry_Attempts\"]",
+        "connectionretrydelay": "=$property[\"PostgreSQL.PostgresConn.Connection_Retry_Delay\"]",
+        "connectiontimeout": "=$property[\"PostgreSQL.PostgresConn.Connection_Timeout\"]",
+        "onprem": false,
+        "tlsconfig": false,
+        "tlsparam": "VerifyCA",
+        "cacert": "",
+        "clientcert": "",
+        "clientkey": ""
+      }
+    }
+  },
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuNCIsInRhZyI6IjEuMC40LWIwMiIsIm5hbWUiOiJNb2RlbCBDb250ZXh0IFByb3RvY29sIChNQ1ApIiwiczNsb2NhdGlvbiI6IlRpYmNvL01DUCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjEiLCJ0YWciOiIyLjcuMS1iMDEiLCJuYW1lIjoiUG9zdGdyZVNRTCIsInMzbG9jYXRpb24iOiJUaWJjby9Qb3N0Z3JlU1FMIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
+  "metadata": {
+    "endpoints": [
+      {
+        "protocol": "http",
+        "port": "9790",
+        "title": "LogisticsMCPServer",
+        "type": "public"
+      }
+    ],
+    "flogoVersion": "2.26.6"
+  }
+}

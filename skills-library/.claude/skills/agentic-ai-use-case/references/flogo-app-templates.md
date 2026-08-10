@@ -107,9 +107,18 @@ Design rule: **one tool per table or per meaningful join.** Rich `handlerDescrip
 The handler also carries `schemas.output.toolParams` (the JSON Schema of params the LLM must supply — this is what drives the tool signature) and the standard `reply/customGuardrailInput/customConversationStore*` schema blocks — copy those blocks verbatim from a reference A2A app; only edit the `toolParams` schema + its `fe_metadata` example.
 
 **Write flow** — `#noop → #log → [#query validation, optional] → #insert → #log → #actreturn`:
+- **Flow inputs:** the flow MUST declare `toolParams` as an input **with a schema** in
+  `resource.data.metadata.input` (part #2 of the 3-part designer contract). Without it every
+  `=$flow.toolParams.<field>` shows a design-time red ✗ even though the app runs fine. The reliable way to
+  emit it — and the matching activity-input schema (part #3) — is to click the trigger **Sync** after
+  wiring the activity `input.mapping.parameters` (part #1). See
+  [postgres-activity-patterns.md](postgres-activity-patterns.md) → "The 3-part designer contract".
 - `#log` uses `=string.concat("Agent Invocation started: ", $flowctx["FlowName"], " ...", $flow.toolParams.<x>)`.
 - optional `#query` validates (e.g. cross-check a charge against usage) and its output is included in the return so the agent can explain findings.
 - `#insert` performs the write — **follow the INSERT pattern in [postgres-activity-patterns.md](postgres-activity-patterns.md) exactly.**
+  For any write into a table with a **NOT-NULL foreign key the prompt won't carry** (owner/account id),
+  derive it via `INSERT … SELECT … COALESCE` from the parent row instead of mapping it from `toolParams`
+  (the LLM would send null → not-null violation) — Section D of postgres-activity-patterns.md.
 - `#actreturn` builds a human-readable confirmation via `string.concat(...)`.
 
 **Email agent (optional):** flow `#noop → #sendmail → #log → #actreturn`. `#sendmail`: `Server smtp.gmail.com`, `Port 465`, `Connection Security SSL`, `Username/Password/sender/recipients` from `Email_*` / `To_Email` properties, `subject/message` from `$flow.toolParams.subject/body`. Set the agent's `enableGuardrails:false`, `conversationStoreType:"None"`. System prompt: "recipient is preconfigured; email address optional; send exactly once."
@@ -158,7 +167,7 @@ Design rule: **one agent per write workflow** (create/update/side-effecting). Ke
       "remoteAgents": [ "conn://<a2a-uuid-1>", "conn://<a2a-uuid-2>", "..." ],
       "mcpServers": [ "conn://<mcp-uuid>" ],
       "conversationStoreType": "Memory", "memoryMaxSize": 100,
-      "systemPrompt": "<identify the user; INTENT ROUTING: which questions -> which MCP tools; which actions -> which A2A agent; confirm before writes; email once/last; decline out-of-scope; be warm/professional>"
+      "systemPrompt": "<identify the user; INTENT ROUTING: which questions -> which MCP tools, which actions -> which A2A agent; NEVER ask for internal/FK ids (agents derive them); confirm before writes; call the email/notify agent ONLY AFTER a write succeeds; never confirm or email a failed/skipped action; honor conditional requests literally; decline out-of-scope; be warm/professional — see the system-prompt rules below>"
     },
     "input": { "userPrompt": "=coerce.toString($flow.content)", "conversationId": "" }
   }
@@ -171,6 +180,21 @@ Design rule: **one agent per write workflow** (create/update/side-effecting). Ke
     "input": { "message": "=$activity[AIAgent].response", "wsconnection": "=$flow.wsconnection" } }
 }
 ```
+
+**Orchestrator system-prompt rules (learned the hard way — bake these into `systemPrompt`):**
+- **Never ask the user for internal/FK ids** (owner/account ids, surrogate keys) that a tool or agent can
+  derive. The user speaks in friendly keys; the agent derives the FK from that key (see
+  [postgres-activity-patterns.md](postgres-activity-patterns.md) Section D). Pass only what the user said.
+- **Strict ordering:** call a notification/email agent **only AFTER** the write agent returns a
+  **successful** result — never before the write, never in parallel with it.
+- **Never confirm or email a failed or skipped action.** If a write returns an error, or a condition meant
+  it wasn't performed, say so honestly — do not claim success and do not send a "done" notification.
+- **Honor conditional requests literally.** "If X, do Y" means read/verify X first (via an MCP tool) and
+  perform Y **only if X actually holds**; otherwise report that X wasn't met and stop.
+- **Map tool-argument values exactly** to the enums/fields each agent expects, and do **not** pass fields
+  the agent derives itself.
+- Keep intent routing explicit (which questions → which MCP tool; which actions → which A2A agent), decline
+  out-of-scope requests, and stay warm and professional.
 
 **Connections:** OpenAI `#llmprovider`; one `#mcpserverconfig` (`serverType:"http"`, `serverUrl:"http://<host>:<mcpPort>/<usecase-bss>"`, `httpTransportType:"streamable"`); one `#a2aserverconnection` per A2A agent (`serverUrl:"http://<host>:<a2aPort>"`).
 **Properties:** `AgenticAI.OpenAIConn.*` (API_Key SECRET) + `LLM_Model`.

@@ -1173,7 +1173,7 @@
             }
           }
         ],
-        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiU2VuZE1haWwiOnsieCI6MjQ4LCJ5IjoxMDJ9LCJMb2dNZXNzYWdlIjp7IngiOjQ3NSwieSI6MTAxfSwiUmV0dXJuIjp7IngiOjY2NSwieSI6OTl9fQ==",
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiU2VuZE1haWwiOnsieCI6MjQ3LCJ5IjoxMDJ9LCJMb2dNZXNzYWdlIjp7IngiOjQ3NSwieSI6MTAxfSwiUmV0dXJuIjp7IngiOjY2NSwieSI6OTl9fQ==",
         "metadata": {
           "input": [
             {
@@ -1212,7 +1212,7 @@
     {
       "name": "AgenticAI.OpenAIConn.API_Key",
       "type": "string",
-      "value": "SECRET:7Fw2Q/oVFX8d6CE9OBaMa1XSEg6zGZlc9yDWKhxOjBIeYd65Jy+9w2ahe1Kax7QBddRn0Du2lQ+X/DvKaO2w8pDoGIDhzMYnPQfv+fo5avK71mKffMX1PyAzpxYqdPrIJNDaeBJQKzc/8TiSd3bDDgn7bpVn9JOvrQx3I0dDC7zhHx0x+UsoSIbV+EqvuAovTzx4/nyqISEuM4ZDO6miZ6EzAnzSmwKo6XhchtjBgR5c7mJE"
+      "value": "SECRET:i4csy62E9BmzksUBfmDbd+mPqXKmICpRtYNTcWP427r5UtjHhrEcMkAzsHTDkalVDhF41K5OoNOogxGpYfmXJf78LjY36F3p1fRCUJcVx6m58Clq74HLJsxZOIk8mQJYAF/9E1aFpbdIf5raYVc94eQt8bJfbIFGFXGoDCgUdKxj3XmJ8NLRIYaZA9Gv+TKtJzpQRmkKrVOxNrU9RMMNRNsZ1tvNRkz+14aFUWm99nHgruvr"
     },
     {
       "name": "AgenticAI.OpenAIConn.LLM_Base_URL",
@@ -1262,7 +1262,7 @@
     {
       "name": "Email_App_Password",
       "type": "string",
-      "value": "SECRET:+cXCqDDELJ330kh12zf6pMG8EV4inut59mbnR/gYco3IHEY="
+      "value": "SECRET:L4eJcv2XKb3kguM35gmXGeIiKtpHboV5mAqfwBm6FeyoD9c="
     },
     {
       "name": "SendEmail_A2AServer_PORT",
@@ -1334,7 +1334,7 @@
         "description": "Key to use with claude ",
         "llmProvider": "Anthropic",
         "anthropicProvider": "Default",
-        "apiKey": "SECRET:4Nq4uLjv2TDJm6c0o7kK2yJqLA6h3RRoapjHiIba5Q==",
+        "apiKey": "SECRET:b+GvmYZDwp6CTn1M0lgXbOf5cPQwEIpTw00Xcha8JQ==",
         "llmProviderUrl": "",
         "azureDeployment": "",
         "azureRegion": "",

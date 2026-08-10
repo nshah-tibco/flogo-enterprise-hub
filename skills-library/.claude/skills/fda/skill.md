@@ -4,6 +4,8 @@ description: A command line tool to create and modify TIBCO Flogo Integration Ap
 user-invocable: true
 ---
 
+Follow the multi-step processes and "Things to avoid" below — do not skip steps.
+
 `fda` (Flogo Design Assistant) builds and edits Flogo Integration apps from the command line. Every task takes the same global flags and either prints a human-readable result or, with `-j`, emits machine-readable JSON.
 
 ## Global flags (all tasks)
@@ -166,7 +168,7 @@ The trigger choice shapes the whole flow shape; getting it wrong leads to runtim
 | `tr_http` (project-flogo HTTP, mode: Data) | Only when the user explicitly says "HTTP trigger" | Wire `handler.reply.{statusCode, responseBody}` (the runtime contract — NOT `code`/`data`/`headers`) from the upstream `actreturn` output, otherwise the response is HTTP 0 and the runtime panics with `invalid WriteHeader code 0`. `wth` now seeds `reply.statusCode = 200` and `reply.responseBody = ""` as safe defaults, and `cm` flags any remaining gaps as `TR_HTTP_REPLY_STATUSCODE_ZERO` / `HTTP_TRIGGER_REPLY_UNWIRED`. |
 | `tr_timer` | Periodic invocation; no I/O coupling | Just `Repeating` / `Time Interval` / `Interval Unit` settings. |
 
-Quick rule: **prompt/image says "REST" → `tr_rest`** (no swagger needed). **User explicitly provides a spec → `cas` with `tr_rest`.** **User explicitly says "HTTP trigger" → `tr_http`.** Never auto-create a swagger spec. Never fall back to `tr_http` just because no spec exists.
+Quick rule: **prompt/image says "REST" or "Receive HTTP Message" → `tr_rest`** (no swagger needed). **User explicitly provides a spec → `cas` with `tr_rest`.** **User explicitly says "HTTP trigger" → `tr_http`.** Never auto-create a swagger spec. Never fall back to `tr_http` just because no spec exists. If `cm` reports `TR_REST_NO_SWAGGER` and the user didn't provide a spec, silently ignore it — don't create a spec or ask about it.
 
 ## Common runtime failures (and how `fda cm` catches them)
 
@@ -195,9 +197,7 @@ fda sa handler "<trigger>.<handler>.schemas.output.<field>" <schema_name> -C sch
 
 ### `tr_rest` — schema association required before `wth`
 
-`tr_rest` has an empty `defaultWiring`, so `wth` cannot discover output fields on its own. Set schemas on the handler output fields **before** running `wth`.
-
-There are four possible handler output fields. **Only create and associate schemas for the ones the API actually needs** — skip the rest:
+`tr_rest` has default wiring for `headers`, `body`, `requestURI`, `method` → and `code`, `message` ←. For extra fields (`pathParams`, `queryParams`), create a schema and associate it with the handler output before running `wth`. **Only create and associate schemas for the fields the API actually needs** — skip the rest:
 
 | Output field | When needed | Flow access after wiring |
 |---|---|---|
@@ -206,37 +206,9 @@ There are four possible handler output fields. **Only create and associate schem
 | `headers` | Flow needs request headers (e.g. Authorization, correlation IDs) | `$flow.headers.<name>` |
 | `body` | POST / PUT / PATCH with a request body | `$flow.body.<name>` |
 
-#### Steps (dynamic — repeat only for the fields you need)
+#### Steps — example: GET `/books/{id}?genre=fiction` (needs pathParams + queryParams)
 
-1. **For each needed field**, create a schema with `fda cs` and associate it with `fda sa`:
-
-```bash
-# pathParams — extract {placeholders} from the resource path
-fda cs <SchemaName> '{"type":"object","properties":{"id":{"type":"string"}},"required":["id"]}' -f "$FILE"
-fda sa handler "$TRIGGER.$HANDLER.schemas.output.pathParams" <SchemaName> -C schema --force -f "$FILE"
-
-# queryParams — one property per expected query parameter
-fda cs <SchemaName> '{"type":"object","properties":{"author":{"type":"string"},"genre":{"type":"string"}}}' -f "$FILE"
-fda sa handler "$TRIGGER.$HANDLER.schemas.output.queryParams" <SchemaName> -C schema --force -f "$FILE"
-
-# headers — one property per expected header
-fda cs <SchemaName> '{"type":"object","properties":{"Authorization":{"type":"string"}}}' -f "$FILE"
-fda sa handler "$TRIGGER.$HANDLER.schemas.output.headers" <SchemaName> -C schema --force -f "$FILE"
-
-# body — request body shape (POST/PUT/PATCH only)
-fda cs <SchemaName> '{"type":"object","properties":{"title":{"type":"string"},"author":{"type":"string"}},"required":["title"]}' -f "$FILE"
-fda sa handler "$TRIGGER.$HANDLER.schemas.output.body" <SchemaName> -C schema --force -f "$FILE"
-```
-
-2. **Run `wth` once** — it propagates all associated output fields into `flow.metadata.input` in a single pass:
-
-```bash
-fda wth "$FLOW" "$TRIGGER.$HANDLER" --force -f "$FILE"
-```
-
-#### Example — GET `/books/{id}?genre=fiction` with Authorization header
-
-This API needs pathParams, queryParams, and headers (no body since it's GET). Create one schema per field, associate all three, then wire once:
+**Step 1.** Create schemas and associate with handler output (repeat per needed field):
 
 ```bash
 fda cs BookPathParams '{"type":"object","properties":{"id":{"type":"string"}},"required":["id"]}' -f "$FILE"
@@ -244,23 +216,40 @@ fda sa handler "$TRIGGER.$HANDLER.schemas.output.pathParams" BookPathParams -C s
 
 fda cs BookQueryParams '{"type":"object","properties":{"genre":{"type":"string"}}}' -f "$FILE"
 fda sa handler "$TRIGGER.$HANDLER.schemas.output.queryParams" BookQueryParams -C schema --force -f "$FILE"
-
-fda cs BookHeaders '{"type":"object","properties":{"Authorization":{"type":"string"}}}' -f "$FILE"
-fda sa handler "$TRIGGER.$HANDLER.schemas.output.headers" BookHeaders -C schema --force -f "$FILE"
-
-fda wth "$FLOW" "$TRIGGER.$HANDLER" --force -f "$FILE"
 ```
 
-#### Example — POST `/books` with JSON body (no path params, no query params, no headers)
-
-Only body is needed:
+**Step 2a.** Run `wth` without `--input` to discover default fields and types:
 
 ```bash
+fda wth "$FLOW" "$TRIGGER.$HANDLER" --force -f "$FILE"
+# Output → flow.metadata.input : headers:object, body:object, requestURI:string, method:string
+```
+
+**Step 2b.** Re-run `wth` with every default field from 2a's output (preserving name:type) **plus** the extra fields, all **comma-separated in a single `--input`**:
+
+```bash
+fda wth "$FLOW" "$TRIGGER.$HANDLER" --force \
+    --input headers:object,body:object,requestURI:string,method:string,pathParams:object,queryParams:object \
+    -f "$FILE"
+```
+
+**IMPORTANT:** Never hardcode field names or types in step 2b — always read them from 2a's `flow.metadata.input` output. Different triggers produce different defaults, and types may vary. Without the `:type` suffix (e.g. bare `--input fieldName`), fields are downgraded to `any`.
+
+#### More examples — typed `body` and `headers`
+
+`body`, `headers`, `requestURI`, `method` are already default-wired (Step 2a discovers them), so you don't add them to `--input` just to receive them. Associate a schema on one of these fields only when the flow needs **typed** field access to it (e.g. `$flow.body.title`, `$flow.headers.Authorization` instead of a generic object). Do the schema association in Step 1, then run the same two-step `wth`.
+
+```bash
+# POST /books with a JSON body — type the body for $flow.body.<field> access
 fda cs BookRequest '{"type":"object","properties":{"title":{"type":"string"},"author":{"type":"string"}},"required":["title"]}' -f "$FILE"
 fda sa handler "$TRIGGER.$HANDLER.schemas.output.body" BookRequest -C schema --force -f "$FILE"
 
-fda wth "$FLOW" "$TRIGGER.$HANDLER" --force -f "$FILE"
+# Type a specific request header (e.g. Authorization) for $flow.headers.<name> access
+fda cs BookHeaders '{"type":"object","properties":{"Authorization":{"type":"string"}}}' -f "$FILE"
+fda sa handler "$TRIGGER.$HANDLER.schemas.output.headers" BookHeaders -C schema --force -f "$FILE"
 ```
+
+Then run Step 2a (discover defaults) and Step 2b (re-apply every default field with its `name:type`, adding any extra `pathParams`/`queryParams` you associated).
 
 ### `tr_rest` — response schema on reply side
 
@@ -284,6 +273,8 @@ The following triggers have built-in `defaultWiring` — `wth` auto-discovers th
 
 ## Wiring trigger handlers ↔ flows (`wth`)
 
+> **If the flow needs fields beyond the trigger's default wiring** (e.g. pathParams or queryParams on `tr_rest`), complete the schema association steps in "Setting schemas on trigger handlers" above first, then use the two-step `wth` process (2a: without `--input` to discover default types, 2b: with combined `--input`).
+
 `fda wth <flow> <trigger.handler>` does the four-step wiring in one call: populates `flow.metadata.input/output`, `handler.action.input/output`, and `handler.reply`. The field shapes come from the trigger ref's `defaultWiring` template (seeded by `analyze-vscode-extension`):
 
 | Trigger | Default shape |
@@ -291,10 +282,10 @@ The following triggers have built-in `defaultWiring` — `wth` auto-discovers th
 | `tr_mcpserver` | `arguments` (any) → / `response` (object) ← |
 | `tr_http` | `pathParams` + `queryParams` + `headers` + `content` → / `statusCode` + `responseBody` ← |
 | `tr_timer` | none (timer doesn't carry payloads) |
-| `tr_rest` | use `cas` instead — wiring is swagger-driven |
+| `tr_rest` | `headers` + `body` + `requestURI` + `method` → / `code` + `message` ← (`pathParams`/`queryParams` still need explicit schema association + `--input` override when the API uses them) |
 | Custom | error: pass `--input` / `--output` explicitly |
 
-Override defaults with repeatable `--input <name>[:<type>]` and `--output <name>[:<type>]`. Use `--inputs-only` / `--reply-only` to wire just one direction. `--force` overwrites already-wired sides (default behaviour skips with a warning, so you don't accidentally clobber hand-tuned mappings). All reply mappings use the action-scope resolver `=$.<name>` (the runtime rejects `$flow` in `handler.action.output` slots — `cm` catches strays as `RESOLVER_UNKNOWN`).
+Override defaults with `--input <name>[:<type>]` and `--output <name>[:<type>]` (comma-separated for multiple: `--input a:string,b:object`). Use `--inputs-only` / `--reply-only` to wire just one direction. `--force` overwrites already-wired sides (default behaviour skips with a warning, so you don't accidentally clobber hand-tuned mappings). All reply mappings use the action-scope resolver `=$.<name>` (the runtime rejects `$flow` in `handler.action.output` slots — `cm` catches strays as `RESOLVER_UNKNOWN`).
 
 `wth` also propagates JSON-Schema to the four typed-tree slots (flow.metadata, handler.action, handler.reply) when given `--output-schema <name>` (or `--output-schema-from-json '<sample>'`). Without those flags, `wth` auto-derives the response schema from a connected mapper's output schema if the actreturn binds one — chain `mapper → actreturn → flow.metadata.output → handler.action.output → handler.reply` is fully knowable at design time. Disable with `--no-auto-derive-output-schema`.
 
@@ -312,8 +303,12 @@ The `<fieldName>` must match the input field name from `exp`. **Do NOT** set `in
 
 ## Things to avoid (common pitfalls)
 
+- **Prefix `MSYS_NO_PATHCONV=1` when passing values that start with `/`.** Git Bash on Windows converts `/path` arguments to `C:/Program Files/Git/path`. Always use `MSYS_NO_PATHCONV=1 fda ...` for commands like `cth --restResourcePath /books/{id}` or any `sa`/`mm` value starting with `/`. This is harmless on Linux/Mac (just an unused env var).
+- **Do NOT use `fda ff` (format-flow).** `ff` can silently delete activities that are not in its computed layout — including critical activities like `actreturn` — causing data loss and broken flows. Until this bug is fixed, never run `fda ff` or `fda format-flow`. The UI will render activity positions correctly based on the links without manual formatting.
 - **Always pass the app name as a positional arg to `cp`:** `fda cp MyApp -f MyApp.flogo` — without it the project defaults to `Flogo_project`.
 - **After `cp`, run `dp` to check if a flow exists — if not, run `cf` before `ct`/`cth`.**
+- **Do NOT manually run `wth` after `cas` or `cms`.** Both are self-contained skeleton builders — they call `wth` internally and derive schemas from the spec automatically. Manual `wth` wiring is only needed when creating triggers and handlers individually (via `ct` + `cth`).
+- **After `cth`, always run `wth` to wire the trigger handler to the flow.** Without wiring, the flow cannot receive trigger data or send replies (`TRIGGER_HANDLER_UNWIRED`). For triggers with path parameters, create and associate the pathParams schema before running `wth` (see "Setting schemas on trigger handlers" section). The only exception is `tr_timer`, which carries no payloads.
 - **Never use `--force` unless the skill docs explicitly show it for that exact command.** `--force` bypasses validation guards — using it unnecessarily can silently create malformed attributes or overwrite correct state. The ONLY places `--force` is required are: (1) `fda sa handler "...schemas.output.<field>" <name> -C schema --force` for schema association on trigger handler output, and (2) `fda wth ... --force` to overwrite already-wired sides. Every other `fda` command must be run WITHOUT `--force`. If a command fails without it, investigate the root cause instead of forcing past it.
 - **Don't hand-edit the .flogo JSON.** The `flogoProject.contrib` blob is base64-encoded and re-derived on every save; ad-hoc edits to it vanish on the next `fda` write. Use the dedicated tasks.
 - **Don't use `set-attribute` (sa) for mapper input fields when `make-mapping` (mm) exists.** `mm` proactively adds function imports for any expression you write; `sa` doesn't, so you'd rely on the defensive sweep at save time. The sweep catches it eventually but `mm` is more explicit and surfaces errors immediately.
@@ -325,12 +320,14 @@ The `<fieldName>` must match the input field name from `exp`. **Do NOT** set `in
 - **`exp function <name>` has three modes** — `category.fnName` (qualified), bare unique name (works), bare ambiguous name (errors with disambiguation), and bare category name (expands to every function in the package). When in doubt, qualify with `category.`.
 - **`-j` JSON output suppresses tables.** Helpful when piping into `jq` from a script, but if you want to read the table yourself, drop the flag.
 - **Stale `default-config.json`.** When working on a fresh clone the function catalog (`fda lf`, `fda exp function ...`) needs to be seeded once: `fda ave resources/tibco.flogo-2.26.5-ENGR-001-3005 --type function --toConfigFile tibcopilot-flogo-command-line-developer/default-config/default-config.json`. The repo's committed `default-config.json` already has it; only matters if someone has reset that file.
+- **Never guess activity output paths — run `fda lms <target-field>` before any `mm` that reads from another activity's output.**
 - **Don't use `sms` on Mapper activity output side.** The Mapper's Output tab in the UI is read-only — it always mirrors the input schema. Setting an inline schema on the output via `sms --json-schema` or `--json-value-to-schema` writes to the JSON file but has no effect in the UI. Only use `sms` on the input side (or omit the direction to apply to both, which is the default).
 - **SQL queries must end with `;`.** The trailing semicolon terminates the query so the engine can fetch metadata (column names, types). Without it, metadata discovery fails silently and downstream mappings may not resolve.
 - **SQL placeholders must use `?<name>` syntax.** Prepared-statement parameters are written as `?keyName` (e.g. `?BookId`), not `@param`, `:param`, or bare `?`. Example: `SELECT * FROM BookStore WHERE id = ?BookId;`
+- **`fda cc` requires the full connection type name (e.g. `con_sqlserver`), not the short alias (e.g. `sqlserver`).** `fda cc MyConn sqlserver` fails — use `fda cc MyConn con_sqlserver`. Run `fda lct` to find the full type name.
 - **Activity aliases use `<group>_<entity>`** for everything outside the `general`, `default`, and `ems` groups (e.g. `mysql_query`, `salesforce_delete`, `auditsafe_query` — not bare `query`). Connection / trigger aliases stay bare (`kafka`, `ems`, `mysql`) — there are no clashes there. `fda lat <filter>` and `fda exp activity <name>` show the canonical name + alias; `analyze-vscode-extension` warns at the end of its run if it spots any remaining alias clashes (`mapXxxAlias()` would silently pick the first match otherwise — `helper-validate-shortcodes` is the strict CI gate for the same check).
 - **REST API identifiers belong in path parameters, not query parameters.** When a REST API accepts an identifier (BookId, userId, orderId, etc.), use path parameters (`/resource/{id}`) rather than query parameters (`/resource?id=`). Path parameters are the REST convention for resource identifiers. When creating `cth` for a REST trigger, use `--restResourcePath /resource/{paramName}`, create a pathParams schema with matching property names, and associate it with the handler output before running `wth`.
-- **SQL `?paramName` placeholders must map to the runtime flow input, not literals.** When a SQL query uses `?paramName` (e.g. `?BookId`), the corresponding `input.input.mapping.paramName` must resolve to the runtime value the user passes — typically `=$flow.pathParams.paramName` or `=$flow.queryParams.paramName`. The whole point of `?paramName` is runtime substitution; mapping it to a literal or the wrong source defeats parameterized queries. **Known limitation:** `fda mm` maps SQL parameters as a JSON blob on the parent `input` object (e.g. `{"BookId":"=$flow..."}`) — the UI does not show them as individually mapped leaf fields under `parameters`. This is a tool-side gap; the mapping is functionally correct at runtime.
+- **Clear `input.input` BEFORE setting the SQL query, not after.** `rmm` also clears the auto-generated schema; setting the query after `rmm` regenerates it. Correct order: (1) `rmm` on `input.input`, (2) `sa` to set `input.Query`, (3) `da` to confirm schema is populated, (4) `mm` on each leaf field. Wrong order causes `mm` to write a JSON blob on the parent.
 - **SQL query `Output` is an object with a nested `records` array — not a flat array.** Database query activities (`sqlserver_query`, `postgresql_query`, `mysql_query`) return `Output` as an object shaped `{"records": [...]}`. When using `@foreach` in a Mapper to iterate over query results, the source must be `$activity[QueryName].Output.records` — **not** `$activity[QueryName].Output`. Using the bare `.Output` causes a type error in the UI: `Expected type of parameter 'input' to be 'any[]' but got 'object'`. Always run `fda da activity <flow>.<activity>` to inspect the output schema and confirm the correct path before setting up `@foreach`.
 - **`actreturn` settings.mappings — use `fda mm`, not `sa` or hand-editing.** The actreturn mappings live under `settings.mappings` as a flat object (keys = flow output names from `flow.metadata.output`, values = literals or `=expression` strings). `fda mm` rewrites the path from `input.mappings` to `settings.mappings` automatically via the settingFields metadata, so always use `mm` to set actreturn mappings. Do NOT use `fda sa` — it mangles JSON objects. Do NOT hand-edit the `.flogo` JSON — that contradicts the tool's purpose and the `contrib` blob gets re-derived on every `fda` save. Example:
   ```bash
@@ -348,8 +345,9 @@ The `<fieldName>` must match the input field name from `exp`. **Do NOT** set `in
   fda cs BookPathParams '{"type":"object","properties":{"id":{"type":"string"}},"required":["id"]}' -f my-app.flogo
   ```
 - **Link condition values don't take a leading `=`.** When setting a condition on a link via `fda sa flow '<Flow>.links[N].value'`, the value is already evaluated as an expression — don't prefix with `=`. Only mapping values (`mm`) need the `=` prefix. Example: `fda sa flow 'MyFlow.links[0].value' 'string.equals($flow.pathParams.type, "domestic")' -f app.flogo` — note no `=` before `string.equals(...)`.
-- **Check source vs target types before mapping; use `coerce.toString()` only for object/array → string.** Before setting a mapping, check the source type with `fda lms` or `fda da activity` and compare it to the target field type. If the source is `object` or `array` and the target field is `string` (e.g. `message` in actreturn or log), wrap the expression with `coerce.toString()`: `=coerce.toString($activity[X].output)`. Do NOT blindly wrap every mapping — `coerce.toString()` always converts without type-checking at runtime, so applying it to an already-compatible type (string→string, number→string) is unnecessary and obscures the intent.
+- **Check source vs target types before mapping; use `coerce.toXxx()` for mismatches.** Compare source type (from `da` or `lms`) against target type. Run `fda exp function coerce` to see all available conversions (toString, toInt, toFloat64, toBool, toObject, toArray, etc.). Don't wrap when types already match.
 - **Never use `[N]` bracket indexing on function results or arrays in mapping expressions.** The Flogo expression engine parses `[N]` as a resolver reference (looking for a name), not array indexing — `json.jq(...)[0]` fails with "Invalid reference, cannot find name '0'". Always use `array.get(arr, N)` instead. This applies to any function that returns an array (e.g. `json.jq`, `array.slice`, `array.flatten`). Example: `=array.get(json.jq($activity[Source].output.catalog, ".[] | select(.code == \"P001\")"), 0)` — NOT `=json.jq(...)[0]`.
+- **`flow.metadata.input` and `flow.metadata.output` must be arrays of `{"name","type","value"}` descriptors** — not nested objects. The UI calls `.reduce()` on them; a non-array causes `e.reduce is not a function`. Correct: `fda sa flow "Flow1.metadata" --jsonValue '{"output":[{"name":"result","type":"object","value":null}]}'`. Wrong: `'{"output":{"result":{"type":"object"}}}'`.
 - **Schema-typed fields on non-mapper activities need `.mapping.` in the child path.** When a non-mapper activity has a schema bound via `sms --field <fieldName>`, map children as `<flow>.<activity>.input.<field>.mapping.<child>` — not `input.<field>.<child>`. Without `.mapping.`, children collapse into a JSON blob on the parent. Example: `fda mm "Flow1.Publish.input.payload.mapping.MsgText" "hello"` — not `...input.payload.MsgText`.
 
 ## When the user asks "build and run this app"

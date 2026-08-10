@@ -259,7 +259,7 @@ For mapper activities, both `<direction>.<fieldName>` slots use the literal `inp
 
 | You have... | Command | Result |
 |---|---|---|
-| An existing top-level schema | `fda sms <flow>.<activity> <name>` | Activity slot becomes `"schema://<name>"`. Errors if the schema doesn't exist (suggests `cs`). |
+| An existing top-level schema **(preferred — enables UI toggle)** | `fda sms <flow>.<activity> <name>` | Activity slot becomes `"schema://<name>"`. Create the schema first with `fda cs`, then reference it. Errors if the schema doesn't exist. |
 | Raw JSON-Schema content | `fda sms <flow>.<activity> --json-schema '{...}'` | Stored inline (no top-level entry). Use `--json-schema-file <path>` for a file. |
 | A sample JSON value | `fda sms <flow>.<activity> --json-value-to-schema '{...}'` | Runs the sample through `to-json-schema` and stores the derived schema inline. ⚠ Inferred from one example — review and refine via `--json-schema` if the types are off (no enum detection, format guesses can be quirky). |
 | Both a name AND content | `fda sms <flow>.<activity> <name> --json-schema '{...}'` | Upserts the named schema (compare-and-decide), then references it. Pass `--force` to overwrite an existing entry with different content. |

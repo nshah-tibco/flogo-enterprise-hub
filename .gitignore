@@ -37,3 +37,14 @@ test-results/
 # Local skills config holds real credentials (API keys, tokens, passwords).
 # Track config.example.md instead; each user copies it to config.md locally.
 skills-library/.claude/skills/config.md
+
+# FDA-rebuilt Hospital apps: local verification copies whose .flogo files have
+# live secrets (OpenAI key, SMTP app password, DB password) baked in as property
+# values. Kept out of the repo so they can't be committed by accident.
+demos/Agentic_AI/Hospital_FDA_Rebuild/
+
+# Local scratch / scaffold projects at the repo root (throwaway experiments,
+# not demo content). Root-anchored so real demo .flogo files are unaffected.
+/flogo-project.flogo
+/flogo3.flogo
+/testflogo3/
