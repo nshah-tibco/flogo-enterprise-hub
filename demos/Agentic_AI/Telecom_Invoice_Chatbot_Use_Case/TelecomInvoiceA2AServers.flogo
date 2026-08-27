@@ -890,7 +890,6 @@
                 "authorizationType": "Basic",
                 "Username": "=$property[\"Email_Username\"]",
                 "Password": "=$property[\"Email_App_Password\"]",
-                "authorizationConn": "",
                 "Connection Security": "SSL",
                 "serverCertificate": "",
                 "message_content_type": "text/plain",
@@ -990,7 +989,7 @@
     {
       "name": "AgenticAI.OpenAIConn.API_Key",
       "type": "string",
-      "value": "SECRET:OEnggHe/dCX8+AqSvXaLm4Zg7tWLt8e+BKuJaEgvvAzqh0OH+a0fR8i+yh7zVL/eN5bJg0pRt2IwGgs2JY6llCsS5pmMVhNpy4LPakhk6NmfAlvFBqv4jWZo+6LsFgV4X+E0JipZE4ukGDl8P4RxBfrFAM8B0YbnTxAUoGVs9jchyBIGeDdCg+Z97qiB4c9hdN4Cb8YUSMWfuQwMfbuUoWuJddAAynAfH3kwEVWbGSmU0TO+"
+      "value": "SECRET:CtY8uJO8n+fHdi3qLmQLtZUd86KrMYa3DrBbqmf+WP8kHEQlFsh67NDUZrFsqblNWncN00PX4nmbIF/dP5I1U9HQou0C0SYRzPFerDNpt5X9uUiVu0Q20d2WcFFU0LSQJMWNl+IBGxBEUcdkeuD7KlSvdBe56JRByJUxy0Q8Kue7IF24TvdrkzDtgQYH1GCgHmHVcgumN1DuPJpWfk2XkbwduSJbPYhSCXEPh2TJwBxWJV85"
     },
     {
       "name": "AgenticAI.OpenAIConn.LLM_Base_URL",
@@ -1020,7 +1019,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:ZptKw2gJGyeH/Xl4Viewun5qaEPB"
+      "value": "SECRET:uxyo0VfG+DleVZTbDqQqLc0edIns"
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",
@@ -1060,17 +1059,17 @@
     {
       "name": "To_Email",
       "type": "string",
-      "value": "nikhil.shah@tibco.com"
+      "value": "recipient@example.com"
     },
     {
       "name": "Email_Username",
       "type": "string",
-      "value": "nikhil.shah.84@gmail.com"
+      "value": "your-email@gmail.com"
     },
     {
       "name": "Email_App_Password",
       "type": "string",
-      "value": "SECRET:lyZYz52r17nLrYp3cZvzTDtkEOiKMkv2HT6jmukvm+zJ1jE="
+      "value": "SECRET:K9zuy0rbvKB4wzJPWclqJULSvVToN1lhzg5+sAmuWpVB5vA="
     },
     {
       "name": "BillingDispute_A2AServer_PORT",
@@ -1151,7 +1150,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS4zIiwidGFnIjoiMC45LjMtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWdlbmVyYWwvc3JjL2FwcC9HZW5lcmFsIiwiaWQiOiJHZW5lcmFsIiwidmVyc2lvbiI6IjEuNi4xNCIsInRhZyI6IjEuNi4xNC1iMDQiLCJuYW1lIjoiR2VuZXJhbCIsInMzbG9jYXRpb24iOiJUaWJjby9HZW5lcmFsIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL3dpLXBvc3RncmVzL3NyYy9hcHAvUG9zdGdyZVNRTCIsImlkIjoiUG9zdGdyZVNRTCIsInZlcnNpb24iOiIyLjcuMSIsInRhZyI6IjIuNy4xLWIwMSIsIm5hbWUiOiJQb3N0Z3JlU1FMIiwiczNsb2NhdGlvbiI6IlRpYmNvL1Bvc3RncmVTUUwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS40IiwidGFnIjoiMC45LjQtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWdlbmVyYWwvc3JjL2FwcC9HZW5lcmFsIiwiaWQiOiJHZW5lcmFsIiwidmVyc2lvbiI6IjEuNi4xNSIsInRhZyI6IjEuNi4xNS1iMDQiLCJuYW1lIjoiR2VuZXJhbCIsInMzbG9jYXRpb24iOiJUaWJjby9HZW5lcmFsIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL3dpLXBvc3RncmVzL3NyYy9hcHAvUG9zdGdyZVNRTCIsImlkIjoiUG9zdGdyZVNRTCIsInZlcnNpb24iOiIyLjcuMSIsInRhZyI6IjIuNy4xLWIwMSIsIm5hbWUiOiJQb3N0Z3JlU1FMIiwiczNsb2NhdGlvbiI6IlRpYmNvL1Bvc3RncmVTUUwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
   "metadata": {
     "endpoints": [
       {
@@ -1173,6 +1172,6 @@
         "name": "SendEmailAgent"
       }
     ],
-    "flogoVersion": "2.26.5"
+    "flogoVersion": "2.26.6"
   }
 }

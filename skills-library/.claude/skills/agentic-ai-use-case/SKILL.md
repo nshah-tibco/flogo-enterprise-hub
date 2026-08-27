@@ -1,6 +1,6 @@
 ---
 name: agentic-ai-use-case
-description: Build a customer/industry/vertical-specific Agentic AI use case (demo) on TIBCO Flogo Enterprise — a real-time WebSocket chatbot backed by three apps: an MCP Server (read-only DB lookup tools), an A2A Servers app (write-workflow agents), and an AI Orchestrator that classifies intent and routes between them. Use when the user asks to build/create/scaffold an agentic AI use case, demo, chatbot, or "MCP + A2A + orchestrator" solution for ANY domain (telecom, airline, hospital, banking, retail, insurance, logistics, utilities, …). Produces PostgreSQL-backed .flogo apps + database.sql + reset_data.sql + prompts.md + README, modeled on the reference use cases under demos/Agentic_AI/*_Use_Case.
+description: Build a customer/industry/vertical-specific Agentic AI use case (demo) on TIBCO Flogo Enterprise — a real-time WebSocket chatbot backed by three apps: an MCP Server (read-only DB lookup tools), an A2A Agents app (write-workflow agents), and an AI Orchestrator that classifies intent and routes between them. Use when the user asks to build/create/scaffold an agentic AI use case, demo, chatbot, or "MCP + A2A + orchestrator" solution for ANY domain (telecom, airline, hospital, banking, retail, insurance, logistics, utilities, …). Produces PostgreSQL-backed .flogo apps + database.sql + reset_data.sql + prompts.md + README, modeled on the reference use cases under demos/Agentic_AI/*_Use_Case.
 user-invocable: true
 ---
 
@@ -17,7 +17,7 @@ A new folder `demos/Agentic_AI/<UseCase>_Use_Case/` containing:
 | `database.sql` | PostgreSQL schema + demo data, engineered so each demo scenario works |
 | `reset_data.sql` | TRUNCATE + reload; clears agent-written tables; volatile dates made relative to today |
 | `<Prefix>MCPServer.flogo` | **1 MCP Server** — N read-only tools, each querying one table/join |
-| `<Prefix>A2AServers.flogo` | **1 A2A Servers app** — M business-logic agents (write workflows), each its own trigger/port |
+| `<Prefix>A2AServers.flogo` | **1 A2A Agents app** — M business-logic agents (write workflows), each its own trigger/port |
 | `<Prefix>AIOrchestrator.flogo` | **1 AI Orchestrator** — WebSocket trigger, an AI Agent activity that routes to MCP tools or A2A agents |
 | `prompts.md` | Demo prompts grouped by scenario |
 | `README.md` | Architecture, apps/tools/agents tables, DB summary, demo scenarios, **prerequisites + setup steps (manual steps folded in)**, ports, troubleshooting |
@@ -27,10 +27,10 @@ The architecture (all three use cases share it):
 ```
 Chatbot UI --WebSocket--> AI Orchestrator --MCP(HTTP)--> MCP Server --\
                                  |                                      +--> PostgreSQL
-                                 \--------A2A-------> A2A Servers ------/   (+ SMTP for email)
+                                 \--------A2A-------> A2A Agents -------/   (+ SMTP for email)
 ```
 - **MCP Server** = read-only lookups. Stateless, safe to retry, LLM picks tools by intent.
-- **A2A Servers** = write workflows (create/update). Own guardrails, multi-step, separate deploy/scale.
+- **A2A Agents** = write workflows (create/update). Own guardrails, multi-step, separate deploy/scale.
 - **Orchestrator** = the AI brain. WebSocket chat, LLM decides intent, calls MCP tools or hands off to A2A agents.
 
 ## Reference files (read before building)
@@ -106,7 +106,7 @@ Plan must list: the tables, the MCP tools (name → table/query), the A2A agents
 
 - `appModel`: `1.1.1`; `metadata.flogoVersion`: `2.26.5` (match the reference apps / installed version).
 - **MCP Server** — trigger `#mcpserver` (serverType `HTTP`, `serverEndpointPath` e.g. `/telecom-bss`, port from a property). Each tool = a handler → a flow of `#noop → #query → #actreturn`. Read pattern: `SELECT * FROM <table>` (no params), return `=coerce.toString($activity[PostgreSQLQuery].Output)`. The LLM filters the rows — so tools are simple and the `handlerDescription` must be rich (the LLM chooses tools from it). Set `readOnlyToolHint: true`.
-- **A2A Servers** — one `#agent` trigger per agent (each with its own `agentName`, `systemPrompt`, `agentPort`, `agentUrl`, and a handler with `agentToolName` + `toolParams` schema). Write flow: `#noop → #log → #query (optional validation) → #insert (write) → #log → #actreturn`. An email agent uses `#sendmail` (Gmail SSL:465, recipient from a property).
+- **A2A Agents** — one `#agent` trigger per agent (each with its own `agentName`, `systemPrompt`, `agentPort`, `agentUrl`, and a handler with `agentToolName` + `toolParams` schema). Write flow: `#noop → #log → #query (optional validation) → #insert (write) → #log → #actreturn`. An email agent uses `#sendmail` (Gmail SSL:465, recipient from a property).
 - **Orchestrator** — trigger `#wsserver` (port, `path` e.g. `/ws/chat` or `/<usecase>`) → flow `#noop → #agentactivity → #wswritedata`. The `#agentactivity` lists the MCP connection under `mcpServers` and all A2A connections under `remoteAgents`, with a `systemPrompt` holding the intent-routing rules. `input.userPrompt = =coerce.toString($flow.content)`; `#wswritedata` message = `=$activity[AIAgent].response`.
 - **Connections per app**: MCP → 1 PostgreSQL `#connection`. A2A → 1 OpenAI `#llmprovider` + 1 PostgreSQL `#connection`. Orchestrator → 1 OpenAI `#llmprovider` + 1 `#mcpserverconfig` + one `#a2aserverconnection` per A2A agent. UUIDs must be unique within an app and every `conn://<uuid>` must match a `connections` map key.
 - **Ports**: give each app a distinct port; the orchestrator's `#mcpserverconfig.serverUrl` and each `#a2aserverconnection.serverUrl` must point at the MCP/A2A ports; keep `metadata.endpoints` in sync with trigger ports and port properties.

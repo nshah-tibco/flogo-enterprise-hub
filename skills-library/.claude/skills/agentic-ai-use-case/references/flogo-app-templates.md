@@ -64,7 +64,7 @@ Design rule: **one tool per table or per meaningful join.** Rich `handlerDescrip
 
 ---
 
-## 2. A2A Servers — `<Prefix>A2AServers.flogo`
+## 2. A2A Agents — `<Prefix>A2AServers.flogo`
 
 **Imports:** flow, noop, flogo-general log, wi-postgres query, actreturn, wi-postgres insert, flogo-general sendmail (if email agent), flogo-ai-agent trigger/agent, contrib/function/string, coerce, flogo-ai-agent connector/llmprovider, wi-postgres connector/connection.
 

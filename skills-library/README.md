@@ -26,16 +26,20 @@ user-invocable: true
 
 ## What's in this Library
 
-The library contains **6 skills** that cover the full Flogo development lifecycle — from designing a flow, to building an executable, to deploying it on the TIBCO Platform.
+The library contains **10 skills** that cover the full Flogo development lifecycle — from designing a flow, to mapping and testing it, to building an executable, to deploying it on the TIBCO Platform, and up to scaffolding complete Agentic AI use cases.
 
 | Skill | Type | Purpose |
 |---|---|---|
 | **fda** | CLI reference | Full reference for the **Flogo Design Assistant** CLI — every task to create or modify a `.flogo` file (flows, activities, triggers, schemas, properties, tests). |
+| **fda-mapping** | CLI reference | Focused reference for **building, inspecting, and validating Flogo mappings** with `fda` — the `input.mapping` shape, the four source kinds (`$flowctx` / `$property` / `$activity` / `$loop`), function calls, and `@foreach` loops. |
 | **flogobuild** | CLI reference | Reference for **building executables** and TIBCO Platform deployment artifacts from `.flogo` files. |
 | **tibcop** | CLI reference | Reference for the **TIBCO Platform CLI** — manage builds, deploy, scale, and inspect Flogo applications on a dataplane. |
 | **flogo-deploy** | Recipe | End-to-end recipe to **deploy a `.flogo` app to a TIBCO Platform dataplane** (build → values → deploy → scale). |
+| **flogo-unit-testing** | Recipe | Recipe to **create and run unit tests for Flogo apps** — test files, test cases with flow inputs, assertions on flow outputs, and test execution with result verification. |
 | **mapping-from-excel** | Recipe | Recipe to **build a Flogo flow from an Excel mapping spec** — input fields, output fields, and per-field mapping rules. |
 | **rest-to-database-app** | Recipe | Recipe to **scaffold a REST API Flogo app that queries a database** (REST trigger → log → DB query → reply). |
+| **agentic-ai-use-case** | Use-case builder | Scaffold a complete, runnable **Agentic AI demo for any vertical** — an MCP Server (read-only DB tools) + A2A Agents app (write-workflow agents) + WebSocket AI Orchestrator, backed by PostgreSQL, modeled on the reference use cases under `demos/Agentic_AI/`. |
+| **agentic-ai-use-case-fda** | Use-case builder | The same 3-app Agentic AI demo, but constructed **entirely via the `fda` CLI** (command-by-command) rather than cloned/adapted JSON. |
 
 ---
 
@@ -79,12 +83,12 @@ A typical prompt:
 2. Click **Get** to install the documentation.
 3. Click the **Run Flogo Skill Library Template** button to generate a new project pre-seeded with the skills.
 4. Open the generated GitHub repo in **VS Code with Claude Code** installed.
-5. Edit `CLAUDE.md` and replace the placeholders (`<YOUR_FLOGO_CONTEXT>`, `<YOUR_PROFILE>`, `<DATAPLANE_NAME>`) with the values for your environment.
+5. Copy `.claude/skills/config.example.md` to `.claude/skills/config.md` and fill in the values for your environment (build context, platform token, dataplane, database, LLM key). Agent conventions live in `AGENT.md`.
 6. Start asking the agent to design, build, run, or deploy Flogo apps.
 
 ### Option 2: Add skills to an existing project
 
-If you already have a project, copy the `.claude/skills/` folder from the seed repo into your project root, and add the conventions to your project's `CLAUDE.md`.
+If you already have a project, copy the `.claude/skills/` folder from the seed repo into your project root, and add the conventions to your project's `AGENT.md`.
 
 ---
 
@@ -194,13 +198,20 @@ The trailing `$*` forwards all arguments to the underlying command.
 
 ## Configurable Defaults
 
-The skills reference a few placeholder values that you should set once in your project's `CLAUDE.md`:
+All environment-specific values live in a **single source of truth**: `.claude/skills/config.md`. Copy the template and fill in your values (the file is git-ignored, so real credentials are never committed):
 
-| Placeholder | What to set it to | How to find the value |
+```bash
+cp .claude/skills/config.example.md .claude/skills/config.md
+```
+
+Key values the skills rely on:
+
+| Key (in `config.md`) | What to set it to | How to find the value |
 |---|---|---|
-| `<YOUR_FLOGO_CONTEXT>` | Build context name for `flogobuild` (e.g. `flogo-2.26.0-1789`) | `flogobuild list-context` |
-| `<YOUR_PROFILE>` | TIBCO Platform CLI profile name | `tibcop list-profiles` |
-| `<DATAPLANE_NAME>` | Default dataplane to deploy to | `tibcop tplatform:list-data-planes --profile <YOUR_PROFILE>` |
+| `FLOGOBUILD_CONTEXT_NAME` | Build context name for `flogobuild` (e.g. `flogo-vscode-2.26.5-ENGR-001`) | `flogobuild list-context` |
+| `DATAPLANE_NAME` | Default dataplane to deploy to | `tibcop tplatform:list-data-planes` |
+| `CP_URL` / `TIBCOP_TOKEN` | TIBCO Platform control-plane URL and API token | TIBCO Platform console |
+| PostgreSQL / LLM / email | Connection settings for the database, LLM provider, and SMTP | your environment |
 
 ---
 
@@ -209,21 +220,27 @@ The skills reference a few placeholder values that you should set once in your p
 ```
 .
 ├── .claude/
-│   └── skills/                 # Skill definitions consumed by the AI coding agent
-│       ├── fda/                # Flogo Design Assistant CLI reference
-│       ├── flogobuild/         # Flogo build CLI reference
-│       ├── tibcop/             # TIBCO Platform CLI reference
-│       ├── flogo-deploy/       # End-to-end deployment recipe
-│       ├── mapping-from-excel/ # Build a Flogo flow from an Excel mapping spec
-│       └── rest-to-database-app/ # Scaffold a REST -> DB Flogo app
-├── CLAUDE.md                   # Project-level instructions for the agent
-└── Flogo_Apps/                 # Place your .flogo applications here
+│   └── skills/                       # Skill definitions consumed by the AI coding agent
+│       ├── fda/                      # Flogo Design Assistant CLI reference
+│       ├── fda-mapping/              # Flogo mapping reference for the fda CLI
+│       ├── flogobuild/               # Flogo build CLI reference
+│       ├── tibcop/                   # TIBCO Platform CLI reference
+│       ├── flogo-deploy/             # End-to-end deployment recipe
+│       ├── flogo-unit-testing/       # Create and run Flogo unit tests
+│       ├── mapping-from-excel/       # Build a Flogo flow from an Excel mapping spec
+│       ├── rest-to-database-app/     # Scaffold a REST -> DB Flogo app
+│       ├── agentic-ai-use-case/      # Scaffold an Agentic AI use case (MCP + A2A + orchestrator)
+│       ├── agentic-ai-use-case-fda/  # Same, built entirely via the fda CLI
+│       ├── config.example.md         # Template for environment-specific values (copy to config.md)
+│       └── config.md                 # Your environment values (git-ignored; not committed)
+├── AGENT.md                          # Project-level instructions for the agent
+└── Flogo_Apps/                       # Place your .flogo applications here
 ```
 
 ## Getting Started with Skills
 
 1. Open this project in VS Code with Claude Code installed.
-2. Edit `CLAUDE.md` and replace the placeholders (`<YOUR_FLOGO_CONTEXT>`, `<YOUR_PROFILE>`, `<DATAPLANE_NAME>`) with the values for your environment.
+2. Copy `.claude/skills/config.example.md` to `.claude/skills/config.md` and fill in the values for your environment. Agent conventions live in `AGENT.md`.
 3. Make sure the following CLIs are installed and on your `PATH`:
     - `fda` — Flogo Design Assistant
     - `flogobuild` — Flogo build CLI
@@ -244,11 +261,15 @@ The skills reference a few placeholder values that you should set once in your p
 | Skill | Purpose |
 |---|---|
 | `fda` | Reference for the Flogo Design Assistant CLI — every task to create/modify a `.flogo` file. |
+| `fda-mapping` | Reference for building, inspecting, and validating Flogo mappings with the `fda` CLI. |
 | `flogobuild` | Reference for building executables and deployment artifacts from `.flogo` files. |
 | `tibcop` | Reference for the TIBCO Platform CLI — manage builds, deployments, scaling. |
 | `flogo-deploy` | End-to-end recipe to deploy a `.flogo` app to a TIBCO Platform dataplane. |
+| `flogo-unit-testing` | Recipe to create and run unit tests for Flogo apps (test cases, assertions, execution). |
 | `mapping-from-excel` | Recipe to build a Flogo flow from an Excel mapping spec (input fields → output fields with rules). |
 | `rest-to-database-app` | Recipe to scaffold a REST API Flogo app that queries a database. |
+| `agentic-ai-use-case` | Scaffold a full Agentic AI use case (MCP Server + A2A Agents + WebSocket AI Orchestrator) for any vertical. |
+| `agentic-ai-use-case-fda` | Same 3-app Agentic AI use case, built entirely via the `fda` CLI instead of cloned JSON. |
 
 ---
 

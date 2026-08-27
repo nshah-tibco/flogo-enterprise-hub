@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sca:composite xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:BW="http://xsd.tns.tibco.com/amf/models/sca/implementationtype/BW" xmlns:XMLSchema="http://www.w3.org/2001/XMLSchema" xmlns:compositeext="http://schemas.tibco.com/amx/3.0/compositeext" xmlns:parameters="http://xmlns.example.com/RAGQuery/parameters" xmlns:parameters_1="http://xmlns.example.com/RAGImgQuery/parameters" xmlns:rest="http://xsd.tns.tibco.com/bw/models/binding/rest" xmlns:sca="http://www.osoa.org/xmlns/sca/1.0" xmlns:scact="http://xsd.tns.tibco.com/amf/models/sca/componentType" xmlns:scaext="http://xsd.tns.tibco.com/amf/models/sca/extensions" xmi:id="_XhAFkH6kEfCZ9PxoEDALjA" targetNamespace="http://tns.tibco.com/bw/composite/RAG_Air_Liquide_Query" name="RAG_Air_Liquide_Query" compositeext:version="1.0.0" compositeext:formatVersion="2">
+  <mcpStarterConfig xmi:id="_1V1s8IqmEfG5E57SOioPYw"/>
+  <sca:service xmi:id="_jQ-o0H6mEfCjE4nAzlfMdQ" name="ragimgquery" promote="ComponentRAGImgQuery/ragimgquery">
+    <sca:interface.wsdl xmi:id="_jRXDUH6mEfCjE4nAzlfMdQ" interface="http://xmlns.example.com/20250821212024PLT#wsdl.interface(ragimgquery)" scaext:wsdlLocation="../Processes/rag_image_query/RAGImgQuery.bwp"/>
+    <scaext:binding xsi:type="rest:RestServiceBinding" xmi:id="_jRj3oH6mEfCjE4nAzlfMdQ" name="RestService" path="/ragimgquery" docBasePath="http://localhost:7777/RAG_Air_Liquide_Query" docResourcePath="RAGImgQuery" basePath="/" connector="rag_image_query.RAGQuery" structuredData="true" technologyVersion="3.0.0" implementation="Service Descriptors/rag_image_query.RAGImgQuery-RAGImgQuery.json">
+      <operation xmi:id="_jRsagH6mEfCjE4nAzlfMdQ" operationName="post" nickname="post-ragimgquery" httpMethod="POST" notes="postRAGImgQuery" clientRequestType="multipart/form-data" responseStyle="element" outputPartName="item" tool="true">
+        <parameters xmi:id="_rmjzsH6mEfCjE4nAzlfMdQ" formElement="parameters_1:ragimgqueryPostForm">
+          <parameterMapping xmi:id="_tstn4H6mEfCjE4nAzlfMdQ" parameterName="question" parameterType="formData" dataType="string" required="true" description=""/>
+          <parameterMapping xmi:id="_wq_98H6mEfCjE4nAzlfMdQ" parameterName="imageInput" parameterType="formData" dataType="file" contentType="application/octet-stream" contentElement="parameters_1:content" array="true" description=""/>
+        </parameters>
+        <clientFormat>json</clientFormat>
+        <clientRequestFormat>FORM</clientRequestFormat>
+      </operation>
+      <parameters xmi:id="_jSDm4H6mEfCjE4nAzlfMdQ"/>
+      <advancedConfig xmi:id="_jRj3oX6mEfCjE4nAzlfMdQ" blockingQueueSize="8192"/>
+    </scaext:binding>
+    <scact:bindingAdjunct xmi:id="_jRsagX6mEfCjE4nAzlfMdQ" bindingName="RestService"/>
+  </sca:service>
+  <sca:property xmi:id="_YHfd0H6kEfCZ9PxoEDALjA" name="BW.DEPLOYMENTUNIT.TYPE" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_YHkWUH6kEfCZ9PxoEDALjA" name="BW.APPNODE.NAME" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_YHoAsH6kEfCZ9PxoEDALjA" name="BW.DEPLOYMENTUNIT.NAME" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_YHqc8H6kEfCZ9PxoEDALjA" name="BW.HOST.NAME" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_YHuHUH6kEfCZ9PxoEDALjA" name="BW.DOMAIN.NAME" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_YHxxsH6kEfCZ9PxoEDALjA" name="BW.DEPLOYMENTUNIT.VERSION" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_YH01AH6kEfCZ9PxoEDALjA" name="BW.APPSPACE.NAME" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_YH4fYH6kEfCZ9PxoEDALjA" name="BW.MODULE.VERSION" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_YH8JwH6kEfCZ9PxoEDALjA" name="BW.MODULE.NAME" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_NhQNAH6mEfCjE4nAzlfMdQ" name="hostname" type="XMLSchema:string" publicAccess="true" scalable="true"/>
+  <sca:property xmi:id="_Pqw3MH6mEfCjE4nAzlfMdQ" name="imgUploadPort" type="XMLSchema:int" scaext:simpleValue="0" publicAccess="true" scalable="true"/>
+  <sca:property xmi:id="_gGo-UH6nEfCjE4nAzlfMdQ" name="tableName" type="XMLSchema:string" publicAccess="true" scalable="true"/>
+  <sca:component xmi:id="_jQoqkH6mEfCjE4nAzlfMdQ" name="ComponentRAGImgQuery" compositeext:version="1.0.0.qualifier">
+    <scaext:implementation xsi:type="BW:BWComponentImplementation" xmi:id="_jQoqkX6mEfCjE4nAzlfMdQ" processName="rag_image_query.RAGImgQuery"/>
+    <sca:service xmi:id="_jQx0gH6mEfCjE4nAzlfMdQ" name="ragimgquery">
+      <sca:interface.wsdl xmi:id="_jQ2F8H6mEfCjE4nAzlfMdQ" interface="http://xmlns.example.com/20250821212024PLT#wsdl.interface(ragimgquery)" scaext:wsdlLocation="../Processes/rag_image_query/RAGImgQuery.bwp"/>
+    </sca:service>
+  </sca:component>
+</sca:composite>

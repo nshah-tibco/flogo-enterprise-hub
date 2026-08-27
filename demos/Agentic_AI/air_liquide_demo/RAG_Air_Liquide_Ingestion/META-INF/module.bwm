@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sca:composite xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:BW="http://xsd.tns.tibco.com/amf/models/sca/implementationtype/BW" xmlns:XMLSchema="http://www.w3.org/2001/XMLSchema" xmlns:compositeext="http://schemas.tibco.com/amx/3.0/compositeext" xmlns:parameters="http://xmlns.example.com/upload/parameters" xmlns:rest="http://xsd.tns.tibco.com/bw/models/binding/rest" xmlns:sca="http://www.osoa.org/xmlns/sca/1.0" xmlns:scact="http://xsd.tns.tibco.com/amf/models/sca/componentType" xmlns:scaext="http://xsd.tns.tibco.com/amf/models/sca/extensions" xmi:id="_sS-v8FsnEfCF7MdNdFTj1Q" targetNamespace="http://tns.tibco.com/bw/composite/RAG_Air_Liquide_Ingestion" name="RAG_Air_Liquide_Ingestion" compositeext:version="1.0.0" compositeext:formatVersion="2">
+  <mcpStarterConfig xmi:id="_1Wt2sIqmEfG5E57SOioPYw"/>
+  <sca:service xmi:id="_vKnEYlsnEfCF7MdNdFTj1Q" name="upload" promote="Componentupload/upload">
+    <sca:interface.wsdl xmi:id="_vKnEZlsnEfCF7MdNdFTj1Q" interface="http://xmlns.example.com/20250707171427PLT#wsdl.interface(upload)" scaext:wsdlLocation="../Processes/rest_download/upload.bwp"/>
+    <scaext:binding xsi:type="rest:RestServiceBinding" xmi:id="_vKtyEFsnEfCF7MdNdFTj1Q" name="RestService" path="/upload" docBasePath="http://localhost:7777/RAG_Air_Liquide_Ingestion" docResourcePath="upload" basePath="/" connector="rest_download.upload" structuredData="true" technologyVersion="3.0.0" implementation="Service Descriptors/rest_download.upload-upload.json" enforceBWServiceResponse="true">
+      <operation xmi:id="_vKzRoFsnEfCF7MdNdFTj1Q" operationName="post" nickname="post-upload" httpMethod="POST" notes="postUpload" clientRequestType="multipart/form-data" responseStyle="element" outputPartName="item" tool="true">
+        <parameters xmi:id="_x65asFsnEfCF7MdNdFTj1Q" formElement="parameters:uploadPostForm">
+          <parameterMapping xmi:id="_3JeYYFsnEfCF7MdNdFTj1Q" parameterName="files" parameterType="formData" dataType="file" contentType="application/octet-stream" contentElement="parameters:content" array="true" description=""/>
+        </parameters>
+        <clientFormat>json</clientFormat>
+        <clientRequestFormat>FORM</clientRequestFormat>
+      </operation>
+      <parameters xmi:id="_vLX5YFsnEfCF7MdNdFTj1Q"/>
+      <advancedConfig xmi:id="_vKtyEVsnEfCF7MdNdFTj1Q" blockingQueueSize="8192"/>
+    </scaext:binding>
+    <scact:bindingAdjunct xmi:id="_vKzRoVsnEfCF7MdNdFTj1Q" bindingName="RestService"/>
+  </sca:service>
+  <sca:property xmi:id="_tFZEUFsnEfCF7MdNdFTj1Q" name="BW.DEPLOYMENTUNIT.TYPE" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_tFcHoFsnEfCF7MdNdFTj1Q" name="BW.APPNODE.NAME" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_tFdVwFsnEfCF7MdNdFTj1Q" name="BW.DEPLOYMENTUNIT.NAME" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_tFej4FsnEfCF7MdNdFTj1Q" name="BW.HOST.NAME" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_tFfyAFsnEfCF7MdNdFTj1Q" name="BW.DOMAIN.NAME" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_tFgZEFsnEfCF7MdNdFTj1Q" name="BW.DEPLOYMENTUNIT.VERSION" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_tFhnMFsnEfCF7MdNdFTj1Q" name="BW.APPSPACE.NAME" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_tFi1UFsnEfCF7MdNdFTj1Q" name="BW.MODULE.VERSION" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_tFkDcFsnEfCF7MdNdFTj1Q" name="BW.MODULE.NAME" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_xRv1AHNaEfCI7Z1E1r_lpg" name="UploadHost" type="XMLSchema:string" publicAccess="true" scalable="true"/>
+  <sca:property xmi:id="_0GLEcHNaEfCI7Z1E1r_lpg" name="UploadPort" type="XMLSchema:int" scaext:simpleValue="0" publicAccess="true" scalable="true"/>
+  <sca:property xmi:id="_PsTYcIqpEfG5E57SOioPYw" name="Property" type="XMLSchema:string" scaext:simpleValue="" publicAccess="true" scalable="true"/>
+  <sca:component xmi:id="_vKmdUFsnEfCF7MdNdFTj1Q" name="Componentupload" compositeext:version="1.0.0.qualifier">
+    <scaext:implementation xsi:type="BW:BWComponentImplementation" xmi:id="_vKmdUVsnEfCF7MdNdFTj1Q" processName="rest_download.upload"/>
+    <sca:service xmi:id="_vKnEYFsnEfCF7MdNdFTj1Q" name="upload">
+      <sca:interface.wsdl xmi:id="_vKnEYVsnEfCF7MdNdFTj1Q" interface="http://xmlns.example.com/20250707171427PLT#wsdl.interface(upload)" scaext:wsdlLocation="../Processes/rest_download/upload.bwp"/>
+    </sca:service>
+  </sca:component>
+</sca:composite>

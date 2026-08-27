@@ -563,7 +563,7 @@
     {
       "name": "AgenticAI.openai.API_Key",
       "type": "string",
-      "value": "SECRET:AauMSc0scL1eIO6eZLynaIqSrqdmUtxFUWluXVfBj2DOBRRPay4zFTUkN3uvfetfjgOZAtL35Y+fkzc1wYVP/5yfIx3Cm8ai79XupdVf0VGn2ghbRBHiA7IAGHi5YgisUbt2SajyEDMDfVs90VtcuZ2Pd89LHy5F87AtGh6Sdj5FeeFjtVykt3PRoEzEuPZ+gcD/KUtce6HHUcmtMLEK/KCQEs884uNRMd+1ncZ596oYXPhC"
+      "value": "SECRET:CyfpCtMpdl5x8McoW63O3m1XK7zgBRNeELNZx7cbTU4iEH+HDvCLXPf9WjaaW67vzUXW3RvEr/kJ+1GpwpEbYk+J0TV3/EFD1FXXXKtG4RPsmtJCPD30HgkpVIWd2fUTIpRKmENHMcbcmIEAD7hiqAddaRkZFOnq5IKQxFqiqjTIPc3RnlP6LKEzi+ijTNeybeNbRj2rsXffchtURUDXUqi6HMPk6BEEwAGePtPhsP+dCXPQ"
     },
     {
       "name": "AgenticAI.openai.LLM_Base_URL",
@@ -613,7 +613,7 @@
     {
       "name": "A2A.AuthToken",
       "type": "string",
-      "value": "SECRET:zo9v77J6RHSALwFLwde1p5eXMwfF9khg7ULabnNp2RKbCAKg7+FBsV5KfQ8="
+      "value": "SECRET:QHupuqM/aFuXs/cfF3PVDI3MlDh11oKuoMezoxtdIMGDajhWRy1M4BsMuYY="
     },
     {
       "name": "A2A.port",
@@ -646,7 +646,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS4zIiwidGFnIjoiMC45LjMtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS40IiwidGFnIjoiMC45LjQtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
   "metadata": {
     "endpoints": [
       {
@@ -656,6 +656,6 @@
         "type": "public"
       }
     ],
-    "flogoVersion": "2.26.5"
+    "flogoVersion": "2.26.6"
   }
 }

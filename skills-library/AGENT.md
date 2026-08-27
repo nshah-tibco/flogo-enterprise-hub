@@ -85,23 +85,26 @@ function fda {
   if (-not $cli) { Write-Error "flogodesign-cli not found. Install the TIBCO Flogo VS Code extension."; return }
   & $cli.FullName @args
 }
+```
 
 ## Project conventions
 
 - Always work with Flogo applications inside the `./Flogo_Apps/` folder.
 - Always pass `-f <AppName>.flogo` on every `fda` command to target the correct file.
-- To build applications, use the `flogobuild` CLI with the build context configured for your Flogo version (set `<YOUR_FLOGO_CONTEXT>` below).
-- To deploy applications, use the `tibcop` (TIBCO Platform CLI) with the `flogo` topic and the profile configured for your environment (set `<YOUR_PROFILE>` below).
+- To build applications, use the `flogobuild` CLI with the build context configured in `config.md` (`FLOGOBUILD_CONTEXT_NAME`).
+- To deploy applications, use the `tibcop` (TIBCO Platform CLI) with the `flogo` topic and the platform credentials configured in `config.md` (`CP_URL`, `TIBCOP_TOKEN`, `DATAPLANE_NAME`).
 
 ## Configurable values for this project
 
-Replace the placeholders below with the values for your environment:
+All environment-specific values — build context, platform credentials, dataplane, database, LLM keys, and CLI paths — live in a **single source of truth**: [`.claude/skills/config.md`](.claude/skills/config.md). Read that file first; never duplicate these values across skills or in this document.
 
-| Placeholder | Description | Example |
-|---|---|---|
-| `<YOUR_FLOGO_CONTEXT>` | Build context name for `flogobuild` | `flogo-2.26.0-1789` |
-| `<YOUR_PROFILE>` | TIBCO Platform CLI profile name | `MyPlatform` |
-| `<DATAPLANE_NAME>` | Default dataplane to deploy to | `MyDataPlane` |
+If `config.md` does not exist yet, copy the template and fill in your values:
+
+```bash
+cp .claude/skills/config.example.md .claude/skills/config.md
+```
+
+`config.md` is git-ignored, so your real credentials are never committed. Key values include `FLOGOBUILD_CONTEXT_NAME` (build context), `DATAPLANE_NAME`, `CP_URL` / `TIBCOP_TOKEN` (platform), plus the PostgreSQL, LLM, and email settings.
 
 To list available `flogobuild` contexts: `flogobuild list-context`
 To list configured `tibcop` profiles: `tibcop list-profiles`
@@ -112,5 +115,5 @@ To run and test an application locally:
 
 1. Add a timer trigger to a flow that executes the flow on startup.
 2. Use log activities to log output to the console.
-3. Build with `flogobuild build-exe -f <AppName>.flogo -c <YOUR_FLOGO_CONTEXT> -o ./bin`.
+3. Build with `flogobuild build-exe -f <AppName>.flogo -c <FLOGOBUILD_CONTEXT_NAME> -o ./bin` (use the `FLOGOBUILD_CONTEXT_NAME` value from `config.md`).
 4. Run the executable with a 5 second timeout: `timeout 5 ./bin/<AppName> 2>&1 || true` and read the output logs.

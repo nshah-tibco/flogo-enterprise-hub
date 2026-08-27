@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Air Liquide AI Demo Platform</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --al-blue:#0033A0;--al-blue-d:#002280;--al-blue-pale:#EBF0FF;
+  --al-sky:#00AEEF;--success:#10B981;--warn:#F59E0B;
+  --danger:#EF4444;--transit:#F97316;--maint:#8B5CF6;
+  --bg:#F8FAFC;--surface:#fff;--surface2:#F1F5F9;
+  --border:#E2E8F0;--border2:#CBD5E1;
+  --text:#0F172A;--text2:#475569;--text3:#94A3B8;
+  --r:12px;--r2:8px;--r3:6px;
+  --sh:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);
+  --sh2:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.06);
+  --f:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --fm:'SF Mono',Consolas,monospace;
+}
+body{font-family:var(--f);background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── Header ── */
+header{
+  background:var(--al-blue);color:#fff;height:60px;
+  padding:0 28px;display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 2px 8px rgba(0,51,160,.35);position:sticky;top:0;z-index:100;
+}
+.h-logo{display:flex;align-items:center;gap:12px}
+.h-logo-mark{
+  width:38px;height:38px;background:#fff;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.h-title{font-size:17px;font-weight:700;letter-spacing:-.2px}
+.h-sub{font-size:10px;opacity:.7;letter-spacing:.6px;text-transform:uppercase;margin-top:1px}
+.h-right{display:flex;align-items:center;gap:14px}
+.pill{
+  padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;
+  letter-spacing:.5px;text-transform:uppercase;
+}
+.pill-mcp{background:rgba(0,195,255,.18);color:#7DD3FC;border:1px solid rgba(0,195,255,.28)}
+.pill-rag{background:rgba(167,139,250,.18);color:#C4B5FD;border:1px solid rgba(167,139,250,.28)}
+.pill-bw{background:rgba(255,255,255,.14);color:rgba(255,255,255,.9);border:1px solid rgba(255,255,255,.18)}
+.conn{display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.8)}
+.conn-dot{width:8px;height:8px;border-radius:50%;background:#FCD34D;flex-shrink:0}
+.conn-dot.on{background:#34D399;animation:pulse 2s infinite}
+.conn-dot.off{background:#EF4444}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+
+/* ── Tabs ── */
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;display:flex;gap:2px}
+.tab{
+  padding:14px 18px;font-size:13px;font-weight:500;color:var(--text2);
+  cursor:pointer;border-bottom:2px solid transparent;
+  display:flex;align-items:center;gap:7px;user-select:none;transition:color .13s;
+}
+.tab:hover{color:var(--al-blue)}
+.tab.on{color:var(--al-blue);border-bottom-color:var(--al-blue);font-weight:600}
+
+/* ── Content ── */
+.content{max-width:1320px;margin:0 auto;padding:28px}
+.panel{display:none}.panel.on{display:block}
+
+/* ── Section head ── */
+.sec-head{margin-bottom:22px}
+.sec-title{font-size:22px;font-weight:700;margin-bottom:5px}
+.sec-desc{font-size:13px;color:var(--text2);line-height:1.55;max-width:800px}
+
+/* ── Grid ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+@media(max-width:860px){.g2,.g3{grid-template-columns:1fr}.content{padding:14px}header{padding:0 14px}.tabs{padding:0 14px}}
+
+/* ── Card ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.card-h{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.card-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px}
+.card-icon{width:18px;height:18px;color:var(--al-blue);flex-shrink:0}
+.card-b{padding:18px}
+
+/* ── Forms ── */
+.fg{margin-bottom:14px}.fg:last-child{margin-bottom:0}
+label{display:block;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+input,select,textarea{
+  width:100%;padding:9px 11px;border:1px solid var(--border2);
+  border-radius:var(--r2);font-family:var(--f);font-size:13px;
+  color:var(--text);background:var(--surface);transition:border-color .13s,box-shadow .13s;outline:none;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--al-blue);box-shadow:0 0 0 3px rgba(0,51,160,.1)}
+select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394A3B8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:32px}
+input[readonly]{background:var(--surface2);color:var(--text2)}
+textarea{resize:none;min-height:40px;max-height:110px;line-height:1.45}
+
+/* ── Buttons ── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  padding:9px 16px;border-radius:var(--r2);font-size:13px;font-weight:600;
+  cursor:pointer;border:none;transition:all .13s;white-space:nowrap;font-family:var(--f);
+}
+.btn-p{background:var(--al-blue);color:#fff}.btn-p:hover{background:var(--al-blue-d)}
+.btn-s{background:var(--surface2);color:var(--text);border:1px solid var(--border2)}.btn-s:hover{background:var(--border)}
+.btn-ok{background:var(--success);color:#fff}.btn-ok:hover{background:#059669}
+.btn-w{background:var(--warn);color:#fff}.btn-w:hover{background:#D97706}
+.btn-full{width:100%}
+.btn-sm{padding:6px 11px;font-size:12px}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+
+/* ── API tag ── */
+.api-tag{font-family:var(--fm);font-size:10px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 7px;color:var(--text2);white-space:nowrap}
+.m-get{color:#16A34A;font-weight:800}.m-post{color:#D97706;font-weight:800}
+
+/* ── Status badge ── */
+.sbadge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700}
+.sdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.s-av{background:rgba(16,185,129,.1);color:#047857}.s-av .sdot{background:var(--success)}
+.s-rs{background:rgba(245,158,11,.1);color:#B45309}.s-rs .sdot{background:var(--warn)}
+.s-it{background:rgba(249,115,22,.1);color:#C2410C}.s-it .sdot{background:var(--transit)}
+.s-mt{background:rgba(139,92,246,.1);color:#6D28D9}.s-mt .sdot{background:var(--maint)}
+
+/* ── Gas chip ── */
+.gchip{display:inline-block;padding:2px 8px;background:var(--al-blue-pale);color:var(--al-blue);border-radius:12px;font-size:11px;font-weight:700}
+
+/* ── Table ── */
+.tbl-wrap{overflow-x:auto;border-radius:var(--r2);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead{background:var(--surface2)}
+th{padding:9px 13px;text-align:left;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:11px 13px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+.tr-click{cursor:pointer}
+.tr-click:hover td{background:var(--al-blue-pale)}
+
+/* ── Detail card internals ── */
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.ditem{background:var(--surface2);border-radius:var(--r2);padding:11px}
+.dlbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:3px}
+.dval{font-size:15px;font-weight:700;color:var(--text)}
+.gauge-wrap{margin:14px 0}
+.gauge-top{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:5px}
+.gauge-bar{height:7px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.gauge-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--al-blue),var(--al-sky));transition:width .45s ease}
+
+/* ── Alert ── */
+.alert{padding:11px 14px;border-radius:var(--r2);font-size:12px;display:flex;align-items:flex-start;gap:9px;margin-bottom:14px;line-height:1.45}
+.al-ok{background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.2);color:#065F46}
+.al-err{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);color:#B91C1C}
+.al-info{background:rgba(0,51,160,.06);border:1px solid rgba(0,51,160,.15);color:var(--al-blue)}
+
+/* ── Spinner ── */
+.spin{width:18px;height:18px;border:2px solid rgba(0,51,160,.15);border-top-color:var(--al-blue);border-radius:50%;animation:sp .75s linear infinite;display:inline-block;flex-shrink:0}
+@keyframes sp{to{transform:rotate(360deg)}}
+.loading{display:flex;align-items:center;gap:9px;padding:28px;color:var(--text2);font-size:13px;justify-content:center}
+
+/* ── Empty state ── */
+.empty{text-align:center;padding:40px 20px;color:var(--text3)}
+.empty svg{width:44px;height:44px;margin:0 auto 10px;opacity:.35}
+.empty-t{font-size:13px;font-weight:600}
+.empty-s{font-size:12px;margin-top:3px}
+
+/* ── Upload zone ── */
+.upzone{
+  border:2px dashed var(--border2);border-radius:var(--r);padding:28px;
+  text-align:center;cursor:pointer;transition:all .18s;background:var(--surface2);
+}
+.upzone:hover,.upzone.drag{border-color:var(--al-blue);background:var(--al-blue-pale)}
+.upzone input{display:none}
+.upzone svg{width:38px;height:38px;color:var(--text3);margin:0 auto 10px;transition:color .18s}
+.upzone:hover svg,.upzone.drag svg{color:var(--al-blue)}
+.up-t{font-size:13px;font-weight:600;color:var(--text2)}
+.up-s{font-size:11px;color:var(--text3);margin-top:3px}
+
+/* ── File list ── */
+.flist{margin-top:10px;display:flex;flex-direction:column;gap:5px}
+.fitem{display:flex;align-items:center;gap:9px;padding:7px 11px;background:var(--surface2);border-radius:var(--r2);font-size:12px;border:1px solid var(--border)}
+.fname{flex:1;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fsize{color:var(--text3);font-size:11px}
+.frm{cursor:pointer;color:var(--text3);padding:2px;border-radius:3px;transition:color .13s;line-height:0}
+.frm:hover{color:var(--danger)}
+
+/* ── Progress ── */
+.prog-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:7px}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--al-blue),var(--al-sky));border-radius:2px;transition:width .3s ease}
+
+/* ── Chat ── */
+.chat-msgs{height:390px;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:14px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.msg{display:flex;gap:9px;max-width:88%}
+.msg.usr{align-self:flex-end;flex-direction:row-reverse}
+.ava{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:800}
+.ava-u{background:var(--al-blue);color:#fff}
+.ava-ai{background:linear-gradient(135deg,#7C3AED,#2563EB);color:#fff}
+.bubble{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:9px 13px;font-size:13px;line-height:1.5;box-shadow:var(--sh)}
+.msg.usr .bubble{background:var(--al-blue);color:#fff;border-color:var(--al-blue)}
+.mtime{font-size:10px;color:var(--text3);margin-top:3px}
+.msg.usr .mtime{text-align:right}
+.chat-foot{padding:14px}
+.chat-row{display:flex;gap:7px;align-items:flex-end}
+.chat-actions{display:flex;gap:5px}
+.img-prev-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:7px}
+.thumb{position:relative;width:54px;height:54px}
+.thumb img{width:100%;height:100%;object-fit:cover;border-radius:5px;border:1px solid var(--border)}
+.thumb-rm{position:absolute;top:-4px;right:-4px;width:16px;height:16px;background:var(--danger);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;font-weight:800}
+
+/* ── Ingested log ── */
+.ing-entry{display:flex;align-items:center;gap:7px;padding:6px 10px;background:rgba(16,185,129,.05);border:1px solid rgba(16,185,129,.18);border-radius:var(--r2);font-size:12px;margin-top:6px}
+.ing-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+
+/* ── Fade ── */
+.fade{animation:fi .25s ease}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Quick prompt chips ── */
+.qprompt{
+  background:var(--al-blue-pale);color:var(--al-blue);border:1px solid rgba(0,51,160,.18);
+  border-radius:20px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;
+  font-family:var(--f);transition:all .13s;white-space:nowrap;
+}
+.qprompt:hover{background:var(--al-blue);color:#fff}
+
+/* ── Tool step bubbles ── */
+.tool-step{border-radius:var(--r2);overflow:hidden;border:1px solid var(--border);font-size:11px;margin-bottom:6px}
+.tool-step-hd{display:flex;align-items:center;gap:7px;padding:7px 11px}
+.tool-step-bd{padding:7px 11px;font-family:var(--fm);color:var(--text2);white-space:pre-wrap;max-height:130px;overflow-y:auto;line-height:1.4}
+.step-calling .tool-step-hd{background:rgba(0,51,160,.06);border-bottom:1px solid rgba(0,51,160,.12)}
+.step-done .tool-step-hd{background:rgba(16,185,129,.06);border-bottom:1px solid rgba(16,185,129,.14)}
+.step-err .tool-step-hd{background:rgba(239,68,68,.06);border-bottom:1px solid rgba(239,68,68,.14)}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--text3)}
+</style>
+</head>
+<body>
+
+<!-- ── Header ───────────────────────────────────────────── -->
+<header>
+  <div class="h-logo">
+    <div class="h-logo-mark">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+        <circle cx="13" cy="13" r="11" fill="#0033A0"/>
+        <circle cx="13" cy="13" r="7" fill="#00AEEF"/>
+        <circle cx="13" cy="13" r="3.5" fill="white"/>
+      </svg>
+    </div>
+    <div>
+      <div class="h-title">Air Liquide &mdash; Smart Operations Assistant</div>
+      <div class="h-sub">RAG&nbsp;&middot;&nbsp;MCP Tools&nbsp;&middot;&nbsp;TIBCO BusinessWorks 6</div>
+    </div>
+  </div>
+  <div class="h-right">
+    <div style="display:flex;gap:6px">
+      <span class="pill pill-mcp">MCP Tools</span>
+      <span class="pill pill-rag">RAG Pipeline</span>
+      <span class="pill pill-bw">BW 6.12</span>
+    </div>
+    <div class="conn" id="connWrap">
+      <div class="conn-dot" id="connDot"></div>
+      <span id="connTxt">Checking…</span>
+    </div>
+  </div>
+</header>
+
+<!-- ── Demo Scenario Banner ──────────────────────────────── -->
+<div id="scenarioBanner" style="background:linear-gradient(90deg,#0033A0,#0047CC);color:#fff;padding:10px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:12px;flex-wrap:wrap">
+  <div style="display:flex;align-items:center;gap:10px">
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <strong>Demo Scenario:</strong>&nbsp;Ask the AI &ldquo;Do we have high-purity Nitrogen in Houston?&rdquo; &rarr; MCP invokes BW6 API &rarr; &ldquo;Reserve AL-9082 for dispatch&rdquo; &rarr; POST workflow executes.
+  </div>
+  <div style="display:flex;gap:6px;flex-shrink:0">
+    <button onclick="runScenario('search')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--f)">▶ Try: Search Nitrogen</button>
+    <button onclick="runScenario('rag')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--f)">▶ Try: Safety Query</button>
+    <button onclick="document.getElementById('scenarioBanner').style.display='none'" style="background:transparent;border:none;color:rgba(255,255,255,.55);cursor:pointer;font-size:16px;padding:0 4px">×</button>
+  </div>
+</div>
+
+<!-- ── Tabs ─────────────────────────────────────────────── -->
+<div class="tabs">
+  <div class="tab on" onclick="switchTab('mcp')" id="tab-mcp">
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.155-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+    </svg>
+    Smart Cylinder Operations (MCP)
+  </div>
+  <div class="tab" onclick="switchTab('rag')" id="tab-rag">
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+    </svg>
+    AI Document Assistant (RAG)
+  </div>
+</div>
+
+<!-- ── Main ──────────────────────────────────────────────── -->
+<div class="content">
+
+  <!-- ══ MCP Panel ══════════════════════════════════════════ -->
+  <div class="panel on" id="panel-mcp">
+    <div class="sec-head">
+      <div class="sec-title">Smart Cylinder Operations</div>
+      <div class="sec-desc">AI agents interact with gas cylinder inventory in real-time via MCP tools — each REST endpoint is registered as an agent-callable function by TIBCO BusinessWorks.</div>
+    </div>
+
+    <!-- ── AI Operations Assistant ──────────────────────────── -->
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-h">
+        <div class="card-title">
+          <svg class="card-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+          </svg>
+          AI Operations Assistant
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">OpenAI Key</span>
+          <input type="password" id="oaKey" placeholder="sk-…"
+            style="width:185px;font-size:11px;padding:5px 9px;font-family:var(--fm)"
+            oninput="saveOaKey()"/>
+          <span style="font-size:10px;color:var(--text3);font-family:var(--fm)">gpt-5.5</span>
+          <span style="font-size:10px;color:var(--text3)">·</span>
+          <span style="font-size:10px;color:var(--text3)">3 MCP tools via BW6</span>
+        </div>
+      </div>
+
+      <div style="padding:9px 14px;display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--surface2)">
+        <span style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;align-self:center;flex-shrink:0">Try:</span>
+        <button class="qprompt" onclick="setMcpQ('Do we have high-purity Nitrogen available in Houston Yard A?')">Nitrogen in Houston</button>
+        <button class="qprompt" onclick="setMcpQ('What is the current pressure and certification status of cylinder AL-ARG-9082?')">Check AL-ARG-9082</button>
+        <button class="qprompt" onclick="setMcpQ('Dispatch cylinder AL-NIT-3041 to Customer Site Paris Nord')">Dispatch AL-NIT-3041</button>
+        <button class="qprompt" onclick="setMcpQ('Find all available Oxygen cylinders and their locations')">Available Oxygen</button>
+        <button class="qprompt" onclick="setMcpQ('Are there any Hydrogen cylinders ready for dispatch in the Houston Yard A?')">Hydrogen ready</button>
+      </div>
+
+      <div class="chat-msgs" id="mcpChatMsgs" style="height:340px">
+        <div class="msg fade">
+          <div class="ava ava-ai">AI</div>
+          <div>
+            <div class="bubble">Hello! I'm connected to your TIBCO BusinessWorks 6 MCP tools. Ask me anything about gas cylinder inventory — I'll invoke the right workflow automatically.<br><br><strong>Available tools:</strong>&nbsp; <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;font-family:var(--fm);font-size:11px">searchGasStock</code>&nbsp; <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;font-family:var(--fm);font-size:11px">getCylinderStatus</code>&nbsp; <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;font-family:var(--fm);font-size:11px">dispatchCylinder</code></div>
+            <div class="mtime">Ready · MCP server: 10.182.34.53:18000</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-foot">
+        <div class="chat-row">
+          <textarea id="mcpChatIn" class="btn-full" rows="1"
+            placeholder="e.g. 'Do we have Nitrogen in Houston?' or 'Dispatch AL-9082 to Paris'"
+            onkeydown="mcpChatKey(event)" oninput="autoH(this)"></textarea>
+          <button class="btn btn-p btn-sm" onclick="doMcpChat()" id="mcpSendBtn" style="white-space:nowrap">
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+            Ask AI
+          </button>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:7px;align-items:center">
+          <span style="font-size:11px;color:var(--text3)">Enter to send &nbsp;·&nbsp; AI invokes MCP tools automatically via BW6</span>
+          <button class="btn btn-s btn-sm" onclick="clearMcpChat()" style="font-size:11px;padding:4px 8px">Clear</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ RAG Panel ══════════════════════════════════════════ -->
+  <div class="panel" id="panel-rag">
+    <div class="sec-head">
+      <div class="sec-title">AI Document Assistant</div>
+      <div class="sec-desc">Upload technical documents (manuals, safety data sheets, certificates) to the RAG knowledge base, then ask natural language questions — with optional image context.</div>
+    </div>
+
+    <div class="g2">
+
+      <!-- Upload -->
+      <div class="card">
+        <div class="card-h">
+          <div class="card-title">
+            <svg class="card-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+            Document Ingestion
+          </div>
+          <span class="api-tag"><span class="m-post">POST</span> /upload</span>
+        </div>
+        <div class="card-b">
+          <div id="upAlert"></div>
+
+          <div class="upzone" id="upZone"
+               onclick="document.getElementById('fInput').click()"
+               ondragover="dOver(event)" ondrop="dDrop(event)" ondragleave="dLeave(event)">
+            <input type="file" id="fInput" multiple accept=".pdf,.txt,.docx,.doc,.xlsx,.csv,.md" onchange="onFileSel(event)"/>
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <div class="up-t">Drop files here or click to browse</div>
+            <div class="up-s">PDF, Word, Excel, TXT, Markdown</div>
+          </div>
+
+          <div id="fList" class="flist"></div>
+
+          <div id="upProg" style="display:none;margin-top:10px">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:3px" id="upProgTxt">Uploading…</div>
+            <div class="prog-bar"><div class="prog-fill" id="upProgFill" style="width:0%"></div></div>
+          </div>
+
+          <button class="btn btn-p btn-full" style="margin-top:14px" onclick="doUpload()" id="upBtn" disabled>
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+            Ingest into Knowledge Base
+          </button>
+
+          <div id="ingLog" style="margin-top:12px"></div>
+        </div>
+      </div>
+
+      <!-- Chat -->
+      <div class="card" style="display:flex;flex-direction:column">
+        <div class="card-h">
+          <div class="card-title">
+            <svg class="card-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+            Ask the AI Assistant
+          </div>
+          <span class="api-tag"><span class="m-post">POST</span> /ragimgquery</span>
+        </div>
+
+        <div class="chat-msgs" id="chatMsgs">
+          <div class="msg fade">
+            <div class="ava ava-ai">AI</div>
+            <div>
+              <div class="bubble">Hello! I'm the Air Liquide AI Assistant. Upload technical documents using the panel on the left, then ask me anything about your gas cylinder operations, safety procedures, product specifications, or certifications. You can also attach images for visual analysis.</div>
+              <div class="mtime">Ready</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick prompts -->
+        <div style="padding:10px 14px 0;display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid var(--border)">
+          <span style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;align-self:center;flex-shrink:0">Try:</span>
+          <button class="qprompt" onclick="setQ('What purity level of Nitrogen is needed for food-grade cryo-freezing, and what safety steps are required during transfer?')">Nitrogen cryo-freezing safety</button>
+          <button class="qprompt" onclick="setQ('What are the storage requirements and pressure limits for Argon cylinders?')">Argon storage requirements</button>
+          <button class="qprompt" onclick="setQ('What certifications are required for Hydrogen cylinders?')">Hydrogen certification rules</button>
+          <button class="qprompt" onclick="setQ('What PPE is required when handling Oxygen cylinders?')">Oxygen handling PPE</button>
+        </div>
+
+        <div class="chat-foot">
+          <div id="imgPrevRow" class="img-prev-row" style="display:none"></div>
+          <div class="chat-row">
+            <textarea id="chatIn" class="btn-full" rows="1"
+              placeholder="Ask a question about your documents…"
+              onkeydown="chatKey(event)" oninput="autoH(this)"></textarea>
+            <div class="chat-actions">
+              <button class="btn btn-s btn-sm" onclick="document.getElementById('imgIn').click()" title="Attach image">
+                <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              </button>
+              <input type="file" id="imgIn" accept="image/*" multiple style="display:none" onchange="onImgSel(event)"/>
+              <button class="btn btn-p btn-sm" onclick="doChat()" id="sendBtn">
+                <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                Send
+              </button>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:7px;align-items:center">
+            <span style="font-size:11px;color:var(--text3)">Enter to send &nbsp;·&nbsp; Shift+Enter for new line</span>
+            <button class="btn btn-s btn-sm" onclick="clearChat()" style="font-size:11px;padding:4px 8px">Clear</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<script>
+// ── Config ──────────────────────────────────────────────────────────
+const API = {
+  cyl: 'http://localhost:8080/api/v1',
+  up:  'http://localhost:5000',
+  rag: 'http://localhost:7312',
+  mcp: 'http://10.182.34.53:18000/rest/mcp'
+};
+
+// ── State ────────────────────────────────────────────────────────────
+let upFiles   = [];
+let chatImgs  = [];
+let mcpHistory = [];
+
+// ── MCP Tool Definitions ─────────────────────────────────────────────
+const MCP_TOOLS = [
+  {
+    type:'function',
+    function:{
+      name:'searchGasStock',
+      description:'Search for available gas cylinders by gas type, purity, or yard location.',
+      parameters:{
+        type:'object',
+        properties:{
+          gasType:{type:'string',description:'Gas type e.g. Nitrogen, Oxygen, Argon, Hydrogen, CO2, Helium, Acetylene'},
+          purity:{type:'string',description:'Purity grade e.g. 5.0, 4.5, industrial, medical, food-grade'},
+          location:{type:'string',description:'Yard or storage location e.g. Houston Yard B, Paris Depot'}
+        }
+      }
+    }
+  },
+  {
+    type:'function',
+    function:{
+      name:'getCylinderStatus',
+      description:'Retrieve detailed telemetry, pressure level, and safety certification date for a specific cylinder ID.',
+      parameters:{
+        type:'object',
+        properties:{
+          id:{type:'string',description:'The cylinder ID e.g. AL-ARG-9082, AL-NIT-3041'}
+        },
+        required:['id']
+      }
+    }
+  },
+  {
+    type:'function',
+    function:{
+      name:'dispatchCylinder',
+      description:'Updates cylinder status from Available to In-Transit for customer order fulfillment.',
+      parameters:{
+        type:'object',
+        properties:{
+          id:{type:'string',description:'The cylinder ID to dispatch'},
+          destination:{type:'string',description:'Destination customer site or location'}
+        },
+        required:['id']
+      }
+    }
+  }
+];
+
+const MCP_SYSTEM = `You are the Air Liquide Smart Operations AI Assistant, powered by TIBCO BusinessWorks 6 MCP tools. Use the tools proactively to answer operational questions. Always call a tool to get current live data — never make assumptions about inventory. Be concise, professional, and reference specific cylinder IDs and figures from tool results. When dispatching cylinders, confirm the cylinder ID and destination clearly.`;
+
+// ── Tab switch ───────────────────────────────────────────────────────
+function switchTab(t) {
+  ['mcp','rag'].forEach(id => {
+    document.getElementById('tab-'+id).classList.toggle('on', id===t);
+    document.getElementById('panel-'+id).classList.toggle('on', id===t);
+  });
+}
+
+// ── Connection check ─────────────────────────────────────────────────
+async function checkConn() {
+  const dot = document.getElementById('connDot');
+  const txt = document.getElementById('connTxt');
+  const sig = () => AbortSignal.timeout ? AbortSignal.timeout(3000) : new AbortController().signal;
+  const checks = [
+    fetch(API.up+'/upload',{method:'OPTIONS',signal:sig()}).catch(()=>null),
+    fetch(API.rag+'/ragimgquery',{method:'OPTIONS',signal:sig()}).catch(()=>null),
+    fetch('http://localhost:3001/health',{signal:sig()}).catch(()=>null)
+  ];
+  const r = await Promise.allSettled(checks);
+  const on = r.filter(x=>x.status==='fulfilled'&&x.value).length;
+  if(on===3){dot.className='conn-dot on';txt.textContent='All services online'}
+  else if(on>0){dot.style.background='#F59E0B';dot.className='conn-dot';txt.textContent=on+'/3 services online'}
+  else{dot.className='conn-dot off';txt.textContent='Services offline'}
+}
+
+// ── MCP: Search ──────────────────────────────────────────────────────
+async function doSearch() {
+  const gasType = document.getElementById('sGasType').value;
+  const loc     = document.getElementById('sLocation').value.trim();
+  const params  = new URLSearchParams();
+  if(gasType) params.append('gasType', gasType);
+  if(loc)     params.append('location', loc);
+
+  const card = document.getElementById('resultsCard');
+  const body = document.getElementById('resBody');
+  card.style.display = 'block';
+  body.innerHTML = `<div class="loading"><div class="spin"></div>Invoking MCP tool: <strong>search_gas_stock</strong>…</div>`;
+
+  try {
+    const res = await fetch(`${API.cyl}/cylinders/search?${params}`);
+    if(!res.ok) throw new Error(`HTTP ${res.status} — ${await res.text()}`);
+    const raw = await res.json();
+    const list = Array.isArray(raw) ? raw : (raw.cylinders || raw.items || (raw.cylinderId ? [raw] : []));
+
+    document.getElementById('resCount').textContent = list.length + ' cylinder' + (list.length!==1?'s':'') + ' found';
+
+    if(!list.length){
+      body.innerHTML=`<div class="empty"><div class="empty-t">No cylinders found</div><div class="empty-s">Try different search parameters</div></div>`;
+      return;
+    }
+    body.innerHTML = `
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>ID</th><th>Gas Type</th><th>Purity</th><th>Pressure</th>
+            <th>Volume</th><th>Location</th><th>Status</th><th>Cert. Expiry</th><th></th>
+          </tr></thead>
+          <tbody>${list.map(c=>`
+            <tr class="tr-click" onclick="pickCyl('${esc(c.cylinderId||c.id||'')}')">
+              <td><strong>${esc(c.cylinderId||c.id||'—')}</strong></td>
+              <td><span class="gchip">${esc(c.gasType||'—')}</span></td>
+              <td>${esc(c.purityGrade||'—')}</td>
+              <td>${c.pressureBar!=null?c.pressureBar+' bar':'—'}</td>
+              <td>${c.volumeLiters!=null?c.volumeLiters+' L':'—'}</td>
+              <td>${esc(c.location||'—')}</td>
+              <td>${sbadge(c.status)}</td>
+              <td>${esc(c.certExpiryDate||'—')}</td>
+              <td><button class="btn btn-s btn-sm" onclick="event.stopPropagation();openDisp('${esc(c.cylinderId||c.id||'')}')">Dispatch</button></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  } catch(e){ body.innerHTML = errHtml(e.message) }
+}
+
+// ── MCP: Get Status ──────────────────────────────────────────────────
+async function doGetStatus(id) {
+  const cid = id || document.getElementById('cId').value.trim();
+  if(!cid) return;
+  document.getElementById('cId').value = cid;
+  const box = document.getElementById('cDetail');
+  box.innerHTML = `<div class="loading"><div class="spin"></div>Invoking MCP tool: <strong>get_cylinder_status</strong>…</div>`;
+
+  try {
+    const res = await fetch(`${API.cyl}/cylinders/${encodeURIComponent(cid)}`);
+    if(!res.ok) throw new Error(`HTTP ${res.status} — ${await res.text()}`);
+    const c = await res.json();
+    const pmax = 300;
+    const ppct = Math.min(100, ((c.pressureBar||0)/pmax*100)).toFixed(1);
+    const expiry = c.certExpiryDate ? new Date(c.certExpiryDate) : null;
+    const exStyle = expiry && expiry < new Date() ? 'color:var(--danger);font-weight:800' : '';
+
+    box.innerHTML = `
+      <div class="fade">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div>
+            <div style="font-size:19px;font-weight:800">${esc(c.cylinderId||cid)}</div>
+            <span class="gchip" style="margin-top:4px;display:inline-block">${esc(c.gasType||'Unknown')}</span>
+          </div>
+          ${sbadge(c.status)}
+        </div>
+        <div class="gauge-wrap">
+          <div class="gauge-top"><span>Pressure</span><strong>${c.pressureBar!=null?c.pressureBar+' bar':'—'}</strong></div>
+          <div class="gauge-bar"><div class="gauge-fill" style="width:${ppct}%"></div></div>
+          <div class="gauge-top" style="margin-top:3px"><span style="color:var(--text3);font-size:10px">0 bar</span><span style="color:var(--text3);font-size:10px">${pmax} bar</span></div>
+        </div>
+        <div class="dgrid">
+          <div class="ditem"><div class="dlbl">Purity Grade</div><div class="dval" style="font-size:13px">${esc(c.purityGrade||'—')}</div></div>
+          <div class="ditem"><div class="dlbl">Volume</div><div class="dval">${c.volumeLiters!=null?c.volumeLiters+' L':'—'}</div></div>
+          <div class="ditem"><div class="dlbl">Location</div><div class="dval" style="font-size:12px">${esc(c.location||'—')}</div></div>
+          <div class="ditem"><div class="dlbl">Cert. Expiry</div><div class="dval" style="font-size:12px;${exStyle}">${esc(c.certExpiryDate||'—')}</div></div>
+        </div>
+        <div style="margin-top:14px">
+          <button class="btn btn-ok btn-sm" onclick="openDisp('${esc(c.cylinderId||cid)}')">
+            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            Dispatch This Cylinder
+          </button>
+        </div>
+      </div>`;
+  } catch(e){ box.innerHTML = errHtml(e.message) }
+}
+
+function pickCyl(id){ doGetStatus(id) }
+
+// ── MCP: Dispatch ────────────────────────────────────────────────────
+function openDisp(id){
+  document.getElementById('dispId').value = id;
+  document.getElementById('dispDest').value = '';
+  document.getElementById('dispAlert').innerHTML = '';
+  const card = document.getElementById('dispCard');
+  card.style.display = 'block';
+  card.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function closeDisp(){ document.getElementById('dispCard').style.display='none' }
+
+async function doDispatch(){
+  const id   = document.getElementById('dispId').value;
+  const dest = document.getElementById('dispDest').value.trim();
+  const aDiv = document.getElementById('dispAlert');
+  if(!dest){ aDiv.innerHTML=`<div class="alert al-err">Please enter a destination.</div>`; return }
+
+  aDiv.innerHTML = `<div class="loading" style="padding:10px 0"><div class="spin"></div>Invoking MCP tool: <strong>dispatch_cylinder</strong>…</div>`;
+
+  try {
+    const res = await fetch(`${API.cyl}/cylinders/${encodeURIComponent(id)}/dispatch`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({destination:dest})
+    });
+    if(!res.ok) throw new Error(`HTTP ${res.status} — ${await res.text()}`);
+
+    aDiv.innerHTML = `
+      <div class="alert al-ok fade">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        <div><strong>Dispatch confirmed!</strong><br/>
+          Cylinder <strong>${esc(id)}</strong> is now <em>In-Transit</em> to <strong>${esc(dest)}</strong>.</div>
+      </div>`;
+    if(document.getElementById('cId').value === id) setTimeout(()=>doGetStatus(id), 1200);
+  } catch(e){ aDiv.innerHTML = errHtml(e.message) }
+}
+
+// ── RAG: Upload ──────────────────────────────────────────────────────
+function dOver(e){ e.preventDefault(); document.getElementById('upZone').classList.add('drag') }
+function dLeave(){ document.getElementById('upZone').classList.remove('drag') }
+function dDrop(e){ e.preventDefault(); dLeave(); addFiles([...e.dataTransfer.files]) }
+function onFileSel(e){ addFiles([...e.target.files]); e.target.value='' }
+
+function addFiles(files){
+  files.forEach(f=>{ if(!upFiles.find(x=>x.name===f.name)) upFiles.push(f) });
+  renderFiles();
+}
+function rmFile(n){ upFiles=upFiles.filter(f=>f.name!==n); renderFiles() }
+function renderFiles(){
+  const list = document.getElementById('fList');
+  document.getElementById('upBtn').disabled = !upFiles.length;
+  list.innerHTML = upFiles.map(f=>`
+    <div class="fitem">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      <span class="fname">${esc(f.name)}</span>
+      <span class="fsize">${fmtBytes(f.size)}</span>
+      <span class="frm" onclick="rmFile('${esc(f.name)}')">
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </span>
+    </div>`).join('');
+}
+
+async function doUpload(){
+  if(!upFiles.length) return;
+  const aDiv = document.getElementById('upAlert');
+  const prog = document.getElementById('upProg');
+  const fill = document.getElementById('upProgFill');
+  const ptxt = document.getElementById('upProgTxt');
+  const btn  = document.getElementById('upBtn');
+
+  btn.disabled=true; aDiv.innerHTML=''; prog.style.display='block';
+  ptxt.textContent='Uploading documents…'; fill.style.width='20%';
+
+  const fd = new FormData();
+  upFiles.forEach(f=>fd.append('files',f));
+
+  try {
+    fill.style.width='50%';
+    const res = await fetch(`${API.up}/upload`,{method:'POST',body:fd});
+    fill.style.width='90%';
+    if(!res.ok) throw new Error(`HTTP ${res.status} — ${await res.text()}`);
+    fill.style.width='100%'; ptxt.textContent='Ingestion complete!';
+
+    aDiv.innerHTML = `
+      <div class="alert al-ok fade">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        <div><strong>${upFiles.length} document${upFiles.length>1?'s':''} ingested.</strong><br/>
+          Knowledge base updated — the AI assistant can now answer questions based on these documents.</div>
+      </div>`;
+
+    const log = document.getElementById('ingLog');
+    log.innerHTML = upFiles.map(f=>`
+      <div class="ing-entry fade">
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#10B981" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        <span class="ing-name">${esc(f.name)}</span>
+        <span style="font-size:11px;color:var(--success);font-weight:700">Ingested</span>
+      </div>`).join('') + log.innerHTML;
+
+    upFiles=[]; renderFiles();
+    setTimeout(()=>{ prog.style.display='none'; fill.style.width='0%' }, 2200);
+  } catch(e){
+    aDiv.innerHTML = errHtml(e.message);
+    prog.style.display='none';
+  } finally {
+    btn.disabled = !upFiles.length;
+  }
+}
+
+// ── RAG: Chat ────────────────────────────────────────────────────────
+function onImgSel(e){ chatImgs=[...chatImgs,...[...e.target.files]]; e.target.value=''; renderImgPrev() }
+function rmImg(i){ chatImgs.splice(i,1); renderImgPrev() }
+function renderImgPrev(){
+  const row = document.getElementById('imgPrevRow');
+  if(!chatImgs.length){ row.style.display='none'; row.innerHTML=''; return }
+  row.style.display='flex';
+  row.innerHTML = chatImgs.map((img,i)=>`
+    <div class="thumb">
+      <img src="${URL.createObjectURL(img)}" alt="${esc(img.name)}"/>
+      <div class="thumb-rm" onclick="rmImg(${i})">×</div>
+    </div>`).join('');
+}
+function chatKey(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();doChat()} }
+function autoH(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,110)+'px' }
+function clearChat(){
+  document.getElementById('chatMsgs').innerHTML=`
+    <div class="msg fade">
+      <div class="ava ava-ai">AI</div>
+      <div><div class="bubble">Chat cleared. Ask me anything about your ingested documents.</div></div>
+    </div>`;
+}
+
+async function doChat(){
+  const input = document.getElementById('chatIn');
+  const q = input.value.trim();
+  if(!q) return;
+
+  const msgs = document.getElementById('chatMsgs');
+  const now = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const curImgs = [...chatImgs];
+  const prevUrls = curImgs.map(img=>URL.createObjectURL(img));
+
+  msgs.innerHTML += `
+    <div class="msg usr fade">
+      <div class="ava ava-u">U</div>
+      <div>
+        ${prevUrls.length?`<div class="img-prev-row" style="margin-bottom:5px">${prevUrls.map(u=>`<div class="thumb"><img src="${u}"/></div>`).join('')}</div>`:''}
+        <div class="bubble">${esc(q)}</div>
+        <div class="mtime">${now}</div>
+      </div>
+    </div>`;
+
+  input.value=''; input.style.height='auto';
+  chatImgs=[]; renderImgPrev();
+
+  const tid = 'tp'+Date.now();
+  msgs.innerHTML += `
+    <div id="${tid}" class="msg fade">
+      <div class="ava ava-ai">AI</div>
+      <div><div class="bubble" style="display:flex;align-items:center;gap:8px">
+        <div class="spin" style="width:14px;height:14px"></div>
+        <span style="color:var(--text3)">Querying knowledge base…</span>
+      </div></div>
+    </div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+
+  const fd = new FormData();
+  fd.append('question', q);
+  curImgs.forEach(img=>fd.append('imageInput', img));
+
+  try {
+    const res = await fetch(`${API.rag}/ragimgquery`,{method:'POST',body:fd});
+    if(!res.ok) throw new Error(`HTTP ${res.status} — ${await res.text()}`);
+    const data = await res.json();
+    const answer = data.answer || data.response || JSON.stringify(data);
+    const aiNow = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+
+    document.getElementById(tid).remove();
+    msgs.innerHTML += `
+      <div class="msg fade">
+        <div class="ava ava-ai">AI</div>
+        <div>
+          <div class="bubble">${fmtAnswer(answer)}</div>
+          <div class="mtime">${aiNow}</div>
+        </div>
+      </div>`;
+  } catch(e){
+    document.getElementById(tid).remove();
+    msgs.innerHTML += `
+      <div class="msg fade">
+        <div class="ava ava-ai">AI</div>
+        <div><div class="bubble" style="border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.04)">
+          <strong style="color:var(--danger)">Error:</strong> ${esc(e.message)}
+        </div></div>
+      </div>`;
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────
+function sbadge(s){
+  const k = (s||'').toLowerCase().replace(/[\s_]+/g,'-');
+  const m = {available:['s-av','Available'],reserved:['s-rs','Reserved'],'in-transit':['s-it','In-Transit'],intransit:['s-it','In-Transit'],maintenance:['s-mt','Maintenance']};
+  const [cls,lbl] = m[k]||['','Unknown'];
+  return `<span class="sbadge ${cls}"><span class="sdot"></span>${lbl}</span>`;
+}
+function errHtml(msg){
+  return `<div class="alert al-err fade">
+    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <div><strong>Error:</strong> ${esc(msg)}</div>
+  </div>`;
+}
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+function fmtAnswer(t){
+  return t.replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code style="background:var(--surface2);padding:1px 4px;border-radius:3px;font-family:var(--fm);font-size:11px">$1</code>');
+}
+function fmtBytes(b){ if(b<1024)return b+' B'; if(b<1048576)return(b/1024).toFixed(1)+' KB'; return(b/1048576).toFixed(1)+' MB' }
+
+// ── Demo scenarios ────────────────────────────────────────────────────
+function runScenario(type){
+  if(type==='search'){
+    switchTab('mcp');
+    setMcpQ('Do we have high-purity Nitrogen available in Houston? Search the current inventory.');
+    document.getElementById('mcpChatIn').focus();
+  } else if(type==='rag'){
+    switchTab('rag');
+    setQ('What purity level of Nitrogen is needed for food-grade cryo-freezing, and what safety steps are required during transfer?');
+    document.getElementById('chatIn').focus();
+  }
+}
+function setQ(txt){
+  const el = document.getElementById('chatIn');
+  el.value = txt;
+  autoH(el);
+  el.focus();
+}
+
+// ── OpenAI key persistence ────────────────────────────────────────────
+function saveOaKey(){ try{ sessionStorage.setItem('oaKey', document.getElementById('oaKey').value) }catch(e){} }
+
+// ── Call OpenAI ───────────────────────────────────────────────────────
+async function callOpenAI(messages) {
+  const key = document.getElementById('oaKey').value.trim();
+  if(!key) throw new Error('OpenAI API key required — enter it in the field above the chat.');
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+    body: JSON.stringify({
+      model:'gpt-5.5', messages, tools:MCP_TOOLS,
+      tool_choice:'auto', max_completion_tokens:1024
+    })
+  });
+  if(!res.ok){
+    const err = await res.json().catch(()=>({}));
+    throw new Error(err.error?.message || 'OpenAI API error (HTTP '+res.status+')');
+  }
+  return res.json();
+}
+
+// ── Call MCP Tool via local proxy (MCP SDK → BW6) ────────────────────
+async function callMCPTool(name, args) {
+  const res = await fetch('http://localhost:3001/mcp/call', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, arguments: args || {} })
+  });
+  const data = await res.json();
+  if(!res.ok || !data.ok) throw new Error(data.error || `Proxy HTTP ${res.status}`);
+  const result = data.result;
+  if(result?.content) return result.content.map(c => c.text || JSON.stringify(c)).join('\n');
+  return JSON.stringify(result, null, 2);
+}
+
+// ── MCP Chat helpers ──────────────────────────────────────────────────
+function mcpChatKey(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();doMcpChat()} }
+function setMcpQ(txt){ const el=document.getElementById('mcpChatIn'); el.value=txt; autoH(el); el.focus() }
+
+function clearMcpChat(){
+  mcpHistory=[];
+  document.getElementById('mcpChatMsgs').innerHTML=`
+    <div class="msg fade">
+      <div class="ava ava-ai">AI</div>
+      <div><div class="bubble">Chat cleared. Ask me about your gas cylinder operations.</div>
+      <div class="mtime">Ready · 3 MCP tools via BW6</div></div>
+    </div>`;
+}
+
+// ── MCP Agentic Chat ──────────────────────────────────────────────────
+async function doMcpChat(){
+  const input = document.getElementById('mcpChatIn');
+  const q = input.value.trim();
+  if(!q) return;
+
+  const msgs = document.getElementById('mcpChatMsgs');
+  const now = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+
+  msgs.innerHTML += `
+    <div class="msg usr fade">
+      <div class="ava ava-u">U</div>
+      <div><div class="bubble">${esc(q)}</div><div class="mtime">${now}</div></div>
+    </div>`;
+  input.value=''; input.style.height='auto';
+
+  const thinkId='th'+Date.now();
+  msgs.innerHTML += `
+    <div id="${thinkId}" class="msg fade">
+      <div class="ava ava-ai">AI</div>
+      <div><div class="bubble" style="display:flex;align-items:center;gap:8px">
+        <div class="spin" style="width:14px;height:14px"></div>
+        <span style="color:var(--text3)">Analyzing request…</span>
+      </div></div>
+    </div>`;
+  msgs.scrollTop=msgs.scrollHeight;
+
+  const sendBtn=document.getElementById('mcpSendBtn');
+  sendBtn.disabled=true;
+  if(!mcpHistory.length) mcpHistory.push({role:'system',content:MCP_SYSTEM});
+  mcpHistory.push({role:'user',content:q});
+
+  try{
+    let resp = await callOpenAI(mcpHistory);
+    let msg  = resp.choices[0].message;
+    mcpHistory.push(msg);
+    document.getElementById(thinkId)?.remove();
+
+    // Tool call loop
+    while(resp.choices[0].finish_reason==='tool_calls'){
+      for(const tc of msg.tool_calls){
+        const name=tc.function.name;
+        let args; try{ args=JSON.parse(tc.function.arguments) }catch(e){ args={} }
+
+        const stepId='step'+tc.id;
+        msgs.innerHTML+=`
+          <div class="msg fade" id="${stepId}" style="max-width:96%">
+            <div class="ava ava-ai">AI</div>
+            <div style="flex:1;min-width:0">
+              <div class="tool-step step-calling">
+                <div class="tool-step-hd">
+                  <div class="spin" style="width:11px;height:11px;border-width:1.5px"></div>
+                  <span style="font-weight:700;color:var(--al-blue)">Calling MCP</span>
+                  <code style="background:rgba(0,51,160,.12);color:var(--al-blue);padding:1px 7px;border-radius:3px;font-size:11px;font-family:var(--fm)">${esc(name)}</code>
+                  <span style="color:var(--text3);font-size:10px">via MCP proxy · localhost:3001</span>
+                </div>
+                <div class="tool-step-bd">${esc(JSON.stringify(args,null,2))}</div>
+              </div>
+            </div>
+          </div>`;
+        msgs.scrollTop=msgs.scrollHeight;
+
+        let toolOut;
+        const stepEl=()=>document.getElementById(stepId);
+        const stepDiv=()=>stepEl()?.querySelector('.tool-step');
+
+        try{
+          toolOut=await callMCPTool(name,args);
+          const d=stepDiv();
+          if(d){
+            d.className='tool-step step-done';
+            d.querySelector('.tool-step-hd').innerHTML=`
+              <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#047857" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              <span style="font-weight:700;color:#047857">MCP returned</span>
+              <code style="background:rgba(16,185,129,.12);color:#047857;padding:1px 7px;border-radius:3px;font-size:11px;font-family:var(--fm)">${esc(name)}</code>`;
+            d.querySelector('.tool-step-bd').textContent=toolOut;
+          }
+        }catch(e){
+          toolOut='Error: '+e.message;
+          const d=stepDiv();
+          if(d){
+            d.className='tool-step step-err';
+            d.querySelector('.tool-step-hd').innerHTML=`
+              <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="#B91C1C" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span style="font-weight:700;color:#B91C1C">MCP error</span>
+              <code style="background:rgba(239,68,68,.12);color:#B91C1C;padding:1px 7px;border-radius:3px;font-size:11px;font-family:var(--fm)">${esc(name)}</code>`;
+            d.querySelector('.tool-step-bd').textContent=toolOut;
+          }
+        }
+        mcpHistory.push({role:'tool',tool_call_id:tc.id,content:toolOut});
+      }
+      resp=await callOpenAI(mcpHistory);
+      msg=resp.choices[0].message;
+      mcpHistory.push(msg);
+    }
+
+    const aiNow=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    msgs.innerHTML+=`
+      <div class="msg fade">
+        <div class="ava ava-ai">AI</div>
+        <div><div class="bubble">${fmtAnswer(msg.content||'')}</div><div class="mtime">${aiNow}</div></div>
+      </div>`;
+  }catch(e){
+    document.getElementById(thinkId)?.remove();
+    msgs.innerHTML+=`
+      <div class="msg fade">
+        <div class="ava ava-ai">AI</div>
+        <div><div class="bubble" style="border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.04)">
+          <strong style="color:var(--danger)">Error:</strong> ${esc(e.message)}
+        </div></div>
+      </div>`;
+  }finally{
+    sendBtn.disabled=false;
+    msgs.scrollTop=msgs.scrollHeight;
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────
+window.addEventListener('load',()=>{
+  try{ const k=sessionStorage.getItem('oaKey'); if(k) document.getElementById('oaKey').value=k }catch(e){}
+  checkConn();
+  setInterval(checkConn,30000);
+});
+</script>
+</body>
+</html>

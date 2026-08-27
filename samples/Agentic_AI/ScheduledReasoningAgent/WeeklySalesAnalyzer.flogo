@@ -389,7 +389,6 @@
                 "authorizationType": "Basic",
                 "Username": "=$property[\"Email.SMTP.Username\"]",
                 "Password": "=$property[\"Email.SMTP.Password\"]",
-                "authorizationConn": "",
                 "Connection Security": "TLS",
                 "serverCertificate": "",
                 "message_content_type": "text/html",
@@ -712,7 +711,6 @@
                 "authorizationType": "Basic",
                 "Username": "=$property[\"Email.SMTP.Username\"]",
                 "Password": "=$property[\"Email.SMTP.Password\"]",
-                "authorizationConn": "",
                 "Connection Security": "TLS",
                 "serverCertificate": "",
                 "message_content_type": "text/html",
@@ -843,7 +841,7 @@
     {
       "name": "LLMClient.APIKey",
       "type": "string",
-      "value": "SECRET:MkPpiuxsKQYPuxuzk2rvN83nid1jIEGkrjEswvU++9TejSXrLmaaXgeALPK2VUFZrjwg0r8t8+JL3mgi2kK36QXPSMQUEPEumGQWo2s6pkLNCNPK1fbmIMF8f8qkcaYb5TyQ4bJ3jY4RMUISgfgocUdCGMyIdP0EErjhzpsEeWp19MpOyku12sfL1rAHyVjNzAD4QSpvKcPD4XY9iD8b9sG89jZavyPlDJ5H0oPuxQ7IAiyp"
+      "value": "SECRET:RWgD8FgwBWbrwlmhqFf8cGap5mvD1FbS0fXy7H3Y3xAUPgk00Q4pK0k5ouqq3gnVugPNwO6nSVk/Zhtgu5AWiXctXpbeeThAD9AfOSx7fwEw6toqH6rgYjP89eqW1u5bLrUuA74iN4t5+D/K7HNYgwoi0DiZdAhpoSWsIBEqGCygjtlje1G6/p0y9YQ38aXfHws3IAl0ktL+n/nwLkfEFymJJJVGyXksoGITkotG4lOQ2gxq"
     },
     {
       "name": "LLMClient.htmlFormatPrompt",
@@ -868,22 +866,22 @@
     {
       "name": "Email.SMTP.Username",
       "type": "string",
-      "value": "nikhil.shah.84@gmail.com"
+      "value": "your-email@gmail.com"
     },
     {
       "name": "Email.sender",
       "type": "string",
-      "value": "nikhil.shah.84@gmail.com"
+      "value": "your-email@gmail.com"
     },
     {
       "name": "Email.recipients",
       "type": "string",
-      "value": "nikhil.shah.84@gmail.com"
+      "value": "your-email@gmail.com"
     },
     {
       "name": "Email.SMTP.Password",
       "type": "string",
-      "value": "SECRET:jIBG8ZJkwDz/8deZFC+kXTuJ5ACjstVQG0eTEx8GOLPdASQ="
+      "value": "SECRET:Im99nLH4sY26DChtKbXZMVz1dmffL0Kt5rZokA3PhdUwsEU="
     }
   ],
   "connections": {
@@ -904,7 +902,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTQiLCJ0YWciOiIxLjYuMTQtYjA0IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS4zIiwidGFnIjoiMC45LjMtYjA3LTAuOS4zIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWZpbGVzL3NyYy9hcHAvRmlsZSIsImlkIjoiRmlsZSIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wLWIxNCIsIm5hbWUiOiJGaWxlIiwiczNsb2NhdGlvbiI6IlRpYmNvL0ZpbGUiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTUiLCJ0YWciOiIxLjYuMTUtYjA0IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS40IiwidGFnIjoiMC45LjQtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWZpbGVzL3NyYy9hcHAvRmlsZSIsImlkIjoiRmlsZSIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wLWIxNCIsIm5hbWUiOiJGaWxlIiwiczNsb2NhdGlvbiI6IlRpYmNvL0ZpbGUiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
   "metadata": {
     "endpoints": [
       {
@@ -979,6 +977,6 @@
         }
       }
     ],
-    "flogoVersion": "2.26.5"
+    "flogoVersion": "2.26.6"
   }
 }

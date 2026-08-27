@@ -18,12 +18,12 @@ by the `agentic-ai-use-case` skill.
                        │   Agentic Chatbot UI      │
                        │  (demos/Agentic_AI/Chatbot)│
                        └────────────┬──────────────┘
-                                    │ WebSocket  ws://localhost:8084/ws/chat
+                                    │ WebSocket  ws://localhost:8088/banking
                                     ▼
                     ┌───────────────────────────────┐
                     │   BankingAIOrchestrator        │
                     │   (#wsserver + AI Agent)       │
-                    │   Port 8084                     │
+                    │   Port 8088                     │
                     └───┬───────────────────────┬────┘
              MCP (HTTP) │                        │ A2A
                         ▼                        ▼
@@ -71,7 +71,7 @@ Each tool is a flow `#noop → #query (SELECT * FROM <table>) → #actreturn`. A
 | **block_card_agent** | 8711 | `block_card` | **UPDATE** `cards` SET status = 'BLOCKED' |
 | **send_confirmation_email** | 8712 | `send_confirmation_email` | `#sendmail` (Gmail SSL:465) → sends one confirmation to the preconfigured mailbox |
 
-### 3. `BankingAIOrchestrator.flogo` — Orchestrator (WebSocket port 8084, path `/ws/chat`)
+### 3. `BankingAIOrchestrator.flogo` — Orchestrator (WebSocket port 8088, path `/banking`)
 
 `#wsserver → #agentactivity → #wswritedata`. The AI Agent lists the MCP server under `mcpServers` and
 all three A2A agents under `remoteAgents`, with a system prompt that: identifies the customer by
@@ -158,13 +158,13 @@ Import each `.flogo` into Flogo Enterprise and set its app properties:
 |---|---|
 | `AgenticAI.OpenAIConn.API_Key` | your OpenAI API key |
 | `LLM_Model` | `gpt-5.5` |
-| WebSocket port (trigger) | `8084` |
+| `Websocket_PORT` (trigger) | `8088` |
 
 > The orchestrator's connections point at `http://localhost:9096/retail-banking` (MCP) and
 > `http://localhost:8710|8711|8712` (A2A). If you change any port, update the matching connection URL.
 
 ### 3. Start order
-**MCP (9096) → A2A (8710/8711/8712) → Orchestrator (8084).**
+**MCP (9096) → A2A (8710/8711/8712) → Orchestrator (8088).**
 
 ### 4. Chatbot UI
 ```bash
@@ -174,7 +174,7 @@ npm start
 ```
 Open http://localhost:3000, paste the orchestrator WebSocket URL, and click **Connect**:
 ```
-ws://localhost:8084/ws/chat
+ws://localhost:8088/banking
 ```
 
 ### 5. Run the demo
@@ -199,7 +199,7 @@ Use the prompts in [prompts.md](prompts.md). Reset between runs with `reset_data
 |-----|---------|------|
 | BankingMCPServer | 9096 | `/retail-banking` |
 | BankingA2AServers | 8710 (dispute), 8711 (block card), 8712 (email) | — |
-| BankingAIOrchestrator | 8084 | `/ws/chat` |
+| BankingAIOrchestrator | 8088 | `/banking` |
 
 ---
 
@@ -219,3 +219,57 @@ Use the prompts in [prompts.md](prompts.md). Reset between runs with `reset_data
 
 - Demo data is fictional (USD / US personas). Card numbers are masked; no real PII.
 - For production: put TLS on all endpoints, add bearer-token auth and rate limiting, use an on-prem/data-residency LLM, and replace the direct PostgreSQL access with the bank's core-banking APIs. Add a fund-transfer/bill-pay A2A agent if payment write-flows are needed (intentionally out of scope here).
+
+---
+
+## ⚠️ Below things are NOT configured — please configure them manually before running end to end
+
+The committed `.flogo` files carry placeholders / reference-app values for every secret; replace them
+with your own before an end-to-end run. Never commit real secrets — pull values from
+`skills-library/.claude/skills/config.md` and set them as app properties at import time.
+
+1. **LLM credentials & endpoint** (A2A Servers + Orchestrator).
+   - `AgenticAI.OpenAIConn.API_Key` — your real provider key (kept as a `SECRET:` app property).
+   - `AgenticAI.OpenAIConn.LLM_Base_URL` — leave blank for OpenAI, or set a **real endpoint** for an
+     OpenAI-compatible provider. An empty value against a non-OpenAI provider fails with
+     `unsupported protocol scheme`.
+   - `LLM_Model` — confirm the model (`gpt-5.5` by default) is one your key can access.
+
+2. **PostgreSQL database & credentials** (MCP + A2A).
+   - Create the **`banking`** database and load `database.sql`; run `reset_data.sql` to reset between demos.
+   - Set `PostgreSQL.PostgresConn.Host` / `Port` / `Database_Name` / `User` / `Password` on **both** the
+     MCP Server and A2A Servers apps. `Password` is a `SECRET:` app property — set the real secret in
+     App Properties, not in plaintext.
+
+3. **Email / SMTP** (the `send_confirmation_email` agent).
+   - Set `Email_Username`, `Email_App_Password` (a Gmail **App Password**, not the account password),
+     and the recipient `To_Email`.
+   - Confirm outbound SMTP (`smtp.gmail.com:465`, SSL) is allowed from the host/network.
+
+4. **Ports free & consistent.**
+   - MCP **9096**, A2A **8710/8711/8712**, and the orchestrator WebSocket **8088** (`Websocket_PORT`)
+     must all be free on the host.
+   - The orchestrator's MCP `serverUrl` (`http://localhost:9096/retail-banking`) and the three A2A
+     `serverUrl`s (8710/8711/8712) must match those ports. If you change a port, change it in the app
+     property **and** in the orchestrator connection URL.
+
+5. **Chatbot / WebSocket client.**
+   - The orchestrator exposes `ws://<host>:8088/banking`. Point the shared Chatbot UI
+     (`demos/Agentic_AI/Chatbot/`) at it — see `prompts.md` for ready-to-paste demo prompts.
+
+6. **Flogo designer manual steps.**
+   - **Sync every trigger** (MCP, each A2A agent, the WS server) once so `toolParams` and WS input
+     mappings render without a red ✗.
+   - **Validate every connection** (PostgreSQL, LLM provider, MCP server config, all three A2A server
+     connections) — click **Connect / Test** before running.
+
+**Quick pre-flight checklist**
+
+- [ ] DB `banking` created, `database.sql` + `reset_data.sql` loaded; row counts sane (customers 7, accounts 9, transactions 15)
+- [ ] LLM `AgenticAI.OpenAIConn.API_Key` and `LLM_Model` (`gpt-5.5`) set on A2A + Orchestrator; `LLM_Base_URL` correct for your provider
+- [ ] PostgreSQL `Password` set on MCP + A2A; MCP tool `SELECT`s and A2A write SQL run cleanly
+- [ ] All ports free (8088, 9096, 8710–8712); orchestrator MCP/A2A URLs match the MCP/A2A ports
+- [ ] `Email_App_Password` set as a Gmail App Password; `To_Email` set; SMTP `smtp.gmail.com:465` reachable
+- [ ] Every trigger Synced; every connection validated in the designer
+- [ ] Start order: MCP (9096) → A2A (8710/8711/8712) → Orchestrator (8088); each logs a clean start
+- [ ] Chatbot UI connects to `ws://localhost:8088/banking` and gets a reply

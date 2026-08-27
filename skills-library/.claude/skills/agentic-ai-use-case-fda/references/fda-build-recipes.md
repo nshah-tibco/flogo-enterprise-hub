@@ -1,6 +1,6 @@
 # FDA build recipes — construct all 3 agentic apps with `fda` only
 
-Exact `flogodesign-cli` (`fda`) command sequences to build the MCP Server, A2A Servers, and AI Orchestrator **from scratch, without hand-editing any `.flogo` JSON**. Verified end-to-end (build + live run: WebSocket chat → LLM → MCP tool → real PostgreSQL → reply written back over WS).
+Exact `flogodesign-cli` (`fda`) command sequences to build the MCP Server, A2A Agents, and AI Orchestrator **from scratch, without hand-editing any `.flogo` JSON**. Verified end-to-end (build + live run: WebSocket chat → LLM → MCP tool → real PostgreSQL → reply written back over WS).
 
 ## Conventions & placeholders
 
@@ -128,14 +128,14 @@ Rich `handlerDescription`s matter — the orchestrator LLM chooses tools from th
 
 ---
 
-## § A2A Servers (`<Prefix>A2AServers.flogo`)
+## § A2A Agents (`<Prefix>A2AServers.flogo`)
 
 One `tr_agent` trigger per action agent. **By default each agent's flow writes DIRECTLY to PostgreSQL** (`act_postgresql_query` to validate → `act_postgresql_insert` for the INSERT/UPDATE) **or sends email** (`act_general_sendmail`), and returns a result string. This is the pattern used by all the customer-facing reference use cases (Airline, Life & Pensions, Power Distribution, Retail Banking, Telecom). **Do NOT use `act_general_rest` / create a separate REST backend app unless the user explicitly asked for one** — the REST steps below are clearly marked *opt-in*. Because the loop is repetitive, drive it from Python `subprocess` (see driver above; point `FILE` at the A2A file).
 
 ### 1. Project, properties, LLM connection
 
 ```bash
-$FDA cp <Prefix>A2AServers "<UseCase> A2A Servers"
+$FDA cp <Prefix>A2AServers "<UseCase> A2A Agents"
 # LLM properties (from config.md)
 $FDA cap AgenticAI.OpenAIConn.LLM_Provider string <provider>            # e.g. OpenAI
 $FDA cap AgenticAI.OpenAIConn.API_Key      string <apiKey>              # SECRET where supported

@@ -120,5 +120,5 @@ scenarios/seed-data → `database.sql` + `prompts.md`.
 ### Handoff
 Give the filled spec to the skill: *"Build the `<Use Case Name>` agentic AI use case from
 `<path>/<use-case>.spec.md`."* The skill will frame it back, ask only about remaining gaps (§10),
-present a plan, then generate the MCP server, A2A servers, orchestrator, `database.sql`,
+present a plan, then generate the MCP server, A2A agents, orchestrator, `database.sql`,
 `reset_data.sql`, `prompts.md`, and `README`, and verify them.

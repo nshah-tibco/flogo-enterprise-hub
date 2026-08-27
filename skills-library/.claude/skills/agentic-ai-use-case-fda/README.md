@@ -24,13 +24,13 @@ Given a description of a business domain (e.g. *"a hospital patient-services ass
 ```
 Chatbot UI --WebSocket--> AI Orchestrator --MCP (HTTP streamable)--> MCP Server --\
                                  |                                                 +--> PostgreSQL
-                                 \-----------A2A (HTTP)-----> A2A Servers ---------/   (+ REST backends / SMTP)
+                                 \-----------A2A (HTTP)-----> A2A Agents ----------/   (+ REST backends / SMTP)
 ```
 
 | App | Role |
 |-----|------|
 | **MCP Server** | Read-only lookups. One tool per table/query; stateless and safe to retry. The LLM picks the right tool from its description. |
-| **A2A Servers** | Action workflows — database writes, REST calls to backends, sending email. Each agent has its own trigger, port, and guardrails. |
+| **A2A Agents** | Action workflows — database writes, REST calls to backends, sending email. Each agent has its own trigger, port, and guardrails. |
 | **AI Orchestrator** | The "brain." A WebSocket chat endpoint driven by an AI Agent activity that decides intent and routes to MCP tools or hands off to A2A agents. |
 
 ### What you get (generated files)
@@ -42,7 +42,7 @@ A new folder (default `demos/Agentic_AI/<UseCase>_Use_Case/`) containing:
 | `database.sql` | PostgreSQL schema + demo data, engineered so each demo scenario works (one clean case + one exception case per action agent). |
 | `reset_data.sql` | Truncate + reload to reset between demos; volatile dates are relative to today. |
 | `<Prefix>MCPServer.flogo` | The MCP Server app — N read-only tools. |
-| `<Prefix>A2AServers.flogo` | The A2A Servers app — M action agents. |
+| `<Prefix>A2AServers.flogo` | The A2A Agents app — M action agents. |
 | `<Prefix>AIOrchestrator.flogo` | The AI Orchestrator app — WebSocket trigger + AI Agent routing. |
 | `prompts.md` | Demo prompts grouped by scenario, to try against the running system. |
 | `README.md` | Architecture, tool/agent tables, DB summary, demo scenarios, ports, troubleshooting, and the **"below things are not configured…"** manual checklist. |

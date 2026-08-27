@@ -61,4 +61,4 @@ Global Flags:
 --verbose   Enable verbose mode for additional output
 ```
 
-> **Build context:** Use the build context configured for your Flogo version. List available contexts with `flogobuild list-context`. The context name typically follows the pattern `flogo-<version>-<build>` (e.g. `flogo-2.26.0-1789`). Set this in your project's `CLAUDE.md` so the agent uses the right one.
+> **Build context:** Use the build context configured for your Flogo version. List available contexts with `flogobuild list-context`. The context name typically follows the pattern `flogo-<version>-<build>` (e.g. `flogo-2.26.0-1789`). Set this as `FLOGOBUILD_CONTEXT_NAME` in `config.md` so the agent uses the right one.

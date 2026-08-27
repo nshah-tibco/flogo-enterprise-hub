@@ -31,7 +31,7 @@
         "agentDescription": "Retrieves latest sensor readings and asset details for a given asset from the sensor data API. Returns raw sensor data including vibration, temperature, pressure, flow rate, and power consumption to the orchestrator for AI analysis.",
         "agentType": "Local",
         "agentPort": 8080,
-        "model": "claude-sonnet-4-5-20250929",
+        "model": "gpt-5.5",
         "reasoning": "",
         "temperature": 0.7,
         "enableGuardrails": false,
@@ -111,7 +111,7 @@
         "agentDescription": "Stores AI-generated health predictions for oilfield assets including status classification, confidence score, days to failure estimate, failure mode identification, and recommended maintenance actions.",
         "agentType": "Local",
         "agentPort": 8080,
-        "model": "claude-sonnet-4-5-20250929",
+        "model": "gpt-5.5",
         "reasoning": "",
         "temperature": 0.7,
         "enableGuardrails": false,
@@ -191,7 +191,7 @@
         "agentDescription": "Creates maintenance work orders for oilfield assets that require inspection, repair, or replacement based on predictive analysis results.",
         "agentType": "Local",
         "agentPort": 8080,
-        "model": "claude-sonnet-4-5-20250929",
+        "model": "gpt-5.5",
         "reasoning": "",
         "temperature": 0.7,
         "enableGuardrails": false,
@@ -271,7 +271,7 @@
         "agentDescription": "Sends alert notifications for assets with WARNING or CRITICAL health status. Must only be invoked after sensor analysis and prediction storage are complete.",
         "agentType": "Local",
         "agentPort": 8080,
-        "model": "claude-sonnet-4-5-20250929",
+        "model": "gpt-5.5",
         "reasoning": "",
         "temperature": 0.7,
         "enableGuardrails": false,
@@ -1234,7 +1234,7 @@
               "ref": "#agentactivity",
               "settings": {
                 "llmProviderConnection": "conn://adf21c4c-67e1-4c78-9487-b2cacff04d63",
-                "model": "claude-sonnet-4-5-20250929",
+                "model": "gpt-5.5",
                 "reasoning": "",
                 "temperature": 0.7,
                 "enableGuardrails": true,
@@ -1311,29 +1311,24 @@
   ],
   "properties": [
     {
-      "name": "AgenticAI.Anthropic.LLM_Provider",
+      "name": "AgenticAI.OpenAIConn.LLM_Provider",
       "type": "string",
-      "value": "Anthropic"
+      "value": "OpenAI"
     },
     {
-      "name": "AgenticAI.Anthropic.Anthropic_Provider",
+      "name": "AgenticAI.OpenAIConn.API_Key",
       "type": "string",
-      "value": "Default"
+      "value": "SECRET:R9BT4FJ6+Wjd3Emfy5S8+7gkFSPTQUGL6IMiO2VX1HKhsLHSW+eQ7"
     },
     {
-      "name": "AgenticAI.Anthropic.API_Key",
-      "type": "string",
-      "value": "Insert your own key"
-    },
-    {
-      "name": "AgenticAI.Anthropic.LLM_Base_URL",
+      "name": "AgenticAI.OpenAIConn.LLM_Base_URL",
       "type": "string",
       "value": ""
     },
     {
       "name": "LLM_Model",
       "type": "string",
-      "value": "claude-sonnet-4-5-20250929"
+      "value": "gpt-5.5"
     },
     {
       "name": "Sensor_Data_URL",
@@ -1359,16 +1354,20 @@
   "connections": {
     "adf21c4c-67e1-4c78-9487-b2cacff04d63": {
       "id": "adf21c4c-67e1-4c78-9487-b2cacff04d63",
-      "name": "Anthropic",
+      "name": "OpenAIConn",
       "ref": "#llmprovider",
       "isGlobal": false,
       "settings": {
-        "name": "Anthropic",
-        "description": "Key to use with claude ",
-        "llmProvider": "=$property[\"AgenticAI.Anthropic.LLM_Provider\"]",
-        "anthropicProvider": "=$property[\"AgenticAI.Anthropic.Anthropic_Provider\"]",
-        "apiKey": "=$property[\"AgenticAI.Anthropic.API_Key\"]",
-        "llmProviderUrl": "=$property[\"AgenticAI.Anthropic.LLM_Base_URL\"]"
+        "name": "OpenAIConn",
+        "description": "",
+        "llmProvider": "=$property[\"AgenticAI.OpenAIConn.LLM_Provider\"]",
+        "anthropicProvider": "Default",
+        "apiKey": "=$property[\"AgenticAI.OpenAIConn.API_Key\"]",
+        "llmProviderUrl": "=$property[\"AgenticAI.OpenAIConn.LLM_Base_URL\"]",
+        "azureDeployment": "",
+        "azureRegion": "",
+        "azureResourceName": "",
+        "azureApiVersion": ""
       }
     },
     "65b8b2d5-6ce2-48b2-bbae-17d9fb360d56": {

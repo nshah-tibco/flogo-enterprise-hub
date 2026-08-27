@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Rest_download Module
+Bundle-SymbolicName: RAG_Air_Liquide_Ingestion
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: TIBCO Software Inc.
+TIBCO-BW-ApplicationModule: META-INF/module.bwm
+TIBCO-BW-ConfigProfile: META-INF/default.substvar
+TIBCO-BW-Edition: bwe
+TIBCO-BW-JobSharedVariables: META-INF/module.jsv
+Require-Capability: com.tibco.bw.model; filter:="(name=bwext)",com.tibco.bw.palette; filter:="(name=bw.file)",com.tibco.bw.palette; filter:="(name=bw.rag)",com.tibco.bw.sharedresource.model; filter:="(name=bw.httpconnector)",com.tibco.bw.sharedresource.model; filter:="(name=bw.rag)",com.tibco.bw.binding.model; filter:="(name=bw.rest)"
+TIBCO-BW-ModuleSharedVariables: META-INF/module.msv
+Bundle-RequiredExecutionEnvironment: JavaSE-15
+TIBCO-BW-Version: 6.11.0 HF3 V67 2025-05-21

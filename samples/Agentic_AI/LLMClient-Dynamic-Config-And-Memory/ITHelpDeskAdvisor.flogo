@@ -257,7 +257,7 @@
     {
       "name": "LLMClient.API_Key",
       "type": "string",
-      "value": "SECRET:015mEcVWnP0/Lt21sk5RJqQ3MBqQYao1n07vmKtWhq/i9kkVL6hAf5/qpqM6qUBkGexGAA5+9c13BWwfjOEh+HfavYpwCMkZsoivRhVLUVD09FlUGyjxmNZtA7K1JGnWAJ1hWNHmHi7KziaA6zNPZWyoytNCh0oSWpZT3CuJqurjUbmFeUFQ1sMe7KSAF5fzxasTHDVUKBBYbm4hJk8ArcVW87rMfIHx1xYqJqKoP/gep1ye"
+      "value": "SECRET:EQRbUxsfEf6Q5uxQXH9Zs7SMg5aDMRPgxL+ahBx1TT6U1H3FXHojdsbBYYj6MBqNXiQnvWiok3vIzK3wbUqEjLUcxi7vNenlFSZH0s8lpSI6ialt0NMI9JnjVChLeQoQ6azMhj1skmfPIfX3Df1v8/yWud9Cyta6iFg4o5PbYyE9IuqOfzjGk4py7dVFrGG+Al8OQpi3D10JqGRN0S/MV/mHKF/WXOUoRjfwzwpDP72d0GKW"
     },
     {
       "name": "LLMClient.LLM_Model",
@@ -296,7 +296,7 @@
     }
   ],
   "connections": {},
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS9wcm9qZWN0LWZsb2dvL3dlYnNvY2tldCIsImlkIjoid2Vic29ja2V0IiwidmVyc2lvbiI6IjEuMC4xIiwidGFnIjoiMS4wLjEtYjAzLWZsb2dvLTIuMjUuMCIsIm5hbWUiOiJXZWJzb2NrZXQiLCJzM2xvY2F0aW9uIjoiVGliY28vd2Vic29ja2V0IiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWFpLWFnZW50L3NyYy9hcHAvQWdlbnRpY0FJIiwiaWQiOiJBZ2VudGljQUkiLCJ2ZXJzaW9uIjoiMC45LjMiLCJ0YWciOiIwLjkuMy1iMDIiLCJuYW1lIjoiQWdlbnRpYyBBSSAoVGVjaCBQcmV2aWV3KSIsInMzbG9jYXRpb24iOiJUaWJjby9BZ2VudGljQUkiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfSx7InJlZiI6ImdpdGh1Yi5jb20vdGliY28vZmxvZ28tZ2VuZXJhbC9zcmMvYXBwL0dlbmVyYWwiLCJpZCI6IkdlbmVyYWwiLCJ2ZXJzaW9uIjoiMS42LjE0IiwidGFnIjoiMS42LjE0LWIwNCIsIm5hbWUiOiJHZW5lcmFsIiwiczNsb2NhdGlvbiI6IlRpYmNvL0dlbmVyYWwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS9wcm9qZWN0LWZsb2dvL3dlYnNvY2tldCIsImlkIjoid2Vic29ja2V0IiwidmVyc2lvbiI6IjEuMC4yIiwidGFnIjoiMS4wLjItYjAzIiwibmFtZSI6IldlYnNvY2tldCIsInMzbG9jYXRpb24iOiJUaWJjby93ZWJzb2NrZXQiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfSx7InJlZiI6ImdpdGh1Yi5jb20vdGliY28vZmxvZ28tYWktYWdlbnQvc3JjL2FwcC9BZ2VudGljQUkiLCJpZCI6IkFnZW50aWNBSSIsInZlcnNpb24iOiIwLjkuNCIsInRhZyI6IjAuOS40LWIwMiIsIm5hbWUiOiJBZ2VudGljIEFJIChUZWNoIFByZXZpZXcpIiwiczNsb2NhdGlvbiI6IlRpYmNvL0FnZW50aWNBSSIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTUiLCJ0YWciOiIxLjYuMTUtYjA0IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9XQ==",
   "metadata": {
     "endpoints": [
       {
@@ -306,6 +306,6 @@
         "type": "public"
       }
     ],
-    "flogoVersion": "2.26.5"
+    "flogoVersion": "2.26.6"
   }
 }

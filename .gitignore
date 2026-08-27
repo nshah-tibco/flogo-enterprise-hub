@@ -3,6 +3,12 @@
 .mcp.json
 bin
 
+# --- Node.js ---
+# Installed dependencies for the demo chatbots / mcp-proxy. Never commit these;
+# they are restored with `npm install`.
+node_modules/
+npm-debug.log*
+
 # --- Build artifacts ---
 # Windows executables / libraries
 *.exe
