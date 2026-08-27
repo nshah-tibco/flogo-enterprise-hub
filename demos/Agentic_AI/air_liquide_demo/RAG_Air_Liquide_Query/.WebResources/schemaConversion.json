@@ -1,0 +1,5 @@
+{"records": [{
+    "jsonSchemaLocation": "/RAG_Air_Liquide_Query/Service Descriptors/rag_image_query.RAGImgQuery-RAGImgQuery.json",
+    "conversionType": "linked",
+    "xsdSchemaTargetNamespace": "http://www.example.org/QuerySchema"
+}]}

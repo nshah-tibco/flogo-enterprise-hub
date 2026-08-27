@@ -1,0 +1,2021 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/tibco/wi-postgres/src/app/PostgreSQL/activity/query",
+    "github.com/project-flogo/contrib/activity/actreturn",
+    "github.com/tibco/flogo-mcp/src/app/MCP/trigger/mcpserver",
+    "github.com/project-flogo/contrib/function/coerce",
+    "github.com/tibco/wi-postgres/src/app/PostgreSQL/connector/connection"
+  ],
+  "name": "ContainerShippingMCPServer",
+  "description": "MCP Server exposing read-only customer, booking, container, tracking, vessel-schedule, rate, charge and claim lookups for the Maritime Container Shipping Customer Assistant.",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#mcpserver",
+      "name": "flogo-mcp-mcpsever",
+      "description": "Container Shipping MCP server for Agentic AI - Customer Assistant",
+      "settings": {
+        "serverName": "ContainerShippingCustomerAssistant",
+        "serverVersion": "1.0.0",
+        "serverType": "HTTP",
+        "serverPort": "=$property[\"MCP_SERVER_PORT\"]",
+        "statelessServer": false,
+        "serverEndpointPath": "/shipping-bss",
+        "enableTLS": false,
+        "serverCertificate": "",
+        "serverPrivateKey": "",
+        "authType": "None",
+        "authToken": ""
+      },
+      "id": "ContainerShippingMCPServer",
+      "handlers": [
+        {
+          "description": "Retrieve all shipping customer profile records",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "GetCustomerProfile",
+            "handlerDescription": "Get all shipping customer (Beneficial Cargo Owner) profile records including customer_code, company_name, account_type (BCO, Forwarder, Enterprise), loyalty_tier (Gold, Silver, Bronze), contact_name, contact_email, contact_phone, country, credit_terms, and active_since. Use this to identify a customer by their customer_code (e.g. CUST-SHIP-1001) and retrieve their account and contact details.",
+            "toolTitle": "",
+            "readOnlyToolHint": true,
+            "destructiveToolHint": false,
+            "idempotentToolHint": true,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getCustomerProfile"
+            },
+            "input": {
+              "arguments": "=$.arguments",
+              "httpHeaders": "=$.httpHeaders"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "reply": {
+              "response": {
+                "type": "json",
+                "value": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}",
+                "fe_metadata": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}"
+              }
+            },
+            "output": {
+              "arguments": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            }
+          },
+          "name": "getCustomerProfile"
+        },
+        {
+          "description": "Retrieve all bookings",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "GetBookings",
+            "handlerDescription": "Get every container booking including booking_ref, customer_code, voyage_id, origin_port and destination_port (UN/LOCODEs), container_type, quantity, cargo_description, total_amount_usd, currency, status (Confirmed, In Transit, Delayed, Discharged, Delivered, Amendment Requested, Cancelled), and booking_date. Use this for questions about a customer's bookings, their lane, cargo, amount, and status.",
+            "toolTitle": "",
+            "readOnlyToolHint": true,
+            "destructiveToolHint": false,
+            "idempotentToolHint": true,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getBookings"
+            },
+            "input": {
+              "arguments": "=$.arguments",
+              "httpHeaders": "=$.httpHeaders"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "reply": {
+              "response": {
+                "type": "json",
+                "value": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}",
+                "fe_metadata": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}"
+              }
+            },
+            "output": {
+              "arguments": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            }
+          },
+          "name": "getBookings"
+        },
+        {
+          "description": "Retrieve all containers",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "GetContainers",
+            "handlerDescription": "Get all containers on bookings including container_no, booking_ref, container_type, seal_no, status (Empty, Loaded, In Transit, Discharged, Delivered, Hold), current_location (port code), and gross_weight_kg. Use this to list the containers under a booking and see each container's seal, weight, status, and where it currently is.",
+            "toolTitle": "",
+            "readOnlyToolHint": true,
+            "destructiveToolHint": false,
+            "idempotentToolHint": true,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getContainers"
+            },
+            "input": {
+              "arguments": "=$.arguments",
+              "httpHeaders": "=$.httpHeaders"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "reply": {
+              "response": {
+                "type": "json",
+                "value": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}",
+                "fe_metadata": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}"
+              }
+            },
+            "output": {
+              "arguments": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            }
+          },
+          "name": "getContainers"
+        },
+        {
+          "description": "Retrieve container tracking events",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "TrackContainer",
+            "handlerDescription": "Get the scan-by-scan movement history for containers including event_id, container_no, event_time, location_port, event_type (Gate In, Loaded, Vessel Departed, Vessel Arrived, Transshipment, Discharged, Delivered, Hold, In Transit), and description. Results let you trace a container_no (e.g. MSKU7000001) end to end and explain where it currently is and why it may be delayed.",
+            "toolTitle": "",
+            "readOnlyToolHint": true,
+            "destructiveToolHint": false,
+            "idempotentToolHint": true,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:trackContainer"
+            },
+            "input": {
+              "arguments": "=$.arguments",
+              "httpHeaders": "=$.httpHeaders"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "reply": {
+              "response": {
+                "type": "json",
+                "value": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}",
+                "fe_metadata": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}"
+              }
+            },
+            "output": {
+              "arguments": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            }
+          },
+          "name": "trackContainer"
+        },
+        {
+          "description": "Retrieve the sailing schedule",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "GetVesselSchedule",
+            "handlerDescription": "Get the sailing schedule (voyages) joined to vessels and ports, including voyage_id, service_name, vessel_id, vessel_name, origin_port and origin_port_name, destination_port and destination_port_name, etd, eta, transit_days, and status (Scheduled, Departed, Arrived, Delayed, Cancelled). Use this for questions about sailings, departure/arrival dates, transit time, and which vessel serves a lane.",
+            "toolTitle": "",
+            "readOnlyToolHint": true,
+            "destructiveToolHint": false,
+            "idempotentToolHint": true,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getVesselSchedule"
+            },
+            "input": {
+              "arguments": "=$.arguments",
+              "httpHeaders": "=$.httpHeaders"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "reply": {
+              "response": {
+                "type": "json",
+                "value": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}",
+                "fe_metadata": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}"
+              }
+            },
+            "output": {
+              "arguments": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            }
+          },
+          "name": "getVesselSchedule"
+        },
+        {
+          "description": "Retrieve the ocean freight rate card",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "GetRates",
+            "handlerDescription": "Get the ocean freight rate card joined to container types and ports, including rate_id, origin_port and origin_port_name, destination_port and destination_port_name, container_type, container_description, base_rate_usd, currency, transit_days, valid_from, and valid_to. Use this to quote a price for a lane (e.g. Shanghai CNSHA to Los Angeles USLAX) and container type (e.g. 40HC).",
+            "toolTitle": "",
+            "readOnlyToolHint": true,
+            "destructiveToolHint": false,
+            "idempotentToolHint": true,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getRates"
+            },
+            "input": {
+              "arguments": "=$.arguments",
+              "httpHeaders": "=$.httpHeaders"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "reply": {
+              "response": {
+                "type": "json",
+                "value": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}",
+                "fe_metadata": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}"
+              }
+            },
+            "output": {
+              "arguments": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            }
+          },
+          "name": "getRates"
+        },
+        {
+          "description": "Retrieve all charges",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "GetCharges",
+            "handlerDescription": "Get all charges on bookings including charge_id, booking_ref, charge_type (Freight, Demurrage, Detention, BAF, THC), amount_usd, currency, free_days, days_used, status (Invoiced, Paid, Disputed, Waived), and charge_date. Use this to break down a booking's freight and accessorial charges and to check demurrage/detention free_days versus days_used before a dispute.",
+            "toolTitle": "",
+            "readOnlyToolHint": true,
+            "destructiveToolHint": false,
+            "idempotentToolHint": true,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getCharges"
+            },
+            "input": {
+              "arguments": "=$.arguments",
+              "httpHeaders": "=$.httpHeaders"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "reply": {
+              "response": {
+                "type": "json",
+                "value": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}",
+                "fe_metadata": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}"
+              }
+            },
+            "output": {
+              "arguments": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            }
+          },
+          "name": "getCharges"
+        },
+        {
+          "description": "Retrieve all cargo claims",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "GetClaims",
+            "handlerDescription": "Get all cargo claims including claim_id, booking_ref, customer_code, claim_type (Damage, Loss, Shortage), description, claim_amount_usd, currency, status (Submitted, Under Review, Approved, Rejected), and filed_date. Results are ordered most recent first per customer. Use this for claim status questions.",
+            "toolTitle": "",
+            "readOnlyToolHint": true,
+            "destructiveToolHint": false,
+            "idempotentToolHint": true,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getClaims"
+            },
+            "input": {
+              "arguments": "=$.arguments",
+              "httpHeaders": "=$.httpHeaders"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "reply": {
+              "response": {
+                "type": "json",
+                "value": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}",
+                "fe_metadata": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}"
+              }
+            },
+            "output": {
+              "arguments": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "{}"
+              }
+            }
+          },
+          "name": "getClaims"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:getCustomerProfile",
+      "data": {
+        "name": "getCustomerProfile",
+        "description": "Retrieve all shipping customer profile records",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "PostgreSQLQuery",
+            "type": "label",
+            "label": "StartActivity to PostgreSQLQuery"
+          },
+          {
+            "id": 2,
+            "from": "PostgreSQLQuery",
+            "to": "Return",
+            "type": "label",
+            "label": "PostgreSQLQuery to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "This activity executes query on a PostgreSQL database",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#query",
+              "input": {
+                "Connection": "conn://c0000001-9720-4a10-b001-000000000001",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT * FROM public.customers ORDER BY customer_code ASC;",
+                "manualmode": false,
+                "Fields": [
+                  {
+                    "FieldName": "customer_code",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "company_name",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "account_type",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "loyalty_tier",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "contact_name",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "contact_email",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "contact_phone",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "country",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "credit_terms",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "active_since",
+                    "Type": "DATE",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  }
+                ],
+                "RuntimeQuery": "",
+                "State": "c0000001-9720-4a10-b001-000000000001SELECT * FROM public.customers ORDER BY customer_code ASC;"
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"customer_code\":{\"type\":\"string\"},\"company_name\":{\"type\":\"string\"},\"account_type\":{\"type\":\"string\"},\"loyalty_tier\":{\"type\":\"string\"},\"contact_name\":{\"type\":\"string\"},\"contact_email\":{\"type\":\"string\"},\"contact_phone\":{\"type\":\"string\"},\"country\":{\"type\":\"string\"},\"credit_terms\":{\"type\":\"string\"},\"active_since\":{\"type\":\"string\",\"format\":\"date\"}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"customer_code\":{\"type\":\"string\"},\"company_name\":{\"type\":\"string\"},\"account_type\":{\"type\":\"string\"},\"loyalty_tier\":{\"type\":\"string\"},\"contact_name\":{\"type\":\"string\"},\"contact_email\":{\"type\":\"string\"},\"contact_phone\":{\"type\":\"string\"},\"country\":{\"type\":\"string\"},\"credit_terms\":{\"type\":\"string\"},\"active_since\":{\"type\":\"string\",\"format\":\"date\"}}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return Activity",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[PostgreSQLQuery].Output)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiUG9zdGdyZVNRTFF1ZXJ5Ijp7IngiOjIxMywieSI6OTF9LCJSZXR1cm4iOnsieCI6NDQ3LCJ5Ijo5Mn19",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            },
+            {
+              "name": "httpHeaders",
+              "type": "params"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"data\":{\"type\":\"string\"},\"error\":{\"type\":\"string\"}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"ContainerShippingMCPServer\",\"properties\":{\"arguments\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}},\"httpHeaders\":{\"type\":\"params\"}}}",
+            "output": "{\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{\"data\":{\"type\":\"string\"},\"error\":{\"type\":\"string\"}}}},\"required\":[\"response\"]}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:getBookings",
+      "data": {
+        "name": "getBookings",
+        "description": "Retrieve all bookings",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "PostgreSQLQuery",
+            "type": "label",
+            "label": "StartActivity to PostgreSQLQuery"
+          },
+          {
+            "id": 2,
+            "from": "PostgreSQLQuery",
+            "to": "Return",
+            "type": "label",
+            "label": "PostgreSQLQuery to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "This activity executes query on a PostgreSQL database",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#query",
+              "input": {
+                "Connection": "conn://c0000001-9720-4a10-b001-000000000001",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT * FROM public.bookings ORDER BY customer_code ASC, booking_ref ASC;",
+                "manualmode": false,
+                "Fields": [
+                  {
+                    "FieldName": "booking_ref",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "customer_code",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "voyage_id",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "origin_port",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "destination_port",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "container_type",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "quantity",
+                    "Type": "INTEGER",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "cargo_description",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "total_amount_usd",
+                    "Type": "NUMERIC",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "currency",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "status",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "booking_date",
+                    "Type": "DATE",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  }
+                ],
+                "RuntimeQuery": "",
+                "State": "c0000002-9720-4a10-b002-000000000002SELECT * FROM public.bookings ORDER BY customer_code ASC, booking_ref ASC;"
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"booking_ref\":{\"type\":\"string\"},\"customer_code\":{\"type\":\"string\"},\"voyage_id\":{\"type\":\"string\"},\"origin_port\":{\"type\":\"string\"},\"destination_port\":{\"type\":\"string\"},\"container_type\":{\"type\":\"string\"},\"quantity\":{\"type\":\"integer\"},\"cargo_description\":{\"type\":\"string\"},\"total_amount_usd\":{\"type\":\"number\"},\"currency\":{\"type\":\"string\"},\"status\":{\"type\":\"string\"},\"booking_date\":{\"type\":\"string\",\"format\":\"date\"}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"booking_ref\":{\"type\":\"string\"},\"customer_code\":{\"type\":\"string\"},\"voyage_id\":{\"type\":\"string\"},\"origin_port\":{\"type\":\"string\"},\"destination_port\":{\"type\":\"string\"},\"container_type\":{\"type\":\"string\"},\"quantity\":{\"type\":\"integer\"},\"cargo_description\":{\"type\":\"string\"},\"total_amount_usd\":{\"type\":\"number\"},\"currency\":{\"type\":\"string\"},\"status\":{\"type\":\"string\"},\"booking_date\":{\"type\":\"string\",\"format\":\"date\"}}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return Activity",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[PostgreSQLQuery].Output)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiUG9zdGdyZVNRTFF1ZXJ5Ijp7IngiOjIxMywieSI6OTF9LCJSZXR1cm4iOnsieCI6NDQ3LCJ5Ijo5Mn19",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            },
+            {
+              "name": "httpHeaders",
+              "type": "params"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"data\":{\"type\":\"string\"},\"error\":{\"type\":\"string\"}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"ContainerShippingMCPServer\",\"properties\":{\"arguments\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}},\"httpHeaders\":{\"type\":\"params\"}}}",
+            "output": "{\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{\"data\":{\"type\":\"string\"},\"error\":{\"type\":\"string\"}}}},\"required\":[\"response\"]}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:getContainers",
+      "data": {
+        "name": "getContainers",
+        "description": "Retrieve all containers",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "PostgreSQLQuery",
+            "type": "label",
+            "label": "StartActivity to PostgreSQLQuery"
+          },
+          {
+            "id": 2,
+            "from": "PostgreSQLQuery",
+            "to": "Return",
+            "type": "label",
+            "label": "PostgreSQLQuery to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "This activity executes query on a PostgreSQL database",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#query",
+              "input": {
+                "Connection": "conn://c0000001-9720-4a10-b001-000000000001",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT * FROM public.containers ORDER BY booking_ref ASC, container_no ASC;",
+                "manualmode": false,
+                "Fields": [
+                  {
+                    "FieldName": "container_no",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "booking_ref",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "container_type",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "seal_no",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "status",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "current_location",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "gross_weight_kg",
+                    "Type": "INTEGER",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  }
+                ],
+                "RuntimeQuery": "",
+                "State": "c0000003-9720-4a10-b003-000000000003SELECT * FROM public.containers ORDER BY booking_ref ASC, container_no ASC;"
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"container_no\":{\"type\":\"string\"},\"booking_ref\":{\"type\":\"string\"},\"container_type\":{\"type\":\"string\"},\"seal_no\":{\"type\":\"string\"},\"status\":{\"type\":\"string\"},\"current_location\":{\"type\":\"string\"},\"gross_weight_kg\":{\"type\":\"integer\"}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"container_no\":{\"type\":\"string\"},\"booking_ref\":{\"type\":\"string\"},\"container_type\":{\"type\":\"string\"},\"seal_no\":{\"type\":\"string\"},\"status\":{\"type\":\"string\"},\"current_location\":{\"type\":\"string\"},\"gross_weight_kg\":{\"type\":\"integer\"}}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return Activity",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[PostgreSQLQuery].Output)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiUG9zdGdyZVNRTFF1ZXJ5Ijp7IngiOjIxMywieSI6OTF9LCJSZXR1cm4iOnsieCI6NDQ3LCJ5Ijo5Mn19",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            },
+            {
+              "name": "httpHeaders",
+              "type": "params"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"data\":{\"type\":\"string\"},\"error\":{\"type\":\"string\"}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"ContainerShippingMCPServer\",\"properties\":{\"arguments\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}},\"httpHeaders\":{\"type\":\"params\"}}}",
+            "output": "{\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{\"data\":{\"type\":\"string\"},\"error\":{\"type\":\"string\"}}}},\"required\":[\"response\"]}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:trackContainer",
+      "data": {
+        "name": "trackContainer",
+        "description": "Retrieve container tracking events",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "PostgreSQLQuery",
+            "type": "label",
+            "label": "StartActivity to PostgreSQLQuery"
+          },
+          {
+            "id": 2,
+            "from": "PostgreSQLQuery",
+            "to": "Return",
+            "type": "label",
+            "label": "PostgreSQLQuery to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "This activity executes query on a PostgreSQL database",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#query",
+              "input": {
+                "Connection": "conn://c0000001-9720-4a10-b001-000000000001",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT * FROM public.tracking_events ORDER BY container_no ASC, event_time ASC;",
+                "manualmode": false,
+                "Fields": [
+                  {
+                    "FieldName": "event_id",
+                    "Type": "INTEGER",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "container_no",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "event_time",
+                    "Type": "TIMESTAMP",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "location_port",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "event_type",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "description",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  }
+                ],
+                "RuntimeQuery": "",
+                "State": "c0000004-9720-4a10-b004-000000000004SELECT * FROM public.tracking_events ORDER BY container_no ASC, event_time ASC;"
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"event_id\":{\"type\":\"integer\"},\"container_no\":{\"type\":\"string\"},\"event_time\":{\"type\":\"string\",\"format\":\"date-time\"},\"location_port\":{\"type\":\"string\"},\"event_type\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"event_id\":{\"type\":\"integer\"},\"container_no\":{\"type\":\"string\"},\"event_time\":{\"type\":\"string\",\"format\":\"date-time\"},\"location_port\":{\"type\":\"string\"},\"event_type\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"}}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return Activity",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[PostgreSQLQuery].Output)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiUG9zdGdyZVNRTFF1ZXJ5Ijp7IngiOjIxMywieSI6OTF9LCJSZXR1cm4iOnsieCI6NDQ3LCJ5Ijo5Mn19",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            },
+            {
+              "name": "httpHeaders",
+              "type": "params"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"data\":{\"type\":\"string\"},\"error\":{\"type\":\"string\"}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"ContainerShippingMCPServer\",\"properties\":{\"arguments\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}},\"httpHeaders\":{\"type\":\"params\"}}}",
+            "output": "{\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{\"data\":{\"type\":\"string\"},\"error\":{\"type\":\"string\"}}}},\"required\":[\"response\"]}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:getVesselSchedule",
+      "data": {
+        "name": "getVesselSchedule",
+        "description": "Retrieve the sailing schedule",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "PostgreSQLQuery",
+            "type": "label",
+            "label": "StartActivity to PostgreSQLQuery"
+          },
+          {
+            "id": 2,
+            "from": "PostgreSQLQuery",
+            "to": "Return",
+            "type": "label",
+            "label": "PostgreSQLQuery to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "This activity executes query on a PostgreSQL database",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#query",
+              "input": {
+                "Connection": "conn://c0000001-9720-4a10-b001-000000000001",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT v.voyage_id, v.service_name, v.vessel_id, ve.vessel_name, v.origin_port, po.port_name AS origin_port_name, v.destination_port, pd.port_name AS destination_port_name, v.etd, v.eta, v.transit_days, v.status FROM public.voyages v JOIN public.vessels ve ON v.vessel_id = ve.vessel_id JOIN public.ports po ON v.origin_port = po.port_code JOIN public.ports pd ON v.destination_port = pd.port_code ORDER BY v.etd ASC;",
+                "manualmode": false,
+                "Fields": [
+                  {
+                    "FieldName": "voyage_id",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "service_name",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "vessel_id",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "vessel_name",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "origin_port",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "origin_port_name",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "destination_port",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "destination_port_name",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "etd",
+                    "Type": "DATE",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "eta",
+                    "Type": "DATE",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "transit_days",
+                    "Type": "INTEGER",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "status",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  }
+                ],
+                "RuntimeQuery": "",
+                "State": "c0000005-9720-4a10-b005-000000000005SELECT v.voyage_id, v.service_name, v.vessel_id, ve.vessel_name, v.origin_port, po.port_name AS origin_port_name, v.destination_port, pd.port_name AS destination_port_name, v.etd, v.eta, v.transit_days, v.status FROM public.voyages v JOIN public.vessels ve ON v.vessel_id = ve.vessel_id JOIN public.ports po ON v.origin_port = po.port_code JOIN public.ports pd ON v.destination_port = pd.port_code ORDER BY v.etd ASC;"
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"voyage_id\":{\"type\":\"string\"},\"service_name\":{\"type\":\"string\"},\"vessel_id\":{\"type\":\"string\"},\"vessel_name\":{\"type\":\"string\"},\"origin_port\":{\"type\":\"string\"},\"origin_port_name\":{\"type\":\"string\"},\"destination_port\":{\"type\":\"string\"},\"destination_port_name\":{\"type\":\"string\"},\"etd\":{\"type\":\"string\",\"format\":\"date\"},\"eta\":{\"type\":\"string\",\"format\":\"date\"},\"transit_days\":{\"type\":\"integer\"},\"status\":{\"type\":\"string\"}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"voyage_id\":{\"type\":\"string\"},\"service_name\":{\"type\":\"string\"},\"vessel_id\":{\"type\":\"string\"},\"vessel_name\":{\"type\":\"string\"},\"origin_port\":{\"type\":\"string\"},\"origin_port_name\":{\"type\":\"string\"},\"destination_port\":{\"type\":\"string\"},\"destination_port_name\":{\"type\":\"string\"},\"etd\":{\"type\":\"string\",\"format\":\"date\"},\"eta\":{\"type\":\"string\",\"format\":\"date\"},\"transit_days\":{\"type\":\"integer\"},\"status\":{\"type\":\"string\"}}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return Activity",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[PostgreSQLQuery].Output)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiUG9zdGdyZVNRTFF1ZXJ5Ijp7IngiOjIxMywieSI6OTF9LCJSZXR1cm4iOnsieCI6NDQ3LCJ5Ijo5Mn19",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            },
+            {
+              "name": "httpHeaders",
+              "type": "params"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"data\":{\"type\":\"string\"},\"error\":{\"type\":\"string\"}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"ContainerShippingMCPServer\",\"properties\":{\"arguments\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}},\"httpHeaders\":{\"type\":\"params\"}}}",
+            "output": "{\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{\"data\":{\"type\":\"string\"},\"error\":{\"type\":\"string\"}}}},\"required\":[\"response\"]}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:getRates",
+      "data": {
+        "name": "getRates",
+        "description": "Retrieve the ocean freight rate card",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "PostgreSQLQuery",
+            "type": "label",
+            "label": "StartActivity to PostgreSQLQuery"
+          },
+          {
+            "id": 2,
+            "from": "PostgreSQLQuery",
+            "to": "Return",
+            "type": "label",
+            "label": "PostgreSQLQuery to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "This activity executes query on a PostgreSQL database",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#query",
+              "input": {
+                "Connection": "conn://c0000001-9720-4a10-b001-000000000001",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT r.rate_id, r.origin_port, po.port_name AS origin_port_name, r.destination_port, pd.port_name AS destination_port_name, r.container_type, ct.description AS container_description, r.base_rate_usd, r.currency, r.transit_days, r.valid_from, r.valid_to FROM public.rates r JOIN public.container_types ct ON r.container_type = ct.type_code JOIN public.ports po ON r.origin_port = po.port_code JOIN public.ports pd ON r.destination_port = pd.port_code ORDER BY r.origin_port ASC, r.destination_port ASC, r.container_type ASC;",
+                "manualmode": false,
+                "Fields": [
+                  {
+                    "FieldName": "rate_id",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "origin_port",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "origin_port_name",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "destination_port",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "destination_port_name",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "container_type",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "container_description",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "base_rate_usd",
+                    "Type": "NUMERIC",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "currency",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "transit_days",
+                    "Type": "INTEGER",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "valid_from",
+                    "Type": "DATE",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "valid_to",
+                    "Type": "DATE",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  }
+                ],
+                "RuntimeQuery": "",
+                "State": "c0000006-9720-4a10-b006-000000000006SELECT r.rate_id, r.origin_port, po.port_name AS origin_port_name, r.destination_port, pd.port_name AS destination_port_name, r.container_type, ct.description AS container_description, r.base_rate_usd, r.currency, r.transit_days, r.valid_from, r.valid_to FROM public.rates r JOIN public.container_types ct ON r.container_type = ct.type_code JOIN public.ports po ON r.origin_port = po.port_code JOIN public.ports pd ON r.destination_port = pd.port_code ORDER BY r.origin_port ASC, r.destination_port ASC, r.container_type ASC;"
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"rate_id\":{\"type\":\"string\"},\"origin_port\":{\"type\":\"string\"},\"origin_port_name\":{\"type\":\"string\"},\"destination_port\":{\"type\":\"string\"},\"destination_port_name\":{\"type\":\"string\"},\"container_type\":{\"type\":\"string\"},\"container_description\":{\"type\":\"string\"},\"base_rate_usd\":{\"type\":\"number\"},\"currency\":{\"type\":\"string\"},\"transit_days\":{\"type\":\"integer\"},\"valid_from\":{\"type\":\"string\",\"format\":\"date\"},\"valid_to\":{\"type\":\"string\",\"format\":\"date\"}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"rate_id\":{\"type\":\"string\"},\"origin_port\":{\"type\":\"string\"},\"origin_port_name\":{\"type\":\"string\"},\"destination_port\":{\"type\":\"string\"},\"destination_port_name\":{\"type\":\"string\"},\"container_type\":{\"type\":\"string\"},\"container_description\":{\"type\":\"string\"},\"base_rate_usd\":{\"type\":\"number\"},\"currency\":{\"type\":\"string\"},\"transit_days\":{\"type\":\"integer\"},\"valid_from\":{\"type\":\"string\",\"format\":\"date\"},\"valid_to\":{\"type\":\"string\",\"format\":\"date\"}}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return Activity",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[PostgreSQLQuery].Output)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiUG9zdGdyZVNRTFF1ZXJ5Ijp7IngiOjIxMywieSI6OTF9LCJSZXR1cm4iOnsieCI6NDQ3LCJ5Ijo5Mn19",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            },
+            {
+              "name": "httpHeaders",
+              "type": "params"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"data\":{\"type\":\"string\"},\"error\":{\"type\":\"string\"}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"ContainerShippingMCPServer\",\"properties\":{\"arguments\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}},\"httpHeaders\":{\"type\":\"params\"}}}",
+            "output": "{\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{\"data\":{\"type\":\"string\"},\"error\":{\"type\":\"string\"}}}},\"required\":[\"response\"]}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:getCharges",
+      "data": {
+        "name": "getCharges",
+        "description": "Retrieve all charges",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "PostgreSQLQuery",
+            "type": "label",
+            "label": "StartActivity to PostgreSQLQuery"
+          },
+          {
+            "id": 2,
+            "from": "PostgreSQLQuery",
+            "to": "Return",
+            "type": "label",
+            "label": "PostgreSQLQuery to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "This activity executes query on a PostgreSQL database",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#query",
+              "input": {
+                "Connection": "conn://c0000001-9720-4a10-b001-000000000001",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT * FROM public.charges ORDER BY booking_ref ASC, charge_id ASC;",
+                "manualmode": false,
+                "Fields": [
+                  {
+                    "FieldName": "charge_id",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "booking_ref",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "charge_type",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "amount_usd",
+                    "Type": "NUMERIC",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "currency",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "free_days",
+                    "Type": "INTEGER",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "days_used",
+                    "Type": "INTEGER",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "status",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "charge_date",
+                    "Type": "DATE",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  }
+                ],
+                "RuntimeQuery": "",
+                "State": "c0000007-9720-4a10-b007-000000000007SELECT * FROM public.charges ORDER BY booking_ref ASC, charge_id ASC;"
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"charge_id\":{\"type\":\"string\"},\"booking_ref\":{\"type\":\"string\"},\"charge_type\":{\"type\":\"string\"},\"amount_usd\":{\"type\":\"number\"},\"currency\":{\"type\":\"string\"},\"free_days\":{\"type\":\"integer\"},\"days_used\":{\"type\":\"integer\"},\"status\":{\"type\":\"string\"},\"charge_date\":{\"type\":\"string\",\"format\":\"date\"}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"charge_id\":{\"type\":\"string\"},\"booking_ref\":{\"type\":\"string\"},\"charge_type\":{\"type\":\"string\"},\"amount_usd\":{\"type\":\"number\"},\"currency\":{\"type\":\"string\"},\"free_days\":{\"type\":\"integer\"},\"days_used\":{\"type\":\"integer\"},\"status\":{\"type\":\"string\"},\"charge_date\":{\"type\":\"string\",\"format\":\"date\"}}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return Activity",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[PostgreSQLQuery].Output)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiUG9zdGdyZVNRTFF1ZXJ5Ijp7IngiOjIxMywieSI6OTF9LCJSZXR1cm4iOnsieCI6NDQ3LCJ5Ijo5Mn19",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            },
+            {
+              "name": "httpHeaders",
+              "type": "params"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"data\":{\"type\":\"string\"},\"error\":{\"type\":\"string\"}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"ContainerShippingMCPServer\",\"properties\":{\"arguments\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}},\"httpHeaders\":{\"type\":\"params\"}}}",
+            "output": "{\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{\"data\":{\"type\":\"string\"},\"error\":{\"type\":\"string\"}}}},\"required\":[\"response\"]}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:getClaims",
+      "data": {
+        "name": "getClaims",
+        "description": "Retrieve all cargo claims",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "PostgreSQLQuery",
+            "type": "label",
+            "label": "StartActivity to PostgreSQLQuery"
+          },
+          {
+            "id": 2,
+            "from": "PostgreSQLQuery",
+            "to": "Return",
+            "type": "label",
+            "label": "PostgreSQLQuery to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "This activity executes query on a PostgreSQL database",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#query",
+              "input": {
+                "Connection": "conn://c0000001-9720-4a10-b001-000000000001",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT * FROM public.claims ORDER BY customer_code ASC, filed_date DESC;",
+                "manualmode": false,
+                "Fields": [
+                  {
+                    "FieldName": "claim_id",
+                    "Type": "INTEGER",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "booking_ref",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "customer_code",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "claim_type",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "description",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "claim_amount_usd",
+                    "Type": "NUMERIC",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "currency",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "status",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "filed_date",
+                    "Type": "DATE",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  }
+                ],
+                "RuntimeQuery": "",
+                "State": "c0000008-9720-4a10-b008-000000000008SELECT * FROM public.claims ORDER BY customer_code ASC, filed_date DESC;"
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"claim_id\":{\"type\":\"integer\"},\"booking_ref\":{\"type\":\"string\"},\"customer_code\":{\"type\":\"string\"},\"claim_type\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"claim_amount_usd\":{\"type\":\"number\"},\"currency\":{\"type\":\"string\"},\"status\":{\"type\":\"string\"},\"filed_date\":{\"type\":\"string\",\"format\":\"date\"}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"claim_id\":{\"type\":\"integer\"},\"booking_ref\":{\"type\":\"string\"},\"customer_code\":{\"type\":\"string\"},\"claim_type\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"claim_amount_usd\":{\"type\":\"number\"},\"currency\":{\"type\":\"string\"},\"status\":{\"type\":\"string\"},\"filed_date\":{\"type\":\"string\",\"format\":\"date\"}}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return Activity",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[PostgreSQLQuery].Output)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiUG9zdGdyZVNRTFF1ZXJ5Ijp7IngiOjIxMywieSI6OTF9LCJSZXR1cm4iOnsieCI6NDQ3LCJ5Ijo5Mn19",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            },
+            {
+              "name": "httpHeaders",
+              "type": "params"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"data\":{\"type\":\"string\"},\"error\":{\"type\":\"string\"}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"ContainerShippingMCPServer\",\"properties\":{\"arguments\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}},\"httpHeaders\":{\"type\":\"params\"}}}",
+            "output": "{\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{\"data\":{\"type\":\"string\"},\"error\":{\"type\":\"string\"}}}},\"required\":[\"response\"]}"
+          }
+        }
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "PostgreSQL.PostgresConn.Host",
+      "type": "string",
+      "value": "localhost"
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Port",
+      "type": "float64",
+      "value": 5432
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Database_Name",
+      "type": "string",
+      "value": "container_shipping"
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.User",
+      "type": "string",
+      "value": "postgres"
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Password",
+      "type": "string",
+      "value": "SECRET:d6w9xBrCmPCHTU5ROkcyh37/4QMf"
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",
+      "type": "float64",
+      "value": 0
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Maximum_Idle_Connections",
+      "type": "float64",
+      "value": 2
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Maximum_Connection_Lifetime",
+      "type": "string",
+      "value": "0"
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Maximum_Connection_Retry_Attempts",
+      "type": "float64",
+      "value": 3
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Connection_Retry_Delay",
+      "type": "float64",
+      "value": 5
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Connection_Timeout",
+      "type": "float64",
+      "value": 20
+    },
+    {
+      "name": "MCP_SERVER_PORT",
+      "type": "string",
+      "value": "9720"
+    }
+  ],
+  "connections": {
+    "c0000001-9720-4a10-b001-000000000001": {
+      "id": "c0000001-9720-4a10-b001-000000000001",
+      "name": "PostgresConn",
+      "ref": "#connection",
+      "isGlobal": false,
+      "settings": {
+        "databaseType": "PostgreSQL",
+        "name": "PostgresConn",
+        "description": "",
+        "host": "=$property[\"PostgreSQL.PostgresConn.Host\"]",
+        "port": "=$property[\"PostgreSQL.PostgresConn.Port\"]",
+        "databaseName": "=$property[\"PostgreSQL.PostgresConn.Database_Name\"]",
+        "user": "=$property[\"PostgreSQL.PostgresConn.User\"]",
+        "password": "=$property[\"PostgreSQL.PostgresConn.Password\"]",
+        "maxopenconnection": "=$property[\"PostgreSQL.PostgresConn.Maximum_Open_Connections\"]",
+        "maxidleconnection": "=$property[\"PostgreSQL.PostgresConn.Maximum_Idle_Connections\"]",
+        "connmaxlifetime": "=$property[\"PostgreSQL.PostgresConn.Maximum_Connection_Lifetime\"]",
+        "maxconnectattempts": "=$property[\"PostgreSQL.PostgresConn.Maximum_Connection_Retry_Attempts\"]",
+        "connectionretrydelay": "=$property[\"PostgreSQL.PostgresConn.Connection_Retry_Delay\"]",
+        "connectiontimeout": "=$property[\"PostgreSQL.PostgresConn.Connection_Timeout\"]",
+        "onprem": false,
+        "tlsconfig": false,
+        "tlsparam": "VerifyCA",
+        "cacert": "",
+        "clientcert": "",
+        "clientkey": ""
+      }
+    }
+  },
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuMyIsInRhZyI6IjEuMC4zLWIwMiIsIm5hbWUiOiJNb2RlbCBDb250ZXh0IFByb3RvY29sIChNQ1ApIiwiczNsb2NhdGlvbiI6IlRpYmNvL01DUCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjEiLCJ0YWciOiIyLjcuMS1iMDEiLCJuYW1lIjoiUG9zdGdyZVNRTCIsInMzbG9jYXRpb24iOiJUaWJjby9Qb3N0Z3JlU1FMIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
+  "metadata": {
+    "endpoints": [
+      {
+        "protocol": "http",
+        "port": "9720",
+        "title": "ContainerShippingMCPServer",
+        "type": "public"
+      }
+    ],
+    "flogoVersion": "2.26.5"
+  }
+}

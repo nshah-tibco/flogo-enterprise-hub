@@ -1441,7 +1441,7 @@
     {
       "name": "Email_Username",
       "type": "string",
-      "value": "nikhil.shah.84@gmail.com"
+      "value": "your-email@gmail.com"
     },
     {
       "name": "Email_App_Password",
@@ -1451,7 +1451,7 @@
     {
       "name": "To_Email",
       "type": "string",
-      "value": "nikhil.shah@tibco.com"
+      "value": "recipient@example.com"
     }
   ],
   "schemas": {

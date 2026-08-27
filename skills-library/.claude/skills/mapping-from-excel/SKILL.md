@@ -124,7 +124,7 @@ fda sa activity "mapping_from_excel.logger.input.message" \
 ```bash
 # Build (use the flogobuild context configured for your Flogo version, e.g. flogo-2.26.0-1789)
 mkdir -p ./bin
-flogobuild build-exe -f <AppName>.flogo -c <YOUR_FLOGO_CONTEXT> -o ./bin
+flogobuild build-exe -f <AppName>.flogo -c <FLOGOBUILD_CONTEXT_NAME> -o ./bin
 
 # Run for 5 seconds and read log output
 chmod +x ./bin/<AppName>

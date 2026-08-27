@@ -1,0 +1,261 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Air Liquide Smart Cylinder Operations API",
+    "description": "Spec-Driven Development Contract for TIBCO BusinessWorks 6. Exposes cylinder inventory management endpoints designed to be auto-discovered by MCP Servers and queried by AI Agents.\n",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Product Management Team",
+      "email": "demo@airliquide-demo.internal"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/api/v1",
+      "description": "Local BW6 Engine Server (Zero External Dependencies)"
+    }
+  ],
+  "paths": {
+    "/cylinders/search": {
+      "get": {
+        "summary": "Search Gas Cylinders",
+        "description": "Search for available gas cylinders by gas type, purity, or yard location.",
+        "operationId": "searchGasStock",
+        "x-mcp-tool-name": "search_gas_stock",
+        "x-mcp-description": "Searches available gas cylinders by gas type (e.g., Argon, Nitrogen) and yard location.",
+        "parameters": [
+          {
+            "name": "gasType",
+            "in": "query",
+            "description": "Type of gas (e.g., Argon, Nitrogen, Oxygen, Hydrogen)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "Argon"
+            }
+          },
+          {
+            "name": "location",
+            "in": "query",
+            "description": "Storage yard or hub location",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "Houston Yard B"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of matching cylinders retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Cylinder"
+                  }
+                },
+                "example": [
+                  {
+                    "cylinderId": "AL-ARG-9082",
+                    "gasType": "Argon",
+                    "purityGrade": "5.0 (99.999%)",
+                    "pressureBar": 200,
+                    "volumeLiters": 50,
+                    "location": "Houston Yard B",
+                    "status": "Available",
+                    "certExpiryDate": "2026-12-31"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cylinders/{id}": {
+      "get": {
+        "summary": "Get Cylinder Details",
+        "description": "Retrieve detailed telemetry, pressure level, and safety certification date for a specific cylinder ID.",
+        "operationId": "getCylinderStatus",
+        "x-mcp-tool-name": "get_cylinder_status",
+        "x-mcp-description": "Retrieves real-time pressure, purity, and location of an Air Liquide gas cylinder by ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Unique cylinder barcode identifier",
+            "schema": {
+              "type": "string",
+              "example": "AL-ARG-9082"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cylinder details retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Cylinder"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Cylinder ID not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cylinders/{id}/dispatch": {
+      "post": {
+        "summary": "Dispatch Gas Cylinder",
+        "description": "Updates cylinder status from Available to In-Transit for customer order fulfillment.",
+        "operationId": "dispatchCylinder",
+        "x-mcp-tool-name": "dispatch_cylinder",
+        "x-mcp-description": "Dispatches a cylinder to a customer location and updates internal BW inventory status.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Unique cylinder barcode identifier",
+            "schema": {
+              "type": "string",
+              "example": "AL-ARG-9082"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "destination"
+                ],
+                "properties": {
+                  "destination": {
+                    "type": "string",
+                    "description": "Facility or customer plant name",
+                    "example": "Fab Plant 4 - Bay 2"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Dispatch status updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "cylinderId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "destination": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "cylinderId": "AL-ARG-9082",
+                  "status": "In-Transit",
+                  "destination": "Fab Plant 4 - Bay 2",
+                  "updatedAt": "2026-07-24T10:48:00Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Cylinder": {
+        "type": "object",
+        "required": [
+          "cylinderId",
+          "gasType",
+          "purityGrade",
+          "pressureBar",
+          "location",
+          "status"
+        ],
+        "properties": {
+          "cylinderId": {
+            "type": "string",
+            "description": "Barcode/Serial number"
+          },
+          "gasType": {
+            "type": "string",
+            "description": "Industrial gas classification"
+          },
+          "purityGrade": {
+            "type": "string",
+            "description": "Gas purity spec level (e.g. 5.0 for semiconductor grade)"
+          },
+          "pressureBar": {
+            "type": "integer",
+            "description": "Current fill pressure in bars"
+          },
+          "volumeLiters": {
+            "type": "integer",
+            "description": "Tank water volume capacity"
+          },
+          "location": {
+            "type": "string",
+            "description": "Current depot or yard identifier"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Available",
+              "Reserved",
+              "In-Transit",
+              "Maintenance"
+            ],
+            "description": "Operational status"
+          },
+          "certExpiryDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Safety inspection expiration date"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

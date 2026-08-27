@@ -32,13 +32,13 @@ Given a domain description **and a reference use case to clone**, the skill prod
 ```
 Chatbot UI --WebSocket--> AI Orchestrator --MCP (HTTP)--> MCP Server --\
                                  |                                      +--> PostgreSQL
-                                 \--------A2A-------> A2A Servers ------/   (+ SMTP for email)
+                                 \--------A2A-------> A2A Agents -------/   (+ SMTP for email)
 ```
 
 | App | Role |
 |-----|------|
 | **MCP Server** | Read-only lookups. One tool per table/join; stateless. The LLM picks the tool by its description. |
-| **A2A Servers** | Write workflows — create/update, plus optional email. Each agent has its own trigger, port, and guardrails. |
+| **A2A Agents** | Write workflows — create/update, plus optional email. Each agent has its own trigger, port, and guardrails. |
 | **AI Orchestrator** | The "brain." A WebSocket chat endpoint whose AI Agent activity classifies intent and routes to MCP tools or A2A agents. |
 
 ### What you get (generated files)
@@ -50,7 +50,7 @@ A new folder `demos/Agentic_AI/<UseCase>_Use_Case/` containing:
 | `database.sql` | PostgreSQL schema + demo data, engineered so each scenario works (one clean case + one exception case per write agent). |
 | `reset_data.sql` | Truncate + reload to reset between demos; volatile dates relative to today. |
 | `<Prefix>MCPServer.flogo` | The MCP Server app — N read-only tools. |
-| `<Prefix>A2AServers.flogo` | The A2A Servers app — M write/action agents. |
+| `<Prefix>A2AServers.flogo` | The A2A Agents app — M write/action agents. |
 | `<Prefix>AIOrchestrator.flogo` | The AI Orchestrator app — WebSocket trigger + AI Agent routing. |
 | `prompts.md` | Demo prompts grouped by scenario. |
 | `README.md` | Architecture, tool/agent tables, DB summary, demo scenarios, ports, troubleshooting, and the manual setup steps. |

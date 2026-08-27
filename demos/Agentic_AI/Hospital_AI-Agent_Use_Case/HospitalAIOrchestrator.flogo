@@ -246,17 +246,17 @@
     {
       "name": "To_Email",
       "type": "string",
-      "value": "nikhil.shah@tibco.com"
+      "value": "recipient@example.com"
     },
     {
       "name": "Email_Username",
       "type": "string",
-      "value": "nikhil.shah.84@gmail.com"
+      "value": "your-email@gmail.com"
     },
     {
       "name": "Email_App_Password",
       "type": "string",
-      "value": "zngg pcba nntl thex"
+      "value": "SET_YOUR_EMAIL_APP_PASSWORD"
     },
     {
       "name": "WebSocket_PORT",

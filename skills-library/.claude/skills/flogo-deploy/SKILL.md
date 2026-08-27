@@ -7,7 +7,7 @@ user-invocable: true
 # Deploy a Flogo Application to the TIBCO Platform
 
 This skill deploys a `.flogo` application file to a TIBCO Platform dataplane using the `tibcop` CLI.
-Use the TIBCO Platform CLI profile configured for your environment (e.g. set in your project's `CLAUDE.md` as `<YOUR_PROFILE>`).
+Use the TIBCO Platform CLI profile configured for your environment (set in `config.md`).
 
 ## Required Inputs
 

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sca:composite xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:BW="http://xsd.tns.tibco.com/amf/models/sca/implementationtype/BW" xmlns:JsonSchema="/api/v1/T1785253943787Converted/JsonSchema" xmlns:XMLSchema="http://www.w3.org/2001/XMLSchema" xmlns:compositeext="http://schemas.tibco.com/amx/3.0/compositeext" xmlns:rest="http://xsd.tns.tibco.com/bw/models/binding/rest" xmlns:sca="http://www.osoa.org/xmlns/sca/1.0" xmlns:scact="http://xsd.tns.tibco.com/amf/models/sca/componentType" xmlns:scaext="http://xsd.tns.tibco.com/amf/models/sca/extensions" xmi:id="_8U6_8IqbEfG0B_yDsGEYSg" targetNamespace="http://tns.tibco.com/bw/composite/air_liquide_smart_cylinder" name="air_liquide_smart_cylinder" compositeext:version="1.0.0" compositeext:formatVersion="2">
+  <mcpStarterConfig xmi:id="__BEdIIqbEfG0B_yDsGEYSg"/>
+  <sca:service xmi:id="_Xel78IqcEfG0B_yDsGEYSg" name="cylinders" promote="ComponentProcess/cylinders">
+    <sca:interface.wsdl xmi:id="_Xet3wIqcEfG0B_yDsGEYSg" interface="http://xmlns.example.com/20260728084948PLT#wsdl.interface(cylinders)" scaext:wsdlLocation="../Processes/air_liquide_smart_cylinder/Process.bwp"/>
+    <scaext:binding xsi:type="rest:RestServiceBinding" xmi:id="_XewUAIqcEfG0B_yDsGEYSg" name="RestService" path="/api/v1/cylinders/{id}" docBasePath="http://localhost:7777/air_liquide_smart_cylinder" docResourcePath="Cylinders-id" basePath="/api/v1" connector="air_liquide_smart_cylinder.api-v1" structuredData="true" technologyVersion="3.0.0" implementation="Service Descriptors/gemini-code-1785253912086.json">
+      <operation xmi:id="_Xew7EIqcEfG0B_yDsGEYSg" operationName="get" nickname="getCylinderStatus" httpMethod="GET" notes="Retrieve detailed telemetry, pressure level, and safety certification date for a specific cylinder ID." responseStyle="element" outputPartName="item" tool="true">
+        <responseStatus xmi:id="_XfWw8IqcEfG0B_yDsGEYSg" statusCode="404" reasonPhrase="Cylinder ID not found." elementQName="JsonSchema:ErrorResponse"/>
+        <clientFormat>json</clientFormat>
+        <restMcpTool xmi:id="_go63UIq5EfGZi9NGSAlK6Q" scope="Read"/>
+      </operation>
+      <parameters xmi:id="_XfXYAYqcEfG0B_yDsGEYSg">
+        <parameterMapping xmi:id="_XfXYAoqcEfG0B_yDsGEYSg" parameterName="id" parameterType="Path" dataType="string" required="true" description="Unique cylinder barcode identifier"/>
+      </parameters>
+      <import xmi:id="_XfXYAIqcEfG0B_yDsGEYSg" importType="http://www.w3.org/2001/XMLSchema" namespace="/api/v1/T1785253943787Converted/JsonSchema"/>
+      <advancedConfig xmi:id="_XewUAYqcEfG0B_yDsGEYSg" blockingQueueSize="8192"/>
+    </scaext:binding>
+    <scact:bindingAdjunct xmi:id="_Xew7EYqcEfG0B_yDsGEYSg" bindingName="RestService"/>
+  </sca:service>
+  <sca:service xmi:id="_Ye3GIYqcEfG0B_yDsGEYSg" name="cylinders-dispatch" promote="ComponentProcess/cylinders-dispatch">
+    <sca:interface.wsdl xmi:id="_Ye3GJYqcEfG0B_yDsGEYSg" interface="http://xmlns.example.com/20260728084948PLT#wsdl.interface(cylinders-dispatch)" scaext:wsdlLocation="../Processes/air_liquide_smart_cylinder/Process.bwp"/>
+    <scaext:binding xsi:type="rest:RestServiceBinding" xmi:id="_Ye4UQIqcEfG0B_yDsGEYSg" name="RestService1" path="/api/v1/cylinders/{id}/dispatch" docBasePath="http://localhost:7777/air_liquide_smart_cylinder" docResourcePath="Cylinders-id" basePath="/api/v1" connector="air_liquide_smart_cylinder.api-v1" structuredData="true" technologyVersion="3.0.0" implementation="Service Descriptors/gemini-code-1785253912086.json">
+      <operation xmi:id="_Ye47UIqcEfG0B_yDsGEYSg" operationName="post" nickname="dispatchCylinder" httpMethod="POST" notes="Updates cylinder status from Available to In-Transit for customer order fulfillment." responseStyle="element" requestStyle="element" outputPartName="item" tool="true">
+        <clientFormat>json</clientFormat>
+        <clientRequestFormat>json</clientRequestFormat>
+        <restMcpTool xmi:id="_h9rDwIq5EfGZi9NGSAlK6Q" scope="Read"/>
+      </operation>
+      <parameters xmi:id="_Ye6JcIqcEfG0B_yDsGEYSg">
+        <parameterMapping xmi:id="_Ye6JcYqcEfG0B_yDsGEYSg" parameterName="id" parameterType="Path" dataType="string" required="true" description="Unique cylinder barcode identifier"/>
+      </parameters>
+      <advancedConfig xmi:id="_Ye4UQYqcEfG0B_yDsGEYSg" blockingQueueSize="8192"/>
+    </scaext:binding>
+    <scact:bindingAdjunct xmi:id="_Ye47UYqcEfG0B_yDsGEYSg" bindingName="RestService1"/>
+  </sca:service>
+  <sca:service xmi:id="_ZpFdkIqcEfG0B_yDsGEYSg" name="cylinders-search" promote="ComponentProcess/cylinders-search">
+    <sca:interface.wsdl xmi:id="_ZpGEoIqcEfG0B_yDsGEYSg" interface="http://xmlns.example.com/20260728084948PLT#wsdl.interface(cylinders-search)" scaext:wsdlLocation="../Processes/air_liquide_smart_cylinder/Process.bwp"/>
+    <scaext:binding xsi:type="rest:RestServiceBinding" xmi:id="_ZpHSwIqcEfG0B_yDsGEYSg" name="RestService2" path="/api/v1/cylinders/search" docBasePath="http://localhost:7777/air_liquide_smart_cylinder" docResourcePath="Cylinders-id" basePath="/api/v1" connector="air_liquide_smart_cylinder.api-v1" structuredData="true" technologyVersion="3.0.0" implementation="Service Descriptors/gemini-code-1785253912086.json">
+      <operation xmi:id="_ZpH50IqcEfG0B_yDsGEYSg" operationName="get" nickname="searchGasStock" httpMethod="GET" notes="Search for available gas cylinders by gas type, purity, or yard location." responseStyle="array" outputPartName="item" tool="true">
+        <parameters xmi:id="_ZpJvAYqcEfG0B_yDsGEYSg">
+          <parameterMapping xmi:id="_ZpKWEIqcEfG0B_yDsGEYSg" parameterName="gasType" parameterType="Query" dataType="string" description="Type of gas (e.g., Argon, Nitrogen, Oxygen, Hydrogen)"/>
+          <parameterMapping xmi:id="_ZpKWEYqcEfG0B_yDsGEYSg" parameterName="location" parameterType="Query" dataType="string" description="Storage yard or hub location"/>
+        </parameters>
+        <clientFormat>json</clientFormat>
+        <restMcpTool xmi:id="_cPwesIq5EfGZi9NGSAlK6Q" scope="Read"/>
+      </operation>
+      <parameters xmi:id="_ZpJvAIqcEfG0B_yDsGEYSg"/>
+      <advancedConfig xmi:id="_ZpHSwYqcEfG0B_yDsGEYSg" blockingQueueSize="8192"/>
+    </scaext:binding>
+    <scact:bindingAdjunct xmi:id="_ZpH50YqcEfG0B_yDsGEYSg" bindingName="RestService2"/>
+  </sca:service>
+  <sca:property xmi:id="_-u6WIIqbEfG0B_yDsGEYSg" name="BW.DEPLOYMENTUNIT.TYPE" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_-vGjYIqbEfG0B_yDsGEYSg" name="BW.APPNODE.NAME" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_-vMC8IqbEfG0B_yDsGEYSg" name="BW.DEPLOYMENTUNIT.NAME" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_-vQ7cIqbEfG0B_yDsGEYSg" name="BW.HOST.NAME" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_-vUl0IqbEfG0B_yDsGEYSg" name="BW.DOMAIN.NAME" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_-vYQMIqbEfG0B_yDsGEYSg" name="BW.DEPLOYMENTUNIT.VERSION" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_-vb6kIqbEfG0B_yDsGEYSg" name="BW.APPSPACE.NAME" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_-vfk8IqbEfG0B_yDsGEYSg" name="BW.MODULE.VERSION" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_-vjPUIqbEfG0B_yDsGEYSg" name="BW.MODULE.NAME" type="XMLSchema:string" scalable="true"/>
+  <sca:component xmi:id="_95S8wIqbEfG0B_yDsGEYSg" name="ComponentProcess" compositeext:version="1.0.0.qualifier">
+    <scaext:implementation xsi:type="BW:BWComponentImplementation" xmi:id="_95WAEIqbEfG0B_yDsGEYSg" processName="air_liquide_smart_cylinder.Process"/>
+    <sca:service xmi:id="_XejfsIqcEfG0B_yDsGEYSg" name="cylinders">
+      <sca:interface.wsdl xmi:id="_XekGwIqcEfG0B_yDsGEYSg" interface="http://xmlns.example.com/20260728084948PLT#wsdl.interface(cylinders)"/>
+    </sca:service>
+    <sca:service xmi:id="_Ye2fEIqcEfG0B_yDsGEYSg" name="cylinders-dispatch">
+      <sca:interface.wsdl xmi:id="_Ye3GIIqcEfG0B_yDsGEYSg" interface="http://xmlns.example.com/20260728084948PLT#wsdl.interface(cylinders-dispatch)"/>
+    </sca:service>
+    <sca:service xmi:id="_ZpE2gIqcEfG0B_yDsGEYSg" name="cylinders-search">
+      <sca:interface.wsdl xmi:id="_ZpE2gYqcEfG0B_yDsGEYSg" interface="http://xmlns.example.com/20260728084948PLT#wsdl.interface(cylinders-search)" scaext:wsdlLocation="../Processes/air_liquide_smart_cylinder/Process.bwp"/>
+    </sca:service>
+  </sca:component>
+</sca:composite>

@@ -1,0 +1,69 @@
+{
+  "openapi" : "3.0.0",
+  "info" : {
+    "version" : "1.0",
+    "title" : "upload service",
+    "description" : "upload service"
+  },
+  "servers" : [ {
+    "url" : "http://localhost:5000/"
+  } ],
+  "paths" : {
+    "/upload" : {
+      "post" : {
+        "summary" : "postUpload",
+        "description" : "postUpload",
+        "operationId" : "post-upload",
+        "parameters" : [ ],
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/uploadPostForm"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "a FileData to be returned",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FileData"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "uploadPostForm" : {
+        "type" : "object",
+        "properties" : {
+          "files" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "binary",
+              "uniqueItems" : false
+            }
+          }
+        }
+      },
+      "FileData" : {
+        "type" : "object",
+        "required" : [ "filePath" ],
+        "properties" : {
+          "filePath" : {
+            "type" : "string"
+          }
+        }
+      }
+    }
+  }
+}

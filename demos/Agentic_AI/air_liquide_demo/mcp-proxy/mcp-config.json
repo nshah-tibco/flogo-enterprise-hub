@@ -1,0 +1,9 @@
+{
+  "command": "npx",
+  "args": [
+    "mcp-remote",
+    "http://10.182.34.53:18000/rest/mcp",
+    "--allow-http"
+  ],
+  "env": {}
+}

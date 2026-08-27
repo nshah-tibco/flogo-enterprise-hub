@@ -1,0 +1,416 @@
+{
+  "imports": [
+    "tr_rest github.com/tibco/flogo-general/src/app/General/trigger/rest",
+    "github.com/project-flogo/flow",
+    "act_default_noop github.com/project-flogo/contrib/activity/noop",
+    "act_general_log github.com/tibco/flogo-general/src/app/General/activity/log",
+    "act_general_httpresponse github.com/tibco/flogo-general/src/app/General/activity/httpresponse",
+    "act_default_actreturn github.com/project-flogo/contrib/activity/actreturn"
+  ],
+  "name": "BookstoreAPI",
+  "description": "REST service for the Bookstore API (getBookByIsbn, addBook)",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "settings": {
+        "port": 9999,
+        "APISpecUpdate": true,
+        "swagger": "spec://a90f8cd2-c59c-48f5-8344-1b69d683c9cf",
+        "swaggerVersion": "v2",
+        "authenticationType": "None",
+        "username": "",
+        "password": "",
+        "apiVersion": "1.0.0",
+        "secureConnection": false,
+        "serverKey": "",
+        "caCertificate": ""
+      },
+      "id": "Bookstore_API",
+      "name": "Bookstore_API",
+      "description": "API for managing books in the bookstore",
+      "ref": "#tr_rest",
+      "handlers": [
+        {
+          "settings": {
+            "APISpecPath": "/books/{isbn}",
+            "Method": "GET",
+            "reqType": "application/json",
+            "Path": "/books/{isbn}",
+            "OutputValidation": false
+          },
+          "action": {
+            "input": {
+              "body": "=$.body",
+              "pathParams": "=$.pathParams"
+            },
+            "output": {
+              "code": "=$.code",
+              "responseBody": "=$.responseBody"
+            },
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getBookByIsbn_GET"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": true,
+            "data": {},
+            "responseBody": {},
+            "responseCodesSchema": {},
+            "message": ""
+          },
+          "name": "getBookByIsbn_GET",
+          "description": "Handler for books/{isbn} GET",
+          "schemas": {
+            "output": {
+              "pathParams": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"isbn\":{\"type\":\"string\"}},\"required\":[\"isbn\"]}",
+                "fe_metadata": "[{\"parameterName\":\"isbn\",\"type\":\"string\",\"required\":true}]"
+              }
+            },
+            "reply": {
+              "responseCodesSchema": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseType\":{\"type\":\"string\"},\"responseSchema\":{\"type\":\"string\"}}}}",
+                "fe_metadata": "[{\"code\":200,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"required\\\":[\\\"isbn\\\",\\\"name\\\",\\\"authorName\\\",\\\"price\\\"],\\\"properties\\\":{\\\"isbn\\\":{\\\"type\\\":\\\"string\\\",\\\"description\\\":\\\"International Standard Book Number\\\",\\\"example\\\":\\\"1451648537\\\"},\\\"name\\\":{\\\"type\\\":\\\"string\\\",\\\"description\\\":\\\"Title of the book\\\",\\\"example\\\":\\\"Steve Jobs\\\"},\\\"description\\\":{\\\"type\\\":\\\"string\\\",\\\"description\\\":\\\"Brief description of the book\\\",\\\"example\\\":\\\"Biography of Apple Co-Founder Steve Jobs\\\"},\\\"authorName\\\":{\\\"type\\\":\\\"string\\\",\\\"description\\\":\\\"Full name of the author\\\",\\\"example\\\":\\\"Walter Isaacson\\\"},\\\"releaseDate\\\":{\\\"type\\\":\\\"string\\\",\\\"format\\\":\\\"date\\\",\\\"description\\\":\\\"Original release date of the book (YYYY-MM-DD)\\\",\\\"example\\\":\\\"2012-10-24\\\"},\\\"vintage\\\":{\\\"type\\\":\\\"string\\\",\\\"enum\\\":[\\\"true\\\",\\\"false\\\"],\\\"description\\\":\\\"Whether the book is a vintage edition\\\",\\\"example\\\":\\\"false\\\"},\\\"signed\\\":{\\\"type\\\":\\\"string\\\",\\\"enum\\\":[\\\"true\\\",\\\"false\\\"],\\\"description\\\":\\\"Whether the book is signed by the author\\\",\\\"example\\\":\\\"false\\\"},\\\"price\\\":{\\\"type\\\":\\\"string\\\",\\\"description\\\":\\\"Price of the book in USD\\\",\\\"example\\\":\\\"21.00\\\"}}}\"},{\"code\":404,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\",\\\"example\\\":\\\"Book not found\\\"},\\\"code\\\":{\\\"type\\\":\\\"integer\\\",\\\"example\\\":404}}}\"}]"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              }
+            }
+          }
+        },
+        {
+          "settings": {
+            "APISpecPath": "/books",
+            "Method": "POST",
+            "reqType": "application/json",
+            "Path": "/books",
+            "OutputValidation": false
+          },
+          "action": {
+            "input": {
+              "body": "=$.body"
+            },
+            "output": {
+              "code": "=$.code",
+              "responseBody": "=$.responseBody"
+            },
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:addBook_POST"
+            }
+          },
+          "reply": {
+            "code": 201,
+            "configureResponseCodes": true,
+            "data": {},
+            "responseBody": {},
+            "responseCodesSchema": {},
+            "message": ""
+          },
+          "name": "addBook_POST",
+          "description": "Handler for books POST",
+          "schemas": {
+            "output": {
+              "body": {
+                "type": "json",
+                "value": "{\n  \"type\": \"object\",\n  \"required\": [\n    \"isbn\",\n    \"name\",\n    \"authorName\",\n    \"price\"\n  ],\n  \"properties\": {\n    \"isbn\": {\n      \"type\": \"string\",\n      \"description\": \"International Standard Book Number\",\n      \"example\": \"1451648537\"\n    },\n    \"name\": {\n      \"type\": \"string\",\n      \"description\": \"Title of the book\",\n      \"example\": \"Steve Jobs\"\n    },\n    \"description\": {\n      \"type\": \"string\",\n      \"description\": \"Brief description of the book\",\n      \"example\": \"Biography of Apple Co-Founder Steve Jobs\"\n    },\n    \"authorName\": {\n      \"type\": \"string\",\n      \"description\": \"Full name of the author\",\n      \"example\": \"Walter Isaacson\"\n    },\n    \"releaseDate\": {\n      \"type\": \"string\",\n      \"format\": \"date\",\n      \"description\": \"Original release date of the book (YYYY-MM-DD)\",\n      \"example\": \"2012-10-24\"\n    },\n    \"vintage\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"true\",\n        \"false\"\n      ],\n      \"description\": \"Whether the book is a vintage edition\",\n      \"example\": \"false\"\n    },\n    \"signed\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"true\",\n        \"false\"\n      ],\n      \"description\": \"Whether the book is signed by the author\",\n      \"example\": \"false\"\n    },\n    \"price\": {\n      \"type\": \"string\",\n      \"description\": \"Price of the book in USD\",\n      \"example\": \"21.00\"\n    }\n  }\n}",
+                "fe_metadata": "{\n  \"type\": \"object\",\n  \"required\": [\n    \"isbn\",\n    \"name\",\n    \"authorName\",\n    \"price\"\n  ],\n  \"properties\": {\n    \"isbn\": {\n      \"type\": \"string\",\n      \"description\": \"International Standard Book Number\",\n      \"example\": \"1451648537\"\n    },\n    \"name\": {\n      \"type\": \"string\",\n      \"description\": \"Title of the book\",\n      \"example\": \"Steve Jobs\"\n    },\n    \"description\": {\n      \"type\": \"string\",\n      \"description\": \"Brief description of the book\",\n      \"example\": \"Biography of Apple Co-Founder Steve Jobs\"\n    },\n    \"authorName\": {\n      \"type\": \"string\",\n      \"description\": \"Full name of the author\",\n      \"example\": \"Walter Isaacson\"\n    },\n    \"releaseDate\": {\n      \"type\": \"string\",\n      \"format\": \"date\",\n      \"description\": \"Original release date of the book (YYYY-MM-DD)\",\n      \"example\": \"2012-10-24\"\n    },\n    \"vintage\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"true\",\n        \"false\"\n      ],\n      \"description\": \"Whether the book is a vintage edition\",\n      \"example\": \"false\"\n    },\n    \"signed\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"true\",\n        \"false\"\n      ],\n      \"description\": \"Whether the book is signed by the author\",\n      \"example\": \"false\"\n    },\n    \"price\": {\n      \"type\": \"string\",\n      \"description\": \"Price of the book in USD\",\n      \"example\": \"21.00\"\n    }\n  }\n}"
+              }
+            },
+            "reply": {
+              "responseCodesSchema": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseType\":{\"type\":\"string\"},\"responseSchema\":{\"type\":\"string\"}}}}",
+                "fe_metadata": "[{\"code\":201,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"message\\\":{\\\"type\\\":\\\"string\\\",\\\"example\\\":\\\"Book added successfully\\\"},\\\"isbn\\\":{\\\"type\\\":\\\"string\\\",\\\"example\\\":\\\"0385537859\\\"}}}\"},{\"code\":400,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\",\\\"example\\\":\\\"Book not found\\\"},\\\"code\\\":{\\\"type\\\":\\\"integer\\\",\\\"example\\\":404}}}\"}]"
+              },
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:getBookByIsbn_GET",
+      "data": {
+        "name": "getBookByIsbn_GET",
+        "description": "Flow for books/{isbn} GET",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Log_API",
+            "type": "label",
+            "label": "StartActivity to Log_API"
+          },
+          {
+            "id": 2,
+            "from": "Log_API",
+            "to": "ConfigureHTTPResponse",
+            "type": "label",
+            "label": "Log_API to ConfigureHTTPResponse"
+          },
+          {
+            "id": 3,
+            "from": "ConfigureHTTPResponse",
+            "to": "Return",
+            "type": "label",
+            "label": "ConfigureHTTPResponse to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#act_default_noop"
+            }
+          },
+          {
+            "activity": {
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "Log API call for getBookByIsbn_GET",
+                "logLevel": ""
+              },
+              "ref": "#act_general_log"
+            },
+            "id": "Log_API",
+            "name": "Log_API",
+            "description": "Log API Call for books/{isbn} GET"
+          },
+          {
+            "activity": {
+              "input": {
+                "trigger": "",
+                "responsecode": "200",
+                "input": {}
+              },
+              "ref": "#act_general_httpresponse"
+            },
+            "id": "ConfigureHTTPResponse",
+            "name": "ConfigureHTTPResponse",
+            "description": "Configure HTTP Response Activity"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[ConfigureHTTPResponse].code",
+                  "responseBody": "=$activity[ConfigureHTTPResponse].response"
+                }
+              }
+            },
+            "id": "Return",
+            "name": "Return",
+            "description": "Reply to API Call for books/{isbn} GET"
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo0NX0sIkxvZ19BUEkiOnsieCI6MjUwLCJ5Ijo0NX0sIkNvbmZpZ3VyZUhUVFBSZXNwb25zZSI6eyJ4Ijo0NTAsInkiOjQ1fSwiUmV0dXJuIjp7IngiOjY1MCwieSI6NDV9fQ==",
+        "metadata": {
+          "input": [
+            {
+              "name": "pathParams",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"isbn\":{\"type\":\"string\"}}"
+              }
+            },
+            {
+              "name": "multipartFormData",
+              "type": "object"
+            },
+            {
+              "name": "requestURI",
+              "type": "string"
+            },
+            {
+              "name": "method",
+              "type": "string"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "integer"
+            },
+            {
+              "name": "responseBody",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"Bookstore_API\",\"properties\":{\"pathParams\":{\"type\":\"object\",\"properties\":{\"isbn\":{\"type\":\"string\"}},\"required\":[\"isbn\"]},\"multipartFormData\":{\"type\":\"object\"},\"requestURI\":{\"type\":\"string\",\"required\":false},\"method\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:addBook_POST",
+      "data": {
+        "name": "addBook_POST",
+        "description": "Flow for books POST",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Log_API",
+            "type": "label",
+            "label": "StartActivity to Log_API"
+          },
+          {
+            "id": 2,
+            "from": "Log_API",
+            "to": "ConfigureHTTPResponse",
+            "type": "label",
+            "label": "Log_API to ConfigureHTTPResponse"
+          },
+          {
+            "id": 3,
+            "from": "ConfigureHTTPResponse",
+            "to": "Return",
+            "type": "label",
+            "label": "ConfigureHTTPResponse to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#act_default_noop"
+            }
+          },
+          {
+            "activity": {
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "Log API call for addBook_POST",
+                "logLevel": ""
+              },
+              "ref": "#act_general_log"
+            },
+            "id": "Log_API",
+            "name": "Log_API",
+            "description": "Log API Call for books POST"
+          },
+          {
+            "activity": {
+              "input": {
+                "trigger": "",
+                "responsecode": "201",
+                "input": {}
+              },
+              "ref": "#act_general_httpresponse"
+            },
+            "id": "ConfigureHTTPResponse",
+            "name": "ConfigureHTTPResponse",
+            "description": "Configure HTTP Response Activity"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[ConfigureHTTPResponse].code",
+                  "responseBody": "=$activity[ConfigureHTTPResponse].response"
+                }
+              }
+            },
+            "id": "Return",
+            "name": "Return",
+            "description": "Reply to API Call for books POST"
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo0NX0sIkxvZ19BUEkiOnsieCI6MjUwLCJ5Ijo0NX0sIkNvbmZpZ3VyZUhUVFBSZXNwb25zZSI6eyJ4Ijo0NTAsInkiOjQ1fSwiUmV0dXJuIjp7IngiOjY1MCwieSI6NDV9fQ==",
+        "metadata": {
+          "input": [
+            {
+              "name": "body",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"isbn\":{\"type\":\"string\",\"description\":\"International Standard Book Number\",\"example\":\"1451648537\"},\"name\":{\"type\":\"string\",\"description\":\"Title of the book\",\"example\":\"Steve Jobs\"},\"description\":{\"type\":\"string\",\"description\":\"Brief description of the book\",\"example\":\"Biography of Apple Co-Founder Steve Jobs\"},\"authorName\":{\"type\":\"string\",\"description\":\"Full name of the author\",\"example\":\"Walter Isaacson\"},\"releaseDate\":{\"type\":\"string\",\"format\":\"date\",\"description\":\"Original release date of the book (YYYY-MM-DD)\",\"example\":\"2012-10-24\"},\"vintage\":{\"type\":\"string\",\"enum\":[\"true\",\"false\"],\"description\":\"Whether the book is a vintage edition\",\"example\":\"false\"},\"signed\":{\"type\":\"string\",\"enum\":[\"true\",\"false\"],\"description\":\"Whether the book is signed by the author\",\"example\":\"false\"},\"price\":{\"type\":\"string\",\"description\":\"Price of the book in USD\",\"example\":\"21.00\"}}"
+              }
+            },
+            {
+              "name": "multipartFormData",
+              "type": "object"
+            },
+            {
+              "name": "requestURI",
+              "type": "string"
+            },
+            {
+              "name": "method",
+              "type": "string"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "integer"
+            },
+            {
+              "name": "responseBody",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}"
+              }
+            }
+          ],
+          "fe_metadata": {}
+        },
+        "explicitReply": true
+      }
+    }
+  ],
+  "properties": [],
+  "connections": {},
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTUiLCJ0YWciOiIxLjYuMTUtYjA0IiwibmFtZSI6IlRJQkNPIEZsb2dvIENvbm5lY3RvciBmb3IgR2VuZXJhbCIsInMzbG9jYXRpb24iOiJUaWJjby9HZW5lcmFsIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWRlZmF1bHQtY29udHJpYnMvc3JjL2FwcC9EZWZhdWx0IiwiaWQiOiJEZWZhdWx0IiwidmVyc2lvbiI6IjEuMC4wIiwidGFnIjoiMS4wLjAtYjEwLXYzLW1haW4iLCJuYW1lIjoiVElCQ08gRmxvZ28gQ29ubmVjdG9yIGZvciBEZWZhdWx0IiwiczNsb2NhdGlvbiI6IlRpYmNvL0RlZmF1bHQiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
+  "metadata": {
+    "endpoints": [],
+    "flogoVersion": "2.26.6"
+  },
+  "specs": {
+    "a90f8cd2-c59c-48f5-8344-1b69d683c9cf": {
+      "id": "a90f8cd2-c59c-48f5-8344-1b69d683c9cf",
+      "name": "BookstoreAPI_Spec",
+      "type": "OpenAPI",
+      "version": "1.0.0",
+      "content": "eyJvcGVuYXBpIjoiMy4wLjAiLCJpbmZvIjp7InRpdGxlIjoiQm9va3N0b3JlIEFQSSIsImRlc2NyaXB0aW9uIjoiQVBJIGZvciBtYW5hZ2luZyBib29rcyBpbiB0aGUgYm9va3N0b3JlIiwidmVyc2lvbiI6IjEuMC4wIn0sInBhdGhzIjp7Ii9ib29rcy97aXNibn0iOnsiZ2V0Ijp7InN1bW1hcnkiOiJHZXQgYSBib29rIGJ5IElTQk4iLCJkZXNjcmlwdGlvbiI6IlJldHVybnMgYSBzaW5nbGUgYm9vayBtYXRjaGluZyB0aGUgZ2l2ZW4gSVNCTiIsIm9wZXJhdGlvbklkIjoiZ2V0Qm9va0J5SXNibiIsInBhcmFtZXRlcnMiOlt7Im5hbWUiOiJpc2JuIiwiaW4iOiJwYXRoIiwicmVxdWlyZWQiOnRydWUsImRlc2NyaXB0aW9uIjoiVGhlIElTQk4gb2YgdGhlIGJvb2sgdG8gcmV0cmlldmUiLCJzY2hlbWEiOnsidHlwZSI6InN0cmluZyJ9fV0sInJlc3BvbnNlcyI6eyIyMDAiOnsiZGVzY3JpcHRpb24iOiJCb29rIGZvdW5kIHN1Y2Nlc3NmdWxseSIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInJlcXVpcmVkIjpbImlzYm4iLCJuYW1lIiwiYXV0aG9yTmFtZSIsInByaWNlIl0sInByb3BlcnRpZXMiOnsiaXNibiI6eyJ0eXBlIjoic3RyaW5nIiwiZGVzY3JpcHRpb24iOiJJbnRlcm5hdGlvbmFsIFN0YW5kYXJkIEJvb2sgTnVtYmVyIiwiZXhhbXBsZSI6IjE0NTE2NDg1MzcifSwibmFtZSI6eyJ0eXBlIjoic3RyaW5nIiwiZGVzY3JpcHRpb24iOiJUaXRsZSBvZiB0aGUgYm9vayIsImV4YW1wbGUiOiJTdGV2ZSBKb2JzIn0sImRlc2NyaXB0aW9uIjp7InR5cGUiOiJzdHJpbmciLCJkZXNjcmlwdGlvbiI6IkJyaWVmIGRlc2NyaXB0aW9uIG9mIHRoZSBib29rIiwiZXhhbXBsZSI6IkJpb2dyYXBoeSBvZiBBcHBsZSBDby1Gb3VuZGVyIFN0ZXZlIEpvYnMifSwiYXV0aG9yTmFtZSI6eyJ0eXBlIjoic3RyaW5nIiwiZGVzY3JpcHRpb24iOiJGdWxsIG5hbWUgb2YgdGhlIGF1dGhvciIsImV4YW1wbGUiOiJXYWx0ZXIgSXNhYWNzb24ifSwicmVsZWFzZURhdGUiOnsidHlwZSI6InN0cmluZyIsImZvcm1hdCI6ImRhdGUiLCJkZXNjcmlwdGlvbiI6Ik9yaWdpbmFsIHJlbGVhc2UgZGF0ZSBvZiB0aGUgYm9vayAoWVlZWS1NTS1ERCkiLCJleGFtcGxlIjoiMjAxMi0xMC0yNCJ9LCJ2aW50YWdlIjp7InR5cGUiOiJzdHJpbmciLCJlbnVtIjpbInRydWUiLCJmYWxzZSJdLCJkZXNjcmlwdGlvbiI6IldoZXRoZXIgdGhlIGJvb2sgaXMgYSB2aW50YWdlIGVkaXRpb24iLCJleGFtcGxlIjoiZmFsc2UifSwic2lnbmVkIjp7InR5cGUiOiJzdHJpbmciLCJlbnVtIjpbInRydWUiLCJmYWxzZSJdLCJkZXNjcmlwdGlvbiI6IldoZXRoZXIgdGhlIGJvb2sgaXMgc2lnbmVkIGJ5IHRoZSBhdXRob3IiLCJleGFtcGxlIjoiZmFsc2UifSwicHJpY2UiOnsidHlwZSI6InN0cmluZyIsImRlc2NyaXB0aW9uIjoiUHJpY2Ugb2YgdGhlIGJvb2sgaW4gVVNEIiwiZXhhbXBsZSI6IjIxLjAwIn19fSwiZXhhbXBsZSI6eyJpc2JuIjoiMTQ1MTY0ODUzNyIsIm5hbWUiOiJTdGV2ZSBKb2JzIiwiZGVzY3JpcHRpb24iOiJCaW9ncmFwaHkgb2YgQXBwbGUgQ28tRm91bmRlciBTdGV2ZSBKb2JzIiwiYXV0aG9yTmFtZSI6IldhbHRlciBJc2FhY3NvbiIsInJlbGVhc2VEYXRlIjoiMjAxMi0xMC0yNCIsInZpbnRhZ2UiOiJmYWxzZSIsInNpZ25lZCI6ImZhbHNlIiwicHJpY2UiOiIyMS4wMCJ9fX19LCI0MDQiOnsiZGVzY3JpcHRpb24iOiJCb29rIG5vdCBmb3VuZCIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiZXJyb3IiOnsidHlwZSI6InN0cmluZyIsImV4YW1wbGUiOiJCb29rIG5vdCBmb3VuZCJ9LCJjb2RlIjp7InR5cGUiOiJpbnRlZ2VyIiwiZXhhbXBsZSI6NDA0fX19fX19fX19LCIvYm9va3MiOnsicG9zdCI6eyJzdW1tYXJ5IjoiQWRkIGEgbmV3IGJvb2siLCJkZXNjcmlwdGlvbiI6IkNyZWF0ZXMgYSBuZXcgYm9vayBlbnRyeSBpbiB0aGUgYm9va3N0b3JlIiwib3BlcmF0aW9uSWQiOiJhZGRCb29rIiwicmVxdWVzdEJvZHkiOnsicmVxdWlyZWQiOnRydWUsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInJlcXVpcmVkIjpbImlzYm4iLCJuYW1lIiwiYXV0aG9yTmFtZSIsInByaWNlIl0sInByb3BlcnRpZXMiOnsiaXNibiI6eyJ0eXBlIjoic3RyaW5nIiwiZGVzY3JpcHRpb24iOiJJbnRlcm5hdGlvbmFsIFN0YW5kYXJkIEJvb2sgTnVtYmVyIiwiZXhhbXBsZSI6IjE0NTE2NDg1MzcifSwibmFtZSI6eyJ0eXBlIjoic3RyaW5nIiwiZGVzY3JpcHRpb24iOiJUaXRsZSBvZiB0aGUgYm9vayIsImV4YW1wbGUiOiJTdGV2ZSBKb2JzIn0sImRlc2NyaXB0aW9uIjp7InR5cGUiOiJzdHJpbmciLCJkZXNjcmlwdGlvbiI6IkJyaWVmIGRlc2NyaXB0aW9uIG9mIHRoZSBib29rIiwiZXhhbXBsZSI6IkJpb2dyYXBoeSBvZiBBcHBsZSBDby1Gb3VuZGVyIFN0ZXZlIEpvYnMifSwiYXV0aG9yTmFtZSI6eyJ0eXBlIjoic3RyaW5nIiwiZGVzY3JpcHRpb24iOiJGdWxsIG5hbWUgb2YgdGhlIGF1dGhvciIsImV4YW1wbGUiOiJXYWx0ZXIgSXNhYWNzb24ifSwicmVsZWFzZURhdGUiOnsidHlwZSI6InN0cmluZyIsImZvcm1hdCI6ImRhdGUiLCJkZXNjcmlwdGlvbiI6Ik9yaWdpbmFsIHJlbGVhc2UgZGF0ZSBvZiB0aGUgYm9vayAoWVlZWS1NTS1ERCkiLCJleGFtcGxlIjoiMjAxMi0xMC0yNCJ9LCJ2aW50YWdlIjp7InR5cGUiOiJzdHJpbmciLCJlbnVtIjpbInRydWUiLCJmYWxzZSJdLCJkZXNjcmlwdGlvbiI6IldoZXRoZXIgdGhlIGJvb2sgaXMgYSB2aW50YWdlIGVkaXRpb24iLCJleGFtcGxlIjoiZmFsc2UifSwic2lnbmVkIjp7InR5cGUiOiJzdHJpbmciLCJlbnVtIjpbInRydWUiLCJmYWxzZSJdLCJkZXNjcmlwdGlvbiI6IldoZXRoZXIgdGhlIGJvb2sgaXMgc2lnbmVkIGJ5IHRoZSBhdXRob3IiLCJleGFtcGxlIjoiZmFsc2UifSwicHJpY2UiOnsidHlwZSI6InN0cmluZyIsImRlc2NyaXB0aW9uIjoiUHJpY2Ugb2YgdGhlIGJvb2sgaW4gVVNEIiwiZXhhbXBsZSI6IjIxLjAwIn19fSwiZXhhbXBsZSI6eyJpc2JuIjoiMDM4NTUzNzg1OSIsIm5hbWUiOiJJbmZlcm5vIiwiZGVzY3JpcHRpb24iOiJSb2JlcnQgTGFuZ2RvbiByZXR1cm5zIGluIERhbiBCcm93biBsYXRlc3QgZmFzdCBwYWNlZCBhY3Rpb24gdGhyaWxsZXIiLCJhdXRob3JOYW1lIjoiRGFuIEJyb3duIiwicmVsZWFzZURhdGUiOiIyMDEzLTA1LTE0IiwidmludGFnZSI6ImZhbHNlIiwic2lnbmVkIjoidHJ1ZSIsInByaWNlIjoiMTQuMDkifX19fSwicmVzcG9uc2VzIjp7IjIwMSI6eyJkZXNjcmlwdGlvbiI6IkJvb2sgY3JlYXRlZCBzdWNjZXNzZnVsbHkiLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7Im1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyIsImV4YW1wbGUiOiJCb29rIGFkZGVkIHN1Y2Nlc3NmdWxseSJ9LCJpc2JuIjp7InR5cGUiOiJzdHJpbmciLCJleGFtcGxlIjoiMDM4NTUzNzg1OSJ9fX19fX0sIjQwMCI6eyJkZXNjcmlwdGlvbiI6IkludmFsaWQgaW5wdXQiLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImVycm9yIjp7InR5cGUiOiJzdHJpbmciLCJleGFtcGxlIjoiQm9vayBub3QgZm91bmQifSwiY29kZSI6eyJ0eXBlIjoiaW50ZWdlciIsImV4YW1wbGUiOjQwNH19fX19fX19fX0sImNvbXBvbmVudHMiOnsic2NoZW1hcyI6eyJCb29rIjp7InR5cGUiOiJvYmplY3QiLCJyZXF1aXJlZCI6WyJpc2JuIiwibmFtZSIsImF1dGhvck5hbWUiLCJwcmljZSJdLCJwcm9wZXJ0aWVzIjp7ImlzYm4iOnsidHlwZSI6InN0cmluZyIsImRlc2NyaXB0aW9uIjoiSW50ZXJuYXRpb25hbCBTdGFuZGFyZCBCb29rIE51bWJlciIsImV4YW1wbGUiOiIxNDUxNjQ4NTM3In0sIm5hbWUiOnsidHlwZSI6InN0cmluZyIsImRlc2NyaXB0aW9uIjoiVGl0bGUgb2YgdGhlIGJvb2siLCJleGFtcGxlIjoiU3RldmUgSm9icyJ9LCJkZXNjcmlwdGlvbiI6eyJ0eXBlIjoic3RyaW5nIiwiZGVzY3JpcHRpb24iOiJCcmllZiBkZXNjcmlwdGlvbiBvZiB0aGUgYm9vayIsImV4YW1wbGUiOiJCaW9ncmFwaHkgb2YgQXBwbGUgQ28tRm91bmRlciBTdGV2ZSBKb2JzIn0sImF1dGhvck5hbWUiOnsidHlwZSI6InN0cmluZyIsImRlc2NyaXB0aW9uIjoiRnVsbCBuYW1lIG9mIHRoZSBhdXRob3IiLCJleGFtcGxlIjoiV2FsdGVyIElzYWFjc29uIn0sInJlbGVhc2VEYXRlIjp7InR5cGUiOiJzdHJpbmciLCJmb3JtYXQiOiJkYXRlIiwiZGVzY3JpcHRpb24iOiJPcmlnaW5hbCByZWxlYXNlIGRhdGUgb2YgdGhlIGJvb2sgKFlZWVktTU0tREQpIiwiZXhhbXBsZSI6IjIwMTItMTAtMjQifSwidmludGFnZSI6eyJ0eXBlIjoic3RyaW5nIiwiZW51bSI6WyJ0cnVlIiwiZmFsc2UiXSwiZGVzY3JpcHRpb24iOiJXaGV0aGVyIHRoZSBib29rIGlzIGEgdmludGFnZSBlZGl0aW9uIiwiZXhhbXBsZSI6ImZhbHNlIn0sInNpZ25lZCI6eyJ0eXBlIjoic3RyaW5nIiwiZW51bSI6WyJ0cnVlIiwiZmFsc2UiXSwiZGVzY3JpcHRpb24iOiJXaGV0aGVyIHRoZSBib29rIGlzIHNpZ25lZCBieSB0aGUgYXV0aG9yIiwiZXhhbXBsZSI6ImZhbHNlIn0sInByaWNlIjp7InR5cGUiOiJzdHJpbmciLCJkZXNjcmlwdGlvbiI6IlByaWNlIG9mIHRoZSBib29rIGluIFVTRCIsImV4YW1wbGUiOiIyMS4wMCJ9fX0sIkJvb2tDcmVhdGVkUmVzcG9uc2UiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsibWVzc2FnZSI6eyJ0eXBlIjoic3RyaW5nIiwiZXhhbXBsZSI6IkJvb2sgYWRkZWQgc3VjY2Vzc2Z1bGx5In0sImlzYm4iOnsidHlwZSI6InN0cmluZyIsImV4YW1wbGUiOiIwMzg1NTM3ODU5In19fSwiRXJyb3JSZXNwb25zZSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJlcnJvciI6eyJ0eXBlIjoic3RyaW5nIiwiZXhhbXBsZSI6IkJvb2sgbm90IGZvdW5kIn0sImNvZGUiOnsidHlwZSI6ImludGVnZXIiLCJleGFtcGxlIjo0MDR9fX19fX0="
+    }
+  }
+}

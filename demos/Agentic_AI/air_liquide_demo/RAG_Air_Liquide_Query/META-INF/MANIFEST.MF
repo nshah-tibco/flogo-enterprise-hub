@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: RAG_Image_Query Module
+Bundle-SymbolicName: RAG_Air_Liquide_Query
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: TIBCO Software Inc.
+Bundle-RequiredExecutionEnvironment: JavaSE-15
+TIBCO-BW-Edition: bwe
+TIBCO-BW-Version: 6.12.0 V20 2025-07-29
+Require-Capability: com.tibco.bw.model; filter:="(name=bwext)",com.tibco
+ .bw.palette; filter:="(name=bw.file)",com.tibco.bw.palette; filter:="(n
+ ame=bw.rag)",com.tibco.bw.sharedresource.model; filter:="(name=bw.httpc
+ onnector)",com.tibco.bw.sharedresource.model; filter:="(name=bw.rag)",c
+ om.tibco.bw.binding.model; filter:="(name=bw.rest)"
+TIBCO-BW-ApplicationModule: META-INF/module.bwm
+TIBCO-BW-ConfigProfile: META-INF/default.substvar
+TIBCO-BW-ModuleSharedVariables: META-INF/module.msv
+TIBCO-BW-JobSharedVariables: META-INF/module.jsv
+

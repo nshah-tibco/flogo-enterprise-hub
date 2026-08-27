@@ -125,7 +125,10 @@ See `prompts.md` for the full, copy-pasteable prompt list.
    # between demos:
    psql -h <host> -p <port> -U <user> -d <db> -f reset_data.sql
    ```
-2. **Build each app to an `.exe`**
+2. **Run the apps** — this folder **ships prebuilt Windows `.exe` binaries**
+   (`LogisticsMCPServer.exe`, `LogisticsA2AServers.exe`, `LogisticsAIOrchestrator.exe`), so on
+   Windows you can run them directly (after setting the app properties below). To rebuild from the
+   `.flogo` sources instead (paths/versions in `skills-library/.claude/skills/config.md`):
    ```bash
    flogobuild build-exe -f LogisticsMCPServer.flogo   -c <context>
    flogobuild build-exe -f LogisticsA2AServers.flogo  -c <context>

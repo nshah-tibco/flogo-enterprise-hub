@@ -1,0 +1,14 @@
+{
+  "name": "mcp-proxy",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Browser-callable MCP proxy for Air Liquide BW6 demo",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.0"
+  }
+}

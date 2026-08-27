@@ -2,6 +2,16 @@
 
 A minimalist hospital-themed chatbot web application with WebSocket support, multiple chat sessions, and a clean, modern UI.
 
+> **Shared UI for all Agentic AI use cases.** This is the common front-end web chat client used by
+> every demo under `demos/Agentic_AI/` (Power Distribution, Retail Banking, Semiconductor, Telecom,
+> and others). It has **no backend or apps of its own** — it simply connects to a use case's **AI
+> Orchestrator WebSocket endpoint**. To use it with any use case, set the WebSocket URL — in the UI's
+> URL field, or via `WS_URL` in `.env` — to that use case's orchestrator, in the form
+> `ws://<host>:<wsPort>/<path>`, then click **Connect**. Examples:
+> Power Distribution `ws://localhost:9680/grid` · Retail Banking `ws://localhost:8088/banking` ·
+> Semiconductor `ws://localhost:8088/semiconductor`. Each use case's README lists its exact URL.
+> (The "hospital" theme below is cosmetic — the UI is domain-agnostic.)
+
 ## 🏥 Features
 
 - **Multiple Chat Sessions**: Create, switch between, and manage multiple chat conversations

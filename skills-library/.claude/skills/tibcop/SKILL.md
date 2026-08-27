@@ -113,6 +113,6 @@ To get help on a specific task, run
 tibcop <topic>:<task> --help
 ```
 
-> **Profile:** Always pass `--profile <YOUR_PROFILE>` to commands. Use the profile name configured for your TIBCO Platform environment (set up with `tibcop add-profile`). Set the default profile name in your project's `CLAUDE.md` so the agent uses it consistently.
+> **Profile:** Always pass `--profile <YOUR_PROFILE>` to commands. Use the profile name configured for your TIBCO Platform environment (set up with `tibcop add-profile`). Set the default profile in `config.md` so the agent uses it consistently.
 
 If you get an authentication error, ask the user to run `tibcop login --profile <YOUR_PROFILE>` to re-authenticate.

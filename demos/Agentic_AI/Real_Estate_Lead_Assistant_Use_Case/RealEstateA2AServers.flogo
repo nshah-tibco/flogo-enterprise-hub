@@ -1,0 +1,1609 @@
+{
+  "imports": [
+    "con_llmprovider github.com/tibco/flogo-ai-agent/src/app/AgenticAI/connector/llmprovider",
+    "con_postgresql github.com/tibco/wi-postgres/src/app/PostgreSQL/connector/connection",
+    "tr_agent github.com/tibco/flogo-ai-agent/src/app/AgenticAI/trigger/agent",
+    "github.com/project-flogo/flow",
+    "act_default_noop github.com/project-flogo/contrib/activity/noop",
+    "act_general_log github.com/tibco/flogo-general/src/app/General/activity/log",
+    "github.com/project-flogo/contrib/function/string",
+    "act_postgresql_query github.com/tibco/wi-postgres/src/app/PostgreSQL/activity/query",
+    "act_postgresql_insert github.com/tibco/wi-postgres/src/app/PostgreSQL/activity/insert",
+    "act_default_actreturn github.com/project-flogo/contrib/activity/actreturn",
+    "github.com/project-flogo/contrib/function/coerce",
+    "act_general_sendmail github.com/tibco/flogo-general/src/app/General/activity/sendmail"
+  ],
+  "name": "RealEstateA2AServers",
+  "description": "Real Estate A2A Servers",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "settings": {
+        "llmProviderConnection": "conn://9144a295-720c-4a26-8c50-687bf993c164",
+        "agentName": "book_property_showing",
+        "agentDescription": "Books a property showing (tour) for a real estate lead at a specific listing and date/time.",
+        "agentType": "A2A Server",
+        "agentPort": "=$property[\"book_property_showing_PORT\"]",
+        "agentUrl": "=$property[\"book_property_showing_URL\"]",
+        "agentAuthMode": "None",
+        "agentToken": "",
+        "model": "=$property[\"LLM_Model\"]",
+        "reasoning": "",
+        "temperature": "0.3",
+        "enableGuardrails": "true",
+        "rateLimit": 25,
+        "tokenLimit": 2048,
+        "redactSensitiveData": "true",
+        "remoteAgents": [],
+        "mcpServers": [],
+        "conversationStoreType": "Memory",
+        "memoryMaxSize": "100",
+        "systemPrompt": "You are a scheduling agent for a residential real estate brokerage. Given a lead id, a listing id, and a preferred date/time, book a property showing. Only book listings that are Active. Never invent ids; the showing agent is derived from the lead's assigned agent."
+      },
+      "id": "book_property_showing",
+      "name": "book_property_showing",
+      "description": "Books a property showing (tour) for a real estate lead at a specific listing and date/time.",
+      "ref": "#tr_agent",
+      "handlers": [
+        {
+          "settings": {
+            "handlerType": "Tool",
+            "agentToolName": "book_property_showing",
+            "agentToolDescription": "Book a property showing for a lead at a listing. Requires lead_id (LEAD-2026-NNNNN), listing_id (LST-NNNNN), and preferred_datetime (e.g. '2026-08-30 14:00'); notes optional. The assigned agent is derived automatically.",
+            "agentSkillTags": "",
+            "agentSkillExamples": "",
+            "customGuardrailType": "BOTH",
+            "customConversationStoreOperation": "STORE"
+          },
+          "action": {
+            "input": {
+              "toolParams": "=$.toolParams"
+            },
+            "output": {
+              "response": "=$.response"
+            },
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:book_property_showing_flow"
+            }
+          },
+          "reply": {
+            "response": {
+              "type": "json",
+              "value": "{}",
+              "fe_metadata": "{}"
+            },
+            "customConversationStoreOpOutput": {}
+          },
+          "name": "book_property_showing_flow",
+          "description": "Book a property showing for a lead at a listing. Requires lead_id (LEAD-2026-NNNNN), listing_id (LST-NNNNN), and preferred_datetime (e.g. '2026-08-30 14:00'); notes optional. The assigned agent is derived automatically.",
+          "schemas": {
+            "output": {
+              "toolParams": "schema://book_property_showing_ToolParams"
+            },
+            "reply": {
+              "response": "schema://book_property_showing_Resp"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "settings": {
+        "llmProviderConnection": "conn://9144a295-720c-4a26-8c50-687bf993c164",
+        "agentName": "update_lead_stage",
+        "agentDescription": "Advances a lead's funnel stage and logs the change.",
+        "agentType": "A2A Server",
+        "agentPort": "=$property[\"update_lead_stage_PORT\"]",
+        "agentUrl": "=$property[\"update_lead_stage_URL\"]",
+        "agentAuthMode": "None",
+        "agentToken": "",
+        "model": "=$property[\"LLM_Model\"]",
+        "reasoning": "",
+        "temperature": "0.3",
+        "enableGuardrails": "true",
+        "rateLimit": 25,
+        "tokenLimit": 2048,
+        "redactSensitiveData": "true",
+        "remoteAgents": [],
+        "mcpServers": [],
+        "conversationStoreType": "Memory",
+        "memoryMaxSize": "100",
+        "systemPrompt": "You update a real estate lead's funnel stage (New, Nurturing, Active, Under Contract, Closed, Lost) and log the reason. Use this to advance a lead (e.g. to 'Active' after they book a showing). Never invent lead ids."
+      },
+      "id": "update_lead_stage",
+      "name": "update_lead_stage",
+      "description": "Advances a lead's funnel stage and logs the change.",
+      "ref": "#tr_agent",
+      "handlers": [
+        {
+          "settings": {
+            "handlerType": "Tool",
+            "agentToolName": "update_lead_stage",
+            "agentToolDescription": "Update a lead's funnel stage. Requires lead_id and new_stage (one of New, Nurturing, Active, Under Contract, Closed, Lost); reason optional but recommended.",
+            "agentSkillTags": "",
+            "agentSkillExamples": "",
+            "customGuardrailType": "BOTH",
+            "customConversationStoreOperation": "STORE"
+          },
+          "action": {
+            "input": {
+              "toolParams": "=$.toolParams"
+            },
+            "output": {
+              "response": "=$.response"
+            },
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:update_lead_stage_flow"
+            }
+          },
+          "reply": {
+            "response": {
+              "type": "json",
+              "value": "{}",
+              "fe_metadata": "{}"
+            },
+            "customConversationStoreOpOutput": {}
+          },
+          "name": "update_lead_stage_flow",
+          "description": "Update a lead's funnel stage. Requires lead_id and new_stage (one of New, Nurturing, Active, Under Contract, Closed, Lost); reason optional but recommended.",
+          "schemas": {
+            "output": {
+              "toolParams": "schema://update_lead_stage_ToolParams"
+            },
+            "reply": {
+              "response": "schema://update_lead_stage_Resp"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "settings": {
+        "llmProviderConnection": "conn://9144a295-720c-4a26-8c50-687bf993c164",
+        "agentName": "send_property_recommendations",
+        "agentDescription": "Records a set of curated listing recommendations sent to a lead.",
+        "agentType": "A2A Server",
+        "agentPort": "=$property[\"send_property_recommendations_PORT\"]",
+        "agentUrl": "=$property[\"send_property_recommendations_URL\"]",
+        "agentAuthMode": "None",
+        "agentToken": "",
+        "model": "=$property[\"LLM_Model\"]",
+        "reasoning": "",
+        "temperature": "0.3",
+        "enableGuardrails": "true",
+        "rateLimit": 25,
+        "tokenLimit": 2048,
+        "redactSensitiveData": "true",
+        "remoteAgents": [],
+        "mcpServers": [],
+        "conversationStoreType": "Memory",
+        "memoryMaxSize": "100",
+        "systemPrompt": "You record curated home recommendations for a real estate lead. Given a lead id and the listing ids you recommended, log a 'Recommendation Sent' activity. To actually email the recommendations, the orchestrator calls the email agent separately. Never invent lead ids."
+      },
+      "id": "send_property_recommendations",
+      "name": "send_property_recommendations",
+      "description": "Records a set of curated listing recommendations sent to a lead.",
+      "ref": "#tr_agent",
+      "handlers": [
+        {
+          "settings": {
+            "handlerType": "Tool",
+            "agentToolName": "send_property_recommendations",
+            "agentToolDescription": "Log curated listing recommendations for a lead. Requires lead_id and listing_ids (comma-separated LST ids); summary optional.",
+            "agentSkillTags": "",
+            "agentSkillExamples": "",
+            "customGuardrailType": "BOTH",
+            "customConversationStoreOperation": "STORE"
+          },
+          "action": {
+            "input": {
+              "toolParams": "=$.toolParams"
+            },
+            "output": {
+              "response": "=$.response"
+            },
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:send_property_recommendations_flow"
+            }
+          },
+          "reply": {
+            "response": {
+              "type": "json",
+              "value": "{}",
+              "fe_metadata": "{}"
+            },
+            "customConversationStoreOpOutput": {}
+          },
+          "name": "send_property_recommendations_flow",
+          "description": "Log curated listing recommendations for a lead. Requires lead_id and listing_ids (comma-separated LST ids); summary optional.",
+          "schemas": {
+            "output": {
+              "toolParams": "schema://send_property_recommendations_ToolParams"
+            },
+            "reply": {
+              "response": "schema://send_property_recommendations_Resp"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "settings": {
+        "llmProviderConnection": "conn://9144a295-720c-4a26-8c50-687bf993c164",
+        "agentName": "log_followup_task",
+        "agentDescription": "Creates a follow-up task for the lead's assigned agent.",
+        "agentType": "A2A Server",
+        "agentPort": "=$property[\"log_followup_task_PORT\"]",
+        "agentUrl": "=$property[\"log_followup_task_URL\"]",
+        "agentAuthMode": "None",
+        "agentToken": "",
+        "model": "=$property[\"LLM_Model\"]",
+        "reasoning": "",
+        "temperature": "0.3",
+        "enableGuardrails": "true",
+        "rateLimit": 25,
+        "tokenLimit": 2048,
+        "redactSensitiveData": "true",
+        "remoteAgents": [],
+        "mcpServers": [],
+        "conversationStoreType": "Memory",
+        "memoryMaxSize": "100",
+        "systemPrompt": "You create a follow-up task (Call, Text, or Email) for a real estate lead's assigned agent. Given a lead id, task type and optional due date/notes, log the task. The agent is derived from the lead. Never invent lead ids."
+      },
+      "id": "log_followup_task",
+      "name": "log_followup_task",
+      "description": "Creates a follow-up task for the lead's assigned agent.",
+      "ref": "#tr_agent",
+      "handlers": [
+        {
+          "settings": {
+            "handlerType": "Tool",
+            "agentToolName": "log_followup_task",
+            "agentToolDescription": "Create a follow-up task for a lead's agent. Requires lead_id and task_type (Call, Text, or Email); due_date (YYYY-MM-DD) and notes optional.",
+            "agentSkillTags": "",
+            "agentSkillExamples": "",
+            "customGuardrailType": "BOTH",
+            "customConversationStoreOperation": "STORE"
+          },
+          "action": {
+            "input": {
+              "toolParams": "=$.toolParams"
+            },
+            "output": {
+              "response": "=$.response"
+            },
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:log_followup_task_flow"
+            }
+          },
+          "reply": {
+            "response": {
+              "type": "json",
+              "value": "{}",
+              "fe_metadata": "{}"
+            },
+            "customConversationStoreOpOutput": {}
+          },
+          "name": "log_followup_task_flow",
+          "description": "Create a follow-up task for a lead's agent. Requires lead_id and task_type (Call, Text, or Email); due_date (YYYY-MM-DD) and notes optional.",
+          "schemas": {
+            "output": {
+              "toolParams": "schema://log_followup_task_ToolParams"
+            },
+            "reply": {
+              "response": "schema://log_followup_task_Resp"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "settings": {
+        "llmProviderConnection": "conn://9144a295-720c-4a26-8c50-687bf993c164",
+        "agentName": "send_confirmation_email",
+        "agentDescription": "Sends a confirmation or recommendation email to the prospect.",
+        "agentType": "A2A Server",
+        "agentPort": "=$property[\"send_confirmation_email_PORT\"]",
+        "agentUrl": "=$property[\"send_confirmation_email_URL\"]",
+        "agentAuthMode": "None",
+        "agentToken": "",
+        "model": "=$property[\"LLM_Model\"]",
+        "reasoning": "",
+        "temperature": "0.3",
+        "enableGuardrails": "true",
+        "rateLimit": 25,
+        "tokenLimit": 2048,
+        "redactSensitiveData": "true",
+        "remoteAgents": [],
+        "mcpServers": [],
+        "conversationStoreType": "Memory",
+        "memoryMaxSize": "100",
+        "systemPrompt": "You send a single confirmation or recommendation email. Compose a clear subject and body from what the orchestrator gives you and send it. Send only when asked or right after an action is completed."
+      },
+      "id": "send_confirmation_email",
+      "name": "send_confirmation_email",
+      "description": "Sends a confirmation or recommendation email to the prospect.",
+      "ref": "#tr_agent",
+      "handlers": [
+        {
+          "settings": {
+            "handlerType": "Tool",
+            "agentToolName": "send_confirmation_email",
+            "agentToolDescription": "Send one email. Requires subject and body. Sends to the preconfigured demo recipient mailbox.",
+            "agentSkillTags": "",
+            "agentSkillExamples": "",
+            "customGuardrailType": "BOTH",
+            "customConversationStoreOperation": "STORE"
+          },
+          "action": {
+            "input": {
+              "toolParams": "=$.toolParams"
+            },
+            "output": {
+              "response": "=$.response"
+            },
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:send_confirmation_email_flow"
+            }
+          },
+          "reply": {
+            "response": {
+              "type": "json",
+              "value": "{}",
+              "fe_metadata": "{}"
+            },
+            "customConversationStoreOpOutput": {}
+          },
+          "name": "send_confirmation_email_flow",
+          "description": "Send one email. Requires subject and body. Sends to the preconfigured demo recipient mailbox.",
+          "schemas": {
+            "output": {
+              "toolParams": "schema://send_confirmation_email_ToolParams"
+            },
+            "reply": {
+              "response": "schema://send_confirmation_email_Resp"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:book_property_showing_flow",
+      "data": {
+        "name": "book_property_showing_flow",
+        "description": "Books a property showing (tour) for a real estate lead at a specific listing and date/time.",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "StartActivity to LogMessage"
+          },
+          {
+            "id": 2,
+            "from": "LogMessage",
+            "to": "ValidateQuery",
+            "type": "label",
+            "label": "LogMessage to ValidateQuery"
+          },
+          {
+            "id": 3,
+            "from": "ValidateQuery",
+            "to": "WriteRow",
+            "type": "label",
+            "label": "ValidateQuery to WriteRow"
+          },
+          {
+            "id": 4,
+            "from": "WriteRow",
+            "to": "Return",
+            "type": "label",
+            "label": "WriteRow to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#act_default_noop"
+            }
+          },
+          {
+            "activity": {
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"Agent invoked: \",$flowctx[\"FlowName\"])",
+                "logLevel": ""
+              },
+              "ref": "#act_general_log"
+            },
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Log"
+          },
+          {
+            "activity": {
+              "input": {
+                "Connection": "conn://eadffdec-2045-46b1-bfe9-45bbdbbf17b8",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT l.lead_id, li.listing_id, li.status FROM public.leads l, public.listings li WHERE l.lead_id = ?leadid AND li.listing_id = ?listingid;",
+                "manualmode": false,
+                "Fields": [
+                  {
+                    "FieldName": "leadid",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": false
+                  },
+                  {
+                    "FieldName": "listingid",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": false
+                  },
+                  {
+                    "FieldName": "lead_id",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "listing_id",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "status",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  }
+                ],
+                "RuntimeQuery": "",
+                "State": "e65858bc-7a82-4acb-870d-a9e8454d8434SELECT l.lead_id, li.listing_id, li.status FROM public.leads l, public.listings li WHERE l.lead_id = ?leadid AND li.listing_id = ?listingid;",
+                "input": {
+                  "mapping": {
+                    "parameters": {
+                      "leadid": "=$flow.toolParams.lead_id",
+                      "listingid": "=$flow.toolParams.listing_id"
+                    }
+                  }
+                },
+                "fetchMetadata": false
+              },
+              "ref": "#act_postgresql_query",
+              "settings": {},
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"parameters\": {\"type\": \"object\", \"properties\": {\"leadid\": {\"type\": \"string\"}, \"listingid\": {\"type\": \"string\"}}}}}",
+                    "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"parameters\": {\"type\": \"object\", \"properties\": {\"leadid\": {\"type\": \"string\"}, \"listingid\": {\"type\": \"string\"}}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"records\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {}}}}}",
+                    "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"records\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {}}}}}"
+                  }
+                }
+              }
+            },
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "id": "ValidateQuery",
+            "name": "ValidateQuery",
+            "description": "PostgreSQL Query"
+          },
+          {
+            "activity": {
+              "input": {
+                "Connection": "conn://eadffdec-2045-46b1-bfe9-45bbdbbf17b8",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "INSERT INTO public.appointments (lead_id, listing_id, agent_id, scheduled_for, status, notes) SELECT l.lead_id, ?p_listing, l.assigned_agent_id, NULLIF(?p_sched,'')::timestamp, 'Requested', NULLIF(?p_notes,'') FROM public.leads l WHERE l.lead_id = ?p_lead;",
+                "manualmode": false,
+                "Fields": [
+                  {
+                    "FieldName": "p_listing",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": false
+                  },
+                  {
+                    "FieldName": "p_sched",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": false
+                  },
+                  {
+                    "FieldName": "p_notes",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": false
+                  },
+                  {
+                    "FieldName": "p_lead",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": false
+                  }
+                ],
+                "RuntimeQuery": "",
+                "State": "be961a83-b598-483c-9194-39831389ec3aINSERT INTO public.appointments (lead_id, listing_id, agent_id, scheduled_for, status, notes) SELECT l.lead_id, ?p_listing, l.assigned_agent_id, NULLIF(?p_sched,'')::timestamp, 'Requested', NULLIF(?p_notes,'') FROM public.leads l WHERE l.lead_id = ?p_lead;",
+                "input": {
+                  "mapping": {
+                    "parameters": {
+                      "p_listing": "=$flow.toolParams.listing_id",
+                      "p_sched": "=$flow.toolParams.preferred_datetime",
+                      "p_notes": "=$flow.toolParams.notes",
+                      "p_lead": "=$flow.toolParams.lead_id"
+                    }
+                  }
+                }
+              },
+              "ref": "#act_postgresql_insert",
+              "settings": {},
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"values\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {}}}, \"parameters\": {\"type\": \"object\", \"properties\": {\"p_listing\": {\"type\": \"string\"}, \"p_sched\": {\"type\": \"string\"}, \"p_notes\": {\"type\": \"string\"}, \"p_lead\": {\"type\": \"string\"}}}}}",
+                    "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"values\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {}}}, \"parameters\": {\"type\": \"object\", \"properties\": {\"p_listing\": {\"type\": \"string\"}, \"p_sched\": {\"type\": \"string\"}, \"p_notes\": {\"type\": \"string\"}, \"p_lead\": {\"type\": \"string\"}}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"records\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {}}}}}",
+                    "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"records\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {}}}}}"
+                  }
+                }
+              }
+            },
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "id": "WriteRow",
+            "name": "WriteRow",
+            "description": "PostgreSQL Insert"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[WriteRow].Output)"
+                    }
+                  }
+                }
+              }
+            },
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return"
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "toolParams",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"lead_id\": {\"type\": \"string\"}, \"listing_id\": {\"type\": \"string\"}, \"preferred_datetime\": {\"type\": \"string\"}, \"notes\": {\"type\": \"string\"}}"
+              }
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"response\":{\"type\":\"string\"}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\": \"object\", \"title\": \"book_property_showing\", \"properties\": {\"toolParams\": {\"type\": \"object\", \"properties\": {\"lead_id\": {\"type\": \"string\"}, \"listing_id\": {\"type\": \"string\"}, \"preferred_datetime\": {\"type\": \"string\"}, \"notes\": {\"type\": \"string\"}}, \"required\": [\"lead_id\", \"listing_id\", \"preferred_datetime\"]}}}",
+            "output": "{\"type\": \"object\", \"title\": \"Inputs\", \"properties\": {\"response\": {\"type\": \"object\", \"properties\": {\"response\": {\"type\": \"string\"}}}}, \"required\": []}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:update_lead_stage_flow",
+      "data": {
+        "name": "update_lead_stage_flow",
+        "description": "Advances a lead&#39;s funnel stage and logs the change.",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "StartActivity to LogMessage"
+          },
+          {
+            "id": 2,
+            "from": "LogMessage",
+            "to": "UpdateStage",
+            "type": "label",
+            "label": "LogMessage to UpdateStage"
+          },
+          {
+            "id": 3,
+            "from": "UpdateStage",
+            "to": "LogActivity",
+            "type": "label",
+            "label": "UpdateStage to LogActivity"
+          },
+          {
+            "id": 4,
+            "from": "LogActivity",
+            "to": "Return",
+            "type": "label",
+            "label": "LogActivity to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#act_default_noop"
+            }
+          },
+          {
+            "activity": {
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"Agent invoked: \",$flowctx[\"FlowName\"])",
+                "logLevel": ""
+              },
+              "ref": "#act_general_log"
+            },
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Log"
+          },
+          {
+            "activity": {
+              "input": {
+                "Connection": "conn://eadffdec-2045-46b1-bfe9-45bbdbbf17b8",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "UPDATE public.leads SET stage = ?p_stage, last_activity_at = CURRENT_TIMESTAMP WHERE lead_id = ?p_lead;",
+                "manualmode": false,
+                "Fields": [
+                  {
+                    "FieldName": "p_stage",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": false
+                  },
+                  {
+                    "FieldName": "p_lead",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": false
+                  }
+                ],
+                "RuntimeQuery": "",
+                "State": "4ab5103b-2f55-4b1f-b763-453c58cbecf2UPDATE public.leads SET stage = ?p_stage, last_activity_at = CURRENT_TIMESTAMP WHERE lead_id = ?p_lead;",
+                "input": {
+                  "mapping": {
+                    "parameters": {
+                      "p_stage": "=$flow.toolParams.new_stage",
+                      "p_lead": "=$flow.toolParams.lead_id"
+                    }
+                  }
+                }
+              },
+              "ref": "#act_postgresql_insert",
+              "settings": {},
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"values\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {}}}, \"parameters\": {\"type\": \"object\", \"properties\": {\"p_stage\": {\"type\": \"string\"}, \"p_lead\": {\"type\": \"string\"}}}}}",
+                    "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"values\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {}}}, \"parameters\": {\"type\": \"object\", \"properties\": {\"p_stage\": {\"type\": \"string\"}, \"p_lead\": {\"type\": \"string\"}}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"records\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {}}}}}",
+                    "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"records\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {}}}}}"
+                  }
+                }
+              }
+            },
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "id": "UpdateStage",
+            "name": "UpdateStage",
+            "description": "PostgreSQL Insert"
+          },
+          {
+            "activity": {
+              "input": {
+                "Connection": "conn://eadffdec-2045-46b1-bfe9-45bbdbbf17b8",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "INSERT INTO public.lead_activity (lead_id, activity_type, detail) VALUES (?p_lead, 'Stage Change', ?p_detail);",
+                "manualmode": false,
+                "Fields": [
+                  {
+                    "FieldName": "p_lead",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": false
+                  },
+                  {
+                    "FieldName": "p_detail",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": false
+                  }
+                ],
+                "RuntimeQuery": "",
+                "State": "065abc4c-88e4-4cbe-b3b2-a40c6dcdf1e7INSERT INTO public.lead_activity (lead_id, activity_type, detail) VALUES (?p_lead, 'Stage Change', ?p_detail);",
+                "input": {
+                  "mapping": {
+                    "parameters": {
+                      "p_lead": "=$flow.toolParams.lead_id",
+                      "p_detail": "=string.concat(\"Stage changed to \",$flow.toolParams.new_stage,\" \",coerce.toString($flow.toolParams.reason))"
+                    }
+                  }
+                }
+              },
+              "ref": "#act_postgresql_insert",
+              "settings": {},
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"values\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {}}}, \"parameters\": {\"type\": \"object\", \"properties\": {\"p_lead\": {\"type\": \"string\"}, \"p_detail\": {\"type\": \"string\"}}}}}",
+                    "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"values\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {}}}, \"parameters\": {\"type\": \"object\", \"properties\": {\"p_lead\": {\"type\": \"string\"}, \"p_detail\": {\"type\": \"string\"}}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"records\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {}}}}}",
+                    "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"records\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {}}}}}"
+                  }
+                }
+              }
+            },
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "id": "LogActivity",
+            "name": "LogActivity",
+            "description": "PostgreSQL Insert"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[LogActivity].Output)"
+                    }
+                  }
+                }
+              }
+            },
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return"
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "toolParams",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"lead_id\": {\"type\": \"string\"}, \"new_stage\": {\"type\": \"string\"}, \"reason\": {\"type\": \"string\"}}"
+              }
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"response\":{\"type\":\"string\"}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\": \"object\", \"title\": \"update_lead_stage\", \"properties\": {\"toolParams\": {\"type\": \"object\", \"properties\": {\"lead_id\": {\"type\": \"string\"}, \"new_stage\": {\"type\": \"string\"}, \"reason\": {\"type\": \"string\"}}, \"required\": [\"lead_id\", \"new_stage\"]}}}",
+            "output": "{\"type\": \"object\", \"title\": \"Inputs\", \"properties\": {\"response\": {\"type\": \"object\", \"properties\": {\"response\": {\"type\": \"string\"}}}}, \"required\": []}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:send_property_recommendations_flow",
+      "data": {
+        "name": "send_property_recommendations_flow",
+        "description": "Records a set of curated listing recommendations sent to a lead.",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "StartActivity to LogMessage"
+          },
+          {
+            "id": 2,
+            "from": "LogMessage",
+            "to": "WriteRow",
+            "type": "label",
+            "label": "LogMessage to WriteRow"
+          },
+          {
+            "id": 3,
+            "from": "WriteRow",
+            "to": "Return",
+            "type": "label",
+            "label": "WriteRow to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#act_default_noop"
+            }
+          },
+          {
+            "activity": {
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"Agent invoked: \",$flowctx[\"FlowName\"])",
+                "logLevel": ""
+              },
+              "ref": "#act_general_log"
+            },
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Log"
+          },
+          {
+            "activity": {
+              "input": {
+                "Connection": "conn://eadffdec-2045-46b1-bfe9-45bbdbbf17b8",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "INSERT INTO public.lead_activity (lead_id, activity_type, detail) VALUES (?p_lead, 'Recommendation Sent', ?p_detail);",
+                "manualmode": false,
+                "Fields": [
+                  {
+                    "FieldName": "p_lead",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": false
+                  },
+                  {
+                    "FieldName": "p_detail",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": false
+                  }
+                ],
+                "RuntimeQuery": "",
+                "State": "327e9174-2db7-47be-8071-f8b5266231c7INSERT INTO public.lead_activity (lead_id, activity_type, detail) VALUES (?p_lead, 'Recommendation Sent', ?p_detail);",
+                "input": {
+                  "mapping": {
+                    "parameters": {
+                      "p_lead": "=$flow.toolParams.lead_id",
+                      "p_detail": "=string.concat(\"Sent listings: \",$flow.toolParams.listing_ids,\" \",coerce.toString($flow.toolParams.summary))"
+                    }
+                  }
+                }
+              },
+              "ref": "#act_postgresql_insert",
+              "settings": {},
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"values\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {}}}, \"parameters\": {\"type\": \"object\", \"properties\": {\"p_lead\": {\"type\": \"string\"}, \"p_detail\": {\"type\": \"string\"}}}}}",
+                    "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"values\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {}}}, \"parameters\": {\"type\": \"object\", \"properties\": {\"p_lead\": {\"type\": \"string\"}, \"p_detail\": {\"type\": \"string\"}}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"records\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {}}}}}",
+                    "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"records\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {}}}}}"
+                  }
+                }
+              }
+            },
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "id": "WriteRow",
+            "name": "WriteRow",
+            "description": "PostgreSQL Insert"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[WriteRow].Output)"
+                    }
+                  }
+                }
+              }
+            },
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return"
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "toolParams",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"lead_id\": {\"type\": \"string\"}, \"listing_ids\": {\"type\": \"string\"}, \"summary\": {\"type\": \"string\"}}"
+              }
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"response\":{\"type\":\"string\"}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\": \"object\", \"title\": \"send_property_recommendations\", \"properties\": {\"toolParams\": {\"type\": \"object\", \"properties\": {\"lead_id\": {\"type\": \"string\"}, \"listing_ids\": {\"type\": \"string\"}, \"summary\": {\"type\": \"string\"}}, \"required\": [\"lead_id\", \"listing_ids\"]}}}",
+            "output": "{\"type\": \"object\", \"title\": \"Inputs\", \"properties\": {\"response\": {\"type\": \"object\", \"properties\": {\"response\": {\"type\": \"string\"}}}}, \"required\": []}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:log_followup_task_flow",
+      "data": {
+        "name": "log_followup_task_flow",
+        "description": "Creates a follow-up task for the lead&#39;s assigned agent.",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "StartActivity to LogMessage"
+          },
+          {
+            "id": 2,
+            "from": "LogMessage",
+            "to": "WriteRow",
+            "type": "label",
+            "label": "LogMessage to WriteRow"
+          },
+          {
+            "id": 3,
+            "from": "WriteRow",
+            "to": "Return",
+            "type": "label",
+            "label": "WriteRow to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#act_default_noop"
+            }
+          },
+          {
+            "activity": {
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"Agent invoked: \",$flowctx[\"FlowName\"])",
+                "logLevel": ""
+              },
+              "ref": "#act_general_log"
+            },
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Log"
+          },
+          {
+            "activity": {
+              "input": {
+                "Connection": "conn://eadffdec-2045-46b1-bfe9-45bbdbbf17b8",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "INSERT INTO public.follow_up_tasks (lead_id, agent_id, task_type, due_date, notes) SELECT l.lead_id, l.assigned_agent_id, ?p_type, NULLIF(?p_due,'')::date, NULLIF(?p_notes,'') FROM public.leads l WHERE l.lead_id = ?p_lead;",
+                "manualmode": false,
+                "Fields": [
+                  {
+                    "FieldName": "p_type",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": false
+                  },
+                  {
+                    "FieldName": "p_due",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": false
+                  },
+                  {
+                    "FieldName": "p_notes",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": false
+                  },
+                  {
+                    "FieldName": "p_lead",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": false
+                  }
+                ],
+                "RuntimeQuery": "",
+                "State": "a856bfbd-82b1-4ca4-bdbb-82f3fec2a6b1INSERT INTO public.follow_up_tasks (lead_id, agent_id, task_type, due_date, notes) SELECT l.lead_id, l.assigned_agent_id, ?p_type, NULLIF(?p_due,'')::date, NULLIF(?p_notes,'') FROM public.leads l WHERE l.lead_id = ?p_lead;",
+                "input": {
+                  "mapping": {
+                    "parameters": {
+                      "p_type": "=$flow.toolParams.task_type",
+                      "p_due": "=$flow.toolParams.due_date",
+                      "p_notes": "=$flow.toolParams.notes",
+                      "p_lead": "=$flow.toolParams.lead_id"
+                    }
+                  }
+                }
+              },
+              "ref": "#act_postgresql_insert",
+              "settings": {},
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"values\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {}}}, \"parameters\": {\"type\": \"object\", \"properties\": {\"p_type\": {\"type\": \"string\"}, \"p_due\": {\"type\": \"string\"}, \"p_notes\": {\"type\": \"string\"}, \"p_lead\": {\"type\": \"string\"}}}}}",
+                    "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"values\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {}}}, \"parameters\": {\"type\": \"object\", \"properties\": {\"p_type\": {\"type\": \"string\"}, \"p_due\": {\"type\": \"string\"}, \"p_notes\": {\"type\": \"string\"}, \"p_lead\": {\"type\": \"string\"}}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"records\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {}}}}}",
+                    "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"records\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {}}}}}"
+                  }
+                }
+              }
+            },
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "id": "WriteRow",
+            "name": "WriteRow",
+            "description": "PostgreSQL Insert"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[WriteRow].Output)"
+                    }
+                  }
+                }
+              }
+            },
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return"
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "toolParams",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"lead_id\": {\"type\": \"string\"}, \"task_type\": {\"type\": \"string\"}, \"due_date\": {\"type\": \"string\"}, \"notes\": {\"type\": \"string\"}}"
+              }
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"response\":{\"type\":\"string\"}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\": \"object\", \"title\": \"log_followup_task\", \"properties\": {\"toolParams\": {\"type\": \"object\", \"properties\": {\"lead_id\": {\"type\": \"string\"}, \"task_type\": {\"type\": \"string\"}, \"due_date\": {\"type\": \"string\"}, \"notes\": {\"type\": \"string\"}}, \"required\": [\"lead_id\", \"task_type\"]}}}",
+            "output": "{\"type\": \"object\", \"title\": \"Inputs\", \"properties\": {\"response\": {\"type\": \"object\", \"properties\": {\"response\": {\"type\": \"string\"}}}}, \"required\": []}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:send_confirmation_email_flow",
+      "data": {
+        "name": "send_confirmation_email_flow",
+        "description": "Sends a confirmation or recommendation email to the prospect.",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogMessage",
+            "type": "label",
+            "label": "StartActivity to LogMessage"
+          },
+          {
+            "id": 2,
+            "from": "LogMessage",
+            "to": "SendMail",
+            "type": "label",
+            "label": "LogMessage to SendMail"
+          },
+          {
+            "id": 3,
+            "from": "SendMail",
+            "to": "Return",
+            "type": "label",
+            "label": "SendMail to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#act_default_noop"
+            }
+          },
+          {
+            "activity": {
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"Agent invoked: \",$flowctx[\"FlowName\"])",
+                "logLevel": ""
+              },
+              "ref": "#act_general_log"
+            },
+            "id": "LogMessage",
+            "name": "LogMessage",
+            "description": "Log"
+          },
+          {
+            "activity": {
+              "input": {
+                "Server": "smtp.gmail.com",
+                "Port": 465,
+                "authorizationType": "Basic",
+                "Username": "=$property[\"Email_Username\"]",
+                "Password": "=$property[\"Email_App_Password\"]",
+                "authorizationConn": "",
+                "Connection Security": "SSL",
+                "serverCertificate": "",
+                "message_content_type": "text/plain",
+                "sender": "=$property[\"Email_Username\"]",
+                "recipients": "=$property[\"To_Email\"]",
+                "cc_recipients": "",
+                "bcc_recipients": "",
+                "reply_to": "=$property[\"Email_Username\"]",
+                "subject": "=$flow.toolParams.subject",
+                "message": "=$flow.toolParams.body",
+                "attachments": {
+                  "mapping": []
+                },
+                "headers": {
+                  "mapping": []
+                }
+              },
+              "ref": "#act_general_sendmail"
+            },
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "id": "SendMail",
+            "name": "SendMail",
+            "description": "Send Mail"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=string.concat(\"Confirmation email sent: \",$flow.toolParams.subject)"
+                    }
+                  }
+                }
+              }
+            },
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return"
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "toolParams",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"subject\": {\"type\": \"string\"}, \"body\": {\"type\": \"string\"}}"
+              }
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"response\":{\"type\":\"string\"}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\": \"object\", \"title\": \"send_confirmation_email\", \"properties\": {\"toolParams\": {\"type\": \"object\", \"properties\": {\"subject\": {\"type\": \"string\"}, \"body\": {\"type\": \"string\"}}, \"required\": [\"subject\", \"body\"]}}}",
+            "output": "{\"type\": \"object\", \"title\": \"Inputs\", \"properties\": {\"response\": {\"type\": \"object\", \"properties\": {\"response\": {\"type\": \"string\"}}}}, \"required\": []}"
+          }
+        }
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "AgenticAI.OpenAIConn.LLM_Provider",
+      "type": "string",
+      "value": "OpenAI"
+    },
+    {
+      "name": "AgenticAI.OpenAIConn.API_Key",
+      "type": "string",
+      "value": "SET_YOUR_OPENAI_API_KEY"
+    },
+    {
+      "name": "AgenticAI.OpenAIConn.LLM_Base_URL",
+      "type": "string",
+      "value": "https://api.openai.com/v1"
+    },
+    {
+      "name": "LLM_Model",
+      "type": "string",
+      "value": "gpt-5.5"
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Host",
+      "type": "string",
+      "value": "localhost"
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Port",
+      "type": "float64",
+      "value": 5432
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Database_Name",
+      "type": "string",
+      "value": "realestate"
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.User",
+      "type": "string",
+      "value": "postgres"
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Password",
+      "type": "string",
+      "value": "SET_YOUR_DB_PASSWORD"
+    },
+    {
+      "name": "Email_Username",
+      "type": "string",
+      "value": "your-email@gmail.com"
+    },
+    {
+      "name": "Email_App_Password",
+      "type": "string",
+      "value": "SET_YOUR_EMAIL_APP_PASSWORD"
+    },
+    {
+      "name": "To_Email",
+      "type": "string",
+      "value": "your-email@gmail.com"
+    },
+    {
+      "name": "book_property_showing_PORT",
+      "type": "string",
+      "value": "9593"
+    },
+    {
+      "name": "book_property_showing_URL",
+      "type": "string",
+      "value": "http://localhost:9593"
+    },
+    {
+      "name": "update_lead_stage_PORT",
+      "type": "string",
+      "value": "9594"
+    },
+    {
+      "name": "update_lead_stage_URL",
+      "type": "string",
+      "value": "http://localhost:9594"
+    },
+    {
+      "name": "send_property_recommendations_PORT",
+      "type": "string",
+      "value": "9595"
+    },
+    {
+      "name": "send_property_recommendations_URL",
+      "type": "string",
+      "value": "http://localhost:9595"
+    },
+    {
+      "name": "log_followup_task_PORT",
+      "type": "string",
+      "value": "9596"
+    },
+    {
+      "name": "log_followup_task_URL",
+      "type": "string",
+      "value": "http://localhost:9596"
+    },
+    {
+      "name": "send_confirmation_email_PORT",
+      "type": "string",
+      "value": "9597"
+    },
+    {
+      "name": "send_confirmation_email_URL",
+      "type": "string",
+      "value": "http://localhost:9597"
+    }
+  ],
+  "connections": {
+    "9144a295-720c-4a26-8c50-687bf993c164": {
+      "settings": {
+        "name": "OpenAIConn",
+        "description": "Your llmprovider Connector",
+        "llmProvider": "=$property[\"AgenticAI.OpenAIConn.LLM_Provider\"]",
+        "anthropicProvider": "Default",
+        "apiKey": "=$property[\"AgenticAI.OpenAIConn.API_Key\"]",
+        "llmProviderUrl": "=$property[\"AgenticAI.OpenAIConn.LLM_Base_URL\"]",
+        "azureDeployment": "",
+        "azureRegion": "",
+        "azureResourceName": "",
+        "azureApiVersion": ""
+      },
+      "id": "9144a295-720c-4a26-8c50-687bf993c164",
+      "name": "OpenAIConn",
+      "ref": "#con_llmprovider",
+      "isGlobal": false
+    },
+    "eadffdec-2045-46b1-bfe9-45bbdbbf17b8": {
+      "settings": {
+        "databaseType": "PostgreSQL",
+        "name": "PostgresConn",
+        "description": "Your PostgreSQL Connector",
+        "host": "=$property[\"PostgreSQL.PostgresConn.Host\"]",
+        "port": "=$property[\"PostgreSQL.PostgresConn.Port\"]",
+        "databaseName": "=$property[\"PostgreSQL.PostgresConn.Database_Name\"]",
+        "user": "=$property[\"PostgreSQL.PostgresConn.User\"]",
+        "password": "=$property[\"PostgreSQL.PostgresConn.Password\"]",
+        "maxopenconnection": 0,
+        "maxidleconnection": 2,
+        "connmaxlifetime": 0,
+        "maxconnectattempts": 3,
+        "connectionretrydelay": 5,
+        "connectiontimeout": 20,
+        "onprem": false,
+        "tlsconfig": false,
+        "tlsparam": "VerifyCA",
+        "cacert": "",
+        "clientcert": "",
+        "clientkey": ""
+      },
+      "id": "eadffdec-2045-46b1-bfe9-45bbdbbf17b8",
+      "name": "PostgresConn",
+      "ref": "#con_postgresql",
+      "isGlobal": false
+    }
+  },
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS40IiwidGFnIjoiMC45LjQtYjAyIiwibmFtZSI6IlRJQkNPIEZsb2dvwq4gQ29ubmVjdG9yIGZvciBBZ2VudGljIEFJIChUZWNoIFByZXZpZXcpIiwiczNsb2NhdGlvbiI6IlRpYmNvL0FnZW50aWNBSSIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjEiLCJ0YWciOiIyLjcuMS1iMDEiLCJuYW1lIjoiVElCQ08gRmxvZ28gY29ubmVjdG9yIGZvciBQb3N0Z3JlU1FMIiwiczNsb2NhdGlvbiI6IlRpYmNvL1Bvc3RncmVTUUwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfSx7InJlZiI6ImdpdGh1Yi5jb20vdGliY28vZmxvZ28tZGVmYXVsdC1jb250cmlicy9zcmMvYXBwL0RlZmF1bHQiLCJpZCI6IkRlZmF1bHQiLCJ2ZXJzaW9uIjoiMS4wLjAiLCJ0YWciOiIxLjAuMC1iMTAtdjMtbWFpbiIsIm5hbWUiOiJUSUJDTyBGbG9nbyBDb25uZWN0b3IgZm9yIERlZmF1bHQiLCJzM2xvY2F0aW9uIjoiVGliY28vRGVmYXVsdCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTUiLCJ0YWciOiIxLjYuMTUtYjA0IiwibmFtZSI6IlRJQkNPIEZsb2dvIENvbm5lY3RvciBmb3IgR2VuZXJhbCIsInMzbG9jYXRpb24iOiJUaWJjby9HZW5lcmFsIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
+  "metadata": {
+    "endpoints": [],
+    "flogoVersion": "2.26.6"
+  },
+  "schemas": {
+    "book_property_showing_ToolParams": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"lead_id\": {\n      \"type\": \"string\"\n    },\n    \"listing_id\": {\n      \"type\": \"string\"\n    },\n    \"preferred_datetime\": {\n      \"type\": \"string\"\n    },\n    \"notes\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"lead_id\",\n    \"listing_id\",\n    \"preferred_datetime\"\n  ]\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"lead_id\": {\n      \"type\": \"string\"\n    },\n    \"listing_id\": {\n      \"type\": \"string\"\n    },\n    \"preferred_datetime\": {\n      \"type\": \"string\"\n    },\n    \"notes\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"lead_id\",\n    \"listing_id\",\n    \"preferred_datetime\"\n  ]\n}"
+    },
+    "book_property_showing_Resp": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"response\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"response\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+    },
+    "update_lead_stage_ToolParams": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"lead_id\": {\n      \"type\": \"string\"\n    },\n    \"new_stage\": {\n      \"type\": \"string\"\n    },\n    \"reason\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"lead_id\",\n    \"new_stage\"\n  ]\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"lead_id\": {\n      \"type\": \"string\"\n    },\n    \"new_stage\": {\n      \"type\": \"string\"\n    },\n    \"reason\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"lead_id\",\n    \"new_stage\"\n  ]\n}"
+    },
+    "update_lead_stage_Resp": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"response\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"response\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+    },
+    "send_property_recommendations_ToolParams": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"lead_id\": {\n      \"type\": \"string\"\n    },\n    \"listing_ids\": {\n      \"type\": \"string\"\n    },\n    \"summary\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"lead_id\",\n    \"listing_ids\"\n  ]\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"lead_id\": {\n      \"type\": \"string\"\n    },\n    \"listing_ids\": {\n      \"type\": \"string\"\n    },\n    \"summary\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"lead_id\",\n    \"listing_ids\"\n  ]\n}"
+    },
+    "send_property_recommendations_Resp": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"response\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"response\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+    },
+    "log_followup_task_ToolParams": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"lead_id\": {\n      \"type\": \"string\"\n    },\n    \"task_type\": {\n      \"type\": \"string\"\n    },\n    \"due_date\": {\n      \"type\": \"string\"\n    },\n    \"notes\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"lead_id\",\n    \"task_type\"\n  ]\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"lead_id\": {\n      \"type\": \"string\"\n    },\n    \"task_type\": {\n      \"type\": \"string\"\n    },\n    \"due_date\": {\n      \"type\": \"string\"\n    },\n    \"notes\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"lead_id\",\n    \"task_type\"\n  ]\n}"
+    },
+    "log_followup_task_Resp": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"response\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"response\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+    },
+    "send_confirmation_email_ToolParams": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"subject\": {\n      \"type\": \"string\"\n    },\n    \"body\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"subject\",\n    \"body\"\n  ]\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"subject\": {\n      \"type\": \"string\"\n    },\n    \"body\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"subject\",\n    \"body\"\n  ]\n}"
+    },
+    "send_confirmation_email_Resp": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"response\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"response\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+    }
+  }
+}

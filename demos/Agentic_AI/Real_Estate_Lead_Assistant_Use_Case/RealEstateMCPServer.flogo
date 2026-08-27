@@ -1,0 +1,991 @@
+{
+  "imports": [
+    "con_postgresql github.com/tibco/wi-postgres/src/app/PostgreSQL/connector/connection",
+    "tr_mcpserver github.com/tibco/flogo-mcp/src/app/MCP/trigger/mcpserver",
+    "github.com/project-flogo/flow",
+    "act_default_noop github.com/project-flogo/contrib/activity/noop",
+    "act_postgresql_query github.com/tibco/wi-postgres/src/app/PostgreSQL/activity/query",
+    "act_default_actreturn github.com/project-flogo/contrib/activity/actreturn",
+    "github.com/project-flogo/contrib/function/coerce"
+  ],
+  "name": "RealEstateMCPServer",
+  "description": "Real Estate MCP Server",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "settings": {
+        "serverName": "RealEstateMCPServer",
+        "serverVersion": "1.0.0",
+        "serverType": "HTTP",
+        "serverPort": "=$property[\"MCP_SERVER_PORT\"]",
+        "statelessServer": false,
+        "serverEndpointPath": "/realestate-mls",
+        "enableTLS": false,
+        "serverCertificate": "",
+        "serverPrivateKey": "",
+        "authType": "None",
+        "authToken": "",
+        "oauthIssuer": "",
+        "oauthJWKSURL": "",
+        "oauthAudience": "",
+        "oauthAuthorizationServers": "",
+        "oauthRequiredScopes": "",
+        "oauthResourceURL": ""
+      },
+      "id": "RealEstateMCPServer",
+      "name": "RealEstateMCPServer",
+      "description": "Real Estate MCP server",
+      "ref": "#tr_mcpserver",
+      "handlers": [
+        {
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "GetLeadProfile",
+            "handlerDescription": "Look up a real estate lead's full CRM profile by lead id (LEAD-2026-NNNNN), email, or phone: name, contact, lead type (Buyer/Seller/Both), funnel stage, budget range, preferred city/zip/beds/baths, property type, timeline, source, and assigned agent id. Use this to recognize the prospect and recall their saved home-search criteria.",
+            "toolTitle": "",
+            "readOnlyToolHint": false,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            },
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getLeads"
+            }
+          },
+          "reply": {
+            "response": {
+              "type": "json",
+              "value": "{}",
+              "fe_metadata": "{}"
+            },
+            "outputSchema": "",
+            "structuredContent": {}
+          },
+          "name": "getLeads",
+          "description": "Look up a real estate lead's full CRM profile by lead id (LEAD-2026-NNNNN), email, or phone: name, contact, lead type (Buyer/Seller/Both), funnel stage, budget range, preferred city/zip/beds/baths, property type, timeline, source, and assigned agent id. Use this to recognize the prospect and recall their saved home-search criteria.",
+          "schemas": {
+            "output": {
+              "arguments": "schema://EmptyArgs"
+            },
+            "reply": {
+              "response": "schema://ToolResponse"
+            }
+          }
+        },
+        {
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "GetLeadActivity",
+            "handlerDescription": "Return a lead's engagement history: searches run, listings viewed and saved, emails opened, recommendations sent, and funnel stage changes. Use to understand what a prospect has been looking at.",
+            "toolTitle": "",
+            "readOnlyToolHint": false,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            },
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getLeadActivity"
+            }
+          },
+          "reply": {
+            "response": {
+              "type": "json",
+              "value": "{}",
+              "fe_metadata": "{}"
+            },
+            "outputSchema": "",
+            "structuredContent": {}
+          },
+          "name": "getLeadActivity",
+          "description": "Return a lead's engagement history: searches run, listings viewed and saved, emails opened, recommendations sent, and funnel stage changes. Use to understand what a prospect has been looking at.",
+          "schemas": {
+            "output": {
+              "arguments": "schema://EmptyArgs"
+            },
+            "reply": {
+              "response": "schema://ToolResponse"
+            }
+          }
+        },
+        {
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "SearchListings",
+            "handlerDescription": "Search the property catalog (MLS). Returns listings with address, city, state, zip, price, bedrooms, bathrooms, square footage, property type, status (Active/Pending/Sold), days on market, MLS id, and description. Filter results to the user's city, price range, and bed/bath needs.",
+            "toolTitle": "",
+            "readOnlyToolHint": false,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            },
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getListings"
+            }
+          },
+          "reply": {
+            "response": {
+              "type": "json",
+              "value": "{}",
+              "fe_metadata": "{}"
+            },
+            "outputSchema": "",
+            "structuredContent": {}
+          },
+          "name": "getListings",
+          "description": "Search the property catalog (MLS). Returns listings with address, city, state, zip, price, bedrooms, bathrooms, square footage, property type, status (Active/Pending/Sold), days on market, MLS id, and description. Filter results to the user's city, price range, and bed/bath needs.",
+          "schemas": {
+            "output": {
+              "arguments": "schema://EmptyArgs"
+            },
+            "reply": {
+              "response": "schema://ToolResponse"
+            }
+          }
+        },
+        {
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "GetAssignedAgent",
+            "handlerDescription": "Return real estate agent details (name, email, phone, brokerage, service area, specialization). Use with a lead's assigned agent id to tell the prospect who their agent is or to route a follow-up.",
+            "toolTitle": "",
+            "readOnlyToolHint": false,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            },
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getAgents"
+            }
+          },
+          "reply": {
+            "response": {
+              "type": "json",
+              "value": "{}",
+              "fe_metadata": "{}"
+            },
+            "outputSchema": "",
+            "structuredContent": {}
+          },
+          "name": "getAgents",
+          "description": "Return real estate agent details (name, email, phone, brokerage, service area, specialization). Use with a lead's assigned agent id to tell the prospect who their agent is or to route a follow-up.",
+          "schemas": {
+            "output": {
+              "arguments": "schema://EmptyArgs"
+            },
+            "reply": {
+              "response": "schema://ToolResponse"
+            }
+          }
+        },
+        {
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "GetLeadAppointments",
+            "handlerDescription": "Return a lead's property showings (appointments): the listing, scheduled date/time, and status (Requested/Confirmed/Completed/Cancelled). Use to tell a prospect what tours they have scheduled.",
+            "toolTitle": "",
+            "readOnlyToolHint": false,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            },
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getAppointments"
+            }
+          },
+          "reply": {
+            "response": {
+              "type": "json",
+              "value": "{}",
+              "fe_metadata": "{}"
+            },
+            "outputSchema": "",
+            "structuredContent": {}
+          },
+          "name": "getAppointments",
+          "description": "Return a lead's property showings (appointments): the listing, scheduled date/time, and status (Requested/Confirmed/Completed/Cancelled). Use to tell a prospect what tours they have scheduled.",
+          "schemas": {
+            "output": {
+              "arguments": "schema://EmptyArgs"
+            },
+            "reply": {
+              "response": "schema://ToolResponse"
+            }
+          }
+        },
+        {
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "GetAreaMarketInsights",
+            "handlerDescription": "Return residential real-estate market statistics by city and zip: median price, average days on market, active inventory, median price per square foot, and year-over-year price change. Use to answer 'how's the market' questions.",
+            "toolTitle": "",
+            "readOnlyToolHint": false,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            },
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getMarketStats"
+            }
+          },
+          "reply": {
+            "response": {
+              "type": "json",
+              "value": "{}",
+              "fe_metadata": "{}"
+            },
+            "outputSchema": "",
+            "structuredContent": {}
+          },
+          "name": "getMarketStats",
+          "description": "Return residential real-estate market statistics by city and zip: median price, average days on market, active inventory, median price per square foot, and year-over-year price change. Use to answer 'how's the market' questions.",
+          "schemas": {
+            "output": {
+              "arguments": "schema://EmptyArgs"
+            },
+            "reply": {
+              "response": "schema://ToolResponse"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:getLeads",
+      "data": {
+        "name": "getLeads",
+        "description": "Look up a real estate lead&#39;s full CRM profile by lead id (LEAD-2026-NNNNN), email, or phone: name, contact, lead type (Buyer/Seller/Both), funnel stage, budget range, preferred city/zip/beds/baths, property type, timeline, source, and assigned agent id. Use this to recognize the prospect and recall their saved home-search criteria.",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "PostgreSQLQuery",
+            "type": "label",
+            "label": "StartActivity to PostgreSQLQuery"
+          },
+          {
+            "id": 2,
+            "from": "PostgreSQLQuery",
+            "to": "Return",
+            "type": "label",
+            "label": "PostgreSQLQuery to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#act_default_noop"
+            }
+          },
+          {
+            "activity": {
+              "input": {
+                "Connection": "conn://9cb829f4-e20f-4e15-95e3-fcc3a57da6d8",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT * FROM public.leads ORDER BY lead_id ASC;",
+                "manualmode": false,
+                "fetchMetadata": "",
+                "input": {},
+                "Fields": [],
+                "RuntimeQuery": "",
+                "State": ""
+              },
+              "ref": "#act_postgresql_query",
+              "settings": {}
+            },
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "PostgreSQL Query"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[PostgreSQLQuery].Output)"
+                    }
+                  }
+                }
+              }
+            },
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return"
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"RealEstateMCPServer\",\"properties\":{\"arguments\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:getLeadActivity",
+      "data": {
+        "name": "getLeadActivity",
+        "description": "Return a lead&#39;s engagement history: searches run, listings viewed and saved, emails opened, recommendations sent, and funnel stage changes. Use to understand what a prospect has been looking at.",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "PostgreSQLQuery",
+            "type": "label",
+            "label": "StartActivity to PostgreSQLQuery"
+          },
+          {
+            "id": 2,
+            "from": "PostgreSQLQuery",
+            "to": "Return",
+            "type": "label",
+            "label": "PostgreSQLQuery to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#act_default_noop"
+            }
+          },
+          {
+            "activity": {
+              "input": {
+                "Connection": "conn://9cb829f4-e20f-4e15-95e3-fcc3a57da6d8",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT * FROM public.lead_activity ORDER BY activity_id ASC;",
+                "manualmode": false,
+                "fetchMetadata": "",
+                "input": {},
+                "Fields": [],
+                "RuntimeQuery": "",
+                "State": ""
+              },
+              "ref": "#act_postgresql_query",
+              "settings": {}
+            },
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "PostgreSQL Query"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[PostgreSQLQuery].Output)"
+                    }
+                  }
+                }
+              }
+            },
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return"
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"RealEstateMCPServer\",\"properties\":{\"arguments\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:getListings",
+      "data": {
+        "name": "getListings",
+        "description": "Search the property catalog (MLS). Returns listings with address, city, state, zip, price, bedrooms, bathrooms, square footage, property type, status (Active/Pending/Sold), days on market, MLS id, and description. Filter results to the user&#39;s city, price range, and bed/bath needs.",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "PostgreSQLQuery",
+            "type": "label",
+            "label": "StartActivity to PostgreSQLQuery"
+          },
+          {
+            "id": 2,
+            "from": "PostgreSQLQuery",
+            "to": "Return",
+            "type": "label",
+            "label": "PostgreSQLQuery to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#act_default_noop"
+            }
+          },
+          {
+            "activity": {
+              "input": {
+                "Connection": "conn://9cb829f4-e20f-4e15-95e3-fcc3a57da6d8",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT * FROM public.listings ORDER BY listing_id ASC;",
+                "manualmode": false,
+                "fetchMetadata": "",
+                "input": {},
+                "Fields": [],
+                "RuntimeQuery": "",
+                "State": ""
+              },
+              "ref": "#act_postgresql_query",
+              "settings": {}
+            },
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "PostgreSQL Query"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[PostgreSQLQuery].Output)"
+                    }
+                  }
+                }
+              }
+            },
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return"
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"RealEstateMCPServer\",\"properties\":{\"arguments\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:getAgents",
+      "data": {
+        "name": "getAgents",
+        "description": "Return real estate agent details (name, email, phone, brokerage, service area, specialization). Use with a lead&#39;s assigned agent id to tell the prospect who their agent is or to route a follow-up.",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "PostgreSQLQuery",
+            "type": "label",
+            "label": "StartActivity to PostgreSQLQuery"
+          },
+          {
+            "id": 2,
+            "from": "PostgreSQLQuery",
+            "to": "Return",
+            "type": "label",
+            "label": "PostgreSQLQuery to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#act_default_noop"
+            }
+          },
+          {
+            "activity": {
+              "input": {
+                "Connection": "conn://9cb829f4-e20f-4e15-95e3-fcc3a57da6d8",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT * FROM public.agents ORDER BY agent_id ASC;",
+                "manualmode": false,
+                "fetchMetadata": "",
+                "input": {},
+                "Fields": [],
+                "RuntimeQuery": "",
+                "State": ""
+              },
+              "ref": "#act_postgresql_query",
+              "settings": {}
+            },
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "PostgreSQL Query"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[PostgreSQLQuery].Output)"
+                    }
+                  }
+                }
+              }
+            },
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return"
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"RealEstateMCPServer\",\"properties\":{\"arguments\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:getAppointments",
+      "data": {
+        "name": "getAppointments",
+        "description": "Return a lead&#39;s property showings (appointments): the listing, scheduled date/time, and status (Requested/Confirmed/Completed/Cancelled). Use to tell a prospect what tours they have scheduled.",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "PostgreSQLQuery",
+            "type": "label",
+            "label": "StartActivity to PostgreSQLQuery"
+          },
+          {
+            "id": 2,
+            "from": "PostgreSQLQuery",
+            "to": "Return",
+            "type": "label",
+            "label": "PostgreSQLQuery to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#act_default_noop"
+            }
+          },
+          {
+            "activity": {
+              "input": {
+                "Connection": "conn://9cb829f4-e20f-4e15-95e3-fcc3a57da6d8",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT * FROM public.appointments ORDER BY appointment_id ASC;",
+                "manualmode": false,
+                "fetchMetadata": "",
+                "input": {},
+                "Fields": [],
+                "RuntimeQuery": "",
+                "State": ""
+              },
+              "ref": "#act_postgresql_query",
+              "settings": {}
+            },
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "PostgreSQL Query"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[PostgreSQLQuery].Output)"
+                    }
+                  }
+                }
+              }
+            },
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return"
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"RealEstateMCPServer\",\"properties\":{\"arguments\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:getMarketStats",
+      "data": {
+        "name": "getMarketStats",
+        "description": "Return residential real-estate market statistics by city and zip: median price, average days on market, active inventory, median price per square foot, and year-over-year price change. Use to answer &#39;how&#39;s the market&#39; questions.",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "PostgreSQLQuery",
+            "type": "label",
+            "label": "StartActivity to PostgreSQLQuery"
+          },
+          {
+            "id": 2,
+            "from": "PostgreSQLQuery",
+            "to": "Return",
+            "type": "label",
+            "label": "PostgreSQLQuery to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#act_default_noop"
+            }
+          },
+          {
+            "activity": {
+              "input": {
+                "Connection": "conn://9cb829f4-e20f-4e15-95e3-fcc3a57da6d8",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT * FROM public.area_market_stats ORDER BY stat_id ASC;",
+                "manualmode": false,
+                "fetchMetadata": "",
+                "input": {},
+                "Fields": [],
+                "RuntimeQuery": "",
+                "State": ""
+              },
+              "ref": "#act_postgresql_query",
+              "settings": {}
+            },
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "PostgreSQL Query"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=coerce.toString($activity[PostgreSQLQuery].Output)"
+                    }
+                  }
+                }
+              }
+            },
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return"
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"RealEstateMCPServer\",\"properties\":{\"arguments\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "PostgreSQL.PostgresConn.Host",
+      "type": "string",
+      "value": "localhost"
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Port",
+      "type": "float64",
+      "value": 5432
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Database_Name",
+      "type": "string",
+      "value": "realestate"
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.User",
+      "type": "string",
+      "value": "postgres"
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Password",
+      "type": "string",
+      "value": "SET_YOUR_DB_PASSWORD"
+    },
+    {
+      "name": "MCP_SERVER_PORT",
+      "type": "string",
+      "value": "9592"
+    }
+  ],
+  "connections": {
+    "9cb829f4-e20f-4e15-95e3-fcc3a57da6d8": {
+      "settings": {
+        "databaseType": "PostgreSQL",
+        "name": "PostgresConn",
+        "description": "Your PostgreSQL Connector",
+        "host": "=$property[\"PostgreSQL.PostgresConn.Host\"]",
+        "port": "=$property[\"PostgreSQL.PostgresConn.Port\"]",
+        "databaseName": "=$property[\"PostgreSQL.PostgresConn.Database_Name\"]",
+        "user": "=$property[\"PostgreSQL.PostgresConn.User\"]",
+        "password": "=$property[\"PostgreSQL.PostgresConn.Password\"]",
+        "maxopenconnection": 0,
+        "maxidleconnection": 2,
+        "connmaxlifetime": 0,
+        "maxconnectattempts": 3,
+        "connectionretrydelay": 5,
+        "connectiontimeout": 20,
+        "onprem": false,
+        "tlsconfig": false,
+        "tlsparam": "VerifyCA",
+        "cacert": "",
+        "clientcert": "",
+        "clientkey": ""
+      },
+      "id": "9cb829f4-e20f-4e15-95e3-fcc3a57da6d8",
+      "name": "PostgresConn",
+      "ref": "#con_postgresql",
+      "isGlobal": false
+    }
+  },
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjEiLCJ0YWciOiIyLjcuMS1iMDEiLCJuYW1lIjoiVElCQ08gRmxvZ28gY29ubmVjdG9yIGZvciBQb3N0Z3JlU1FMIiwiczNsb2NhdGlvbiI6IlRpYmNvL1Bvc3RncmVTUUwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfSx7InJlZiI6ImdpdGh1Yi5jb20vdGliY28vZmxvZ28tbWNwL3NyYy9hcHAvTUNQIiwiaWQiOiJNQ1AiLCJ2ZXJzaW9uIjoiMS4wLjQiLCJ0YWciOiIxLjAuNC1iMDIiLCJuYW1lIjoiVElCQ08gRmxvZ2/CriBDb25uZWN0b3IgZm9yIE1vZGVsIENvbnRleHQgUHJvdG9jb2wgKE1DUCkiLCJzM2xvY2F0aW9uIjoiVGliY28vTUNQIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWRlZmF1bHQtY29udHJpYnMvc3JjL2FwcC9EZWZhdWx0IiwiaWQiOiJEZWZhdWx0IiwidmVyc2lvbiI6IjEuMC4wIiwidGFnIjoiMS4wLjAtYjEwLXYzLW1haW4iLCJuYW1lIjoiVElCQ08gRmxvZ28gQ29ubmVjdG9yIGZvciBEZWZhdWx0IiwiczNsb2NhdGlvbiI6IlRpYmNvL0RlZmF1bHQiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfSx7InJlZiI6ImdpdGh1Yi5jb20vdGliY28vZmxvZ28tZ2VuZXJhbC9zcmMvYXBwL0dlbmVyYWwiLCJpZCI6IkdlbmVyYWwiLCJ2ZXJzaW9uIjoiMS42LjE1IiwidGFnIjoiMS42LjE1LWIwNCIsIm5hbWUiOiJUSUJDTyBGbG9nbyBDb25uZWN0b3IgZm9yIEdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9XQ==",
+  "metadata": {
+    "endpoints": [],
+    "flogoVersion": "2.26.6"
+  },
+  "schemas": {
+    "EmptyArgs": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {}\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {}\n}"
+    },
+    "ToolResponse": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"data\": {\n      \"type\": \"string\"\n    },\n    \"error\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"data\": {\n      \"type\": \"string\"\n    },\n    \"error\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+    }
+  }
+}

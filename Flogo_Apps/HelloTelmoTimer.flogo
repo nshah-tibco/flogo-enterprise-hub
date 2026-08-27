@@ -1,0 +1,101 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "act_default_noop github.com/project-flogo/contrib/activity/noop",
+    "act_general_log github.com/tibco/flogo-general/src/app/General/activity/log",
+    "tr_timer github.com/tibco/flogo-general/src/app/General/trigger/timer"
+  ],
+  "name": "HelloTelmoTimer",
+  "description": "Timer log demo",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "settings": {},
+      "id": "TimerTrigger",
+      "name": "TimerTrigger",
+      "description": "Timer trigger",
+      "ref": "#tr_timer",
+      "handlers": [
+        {
+          "settings": {
+            "Scheduler Options": "Timer",
+            "Start Time": "",
+            "Repeating": false,
+            "Delayed Start": false,
+            "Time Interval": 1,
+            "Interval Unit": "Second",
+            "Cron Expression": ""
+          },
+          "action": {
+            "input": {},
+            "output": {},
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:MainFlow"
+            }
+          },
+          "name": "MainFlow",
+          "description": "Timer to flow"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:MainFlow",
+      "data": {
+        "name": "MainFlow",
+        "description": "Main flow",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogHello",
+            "type": "label",
+            "label": "StartActivity to LogHello"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#act_default_noop"
+            }
+          },
+          {
+            "activity": {
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "Hello Telmo",
+                "logLevel": ""
+              },
+              "ref": "#act_general_log"
+            },
+            "id": "LogHello",
+            "name": "LogHello",
+            "description": "Log hello"
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo0NX0sIkxvZ0hlbGxvIjp7IngiOjI1MCwieSI6NDV9fQ==",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        }
+      }
+    }
+  ],
+  "properties": [],
+  "connections": {},
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1kZWZhdWx0LWNvbnRyaWJzL3NyYy9hcHAvRGVmYXVsdCIsImlkIjoiRGVmYXVsdCIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wLWIxMC12My1tYWluIiwibmFtZSI6IlRJQkNPIEZsb2dvIENvbm5lY3RvciBmb3IgRGVmYXVsdCIsInMzbG9jYXRpb24iOiJUaWJjby9EZWZhdWx0IiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWdlbmVyYWwvc3JjL2FwcC9HZW5lcmFsIiwiaWQiOiJHZW5lcmFsIiwidmVyc2lvbiI6IjEuNi4xNSIsInRhZyI6IjEuNi4xNS1iMDQiLCJuYW1lIjoiVElCQ08gRmxvZ28gQ29ubmVjdG9yIGZvciBHZW5lcmFsIiwiczNsb2NhdGlvbiI6IlRpYmNvL0dlbmVyYWwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
+  "metadata": {
+    "endpoints": [],
+    "flogoVersion": "2.26.6"
+  }
+}
