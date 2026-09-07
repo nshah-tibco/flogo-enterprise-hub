@@ -90,6 +90,12 @@ Samples grouped by **industry vertical**, plus a browser chat client for testing
 | 11 | [Scheduled Reasoning Agent](./ScheduledReasoningAgent/) | Unattended weekly sales report → styled HTML → email | **LLM Client Activity** (×3, chained) · Timer trigger (cron) · REST trigger · MCP Server · File Write · Send Mail | Timer + REST |
 | 12 | [Morning Briefing](./morning-briefing/) | Aggregate Slack / email / calendar / reminders → prioritized AI briefing | **AI Agent Activity** (Preview) · REST trigger · Timer trigger · REST (data gathering) · JsExec · Log / Return | REST + Timer |
 
+### Real Estate & Property Management
+
+| # | Sample | Use Case | Flogo Features Used | Interface |
+|---|---|---|---|---|
+| 13 | [Apartment Finder Agent](./Apartment-Finder-Agent/) | Conversational apartment search that ends in a booked, emailed tour | **AI Agent Activity** · Memory Conversation Store · **Flogo MCP Server** (8 tools) · Send Mail write tool · `#mapper` `@conditional` lookup · prompt-level scope guardrails · WebSocket trigger | WebSocket |
+
 ### Utility
 
 | Tool | Purpose |
@@ -114,6 +120,7 @@ New to the Agentic AI Connector? This path moves from the simplest building bloc
 10. **[Travel Itinerary Planner with A2A Server](./Travel-Itinerary-Planner/)** — orchestrate agents across apps with the Agent-to-Agent (A2A) protocol.
 11. **[BeautyCo Retail Intelligence](./demo_retail/)** — turn Flogo into an **MCP tool server** that external AI clients (e.g. Claude Desktop) can call.
 12. **[Mortgage AI Processor](./mortgagedemo/)** — apply the MCP-server pattern to autonomous, auditable decisioning.
+13. **[Apartment Finder Agent](./Apartment-Finder-Agent/)** — put both halves together: an AI Agent Activity chats over your own MCP tool server, and one of those tools sends real email.
 
 ---
 
@@ -154,6 +161,9 @@ A timer-triggered agent (every Monday 8am) that queries a Sales Data MCP Server,
 
 ### 12. [Morning Briefing](./morning-briefing/) — *Cross-Industry / Workplace Productivity*
 A workflow that aggregates data from four sources (Slack, email, calendar, reminders), sends it to Claude via an **AI Agent Activity**, and returns a prioritized markdown report in three tiers: 🔴 Needs Attention · 🟡 Important Today · 🟢 Awareness. Runs on a REST trigger or a 7am daily timer, with Docker-based mocks (Wiremock + MailHog) and guidance for swapping in real APIs (Slack, Outlook/Graph, Google Calendar, Todoist).
+
+### 13. [Apartment Finder Agent](./Apartment-Finder-Agent/) — *Real Estate & Property Management*
+A renter describes what they want in plain English and an **AI Agent Activity** chains eight tools on a **Flogo MCP Server** to answer it — resolving a place name to zip codes, shortlisting communities, then fanning out to rent, amenities, proximity and trailing-12-month crime data before ranking the options. The eighth tool, `schedule_visit`, **sends real email**: a `#mapper` `@conditional` step resolves the chosen `community_id` to its leasing office server-side, so the LLM can never redirect the confirmation, and `#sendmail` delivers it to the renter and the office at once. Prompt-level guardrails pin the agent to Texas apartment search and roll "Houston" up to its serviced suburbs.
 
 ---
 
