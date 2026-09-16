@@ -1,0 +1,1086 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/tibco/flogo-general/src/app/General/activity/mapper",
+    "github.com/tibco/wi-plugins/contributions/kafka/src/app/Kafka/activity/producer",
+    "github.com/project-flogo/contrib/activity/actreturn",
+    "github.com/tibco/wi-postgres/src/app/PostgreSQL/activity/query",
+    "github.com/tibco/flogo-general/src/app/General/activity/log",
+    "github.com/tibco/wi-postgres/src/app/PostgreSQL/activity/insert",
+    "github.com/tibco/flogo-general/src/app/General/trigger/rest",
+    "github.com/tibco/wi-plugins/contributions/kafka/src/app/Kafka/trigger/consumer",
+    "github.com/project-flogo/contrib/function/coerce",
+    "github.com/project-flogo/contrib/function/json",
+    "github.com/project-flogo/contrib/function/array",
+    "github.com/tibco/wi-plugins/contributions/kafka/src/app/Kafka/connector/kafka",
+    "github.com/tibco/wi-postgres/src/app/PostgreSQL/connector/connection"
+  ],
+  "name": "OrderStreamProcessor",
+  "description": "Real-time order streaming: ingest from Kafka, enrich from PostgreSQL, route/alert flagged orders",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#rest",
+      "name": "tibco-wi-rest",
+      "description": "REST feeder for order events",
+      "settings": {
+        "port": 9999,
+        "APISpecUpdate": false,
+        "swagger": "spec://303c5749-6362-4d42-a5c2-a6e2eabf32d3",
+        "swaggerVersion": "v2",
+        "authenticationType": "None",
+        "username": "",
+        "password": "",
+        "apiVersion": "1.0.0",
+        "secureConnection": false,
+        "serverKey": "",
+        "caCertificate": ""
+      },
+      "id": "RestTrigger",
+      "handlers": [
+        {
+          "description": "Publish an order event to the incoming Kafka topic (test feeder)",
+          "settings": {
+            "APISpecPath": "",
+            "Method": "POST",
+            "reqType": "application/json",
+            "Path": "/orders",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:PublishOrderFlow"
+            },
+            "input": {
+              "headers": "=$.headers",
+              "body": "=$.body",
+              "requestURI": "=$.requestURI",
+              "method": "=$.method"
+            },
+            "output": {
+              "code": "=$.code",
+              "message": "=$.message"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": false,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Authorization\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Authorization\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+              },
+              "body": "schema://OrderRequest"
+            }
+          },
+          "name": "PublishOrderFlow"
+        }
+      ]
+    },
+    {
+      "ref": "#consumer",
+      "name": "tibco-kafka-consumer-trigger",
+      "description": "Consume order events from orders.incoming",
+      "settings": {
+        "kafkaConnection": "conn://ffc2b8fa-7d9f-4adb-809d-1db4abc8a085"
+      },
+      "id": "KafkaConsumer",
+      "handlers": [
+        {
+          "description": "Consume order events, enrich from PostgreSQL, and route/alert flagged orders",
+          "settings": {
+            "topic": "=$property[\"IncomingTopic\"]",
+            "customPartition": false,
+            "partitionId": 0,
+            "topicPattern": "",
+            "consumerGroup": "=$property[\"ConsumerGroup\"]",
+            "valueType": "String",
+            "subjects": "",
+            "versions": 0,
+            "commitInterval": 5000,
+            "initialOffset": "Oldest",
+            "seekOffset": 0,
+            "timeStamp": "",
+            "fetchMinBytes": 1,
+            "fetchMaxWait": 500,
+            "heartbeatInterval": 3000,
+            "sessionTimeout": 30000
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:ProcessOrderFlow"
+            },
+            "input": {
+              "topic": "=$.topic",
+              "partition": "=$.partition",
+              "offset": "=$.offset",
+              "key": "=$.key",
+              "stringValue": "=$.stringValue",
+              "headers": "=$.headers"
+            }
+          },
+          "name": "ProcessOrderFlow"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:PublishOrderFlow",
+      "data": {
+        "name": "PublishOrderFlow",
+        "description": "Publish an order event to the incoming Kafka topic (test feeder)",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "BuildMessage",
+            "type": "label",
+            "label": "StartActivity to BuildMessage"
+          },
+          {
+            "id": 2,
+            "from": "BuildMessage",
+            "to": "PublishIncoming",
+            "type": "label",
+            "label": "BuildMessage to PublishIncoming"
+          },
+          {
+            "id": 3,
+            "from": "PublishIncoming",
+            "to": "Return",
+            "type": "label",
+            "label": "PublishIncoming to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "BuildMessage",
+            "name": "BuildMessage",
+            "description": "Build order JSON payload",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "payload": "=\"{\\\"order_id\\\":\\\"\"+$flow.body.order_id+\"\\\",\\\"customer_id\\\":\"+coerce.toString($flow.body.customer_id)+\",\\\"amount\\\":\"+coerce.toString($flow.body.amount)+\",\\\"currency\\\":\\\"\"+$flow.body.currency+\"\\\",\\\"items\\\":\"+coerce.toString($flow.body.items)+\",\\\"channel\\\":\\\"\"+$flow.body.channel+\"\\\"}\""
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://OrderMessage"
+                },
+                "output": {
+                  "output": "schema://OrderMessage"
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "PublishIncoming",
+            "name": "PublishIncoming",
+            "description": "Publish order to orders.incoming topic",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#producer",
+              "input": {
+                "kafkaConnection": "conn://ffc2b8fa-7d9f-4adb-809d-1db4abc8a085",
+                "ackMode": "All",
+                "ackTimeout": 10000,
+                "partitioner": "Hash",
+                "compressionType": "None",
+                "valueType": "String",
+                "subjects": "",
+                "versions": 0,
+                "maxRequestSize": 1048576,
+                "maxMessages": 0,
+                "frequency": 100,
+                "topic": "=$property[\"IncomingTopic\"]",
+                "partition": 0,
+                "key": "=$flow.body.order_id",
+                "stringValue": "=$activity[BuildMessage].output.payload",
+                "jsonValue": {
+                  "mapping": {}
+                },
+                "avroData": {
+                  "mapping": {}
+                },
+                "headers": {
+                  "mapping": {}
+                }
+              }
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Return REST response",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$property[\"HttpStatusCode\"]",
+                  "message": "=\"Order \"+$flow.body.order_id+\" published to topic \"+$property[\"IncomingTopic\"]"
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo0NX0sIkJ1aWxkTWVzc2FnZSI6eyJ4IjoyNTAsInkiOjQ1fSwiUHVibGlzaEluY29taW5nIjp7IngiOjQ1MCwieSI6NDV9LCJSZXR1cm4iOnsieCI6NjUwLCJ5Ijo0NX19",
+        "metadata": {
+          "input": [
+            {
+              "name": "headers",
+              "type": "object"
+            },
+            {
+              "name": "body",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"order_id\":{\"type\":\"string\"},\"customer_id\":{\"type\":\"integer\"},\"amount\":{\"type\":\"number\"},\"currency\":{\"type\":\"string\"},\"items\":{\"type\":\"integer\"},\"channel\":{\"type\":\"string\"}}"
+              }
+            },
+            {
+              "name": "requestURI",
+              "type": "string"
+            },
+            {
+              "name": "method",
+              "type": "string"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "integer"
+            },
+            {
+              "name": "message",
+              "type": "string"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"RestTrigger\",\"properties\":{\"headers\":{\"type\":\"object\",\"properties\":{}},\"body\":{\"type\":\"object\",\"properties\":{\"order_id\":{\"type\":\"string\"},\"customer_id\":{\"type\":\"integer\"},\"amount\":{\"type\":\"number\"},\"currency\":{\"type\":\"string\"},\"items\":{\"type\":\"integer\"},\"channel\":{\"type\":\"string\"}},\"required\":[\"order_id\",\"customer_id\",\"amount\"]},\"requestURI\":{\"type\":\"string\"},\"method\":{\"type\":\"string\"}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"code\":{\"type\":\"integer\"},\"message\":{\"type\":\"string\"}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:ProcessOrderFlow",
+      "data": {
+        "name": "ProcessOrderFlow",
+        "description": "Consume order events, enrich from PostgreSQL, and route/alert flagged orders",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "ParseOrder",
+            "type": "label",
+            "label": "StartActivity to ParseOrder"
+          },
+          {
+            "id": 2,
+            "from": "ParseOrder",
+            "to": "LookupCustomer",
+            "type": "label",
+            "label": "ParseOrder to LookupCustomer"
+          },
+          {
+            "id": 3,
+            "from": "LookupCustomer",
+            "to": "EnrichCustomer",
+            "type": "label",
+            "label": "LookupCustomer to EnrichCustomer"
+          },
+          {
+            "id": 4,
+            "from": "EnrichCustomer",
+            "to": "LogNormal",
+            "type": "expression",
+            "label": "normal",
+            "value": "$activity[ParseOrder].output.amount <= $property[\"HighValueThreshold\"] && $activity[EnrichCustomer].output.tier != \"VIP\" && $activity[EnrichCustomer].output.accountStatus == \"ACTIVE\""
+          },
+          {
+            "id": 5,
+            "from": "EnrichCustomer",
+            "to": "PublishFlagged",
+            "type": "expression",
+            "label": "flagged",
+            "value": "$activity[ParseOrder].output.amount > $property[\"HighValueThreshold\"] || $activity[EnrichCustomer].output.tier == \"VIP\" || $activity[EnrichCustomer].output.accountStatus != \"ACTIVE\""
+          },
+          {
+            "id": 6,
+            "from": "PublishFlagged",
+            "to": "PersistFlagged",
+            "type": "label",
+            "label": "PublishFlagged to PersistFlagged"
+          },
+          {
+            "id": 7,
+            "from": "PersistFlagged",
+            "to": "LogFlagged",
+            "type": "label",
+            "label": "PersistFlagged to LogFlagged"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "ParseOrder",
+            "name": "ParseOrder",
+            "description": "Parse incoming order JSON",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "orderId": "=coerce.toString(json.get(coerce.toObject($flow.stringValue), \"order_id\"))",
+                    "customerId": "=json.get(coerce.toObject($flow.stringValue), \"customer_id\")",
+                    "amount": "=json.get(coerce.toObject($flow.stringValue), \"amount\")",
+                    "currency": "=coerce.toString(json.get(coerce.toObject($flow.stringValue), \"currency\"))",
+                    "items": "=json.get(coerce.toObject($flow.stringValue), \"items\")",
+                    "channel": "=coerce.toString(json.get(coerce.toObject($flow.stringValue), \"channel\"))"
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://OrderParsed"
+                },
+                "output": {
+                  "output": "schema://OrderParsed"
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LookupCustomer",
+            "name": "LookupCustomer",
+            "description": "Enrich: look up customer",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#query",
+              "input": {
+                "Connection": "conn://0caa1154-f964-485c-8948-60153b8702c1",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT customer_id, name, email, tier, region, account_status, credit_limit FROM customers WHERE customer_id = ?customerId;",
+                "manualmode": false,
+                "fetchMetadata": "",
+                "Fields": [
+                  {
+                    "FieldName": "customerId",
+                    "Type": "INTEGER",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "customer_id",
+                    "Type": "INTEGER",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "name",
+                    "Type": "LONGVARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "email",
+                    "Type": "LONGVARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "tier",
+                    "Type": "LONGVARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "region",
+                    "Type": "LONGVARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "account_status",
+                    "Type": "LONGVARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "credit_limit",
+                    "Type": "NUMERIC",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  }
+                ],
+                "RuntimeQuery": "",
+                "State": "503e6ead-de12-4662-82a9-f7a7d8e1e1c7SELECT customer_id, name, email, tier, region, account_status, credit_limit FROM customers WHERE customer_id = ?customerId;",
+                "input": {
+                  "mapping": {
+                    "parameters": {
+                      "customerId": "=$activity[ParseOrder].output.customerId"
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{\"customerId\":{\"type\":\"integer\"}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{\"customerId\":{\"type\":\"integer\"}}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"customer_id\":{\"type\":\"integer\"},\"name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"},\"tier\":{\"type\":\"string\"},\"region\":{\"type\":\"string\"},\"account_status\":{\"type\":\"string\"},\"credit_limit\":{\"type\":\"number\"}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"customer_id\":{\"type\":\"integer\"},\"name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"},\"tier\":{\"type\":\"string\"},\"region\":{\"type\":\"string\"},\"account_status\":{\"type\":\"string\"},\"credit_limit\":{\"type\":\"number\"}}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "EnrichCustomer",
+            "name": "EnrichCustomer",
+            "description": "Extract customer fields",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "customerName": "=coerce.toString(json.get(array.get($activity[LookupCustomer].Output.records, 0), \"name\"))",
+                    "tier": "=coerce.toString(json.get(array.get($activity[LookupCustomer].Output.records, 0), \"tier\"))",
+                    "region": "=coerce.toString(json.get(array.get($activity[LookupCustomer].Output.records, 0), \"region\"))",
+                    "accountStatus": "=coerce.toString(json.get(array.get($activity[LookupCustomer].Output.records, 0), \"account_status\"))",
+                    "creditLimit": "=json.get(array.get($activity[LookupCustomer].Output.records, 0), \"credit_limit\")"
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://CustomerEnriched"
+                },
+                "output": {
+                  "output": "schema://CustomerEnriched"
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LogNormal",
+            "name": "LogNormal",
+            "description": "Log normal order",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=\"Order \"+$activity[ParseOrder].output.orderId+\" processed normally for \"+$activity[EnrichCustomer].output.customerName+\" (tier=\"+$activity[EnrichCustomer].output.tier+\", status=\"+$activity[EnrichCustomer].output.accountStatus+\")\"",
+                "logLevel": ""
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "PublishFlagged",
+            "name": "PublishFlagged",
+            "description": "Publish flagged order to orders.flagged",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#producer",
+              "input": {
+                "kafkaConnection": "conn://ffc2b8fa-7d9f-4adb-809d-1db4abc8a085",
+                "ackMode": "All",
+                "ackTimeout": 10000,
+                "partitioner": "Hash",
+                "compressionType": "None",
+                "valueType": "String",
+                "subjects": "",
+                "versions": 0,
+                "maxRequestSize": 1048576,
+                "maxMessages": 0,
+                "frequency": 100,
+                "topic": "=$property[\"FlaggedTopic\"]",
+                "partition": 0,
+                "key": "=$activity[ParseOrder].output.orderId",
+                "stringValue": "=$flow.stringValue",
+                "jsonValue": {
+                  "mapping": {}
+                },
+                "avroData": {
+                  "mapping": {}
+                },
+                "headers": {
+                  "mapping": {}
+                }
+              }
+            }
+          },
+          {
+            "id": "PersistFlagged",
+            "name": "PersistFlagged",
+            "description": "Persist flagged order to audit table",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#insert",
+              "input": {
+                "Connection": "conn://0caa1154-f964-485c-8948-60153b8702c1",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "INSERT INTO flagged_orders (order_id, customer_id, customer_name, amount, tier, account_status, flag_reason) VALUES (?order_id, ?customer_id, ?customer_name, ?amount, ?tier, ?account_status, ?flag_reason);",
+                "manualmode": false,
+                "Fields": [
+                  {
+                    "FieldName": "order_id",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": true
+                  },
+                  {
+                    "FieldName": "customer_id",
+                    "Type": "INTEGER",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": true
+                  },
+                  {
+                    "FieldName": "customer_name",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": true
+                  },
+                  {
+                    "FieldName": "amount",
+                    "Type": "NUMERIC",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": true
+                  },
+                  {
+                    "FieldName": "tier",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": true
+                  },
+                  {
+                    "FieldName": "account_status",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": true
+                  },
+                  {
+                    "FieldName": "flag_reason",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": true
+                  }
+                ],
+                "RuntimeQuery": "",
+                "State": "1a7b7883-bfbe-4d5a-8e60-129584e055ecINSERT INTO flagged_orders (order_id, customer_id, customer_name, amount, tier, account_status, flag_reason) VALUES (?order_id, ?customer_id, ?customer_name, ?amount, ?tier, ?account_status, ?flag_reason);",
+                "input": {
+                  "mapping": {
+                    "parameters": {
+                      "order_id": "=$activity[ParseOrder].output.orderId",
+                      "customer_id": "=$activity[ParseOrder].output.customerId",
+                      "customer_name": "=$activity[EnrichCustomer].output.customerName",
+                      "amount": "=$activity[ParseOrder].output.amount",
+                      "tier": "=$activity[EnrichCustomer].output.tier",
+                      "account_status": "=$activity[EnrichCustomer].output.accountStatus",
+                      "flag_reason": "=\"amount=\"+coerce.toString($activity[ParseOrder].output.amount)+\"; tier=\"+$activity[EnrichCustomer].output.tier+\"; status=\"+$activity[EnrichCustomer].output.accountStatus"
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"values\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {}}}, \"parameters\": {\"type\": \"object\", \"properties\": {\"order_id\": {\"type\": \"string\"}, \"customer_id\": {\"type\": \"integer\"}, \"customer_name\": {\"type\": \"string\"}, \"amount\": {\"type\": \"number\"}, \"tier\": {\"type\": \"string\"}, \"account_status\": {\"type\": \"string\"}, \"flag_reason\": {\"type\": \"string\"}}}}}",
+                    "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"definitions\": {}, \"properties\": {\"values\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {}}}, \"parameters\": {\"type\": \"object\", \"properties\": {\"order_id\": {\"type\": \"string\"}, \"customer_id\": {\"type\": \"integer\"}, \"customer_name\": {\"type\": \"string\"}, \"amount\": {\"type\": \"number\"}, \"tier\": {\"type\": \"string\"}, \"account_status\": {\"type\": \"string\"}, \"flag_reason\": {\"type\": \"string\"}}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LogFlagged",
+            "name": "LogFlagged",
+            "description": "Log flagged order alert",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=\"FLAGGED order \"+$activity[ParseOrder].output.orderId+\" for \"+$activity[EnrichCustomer].output.customerName+\" (tier=\"+$activity[EnrichCustomer].output.tier+\", status=\"+$activity[EnrichCustomer].output.accountStatus+\") published to flagged topic and persisted\"",
+                "logLevel": ""
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6NTl9LCJQYXJzZU9yZGVyIjp7IngiOjM1MCwieSI6NTB9LCJMb29rdXBDdXN0b21lciI6eyJ4Ijo2MDAsInkiOjUwfSwiRW5yaWNoQ3VzdG9tZXIiOnsieCI6ODUwLCJ5Ijo1MH0sIkxvZ05vcm1hbCI6eyJ4IjoxMTAwLCJ5Ijo1MH0sIlB1Ymxpc2hGbGFnZ2VkIjp7IngiOjExMDAsInkiOjIwMH0sIlBlcnNpc3RGbGFnZ2VkIjp7IngiOjEzNTAsInkiOjIwMH0sIkxvZ0ZsYWdnZWQiOnsieCI6MTYwMCwieSI6MjAwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "topic",
+              "type": "string"
+            },
+            {
+              "name": "partition",
+              "type": "integer"
+            },
+            {
+              "name": "offset",
+              "type": "integer"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            },
+            {
+              "name": "stringValue",
+              "type": "string"
+            },
+            {
+              "name": "headers",
+              "type": "object"
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"KafkaConsumer\",\"properties\":{\"topic\":{\"type\":\"string\",\"required\":false},\"partition\":{\"type\":\"integer\",\"required\":false},\"offset\":{\"type\":\"integer\",\"required\":false},\"key\":{\"type\":\"string\",\"required\":false},\"stringValue\":{\"type\":\"string\",\"required\":false},\"headers\":{\"type\":\"object\"}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "Kafka.OrderKafka.Brokers",
+      "type": "string",
+      "value": "gasdflgflogo301.dev.tibco.com:9093"
+    },
+    {
+      "name": "Kafka.OrderKafka.Client_Certificate",
+      "type": "string",
+      "value": {
+        "filename": "client.crt.pem",
+        "content": "data:application/octet-stream;base64,LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUQ1VENDQXMwQ0ZGSG12ZDhlU0ZHQVlRQUc4NGlRRTQrQldvbXVNQTBHQ1NxR1NJYjNEUUVCQ3dVQU1JR3gKTVFzd0NRWURWUVFHRXdKSlRqRUxNQWtHQTFVRUNBd0NUVWd4RFRBTEJnTlZCQWNNQkZCMWJtVXhEakFNQmdOVgpCQW9NQlZSSlFrTlBNUk13RVFZRFZRUUxEQXBEYjI1dVpXTjBiM0p6TVNZd0pBWURWUVFEREIxbllYTmtabXhuClpteHZaMjh6TURFdVpHVjJMblJwWW1OdkxtTnZiVEU1TURjR0NTcUdTSWIzRFFFSkFSWXFZV1J0YVc1QWNtOXYKZEdOaExtZGhjMlJtYkdkbWJHOW5iek13TVM1a1pYWXVkR2xpWTI4dVkyOXRNQjRYRFRJME1URXlPREExTWpJMApNVm9YRFRJM01Ea3hPREExTWpJME1Wb3dnYXN4Q3pBSkJnTlZCQVlUQWtsT01Rc3dDUVlEVlFRSURBSk5TREVOCk1Bc0dBMVVFQnd3RVVIVnVaVEVPTUF3R0ExVUVDZ3dGVkVsQ1EwOHhFekFSQmdOVkJBc01Da052Ym01bFkzUnYKY25NeE16QXhCZ2txaGtpRzl3MEJDUUVXSkdOc2FXVnVkRUJuWVhOa1pteG5abXh2WjI4ek1ERXVaR1YyTG5ScApZbU52TG1OdmJURW1NQ1FHQTFVRUF3d2RaMkZ6Wkdac1oyWnNiMmR2TXpBeExtUmxkaTUwYVdKamJ5NWpiMjB3CmdnRWlNQTBHQ1NxR1NJYjNEUUVCQVFVQUE0SUJEd0F3Z2dFS0FvSUJBUURiNzBmRDVncVp0Z0poaHgrN3FSckMKVVNhVEV5UXFBMWxKekVhbmgrL1RSQ2xkTGZHcG5UMEhuRXI4L0ZpMlJ2U2NMTVdjcDh1amhNU1FieG80dUk0bgpoYUhnNHVqQndwZzlzTWFnNFV0SXhHbk9JdG1vMXNYMUFKcnBUOE02OHl2cGFaTWlqVGswRlBOak4vZitQZ3daCnQzaFNpTFhrTklKamo5OXQwK0JhRnZXUXZrdHdBbHhrVmZIUEc2VkQxeWVCY0c0VFF6S1hGRXFUMU9CK1c4aDgKWkROeERVVDRJSGNpRVdiUEtCOFViT1g3SGVvaFNoNFpzVjE1cGVJaTRwSE1yYWgwQU9aaXM2MEJ5TmhMaFJndgo5Z3FZK0ZRcWt2NlVnZUc2MllzQ3ZEZ2V2eHIxNm5mcFhVcVpOVWp3ajh3SE9mT251Y3p5UDNyaG85dXY1TTRYCkFnTUJBQUV3RFFZSktvWklodmNOQVFFTEJRQURnZ0VCQUVtVEZ0ZTJOS0tiaTN1V2NkeThFSy90OW8zMmlrMUEKbU43WnUyUEhzbmRqcWVmM3g1MERhQ1EwZTNKN0hQRVFMVWJHK25ZaDJSemhadTlaYTQ5R0pBYU8xbGIwZFU2dApYSkR0UkQzTDdmV3YzdGtyS1NNUEk3Y1hQZmgwRWNMU291NzJZT2ZtVFJvNEZ2WHpZclNrNytMcm05alZhc0JnClY3S3U4eGxzMDg1a1Q3YXloMDNiMTNuQjlpRU1PQ1JFVnZjRlRZaDl5SksxNE9ZaFJlME5GaHBGUmJvNzg4SVMKVHB4dm8wcXhzalR1VVhGSC90ekFHVndHWWQrbUgxT0pVTVAxS3h1cHc4R1k0K0VWbXJjNk84ZVZBS0xXOWhrZgpQVHhKRXcwUXkvV0xPWWRnRW5OWlU2N01oZWhpWDlDMWlyeGxuR1hXU3lyajZBdnYwYnBEbUpJPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg=="
+      }
+    },
+    {
+      "name": "Kafka.OrderKafka.Client_Key",
+      "type": "string",
+      "value": {
+        "filename": "client.key.pem",
+        "content": "data:application/octet-stream;base64,LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFcFFJQkFBS0NBUUVBMis5SHcrWUttYllDWVljZnU2a2F3bEVta3hNa0tnTlpTY3hHcDRmdjAwUXBYUzN4CnFaMDlCNXhLL1B4WXRrYjBuQ3pGbktmTG80VEVrRzhhT0xpT0o0V2g0T0xvd2NLWVBiREdvT0ZMU01ScHppTFoKcU5iRjlRQ2E2VS9ET3ZNcjZXbVRJbzA1TkJUell6ZjMvajRNR2JkNFVvaTE1RFNDWTQvZmJkUGdXaGIxa0w1TApjQUpjWkZYeHp4dWxROWNuZ1hCdUUwTXlseFJLazlUZ2ZsdklmR1F6Y1ExRStDQjNJaEZtenlnZkZHemwreDNxCklVb2VHYkZkZWFYaUl1S1J6SzJvZEFEbVlyT3RBY2pZUzRVWUwvWUttUGhVS3BMK2xJSGh1dG1MQXJ3NEhyOGEKOWVwMzZWMUttVFZJOEkvTUJ6bnpwN25NOGo5NjRhUGJyK1RPRndJREFRQUJBb0lCQVFDVDRrSU1MRXRtYmVjTgo4eERZVzIyOXlWazV2YjRzYmRJRStGRnQ1czdRN04wdlpXeEFrNVRzNEIvZ0drSUFWcGUxeDdrY2pBczJxVmlPCmtkWTgyNFBpZVUyTzdLUjdYTUNIZ3EwY2trRFA3aG9DM0pZa25EM0JieVc2eWNKSmlpYzFyS0tkc2Y0TDBpYVIKeVpsOEgvWjgrRXYwbXk1TEF5L0ZpSUZBMVIzZkZKL3hMNnZEeEZjNW1tVWdlQlN5Q3B5NkdqazA5MnFpSktPZAphNWpJOTV2M3VBNEFiUDFkTmtFeFRqakx4Y3lWTkxEQ0Q4RTMxbTVXVThRUkFIQXFkWUtxQnc3YmlrdHdhS3dLClpVVFdzbzFseThQMS9JQTV6RUttaTZNZzdQeHN5Uzgzcm9hYlBnd0JKeXh0dmlPQVdjMjFFUnp3UG1tNWxmWVQKd0tVOEJTQmhBb0dCQU81S3kvVmw0NWVBTkpCeDYxZDhWd29PM2pyVC8wbjdKWVZmRCtsZk1STjAvUGdLVjhtaApsY1l0TU56dHZOY1gza3c4dGl3MmtySjVUYXlGSFNTQUlxU2lwaUlxTVphTi9RUU5WZTBHTDhOaW5ISUxoNFBJCm5RYUYyU0IyNS9hTDlKR0h0YmU3SXd0QUN4aU11bkNqMXVPUUU0NG5TTGh0Z1MzNFVQVUJ1VnRIQW9HQkFPeEgKUVlkOGJneVZvQTl1RUVna3Zvc2lvUTJJSlVSRzlUek84cXdHNlJwS0g1TlVHZ1p5ZmlFTTNJZVJobzlOU3lrQwpYWjFVTCtCQUZtUFIrTEtDN3hHSENkbFZ5YXZNMjlCYWVIMGpQRzZRaFB5OFpwSW12TlRnaG8wczloWUFleGhsClNYbDdEN0pzc0NFTG1XOTZvRHJMeklJMEhkc1U1ZVlaZGl0dUVyNnhBb0dCQUpRZ2RNYllEbkVuNWdVQWU3NEgKY2dlemxGdFhXek4rNWlVUkljLzlONEdUMElqVHpSeHUwSzYvZXNkckZWOVQzQURpSUpBOVlGV0hhRXhjOXUrdwpvMWhhTHhHL3p0RjY5QlFud2drME5rNnJwdnFSeGl5YWNWb1RyQlF0TmlhaGUyZFh5Qk10Uml5QkpDU2ZubW5VCnZ3ajRqOTltOWlLSEY2MGUxaHhuZFBTVEFvR0FOMzBZZjVnU1JEUlRiYXc4ZUtUZ2RzNkFJaXhxREJuWitCamwKMXM2Y3FjYmttWFh6MHJYS3R6cE5CQzJCKzE5OG1qbnJBRXJJSDVNTmJ3M2RxUmFrekduNVB5Z3RmNEpSMFNHZQpFRTFaSU9JaHlUVDVwYk1oUDZFbkdEcUo1R3JpZmIwenZ5ck9hZW1xaDJndzlZUkg0dWIvdFVoR0JyQm11VjRiCmFXR2xWMUVDZ1lFQTBlWTVCcGxxYmxycElzVk1YdUl4RTRIS0ZtZHprbFphZ1YwVlVOMTN5Yll3djd6eERQL2cKZ2JkN2N4cS94eDRJaXB5ck03cHE0dUlGdE1ta0hreG96WmtIdHJ5ZzNRL0xqdzNVNXlYci9nbVNYVlRiM2FBMQpIc01XRm5XUHNRdHJ0VGU5MW5uNWFNZ05Zam5rekRjQ0szdlhtUVZheWtiSmtlZlN1NmFCK1RRPQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo="
+      }
+    },
+    {
+      "name": "Kafka.OrderKafka.CA_or_Server_Certificate",
+      "type": "string",
+      "value": {
+        "filename": "rootCA.crt.pem",
+        "content": "data:application/octet-stream;base64,LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUVSVENDQXkyZ0F3SUJBZ0lVY3NBekdwSmltNGJNdjZGM2xZcUVJdGsxa0hjd0RRWUpLb1pJaHZjTkFRRUwKQlFBd2diRXhDekFKQmdOVkJBWVRBa2xPTVFzd0NRWURWUVFJREFKTlNERU5NQXNHQTFVRUJ3d0VVSFZ1WlRFTwpNQXdHQTFVRUNnd0ZWRWxDUTA4eEV6QVJCZ05WQkFzTUNrTnZibTVsWTNSdmNuTXhKakFrQmdOVkJBTU1IV2RoCmMyUm1iR2RtYkc5bmJ6TXdNUzVrWlhZdWRHbGlZMjh1WTI5dE1Ua3dOd1lKS29aSWh2Y05BUWtCRmlwaFpHMXAKYmtCeWIyOTBZMkV1WjJGelpHWnNaMlpzYjJkdk16QXhMbVJsZGk1MGFXSmpieTVqYjIwd0hoY05NalF4TVRJNApNRFV5TWpReFdoY05NamN3T1RFNE1EVXlNalF4V2pDQnNURUxNQWtHQTFVRUJoTUNTVTR4Q3pBSkJnTlZCQWdNCkFrMUlNUTB3Q3dZRFZRUUhEQVJRZFc1bE1RNHdEQVlEVlFRS0RBVlVTVUpEVHpFVE1CRUdBMVVFQ3d3S1EyOXUKYm1WamRHOXljekVtTUNRR0ExVUVBd3dkWjJGelpHWnNaMlpzYjJkdk16QXhMbVJsZGk1MGFXSmpieTVqYjIweApPVEEzQmdrcWhraUc5dzBCQ1FFV0ttRmtiV2x1UUhKdmIzUmpZUzVuWVhOa1pteG5abXh2WjI4ek1ERXVaR1YyCkxuUnBZbU52TG1OdmJUQ0NBU0l3RFFZSktvWklodmNOQVFFQkJRQURnZ0VQQURDQ0FRb0NnZ0VCQUwvRlpsT0gKRERrdjdVUEFJWUIyOTBvYkZOZXMrbDV1U1Byb3M1U1VwSDJ5VjJyYzQ0Tld2RGYxMWh2VlM0amhOb1dkTjRkdgoyN3hKMHN3N0JnMTEwQ21sdTBJT0pxcVZjSWcxdmxQeHBEQTRyK3M0aDlZVFVDVUcxTDQzVjJIMjg5cE9nZ1hjCjkzYnhvY0p5SytrK2xLUnNqbWN6NE12Qk1RMUxPUUVwVmpBMzE3ZzRLZ2FDanl2dm1jSk9TTWU2TkZROUZQOWYKSUg1ZGFjcjgvSVZ4djZjNXpyRmV4dUNvSzBrWkRZOEF1dGp6ZnFhZHh6ZHRERlhVank1TkJTaVJ6RkVuVGpDRwpkdEM1UmExTFc0cVF1T1BVOE5CSlVVdnprblJkMHNySlIwZElyRUNraXlLWDN0VkQ1cjJBQnZXR1IwOGZyU0lHCnFJTFBYMDQzRGlpVmgyc0NBd0VBQWFOVE1GRXdIUVlEVlIwT0JCWUVGQWU3bFNmNm9lSk01ZlA3cSt3Y2FEOW8KUkpiMk1COEdBMVVkSXdRWU1CYUFGQWU3bFNmNm9lSk01ZlA3cSt3Y2FEOW9SSmIyTUE4R0ExVWRFd0VCL3dRRgpNQU1CQWY4d0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFBeGRMVWxNcjk2cVJydmJscXMrY0dIZ1hERUt0eWQ5Ckp6SGRXOW8raGU0NWNOc0dZdTNiR0NFVFRnZWozZExZNGZnQkRJMkkvazUyMlUrRkZTd01WeEFvSTljK2JZU3QKbVRva3JDdkFraVU0VFgyeFU1VVZvclpmb3cxeXg1dllnTWp5c0NCcmhPVjBxSlRlbkFXZjkza0k2aUpwL2NRWgo5SWgrZkFnMWR6UWJGY1RMUHd1TkpNN1p1Tmo3L0dmVzJucEV2TVJJWHVlQXRwSEFLRm5PWXVkZVFyNllFelhoCk9XUVdzWUNWRXpHUkQrcFBTZWRaRlpEZm1YbnZXTTAyVldZMzlDVEV5T0J3RXVlVWhianNMbThMdkhLZ1hSZHEKWjc1N2dYSHhSemdFZ281cS9RYTlxN1F1MlN3SDZENFBvdmN5Y1E4Mys1Q3ZLRk1GNFg0clNkST0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo="
+      }
+    },
+    {
+      "name": "Kafka.OrderKafka.Connection_Timeout",
+      "type": "float64",
+      "value": 30
+    },
+    {
+      "name": "Kafka.OrderKafka.Retry_Backoff",
+      "type": "float64",
+      "value": 250
+    },
+    {
+      "name": "Kafka.OrderKafka.Max_Retry",
+      "type": "float64",
+      "value": 3
+    },
+    {
+      "name": "Kafka.OrderKafka.Refresh_Frequency",
+      "type": "float64",
+      "value": 40
+    },
+    {
+      "name": "PostgreSQL.OrderDB.Host",
+      "type": "string",
+      "value": "localhost"
+    },
+    {
+      "name": "PostgreSQL.OrderDB.Port",
+      "type": "float64",
+      "value": 5432
+    },
+    {
+      "name": "PostgreSQL.OrderDB.Database_Name",
+      "type": "string",
+      "value": "order_streaming"
+    },
+    {
+      "name": "PostgreSQL.OrderDB.User",
+      "type": "string",
+      "value": "postgres"
+    },
+    {
+      "name": "PostgreSQL.OrderDB.Password",
+      "type": "string",
+      "value": "SECRET:faY97B5kk8HxqPIC6/gaaCKswbUb"
+    },
+    {
+      "name": "PostgreSQL.OrderDB.Maximum_Open_Connections",
+      "type": "float64",
+      "value": 0
+    },
+    {
+      "name": "PostgreSQL.OrderDB.Maximum_Idle_Connections",
+      "type": "float64",
+      "value": 2
+    },
+    {
+      "name": "PostgreSQL.OrderDB.Maximum_Connection_Lifetime",
+      "type": "string",
+      "value": 0
+    },
+    {
+      "name": "PostgreSQL.OrderDB.Maximum_Connection_Retry_Attempts",
+      "type": "float64",
+      "value": 3
+    },
+    {
+      "name": "PostgreSQL.OrderDB.Connection_Retry_Delay",
+      "type": "float64",
+      "value": 5
+    },
+    {
+      "name": "PostgreSQL.OrderDB.Connection_Timeout",
+      "type": "float64",
+      "value": 20
+    },
+    {
+      "name": "IncomingTopic",
+      "type": "string",
+      "value": "orders.incoming"
+    },
+    {
+      "name": "FlaggedTopic",
+      "type": "string",
+      "value": "orders.flagged"
+    },
+    {
+      "name": "ConsumerGroup",
+      "type": "string",
+      "value": "order-stream-processor"
+    },
+    {
+      "name": "HighValueThreshold",
+      "type": "float64",
+      "value": 5000
+    },
+    {
+      "name": "HttpStatusCode",
+      "type": "float64",
+      "value": 200
+    }
+  ],
+  "schemas": {
+    "OrderRequest": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"order_id\": {\n      \"type\": \"string\"\n    },\n    \"customer_id\": {\n      \"type\": \"integer\"\n    },\n    \"amount\": {\n      \"type\": \"number\"\n    },\n    \"currency\": {\n      \"type\": \"string\"\n    },\n    \"items\": {\n      \"type\": \"integer\"\n    },\n    \"channel\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"order_id\",\n    \"customer_id\",\n    \"amount\"\n  ]\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"order_id\": {\n      \"type\": \"string\"\n    },\n    \"customer_id\": {\n      \"type\": \"integer\"\n    },\n    \"amount\": {\n      \"type\": \"number\"\n    },\n    \"currency\": {\n      \"type\": \"string\"\n    },\n    \"items\": {\n      \"type\": \"integer\"\n    },\n    \"channel\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"order_id\",\n    \"customer_id\",\n    \"amount\"\n  ]\n}"
+    },
+    "OrderParsed": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"orderId\": {\n      \"type\": \"string\"\n    },\n    \"customerId\": {\n      \"type\": \"integer\"\n    },\n    \"amount\": {\n      \"type\": \"number\"\n    },\n    \"currency\": {\n      \"type\": \"string\"\n    },\n    \"items\": {\n      \"type\": \"integer\"\n    },\n    \"channel\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"orderId\": {\n      \"type\": \"string\"\n    },\n    \"customerId\": {\n      \"type\": \"integer\"\n    },\n    \"amount\": {\n      \"type\": \"number\"\n    },\n    \"currency\": {\n      \"type\": \"string\"\n    },\n    \"items\": {\n      \"type\": \"integer\"\n    },\n    \"channel\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+    },
+    "CustomerEnriched": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"customerName\": {\n      \"type\": \"string\"\n    },\n    \"tier\": {\n      \"type\": \"string\"\n    },\n    \"region\": {\n      \"type\": \"string\"\n    },\n    \"accountStatus\": {\n      \"type\": \"string\"\n    },\n    \"creditLimit\": {\n      \"type\": \"number\"\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"customerName\": {\n      \"type\": \"string\"\n    },\n    \"tier\": {\n      \"type\": \"string\"\n    },\n    \"region\": {\n      \"type\": \"string\"\n    },\n    \"accountStatus\": {\n      \"type\": \"string\"\n    },\n    \"creditLimit\": {\n      \"type\": \"number\"\n    }\n  }\n}"
+    },
+    "OrderMessage": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"payload\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"payload\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+    }
+  },
+  "specs": {
+    "303c5749-6362-4d42-a5c2-a6e2eabf32d3": {
+      "id": "303c5749-6362-4d42-a5c2-a6e2eabf32d3",
+      "name": "OrdersApiSpec",
+      "type": "OpenAPI",
+      "version": "1.0.0",
+      "content": "eyJvcGVuYXBpIjoiMy4wLjAiLCJpbmZvIjp7InRpdGxlIjoiT3JkZXIgU3RyZWFtIEluZ2VzdGlvbiBBUEkiLCJ2ZXJzaW9uIjoiMS4wLjAiLCJkZXNjcmlwdGlvbiI6IkFjY2VwdHMgb3JkZXIgZXZlbnRzIG92ZXIgUkVTVCBhbmQgcHVibGlzaGVzIHRoZW0gdG8gdGhlIGluY29taW5nIEthZmthIHRvcGljLiJ9LCJwYXRocyI6eyIvb3JkZXJzIjp7InBvc3QiOnsic3VtbWFyeSI6IlB1Ymxpc2ggYW4gb3JkZXIgZXZlbnQgdG8gdGhlIGluY29taW5nIEthZmthIHRvcGljIiwib3BlcmF0aW9uSWQiOiJwdWJsaXNoT3JkZXIiLCJyZXF1ZXN0Qm9keSI6eyJyZXF1aXJlZCI6dHJ1ZSwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJvcmRlcl9pZCI6eyJ0eXBlIjoic3RyaW5nIiwiZXhhbXBsZSI6Ik9SRC0xMDAxIn0sImN1c3RvbWVyX2lkIjp7InR5cGUiOiJpbnRlZ2VyIiwiZXhhbXBsZSI6MTAxfSwiYW1vdW50Ijp7InR5cGUiOiJudW1iZXIiLCJleGFtcGxlIjoyNTAuNzV9LCJjdXJyZW5jeSI6eyJ0eXBlIjoic3RyaW5nIiwiZXhhbXBsZSI6IlVTRCJ9LCJpdGVtcyI6eyJ0eXBlIjoiaW50ZWdlciIsImV4YW1wbGUiOjN9LCJjaGFubmVsIjp7InR5cGUiOiJzdHJpbmciLCJleGFtcGxlIjoid2ViIn19fX19fSwicmVzcG9uc2VzIjp7IjIwMCI6eyJkZXNjcmlwdGlvbiI6Ik9yZGVyIGFjY2VwdGVkIGFuZCBwdWJsaXNoZWQiLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImNvZGUiOnsidHlwZSI6ImludGVnZXIiLCJleGFtcGxlIjoyMDB9LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmciLCJleGFtcGxlIjoiT3JkZXIgT1JELTEwMDEgcHVibGlzaGVkIHRvIHRvcGljIG9yZGVycy5pbmNvbWluZyJ9fX19fX19fX19fQ=="
+    }
+  },
+  "connections": {
+    "ffc2b8fa-7d9f-4adb-809d-1db4abc8a085": {
+      "id": "ffc2b8fa-7d9f-4adb-809d-1db4abc8a085",
+      "name": "OrderKafka",
+      "ref": "#kafka",
+      "isGlobal": false,
+      "settings": {
+        "name": "OrderKafka",
+        "description": "Your kafka Connector",
+        "brokers": "=$property[\"Kafka.OrderKafka.Brokers\"]",
+        "authMode": "SSL",
+        "userName": "",
+        "password": "",
+        "clientID": "",
+        "clientSecret": "",
+        "tokenURL": "",
+        "scope": "",
+        "securityProtocol": "SASL_SSL",
+        "clientCert": "=$property[\"Kafka.OrderKafka.Client_Certificate\"]",
+        "clientKey": "=$property[\"Kafka.OrderKafka.Client_Key\"]",
+        "caCert": "=$property[\"Kafka.OrderKafka.CA_or_Server_Certificate\"]",
+        "connectionTimeout": "=$property[\"Kafka.OrderKafka.Connection_Timeout\"]",
+        "retryBackoff": "=$property[\"Kafka.OrderKafka.Retry_Backoff\"]",
+        "retryMax": "=$property[\"Kafka.OrderKafka.Max_Retry\"]",
+        "refreshFrequency": "=$property[\"Kafka.OrderKafka.Refresh_Frequency\"]",
+        "useSchmaRegistry": false,
+        "vendor": "None",
+        "url": "",
+        "userName_schemaRegistry": "",
+        "password_schemaRegistry": "",
+        "authMode_schemaRegistry": "None",
+        "caCert_schemaRegistry": ""
+      }
+    },
+    "0caa1154-f964-485c-8948-60153b8702c1": {
+      "id": "0caa1154-f964-485c-8948-60153b8702c1",
+      "name": "OrderDB",
+      "ref": "#connection",
+      "isGlobal": false,
+      "settings": {
+        "databaseType": "PostgreSQL",
+        "name": "OrderDB",
+        "description": "Your PostgreSQL Connector",
+        "host": "=$property[\"PostgreSQL.OrderDB.Host\"]",
+        "port": "=$property[\"PostgreSQL.OrderDB.Port\"]",
+        "databaseName": "=$property[\"PostgreSQL.OrderDB.Database_Name\"]",
+        "user": "=$property[\"PostgreSQL.OrderDB.User\"]",
+        "password": "=$property[\"PostgreSQL.OrderDB.Password\"]",
+        "maxopenconnection": "=$property[\"PostgreSQL.OrderDB.Maximum_Open_Connections\"]",
+        "maxidleconnection": "=$property[\"PostgreSQL.OrderDB.Maximum_Idle_Connections\"]",
+        "connmaxlifetime": "=$property[\"PostgreSQL.OrderDB.Maximum_Connection_Lifetime\"]",
+        "maxconnectattempts": "=$property[\"PostgreSQL.OrderDB.Maximum_Connection_Retry_Attempts\"]",
+        "connectionretrydelay": "=$property[\"PostgreSQL.OrderDB.Connection_Retry_Delay\"]",
+        "connectiontimeout": "=$property[\"PostgreSQL.OrderDB.Connection_Timeout\"]",
+        "onprem": false,
+        "tlsconfig": false,
+        "tlsparam": "VerifyCA",
+        "cacert": "",
+        "clientcert": "",
+        "clientkey": ""
+      }
+    }
+  },
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTYiLCJ0YWciOiIxLjYuMTYtYjA1IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wbHVnaW5zL2NvbnRyaWJ1dGlvbnMva2Fma2Evc3JjL2FwcC9LYWZrYSIsImlkIjoiS2Fma2EiLCJ2ZXJzaW9uIjoiMS4zLjUtSEYxIiwidGFnIjoiMS4zLjUtaGYxLWIwMSIsIm5hbWUiOiJBcGFjaGUgS2Fma2EiLCJzM2xvY2F0aW9uIjoiVGliY28vS2Fma2EiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfSx7InJlZiI6ImdpdGh1Yi5jb20vdGliY28vd2ktcG9zdGdyZXMvc3JjL2FwcC9Qb3N0Z3JlU1FMIiwiaWQiOiJQb3N0Z3JlU1FMIiwidmVyc2lvbiI6IjIuNy4yIiwidGFnIjoiMi43LjItYjAxIiwibmFtZSI6IlBvc3RncmVTUUwiLCJzM2xvY2F0aW9uIjoiVGliY28vUG9zdGdyZVNRTCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9XQ==",
+  "metadata": {
+    "endpoints": [
+      {
+        "protocol": "http",
+        "port": "9999",
+        "spec": {
+          "name": "OrderStreamProcessor",
+          "version": "1.0.0"
+        },
+        "title": "RestTrigger",
+        "swagger": {
+          "swagger": "2.0",
+          "info": {
+            "title": "OrderStreamProcessor",
+            "version": "1.0.0",
+            "description": "REST feeder for order events"
+          },
+          "paths": {
+            "/orders": {
+              "post": {
+                "summary": "PublishOrderFlow",
+                "operationId": "post_orders",
+                "parameters": [
+                  {
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "Request parameter",
+                    "required": false,
+                    "type": "string"
+                  },
+                  {
+                    "name": "body",
+                    "in": "body",
+                    "description": "request body parameter",
+                    "required": true,
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "description": "Publish an order event to the incoming Kafka topic (test feeder)",
+                "consumes": [
+                  "application/json"
+                ]
+              }
+            }
+          },
+          "definitions": {
+            "schema1": {
+              "type": "object",
+              "properties": {
+                "order_id": {
+                  "type": "string"
+                },
+                "customer_id": {
+                  "type": "integer"
+                },
+                "amount": {
+                  "type": "number"
+                },
+                "currency": {
+                  "type": "string"
+                },
+                "items": {
+                  "type": "integer"
+                },
+                "channel": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "order_id",
+                "customer_id",
+                "amount"
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "flogoVersion": "2.26.7"
+  }
+}

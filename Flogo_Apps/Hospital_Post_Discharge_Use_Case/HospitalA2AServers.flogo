@@ -7,6 +7,8 @@
     "github.com/tibco/wi-postgres/src/app/PostgreSQL/activity/update",
     "github.com/tibco/flogo-general/src/app/General/activity/sendmail",
     "github.com/tibco/flogo-ai-agent/src/app/AgenticAI/trigger/agent",
+    "github.com/project-flogo/contrib/function/string",
+    "github.com/project-flogo/contrib/function/array",
     "github.com/tibco/flogo-ai-agent/src/app/AgenticAI/connector/llmprovider",
     "github.com/tibco/wi-postgres/src/app/PostgreSQL/connector/connection"
   ],
@@ -386,7 +388,6 @@
             "activity": {
               "ref": "#insert",
               "input": {
-                "Connection": "",
                 "QueryName": "",
                 "Schema": "public",
                 "Query": "INSERT INTO appointments (patient_id, specialty, scheduled_date, scheduled_time, status) VALUES (?patient_id1, ?specialty1, ?scheduled_date1, ?scheduled_time1, 'CONFIRMED');",
@@ -526,7 +527,6 @@
             "activity": {
               "ref": "#insert",
               "input": {
-                "Connection": "",
                 "QueryName": "",
                 "Schema": "public",
                 "Query": "INSERT INTO pharmacy_orders (patient_id, medication_code, medication_name, days_supply, pickup_location, ready_by, status) VALUES (?patient_id1, ?medication_code1, ?medication_name1, ?days_supply1, ?pickup_location1, ?ready_by1, 'PROCESSING');",
@@ -684,7 +684,6 @@
             "activity": {
               "ref": "#update",
               "input": {
-                "Connection": "",
                 "UpdateName": "",
                 "Schema": "public",
                 "Query": "UPDATE beds SET status = 'CLEANING_REQUESTED', patient_id = NULL, updated_at = TO_CHAR(NOW(),'YYYY-MM-DD HH24:MI'), estimated_ready = TO_CHAR(NOW() + INTERVAL '20 minutes','YYYY-MM-DD HH24:MI') WHERE bed_id = ?bed_id1;",
@@ -802,7 +801,6 @@
                 "authorizationType": "Basic",
                 "Username": "=$property[\"Email_Username\"]",
                 "Password": "=$property[\"Email_App_Password\"]",
-                "authorizationConn": "",
                 "Connection Security": "SSL",
                 "serverCertificate": "",
                 "message_content_type": "text/plain",
@@ -890,7 +888,7 @@
     {
       "name": "AgenticAI.OpenAIConn.API_Key",
       "type": "string",
-      "value": "SECRET:aNNGqHOvVWNND6tcaa+QJtRcIARKhaV9Qux8vtm7T6R5AZ/L3AUDbsYQKPa4D8C29JyNHA8Urj/Dn6GJ4aHI0ww/rZQceOZkkRR4ySc+Hd2Xm/wY0KO5Mi+RiA2jUL5zdghz2v7VMJ4EK1WWgA/KkHz/s+GAm8dwwMrHU/q8vgLMx9hBSpps7w8MP8Kr8HPQ9Vq1Cpi9IIgxBmR9u9TGqyZAAQ603ge3E75SFRF5qZAUmaZC"
+      "value": "SECRET:fTxaOLjc4aSSHnt5vsJH1BnnsfJLSFL8nw5o6ggOzepX6fR7umPIuMBLHK9yKIUZECmeQIcvsmOfYnG/EL5fv2DrYAiq0uPCPYpsyl/zwhg+9T7d2GEh7j8HxaKJi58cQnD+rc9ZX+PZWwXmgTl8Joy8BRYw7X1T0Hh9ea2Lgh7/2GArrGASmLPtTSQ1eYA+IPzizgY+oYOqrI4hCi234URpxBAbXkzGd63Kmhh5WsBRsvos"
     },
     {
       "name": "AgenticAI.OpenAIConn.LLM_Base_URL",
@@ -1022,7 +1020,7 @@
         "port": 5432,
         "databaseName": "hospital",
         "user": "postgres",
-        "password": "SECRET:XDzLs1cnlz/id8NCn80a5XhKovd9",
+        "password": "SECRET:sdhnOTrNEjsvAuTTHZdAyrw5kXXn",
         "maxopenconnection": 0,
         "maxidleconnection": 2,
         "connmaxlifetime": 0,
@@ -1038,7 +1036,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS4zIiwidGFnIjoiMC45LjMtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL3dpLXBvc3RncmVzL3NyYy9hcHAvUG9zdGdyZVNRTCIsImlkIjoiUG9zdGdyZVNRTCIsInZlcnNpb24iOiIyLjcuMSIsInRhZyI6IjIuNy4xLWIwMSIsIm5hbWUiOiJQb3N0Z3JlU1FMIiwiczNsb2NhdGlvbiI6IlRpYmNvL1Bvc3RncmVTUUwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfSx7InJlZiI6ImdpdGh1Yi5jb20vdGliY28vZmxvZ28tZ2VuZXJhbC9zcmMvYXBwL0dlbmVyYWwiLCJpZCI6IkdlbmVyYWwiLCJ2ZXJzaW9uIjoiMS42LjE0IiwidGFnIjoiMS42LjE0LWIwNCIsIm5hbWUiOiJHZW5lcmFsIiwiczNsb2NhdGlvbiI6IlRpYmNvL0dlbmVyYWwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS40IiwidGFnIjoiMC45LjQtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL3dpLXBvc3RncmVzL3NyYy9hcHAvUG9zdGdyZVNRTCIsImlkIjoiUG9zdGdyZVNRTCIsInZlcnNpb24iOiIyLjcuMSIsInRhZyI6IjIuNy4xLWIwMSIsIm5hbWUiOiJQb3N0Z3JlU1FMIiwiczNsb2NhdGlvbiI6IlRpYmNvL1Bvc3RncmVTUUwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfSx7InJlZiI6ImdpdGh1Yi5jb20vdGliY28vZmxvZ28tZ2VuZXJhbC9zcmMvYXBwL0dlbmVyYWwiLCJpZCI6IkdlbmVyYWwiLCJ2ZXJzaW9uIjoiMS42LjE1IiwidGFnIjoiMS42LjE1LWIwNCIsIm5hbWUiOiJHZW5lcmFsIiwiczNsb2NhdGlvbiI6IlRpYmNvL0dlbmVyYWwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
   "metadata": {
     "endpoints": [
       {
@@ -1066,6 +1064,6 @@
         "name": "send_confirmation_email"
       }
     ],
-    "flogoVersion": "2.26.5"
+    "flogoVersion": "2.26.6"
   }
 }

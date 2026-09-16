@@ -90,6 +90,13 @@ Either way: the **user owns the spec/intent**, **this skill owns the plan + impl
 
 ## Workflow — always follow these phases in order
 
+### Phase 0a — Confirm the build method FIRST (ask before anything else)  ⛔
+Two sibling skills build the same 3-app pattern by different methods, and **the user chooses which — always ASK (AskUserQuestion), never assume**, even when the request looks just like a past build:
+- **FDA-CLI (this skill, `agentic-ai-use-case-fda`) — the RECOMMENDED DEFAULT.** Every app is constructed by `fda` commands: a clean, auditable, from-scratch build with no leftover UUIDs/secrets/contrib blobs, and no hand-assembled trigger/reply JSON to get subtly wrong. Recommend this.
+- **Clone-and-adapt (`agentic-ai-use-case`).** Clone an existing `.flogo` and swap fields. Legitimately better when a near-identical reference app exists, **or when the app needs custom-extension activities the FDA recipes don't cover** (e.g. the `extensions/openAI` vector activities — `vectorStoreCreate`/`fileUpload`/`fileList`/`vectorSearch` have no `fda` recipe, so cloning a proven sample is the reliable path for those apps).
+
+Present the choice, recommend FDA-CLI (default), and note the clone exception above when the use case needs custom-extension activities. If the user picks **clone**, switch to the `agentic-ai-use-case` skill and follow it; if **FDA**, continue here. (Do not silently pick a method — the RAG-extended Auto Insurance build was cloned without asking, and the hand-built REST trigger shipped with designer-only errors as a result.)
+
 ### Phase 0 — Read environment config, print tool paths+versions
 Read `skills-library/.claude/skills/config.md` first for: the `psql` path and PostgreSQL host/port/user/password/db; the OpenAI/LLM API key, base URL, and model; the SMTP username/app-password; and the CLI paths for `flogodesign-cli` (`fda`) and `flogobuild`. **Do not hardcode any of these** — read them at build time. Before running any command, print the resolved `fda` and `flogobuild` **path and `version`** so the run is reproducible. Read secrets from config.md into shell/script variables; never echo them.
 

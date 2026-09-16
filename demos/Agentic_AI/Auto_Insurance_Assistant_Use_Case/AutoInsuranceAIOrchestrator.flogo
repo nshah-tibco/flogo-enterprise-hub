@@ -6,13 +6,12 @@
     "github.com/project-flogo/websocket/activity/wswritedata",
     "github.com/project-flogo/websocket/trigger/wsserver",
     "github.com/project-flogo/contrib/function/coerce",
-    "github.com/project-flogo/contrib/function/array",
     "github.com/tibco/flogo-ai-agent/src/app/AgenticAI/connector/llmprovider",
     "github.com/tibco/flogo-ai-agent/src/app/AgenticAI/connector/mcpserverconfig",
     "github.com/tibco/flogo-ai-agent/src/app/AgenticAI/connector/a2aserverconnection"
   ],
-  "name": "HospitalAIOrchestrator",
-  "description": "Hospital AI Orchestrator - WebSocket chat routing to MCP tools and A2A agents",
+  "name": "AutoInsuranceAIOrchestrator",
+  "description": "Auto Insurance Policyholder Assistant Orchestrator - WebSocket chat that routes intent to MCP read tools and A2A write agents",
   "version": "1.0.0",
   "type": "flogo:app",
   "appModel": "1.1.1",
@@ -21,22 +20,22 @@
     {
       "ref": "#wsserver",
       "name": "wsserver",
-      "description": "WebSocket chat server",
+      "description": "Websocket server listens for connection request from the client",
       "settings": {
-        "port": 8043,
+        "port": "=$property[\"Websocket_PORT\"]",
         "enableTLS": false,
         "serverCert": "",
         "serverKey": "",
         "enableClientAuth": false,
         "trustStore": ""
       },
-      "id": "WS",
+      "id": "WebsocketServer",
       "handlers": [
         {
-          "description": "Route chat to MCP tools and A2A agents",
+          "description": "",
           "settings": {
             "method": "GET",
-            "path": "/ws/chat",
+            "path": "/auto-insurance",
             "mode": "Data",
             "format": "String",
             "jsonSchema": ""
@@ -47,8 +46,11 @@
               "flowURI": "res://flow:Orchestrator_Flow"
             },
             "input": {
-              "wsconnection": "=$.wsconnection",
-              "content": "=$.content"
+              "pathParams": "=$.pathParams",
+              "queryParams": "=$.queryParams",
+              "headers": "=$.headers",
+              "content": "=$.content",
+              "wsconnection": "=$.wsconnection"
             }
           },
           "schemas": {
@@ -69,8 +71,8 @@
     {
       "id": "flow:Orchestrator_Flow",
       "data": {
-        "name": "Orchestrator_Flow",
-        "description": "Route chat to MCP tools and A2A agents",
+        "name": "Orchestrator Flow",
+        "description": "",
         "links": [
           {
             "id": 1,
@@ -82,9 +84,9 @@
           {
             "id": 2,
             "from": "AIAgent",
-            "to": "WriteData",
+            "to": "WebsocketWriteData",
             "type": "label",
-            "label": "AIAgent to WriteData"
+            "label": "AIAgent to WebsocketWriteData"
           }
         ],
         "tasks": [
@@ -99,39 +101,36 @@
           {
             "id": "AIAgent",
             "name": "AIAgent",
-            "description": "AI orchestrator agent",
+            "description": "Configure AI Agent in the flow",
             "activity": {
               "ref": "#agentactivity",
               "settings": {
-                "llmProviderConnection": "conn://3ba48299-9dba-4f7a-855c-4edcf538d18c",
+                "llmProviderConnection": "conn://c0a10001-4444-4eee-8fff-000000009700",
                 "model": "=$property[\"LLM_Model\"]",
                 "reasoning": "",
                 "temperature": 0.7,
                 "enableGuardrails": true,
                 "rateLimit": 25,
                 "tokenLimit": 2048,
-                "redactSensitiveData": false,
+                "redactSensitiveData": true,
                 "responseType": "Text",
                 "agentHandoffs": "",
                 "remoteAgents": [
-                  "conn://88e28825-0888-4514-af34-922b70ac735b",
-                  "conn://231fb637-148c-4358-8e9c-d14cdd8e261e",
-                  "conn://7d66039b-eba5-492a-8fae-37ca9eddccda",
-                  "conn://db0fa5bb-4188-4d85-b7ce-8764c8ee94b6"
+                  "conn://c0a30003-4444-4eee-8fff-000000009711",
+                  "conn://c0a40004-4444-4eee-8fff-000000009712",
+                  "conn://c0a50005-4444-4eee-8fff-000000009713",
+                  "conn://c0a60006-4444-4eee-8fff-000000009714"
                 ],
                 "mcpServers": [
-                  "conn://249c4311-d5db-4da7-a0bc-47b0df1e543b"
+                  "conn://c0a20002-4444-4eee-8fff-000000009701"
                 ],
                 "conversationStoreType": "Memory",
                 "memoryMaxSize": 100,
-                "systemPrompt": "You are the Hospital Post-Discharge Orchestrator. Patients are identified by patient_id (format P-YYYY-NNNNN). Use the read-only MCP tools for lookups: GetDischargeSummary, GetPatientProfile, GetBedStatus, GetAppointments, GetMedicationCatalog, GetPharmacyOrders, GetSpecialties. Use the A2A agents for actions, always confirming before a write: book_appointment (only if follow_up_required; scheduled_date = discharge_date + 7 days, time 10:30, specialty from the discharge summary); create_pharmacy_order (once per prescribed medication; default pickup PHARMACY_A); request_bed_cleaning (bed_id + ward_id when a bed is vacated); send_confirmation_email (exactly once, last, only if requested, summarising the actions taken). For a full discharge, retrieve the discharge summary, then book the appointment, create pharmacy orders, request bed cleaning, and optionally email. Privacy: redact patient identifiers such as P-2024-XXXXX and never expose unnecessary PHI. Politely decline anything outside post-discharge coordination (diagnosis, treatment advice, billing, emergencies). Complete each sub-agent within a maximum of 3 attempts; on failure, report what completed and what failed."
+                "systemPrompt": "You are the Auto Insurance Policyholder Assistant. A policyholder chats with you in natural language to view their auto-insurance policy, understand what is covered, and take self-service actions such as filing a claim, requesting a callback, updating their contact details, and receiving a confirmation email. Be warm, professional, and helpful.\n\nIDENTIFY THE POLICYHOLDER: Policyholders are identified by a policy number in the format POL-AUTO-NNNNNN. If the policyholder has not provided one, politely ask for it before performing any account-specific lookup or action.\n\nMCP READ TOOLS (read-only lookups on the AutoInsuranceMCPServer; NEVER use these to change data). The tools return ALL rows, so always filter by the policyholder's own policy_number yourself and only reveal the requesting policyholder's data:\n- get_policyholder_profile -> name, email, phone, address\n- get_policy_details -> product tier, policy status, annual premium, renewal date, No Claims Discount (NCD) years, and NCD protection\n- get_vehicles -> the insured car(s)\n- get_coverages -> per-coverage LIMIT and EXCESS/deductible amounts\n- get_claims -> claim history and claim status\n- get_payments -> premium payments and any dues\n- search_policy_wording -> retrieves the actual policy wording / clauses\n\nSTRUCTURED FACTS vs POLICY LANGUAGE (this distinction is critical):\n- Numeric or status FACTS about THIS policyholder -> use the DB tools. Examples: \"what is my premium\" (get_policy_details), \"what is my excess/deductible\" (get_coverages), \"when does my policy renew\" (get_policy_details), \"what is the status of my claim\" (get_claims), \"what car is on my policy\" (get_vehicles), \"do I owe anything / payments due\" (get_payments).\n- Policy LANGUAGE questions -> call search_policy_wording. Examples: \"is X covered?\", coverage, exclusions, definitions, conditions, windshield/glass excess wording, flood or water-ingress exclusion, driving other cars, territorial limits, NCD-protection rules, optional add-ons, and the claims procedure. ALWAYS append the policyholder's product tier (from get_policy_details) to your search query so the correct tier wording is retrieved, then answer by quoting or paraphrasing the retrieved clause. Do NOT invent or guess policy wording. If the search returns nothing relevant, say so plainly and offer to request a callback.\n\nA2A WRITE AGENTS (state-changing; ALWAYS confirm with the policyholder before invoking; NEVER invoke any agent more than 3 times; NEVER ask the user for internal ids -- the agents derive them from policy_number):\n- file_claim -> file a new claim. Gather policy_number, claim_type, incident_date, description, and estimated_amount. You generate the claim_number in the format CLM-2026-XXXX (4 digits).\n- request_callback -> request a callback from a human. Gather policy_number, topic, and preferred_time. You generate CB-2026-XXXX.\n- update_contact_details -> change ONE contact field. Pass policy_number plus exactly ONE of: email OR phone_number OR address_line1. You generate CHG-2026-XXXX.\n- send_confirmation_email -> send a confirmation email. Pass a subject and a body summarizing what was done.\n\nCRITICAL EMAIL RULE: You must invoke send_confirmation_email AT MOST ONCE per conversation, only as the very LAST step, and only if the policyholder explicitly asks for an email. Never email after every step.\n\nCONFIRM BEFORE WRITES: Never file a claim, request a callback, or update contact details without the policyholder's explicit confirmation.\n\nRESPONSE FORMATTING: Structure the reply with clearly labeled sections using double-asterisk bold headers based on what was done, e.g. **Policy Summary**, **Coverage & Excess**, **Policy Wording**, **Claim Filed**, **Callback Requested**, **Contact Updated**, **Confirmation Email Sent**. Keep all amounts in USD. End with a brief, friendly closing.\n\nTERMINATION RULES: Complete each agent task within a maximum of 3 attempts. If an agent fails after 3 attempts, report what completed and what failed; never retry indefinitely or loop.\n\nSCOPE: You only handle auto-insurance self-service: viewing policy, vehicles, coverages, excess amounts, claims, payments, and policy wording, plus filing claims, requesting callbacks, updating contact details, and confirmation emails. Politely DECLINE anything outside this scope, including: new quotes or underwriting/pricing decisions, legal or tax advice, changing another person's policy, and anything that is not motor insurance. Clearly state what you can and cannot help with."
               },
               "input": {
                 "userPrompt": "=coerce.toString($flow.content)",
-                "conversationId": "",
-                "filteredToolNames": {
-                  "mapping": []
-                }
+                "conversationId": ""
               },
               "schemas": {
                 "input": {
@@ -146,9 +145,9 @@
             }
           },
           {
-            "id": "WriteData",
-            "name": "WriteData",
-            "description": "Write response to websocket",
+            "id": "WebsocketWriteData",
+            "name": "WebsocketWriteData",
+            "description": "Websocket Write Data Activity will write data to existing Websocket connection",
             "activity": {
               "ref": "#wswritedata",
               "settings": {
@@ -162,7 +161,7 @@
             }
           }
         ],
-        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkFJQWdlbnQiOnsieCI6MjUwLCJ5IjoxNTB9LCJXcml0ZURhdGEiOnsieCI6NDUwLCJ5IjoyNTB9fQ==",
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkFJQWdlbnQiOnsieCI6MjUwLCJ5IjoxNTB9LCJXZWJzb2NrZXRXcml0ZURhdGEiOnsieCI6NDUwLCJ5IjoyNTB9fQ==",
         "metadata": {
           "input": [
             {
@@ -192,7 +191,7 @@
           ],
           "output": [],
           "fe_metadata": {
-            "input": "{\"type\":\"object\",\"title\":\"WS\",\"properties\":{\"pathParams\":{\"type\":\"params\"},\"queryParams\":{\"type\":\"params\"},\"headers\":{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false},\"Sec-Websocket-Key\":{\"type\":\"string\",\"visible\":false},\"Sec-Websocket-Version\":{\"type\":\"string\",\"visible\":false},\"Upgrade\":{\"type\":\"string\",\"visible\":false}},\"required\":[]},\"content\":{\"type\":\"any\",\"required\":false},\"wsconnection\":{\"type\":\"any\",\"required\":false}}}"
+            "input": "{\"type\":\"object\",\"title\":\"WebsocketServer\",\"properties\":{\"pathParams\":{\"type\":\"params\"},\"queryParams\":{\"type\":\"params\"},\"headers\":{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false},\"Sec-Websocket-Key\":{\"type\":\"string\",\"visible\":false},\"Sec-Websocket-Version\":{\"type\":\"string\",\"visible\":false},\"Upgrade\":{\"type\":\"string\",\"visible\":false}},\"required\":[]},\"content\":{\"type\":\"any\",\"required\":false},\"wsconnection\":{\"type\":\"any\",\"required\":false}}}"
           }
         }
       }
@@ -207,28 +206,33 @@
     {
       "name": "AgenticAI.OpenAIConn.API_Key",
       "type": "string",
-      "value": "SECRET:welLu+4ICAJ7sbhJR1ZQxFmYjrymWvnzYHkUdhUlyznei1jNns/ItlBrLc6xywnfFPmZvPdO4GQAX6dw40u4xXpbnOU2dpCnKs7O2WV75FaRkdjKBsoEcyYN1DR0Vmq+0cQeG+aSsSNehnMV31yzv6PxA8+5jBwC2XwI5wVVy0jvXkX8SJfGWQudopa94vvl5qDetBoL6IwXxIiPGbjUjAzSnXzmEs2vCIYmx3Vs6ln9yTbl"
+      "value": "<YOUR_OPENAI_API_KEY>"
     },
     {
       "name": "AgenticAI.OpenAIConn.LLM_Base_URL",
       "type": "string",
-      "value": "New_value"
+      "value": ""
     },
     {
       "name": "LLM_Model",
       "type": "string",
       "value": "gpt-5.5"
+    },
+    {
+      "name": "Websocket_PORT",
+      "type": "float64",
+      "value": 9700
     }
   ],
   "connections": {
-    "3ba48299-9dba-4f7a-855c-4edcf538d18c": {
-      "id": "3ba48299-9dba-4f7a-855c-4edcf538d18c",
+    "c0a10001-4444-4eee-8fff-000000009700": {
+      "id": "c0a10001-4444-4eee-8fff-000000009700",
       "name": "OpenAIConn",
       "ref": "#llmprovider",
       "isGlobal": false,
       "settings": {
         "name": "OpenAIConn",
-        "description": "Your llmprovider Connector",
+        "description": "",
         "llmProvider": "=$property[\"AgenticAI.OpenAIConn.LLM_Provider\"]",
         "anthropicProvider": "Default",
         "apiKey": "=$property[\"AgenticAI.OpenAIConn.API_Key\"]",
@@ -239,70 +243,70 @@
         "azureApiVersion": ""
       }
     },
-    "249c4311-d5db-4da7-a0bc-47b0df1e543b": {
-      "id": "249c4311-d5db-4da7-a0bc-47b0df1e543b",
-      "name": "MCPServer",
+    "c0a20002-4444-4eee-8fff-000000009701": {
+      "id": "c0a20002-4444-4eee-8fff-000000009701",
+      "name": "AutoInsuranceMCPServer",
       "ref": "#mcpserverconfig",
       "isGlobal": false,
       "settings": {
-        "name": "MCPServer",
-        "description": "Your mcpserverconfig Connector",
+        "name": "AutoInsuranceMCPServer",
+        "description": "",
         "serverType": "http",
-        "serverUrl": "http://localhost:9092/hospital-bss",
+        "serverUrl": "http://localhost:9701/auto-insurance-mcp",
         "httpTransportType": "streamable",
         "authType": "None",
         "authToken": "",
-        "selectedTools": []
+        "selectedTools": ""
       }
     },
-    "88e28825-0888-4514-af34-922b70ac735b": {
-      "id": "88e28825-0888-4514-af34-922b70ac735b",
-      "name": "BookApptA2A",
+    "c0a30003-4444-4eee-8fff-000000009711": {
+      "id": "c0a30003-4444-4eee-8fff-000000009711",
+      "name": "FileClaimA2AServer",
       "ref": "#a2aserverconnection",
       "isGlobal": false,
       "settings": {
-        "name": "BookApptA2A",
-        "description": "Your a2aserverconnection Connector",
-        "serverUrl": "http://localhost:9101",
+        "name": "FileClaimA2AServer",
+        "description": "FileClaimA2AServer",
+        "serverUrl": "http://localhost:9711",
         "authType": "None",
         "authToken": ""
       }
     },
-    "231fb637-148c-4358-8e9c-d14cdd8e261e": {
-      "id": "231fb637-148c-4358-8e9c-d14cdd8e261e",
-      "name": "PharmacyA2A",
+    "c0a40004-4444-4eee-8fff-000000009712": {
+      "id": "c0a40004-4444-4eee-8fff-000000009712",
+      "name": "RequestCallbackA2AServer",
       "ref": "#a2aserverconnection",
       "isGlobal": false,
       "settings": {
-        "name": "PharmacyA2A",
-        "description": "Your a2aserverconnection Connector",
-        "serverUrl": "http://localhost:9102",
+        "name": "RequestCallbackA2AServer",
+        "description": "RequestCallbackA2AServer",
+        "serverUrl": "http://localhost:9712",
         "authType": "None",
         "authToken": ""
       }
     },
-    "7d66039b-eba5-492a-8fae-37ca9eddccda": {
-      "id": "7d66039b-eba5-492a-8fae-37ca9eddccda",
-      "name": "BedTurnoverA2A",
+    "c0a50005-4444-4eee-8fff-000000009713": {
+      "id": "c0a50005-4444-4eee-8fff-000000009713",
+      "name": "UpdateContactA2AServer",
       "ref": "#a2aserverconnection",
       "isGlobal": false,
       "settings": {
-        "name": "BedTurnoverA2A",
-        "description": "Your a2aserverconnection Connector",
-        "serverUrl": "http://localhost:9103",
+        "name": "UpdateContactA2AServer",
+        "description": "UpdateContactA2AServer",
+        "serverUrl": "http://localhost:9713",
         "authType": "None",
         "authToken": ""
       }
     },
-    "db0fa5bb-4188-4d85-b7ce-8764c8ee94b6": {
-      "id": "db0fa5bb-4188-4d85-b7ce-8764c8ee94b6",
-      "name": "SendEmailA2A",
+    "c0a60006-4444-4eee-8fff-000000009714": {
+      "id": "c0a60006-4444-4eee-8fff-000000009714",
+      "name": "SendEmailA2AServer",
       "ref": "#a2aserverconnection",
       "isGlobal": false,
       "settings": {
-        "name": "SendEmailA2A",
-        "description": "Your a2aserverconnection Connector",
-        "serverUrl": "http://localhost:9104",
+        "name": "SendEmailA2AServer",
+        "description": "SendEmailA2AServer",
+        "serverUrl": "http://localhost:9714",
         "authType": "None",
         "authToken": ""
       }
@@ -313,11 +317,11 @@
     "endpoints": [
       {
         "protocol": "http",
-        "port": "8043",
-        "title": "WS",
+        "port": "9700",
+        "title": "WebsocketServer",
         "type": "public"
       }
     ],
-    "flogoVersion": "2.26.6"
+    "flogoVersion": "2.26.7"
   }
 }

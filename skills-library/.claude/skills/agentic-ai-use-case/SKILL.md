@@ -63,6 +63,11 @@ verification. A worked example is `demos/Agentic_AI/Hospital_AI-Agent_Use_Case/h
 
 ## Workflow — always follow these phases in order
 
+### Phase 0a — Confirm the build method FIRST (ask before anything else)  ⛔
+This is the **clone-and-adapt** skill. Its sibling `agentic-ai-use-case-fda` builds the same 3-app pattern with the **Flogo Design CLI (`fda`)**, which is the **RECOMMENDED DEFAULT** — clean, auditable, from-scratch, no leftover UUIDs/secrets/contrib blobs, and no hand-assembled trigger/reply JSON to get subtly wrong (hand-built triggers have shipped with designer-only errors).
+
+**Always ASK the user which method to use (AskUserQuestion) before building — never assume**, even when the request looks just like a past build. Recommend FDA-CLI as the default. Use **this** clone-based skill only when the user chooses clone — legitimately appropriate when a near-identical reference app exists, or when the app needs **custom-extension activities the FDA recipes don't cover** (e.g. the `extensions/openAI` vector activities: `vectorStoreCreate`/`fileUpload`/`fileList`/`vectorSearch`). If the user picks FDA, switch to `agentic-ai-use-case-fda`.
+
 ### Phase 0 — Read environment config
 Read `skills-library/.claude/skills/config.md` first for the psql path, PostgreSQL host/port/user/password, and CLI paths. Do not hardcode these.
 

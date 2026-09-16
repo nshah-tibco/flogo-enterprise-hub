@@ -1,0 +1,50 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Order Stream Ingestion API",
+    "version": "1.0.0",
+    "description": "Accepts order events over REST and publishes them to the incoming Kafka topic."
+  },
+  "paths": {
+    "/orders": {
+      "post": {
+        "summary": "Publish an order event to the incoming Kafka topic",
+        "operationId": "publishOrder",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "order_id": { "type": "string", "example": "ORD-1001" },
+                  "customer_id": { "type": "integer", "example": 101 },
+                  "amount": { "type": "number", "example": 250.75 },
+                  "currency": { "type": "string", "example": "USD" },
+                  "items": { "type": "integer", "example": 3 },
+                  "channel": { "type": "string", "example": "web" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order accepted and published",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "integer", "example": 200 },
+                    "message": { "type": "string", "example": "Order ORD-1001 published to topic orders.incoming" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
