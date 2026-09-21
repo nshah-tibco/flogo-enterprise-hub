@@ -38,7 +38,7 @@ The library contains **10 skills** that cover the full Flogo development lifecyc
 | **flogo-unit-testing** | Recipe | Recipe to **create and run unit tests for Flogo apps** — test files, test cases with flow inputs, assertions on flow outputs, and test execution with result verification. |
 | **mapping-from-excel** | Recipe | Recipe to **build a Flogo flow from an Excel mapping spec** — input fields, output fields, and per-field mapping rules. |
 | **rest-to-database-app** | Recipe | Recipe to **scaffold a REST API Flogo app that queries a database** (REST trigger → log → DB query → reply). |
-| **agentic-ai-use-case** | Use-case builder | Scaffold a complete, runnable **Agentic AI demo for any vertical** — an MCP Server (read-only DB tools) + A2A Agents app (write-workflow agents) + WebSocket AI Orchestrator, backed by PostgreSQL, modeled on the reference use cases under `demos/Agentic_AI/`. |
+| **agentic-ai-use-case** | Use-case builder | Scaffold a complete, runnable **Agentic AI demo for any vertical** — an MCP Server (read-only DB tools) + A2A Agents app (write-workflow agents) + WebSocket AI Orchestrator, backed by PostgreSQL, modeled on the reference use cases under `samples/Agentic_AI/`. |
 | **agentic-ai-use-case-fda** | Use-case builder | The same 3-app Agentic AI demo, but constructed **entirely via the `fda` CLI** (command-by-command) rather than cloned/adapted JSON. |
 
 ---
@@ -203,7 +203,7 @@ Key values the skills rely on:
 | `DATAPLANE_NAME` | Default dataplane to deploy to | `tibcop tplatform:list-data-planes` |
 | `CP_URL` / `TIBCOP_TOKEN` | TIBCO Platform control-plane URL and API token | TIBCO Platform console |
 | PostgreSQL / LLM / email | Connection settings for the database, LLM provider, and SMTP | your environment |
-| `AGENTIC_USE_CASES_DIR` | *(optional)* folder of reference Agentic AI use-case apps the two `agentic-ai-use-case*` skills clone/study | leave unset to default to `demos/Agentic_AI/`; set only if the skills are installed standalone away from that folder |
+| `AGENTIC_USE_CASES_DIR` | *(optional)* folder of reference Agentic AI use-case apps the two `agentic-ai-use-case*` skills clone/study | leave unset to default to `samples/Agentic_AI/`; set only if the skills are installed standalone away from that folder |
 
 ---
 

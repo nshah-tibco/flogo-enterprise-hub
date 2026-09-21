@@ -33,18 +33,18 @@ privately report a secret that was committed by mistake.
 
 ```
 flogo-enterprise-hub/
-├── samples/          # Ready-to-run product samples (Agentic_AI, MCP, connectors, Docker, ...)
-├── demos/            # Larger, end-to-end proof-of-concept demonstrations (incl. demos/Agentic_AI/)
+├── samples/          # Ready-to-run product samples (Agentic_AI feature samples + industry use cases, MCP, connectors, Docker, ...)
+├── demos/            # Larger, end-to-end proof-of-concept demonstrations (MCP, GraphQL, ML, alerts)
 ├── extensions/       # Custom-built Flogo extensions
 └── skills-library/   # Claude Code skills for designing/building/deploying Flogo apps
 ```
 
 Place new work in the area that fits best:
 
-- **`samples/`** — focused, single-concept examples that demonstrate one feature or
-  connector.
-- **`demos/`** — larger, end-to-end use cases (e.g. the industry use cases under
-  `demos/Agentic_AI/`).
+- **`samples/`** — product samples, including the end-to-end Agentic AI industry use
+  cases under `samples/Agentic_AI/`.
+- **`demos/`** — larger, standalone proof-of-concept demonstrations (e.g. GraphQL,
+  ML anomaly detection, platform alert agents).
 - **`skills-library/`** — skills that AI coding agents (such as Claude Code) use to
   build Flogo apps.
 

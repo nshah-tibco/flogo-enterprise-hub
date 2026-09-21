@@ -43,7 +43,7 @@ Chatbot UI --WebSocket--> AI Orchestrator --MCP (HTTP)--> MCP Server --\
 
 ### What you get (generated files)
 
-A new folder `demos/Agentic_AI/<UseCase>_Use_Case/` containing:
+A new folder `samples/Agentic_AI/<UseCase>_Use_Case/` containing:
 
 | File | Purpose |
 |------|---------|
@@ -64,7 +64,7 @@ A new folder `demos/Agentic_AI/<UseCase>_Use_Case/` containing:
 3. **An LLM provider** — an API key, a **real base URL** (e.g. `https://api.openai.com/v1`), and an accessible model.
 4. *(Optional)* **SMTP** credentials (e.g. a Gmail app password) if you want an email/notification agent.
 5. **A configured `config.md`** — the skill reads the psql path and PostgreSQL host/port/user/password from `skills-library/.claude/skills/config.md` at build time and **never hardcodes secrets**. Copy `config.example.md` to `config.md` and fill it in. `config.md` is gitignored — never commit it.
-6. **A reference use case to clone** — one of the working demos under `demos/Agentic_AI/` (see the list below).
+6. **A reference use case to clone** — one of the working demos under `samples/Agentic_AI/` (see the list below).
 
 ---
 
@@ -75,7 +75,7 @@ Because this skill *clones*, the two most important inputs are **what to build**
 | Input | Why it's needed |
 |-------|-----------------|
 | **1. The use case to build** | The domain, the entities/scenarios the chatbot must handle, and the actions it should perform. Provide it as a one-line description, an interactive answer, or (recommended) a filled spec — see the [spec template](references/use-case-spec-template.md). |
-| **2. The reference use case to clone** | Point to the closest working demo under `demos/Agentic_AI/`. Pick one whose **shape** matches — similar number of write agents, and whether it includes an email agent. The skill copies its structure and `contrib`/`SECRET:` values verbatim, so the closer the shape, the less rework. |
+| **2. The reference use case to clone** | Point to the closest working demo under `samples/Agentic_AI/`. Pick one whose **shape** matches — similar number of write agents, and whether it includes an email agent. The skill copies its structure and `contrib`/`SECRET:` values verbatim, so the closer the shape, the less rework. |
 
 Then the skill asks only what changes the build:
 
@@ -85,7 +85,7 @@ Then the skill asks only what changes the build:
 | **Write workflows / A2A agents** | Each state-changing action becomes an A2A agent (confirm count + scope). |
 | **Email/notification agent?** | Whether to include an SMTP agent. |
 | **Locale / currency / persona** | So demo data feels realistic. |
-| **Ports & folder** | Distinct port per app; default folder `demos/Agentic_AI/<UseCase>_Use_Case/`. |
+| **Ports & folder** | Distinct port per app; default folder `samples/Agentic_AI/<UseCase>_Use_Case/`. |
 
 ### What the skill does, in order
 1. **Reads your environment** from `config.md`.
@@ -101,7 +101,7 @@ Then the skill asks only what changes the build:
 
 Pick the closest in shape to what you're building:
 
-| Reference (`demos/Agentic_AI/…`) | Good starting point when you want… |
+| Reference (`samples/Agentic_AI/…`) | Good starting point when you want… |
 |---|---|
 | `Telecom_Invoice_Chatbot_Use_Case` | A billing/invoice/account-lookup assistant with dispute/recharge write agents. |
 | `Airline_Passenger_Services_Use_Case` | Booking/status lookups + rebooking/cancellation actions. |
@@ -121,7 +121,7 @@ Pick the closest in shape to what you're building:
 - *"Build an agentic AI demo for a **retail banking** assistant — clone the `Retail_Banking_Assistant_Use_Case`. Customers check balances/transactions and can dispute a charge or block a card."*
 - *"Create an agentic AI **insurance claims** chatbot by cloning the `Hospital_AI-Agent_Use_Case` (it has the email agent I want): look up policies/claims, file a new claim, and email the adjuster."*
 - *"Scaffold a **utilities/power outage** assistant based on `Power_Distribution_Use_Case` — look up outages by area and let users report a new outage."*
-- *"Clone `Telecom_Invoice_Chatbot_Use_Case` into a **broadband ISP** support assistant: invoice lookups + a plan-change agent + a payment-dispute agent. Put it in `demos/Agentic_AI/ISP_Support_Use_Case/`."*
+- *"Clone `Telecom_Invoice_Chatbot_Use_Case` into a **broadband ISP** support assistant: invoice lookups + a plan-change agent + a payment-dispute agent. Put it in `samples/Agentic_AI/ISP_Support_Use_Case/`."*
 
 ### Prompts to *try the running system* (also generated into `prompts.md`)
 

@@ -1,16 +1,16 @@
 ---
 name: agentic-ai-use-case
-description: Build a customer/industry/vertical-specific Agentic AI use case (demo) on TIBCO Flogo Enterprise — a real-time WebSocket chatbot backed by three apps: an MCP Server (read-only DB lookup tools), an A2A Agents app (write-workflow agents), and an AI Orchestrator that classifies intent and routes between them. Use when the user asks to build/create/scaffold an agentic AI use case, demo, chatbot, or "MCP + A2A + orchestrator" solution for ANY domain (telecom, airline, hospital, banking, retail, insurance, logistics, utilities, …). Produces PostgreSQL-backed .flogo apps + database.sql + reset_data.sql + prompts.md + README, modeled on the reference use cases under demos/Agentic_AI/*_Use_Case.
+description: Build a customer/industry/vertical-specific Agentic AI use case (demo) on TIBCO Flogo Enterprise — a real-time WebSocket chatbot backed by three apps: an MCP Server (read-only DB lookup tools), an A2A Agents app (write-workflow agents), and an AI Orchestrator that classifies intent and routes between them. Use when the user asks to build/create/scaffold an agentic AI use case, demo, chatbot, or "MCP + A2A + orchestrator" solution for ANY domain (telecom, airline, hospital, banking, retail, insurance, logistics, utilities, …). Produces PostgreSQL-backed .flogo apps + database.sql + reset_data.sql + prompts.md + README, modeled on the reference use cases under samples/Agentic_AI/*_Use_Case.
 user-invocable: true
 ---
 
 # Agentic AI Use Case Builder
 
-Scaffolds a complete, runnable Agentic AI demo for any vertical, following the proven 3-app pattern used by the reference use cases in `demos/Agentic_AI/` (e.g. Airline Passenger Services, Hospital, Telecom Invoice Chatbot). Everything here is domain-agnostic — you supply the domain, the skill supplies the structure, the wiring, and the gotchas that are easy to get wrong.
+Scaffolds a complete, runnable Agentic AI demo for any vertical, following the proven 3-app pattern used by the reference use cases in `samples/Agentic_AI/` (e.g. Airline Passenger Services, Hospital, Telecom Invoice Chatbot). Everything here is domain-agnostic — you supply the domain, the skill supplies the structure, the wiring, and the gotchas that are easy to get wrong.
 
 ## What it produces
 
-A new folder `demos/Agentic_AI/<UseCase>_Use_Case/` containing:
+A new folder `samples/Agentic_AI/<UseCase>_Use_Case/` containing:
 
 | File | Purpose |
 |------|---------|
@@ -56,7 +56,7 @@ it as Phase 1–2 input: frame it back (Phase 1) from the spec's Intent/actors, 
 about its "Assumptions & open questions" and any missing sections — do not re-ask what the spec already
 answers. Map spec → build: information lookups → MCP tools, actions/workflows → A2A agents, entities →
 PostgreSQL tables, scenarios/seed-data → `database.sql` + `prompts.md`, acceptance criteria → the Phase 5
-verification. A worked example is `demos/Agentic_AI/Hospital_AI-Agent_Use_Case/hospital.spec.md`.
+verification. A worked example is `samples/Agentic_AI/Hospital_AI-Agent_Use_Case/hospital.spec.md`.
 **If the user has no spec**, offer the template or just run the interactive Phase 1–2 questions (they cover the same fields).
 
 ---
@@ -72,12 +72,12 @@ This is the **clone-and-adapt** skill. Its sibling `agentic-ai-use-case-fda` bui
 Read `skills-library/.claude/skills/config.md` first for the psql path, PostgreSQL host/port/user/password, and CLI paths. Do not hardcode these.
 
 ### Phase 0b — Locate the reference use cases (portability) 📍
-This skill **clones an existing use case as the template**, so it must first find the folder that holds them. Resolve the **reference folder** in this order, and use it wherever this document says `demos/Agentic_AI/`:
+This skill **clones an existing use case as the template**, so it must first find the folder that holds them. Resolve the **reference folder** in this order, and use it wherever this document says `samples/Agentic_AI/`:
 1. If `config.md` defines `AGENTIC_USE_CASES_DIR`, use that path (relative to the repo root, or an absolute path).
-2. Otherwise, if `demos/Agentic_AI/` exists at the repo root, use it — this is the default when the skill ships inside `flogo-enterprise-hub`.
+2. Otherwise, if `samples/Agentic_AI/` exists at the repo root, use it — this is the default when the skill ships inside `flogo-enterprise-hub`.
 3. Otherwise (skills-library installed standalone, no reference apps on disk), **ask the user** to point you to the folder that holds the Agentic AI use-case apps — each a `*MCPServer.flogo` / `*A2AServers.flogo` / `*AIOrchestrator.flogo` trio. Do not guess a path or fabricate a template from memory; without a reference app to clone, this skill cannot run reliably (use `agentic-ai-use-case-fda`, which builds from self-contained recipes, if the user has no reference apps).
 
-New use cases are still created under `demos/Agentic_AI/<UseCase>_Use_Case/` by default — confirm the target folder with the user.
+New use cases are still created under `samples/Agentic_AI/<UseCase>_Use_Case/` by default — confirm the target folder with the user.
 
 ### Phase 1 — Frame the use case (tell the user BEFORE anything else)
 Before asking questions or writing code, state back to the user, in a few lines:
@@ -91,7 +91,7 @@ Only ask what changes the build. Typical questions:
 - **Write workflows / A2A agents** — which actions change state (each becomes an A2A agent). Confirm count and scope.
 - **Email/notification agent?** — include a confirmation-email agent (reuses SMTP creds) or not.
 - **Locale/currency & sample persona** — so demo data feels real (e.g. AED/UAE, USD/US).
-- **Ports & folder** — default to a free port block and `demos/Agentic_AI/<UseCase>_Use_Case/`; confirm if unsure.
+- **Ports & folder** — default to a free port block and `samples/Agentic_AI/<UseCase>_Use_Case/`; confirm if unsure.
 
 ### Phase 3 — Present a plan (EnterPlanMode → write plan → ExitPlanMode)
 Plan must list: the tables, the MCP tools (name → table/query), the A2A agents (name → write workflow), the orchestrator routing rules, ports, folder, and the demo scenarios each piece enables. Get approval before building.
@@ -104,7 +104,7 @@ Plan must list: the tables, the MCP tools (name → table/query), the A2A agents
 5. `<Prefix>AIOrchestrator.flogo` — WebSocket trigger + AI Agent activity wired to the MCP server connection and all A2A connections.
 6. `README.md` + `prompts.md`.
 
-**Fastest reliable method:** clone the JSON shape of an existing use case app of the same type (e.g. `demos/Agentic_AI/Telecom_Invoice_Chatbot_Use_Case/*.flogo`) and swap in the new domain's tables, tool/agent names, SQL, system prompts, ports, and **fresh** connection UUIDs. **Carry over the `contrib` base64 blobs and every `SECRET:` value verbatim** from the cloned app — they are environment/version-specific boilerplate, not domain data. Only change the PostgreSQL `Database_Name` property to the new DB.
+**Fastest reliable method:** clone the JSON shape of an existing use case app of the same type (e.g. `samples/Agentic_AI/Telecom_Invoice_Chatbot_Use_Case/*.flogo`) and swap in the new domain's tables, tool/agent names, SQL, system prompts, ports, and **fresh** connection UUIDs. **Carry over the `contrib` base64 blobs and every `SECRET:` value verbatim** from the cloned app — they are environment/version-specific boilerplate, not domain data. Only change the PostgreSQL `Database_Name` property to the new DB.
 
 ### Phase 5 — Verify (do this before declaring done)
 - Create a scratch DB, load `database.sql`, confirm row counts; confirm `reset_data.sql` reloads clean.

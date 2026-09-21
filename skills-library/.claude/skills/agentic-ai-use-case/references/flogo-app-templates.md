@@ -2,7 +2,7 @@
 
 Domain-agnostic JSON skeletons for the three apps. Placeholders are written as `<LIKE_THIS>`.
 The **most reliable way to build** is to copy a same-type app from an existing use case under
-`demos/Agentic_AI/*_Use_Case/` and swap in the domain specifics; these skeletons show what to change
+`samples/Agentic_AI/*_Use_Case/` and swap in the domain specifics; these skeletons show what to change
 and what must stay. Always carry `contrib` and `SECRET:` values verbatim from the cloned app.
 
 Common to every app: `"appModel": "1.1.1"`, and `"metadata": { "flogoVersion": "2.26.5", "endpoints": [...] }`.

@@ -24,7 +24,7 @@ This is the sibling of the `agentic-ai-use-case` skill. **Same output, different
 
 ## What it produces
 
-A new folder (default `demos/Agentic_AI/<UseCase>_Use_Case/`, confirm with the user; **never** inside `skills-library/`) containing:
+A new folder (default `samples/Agentic_AI/<UseCase>_Use_Case/`, confirm with the user; **never** inside `skills-library/`) containing:
 
 | File | Purpose |
 |------|---------|
@@ -63,7 +63,7 @@ FDA-specific method (this skill):
 
 ## Reference use cases (study these before building)
 
-Several Agentic AI use cases live under the reference folder (resolved in Phase 0b, default `demos/Agentic_AI/`); the **canonical references** to study are the six below. Read the ones closest to the requested domain to match structure, README shape, `prompts.md` format, `database.sql` conventions, and the direct-Postgres A2A pattern. Each ships exactly three apps (`<Prefix>MCPServer` / `<Prefix>A2AServers` / `<Prefix>AIOrchestrator`) plus `database.sql`, `reset_data.sql`, `prompts.md`, `README.md`.
+Several Agentic AI use cases live under the reference folder (resolved in Phase 0b, default `samples/Agentic_AI/`); the **canonical references** to study are the six below. Read the ones closest to the requested domain to match structure, README shape, `prompts.md` format, `database.sql` conventions, and the direct-Postgres A2A pattern. Each ships exactly three apps (`<Prefix>MCPServer` / `<Prefix>A2AServers` / `<Prefix>AIOrchestrator`) plus `database.sql`, `reset_data.sql`, `prompts.md`, `README.md`.
 
 | Use case | Folder | Persona | A2A action pattern |
 |---|---|---|---|
@@ -101,12 +101,12 @@ Present the choice, recommend FDA-CLI (default), and note the clone exception ab
 Read `skills-library/.claude/skills/config.md` first for: the `psql` path and PostgreSQL host/port/user/password/db; the OpenAI/LLM API key, base URL, and model; the SMTP username/app-password; and the CLI paths for `flogodesign-cli` (`fda`) and `flogobuild`. **Do not hardcode any of these** — read them at build time. Before running any command, print the resolved `fda` and `flogobuild` **path and `version`** so the run is reproducible. Read secrets from config.md into shell/script variables; never echo them.
 
 ### Phase 0b — Locate the reference use cases (portability) 📍
-The build recipes are self-contained, but you should **study** the closest existing use case to match its structure, README shape, `prompts.md` format, and `database.sql` conventions. Resolve the **reference folder** in this order, and use it wherever this document says `demos/Agentic_AI/`:
+The build recipes are self-contained, but you should **study** the closest existing use case to match its structure, README shape, `prompts.md` format, and `database.sql` conventions. Resolve the **reference folder** in this order, and use it wherever this document says `samples/Agentic_AI/`:
 1. If `config.md` defines `AGENTIC_USE_CASES_DIR`, use that path (relative to the repo root, or an absolute path).
-2. Otherwise, if `demos/Agentic_AI/` exists at the repo root, use it — this is the default when the skill ships inside `flogo-enterprise-hub`.
+2. Otherwise, if `samples/Agentic_AI/` exists at the repo root, use it — this is the default when the skill ships inside `flogo-enterprise-hub`.
 3. Otherwise (skills-library installed standalone), **ask the user** to point you to the folder that holds the Agentic AI use-case apps (each a `*MCPServer.flogo` / `*A2AServers.flogo` / `*AIOrchestrator.flogo` trio). If the user has none, proceed from [references/fda-build-recipes.md](references/fda-build-recipes.md) alone — it is self-sufficient — and **do not block the build**; just skip the "study the reference" step.
 
-New use cases are created under `demos/Agentic_AI/<UseCase>_Use_Case/` by default (confirm with the user; **never** inside `skills-library/`).
+New use cases are created under `samples/Agentic_AI/<UseCase>_Use_Case/` by default (confirm with the user; **never** inside `skills-library/`).
 
 ### Phase 1 — Identify the persona FIRST (ask before anything else)
 When the user gives only a domain, the **very first question is WHO the end user is** — because the persona determines the tables, the tone, and which actions exist. Ask an either/or framed to the domain, e.g.:
@@ -124,7 +124,7 @@ After the persona is set, ask what changes the build — **persona → operation
 5. **Email/notification agent?** → include one dedicated `send_confirmation_email` SMTP agent (creds from config.md); the reference use cases all have exactly one.
 6. **LLM provider** → provider + model + base URL (defaults from config.md; e.g. OpenAI `https://api.openai.com/v1`). The base URL must be an explicit endpoint (see gotcha 4c).
 7. **Locale/persona details** → names, IDs, currency so demo data feels real (each reference use case has a flagship persona with a stable ID pattern, e.g. `MBR-100001`, `+1-415-555-0142`).
-8. **Ports & folder** → default to a free port block and `demos/Agentic_AI/<UseCase>_Use_Case/`; confirm.
+8. **Ports & folder** → default to a free port block and `samples/Agentic_AI/<UseCase>_Use_Case/`; confirm.
 
 ### Phase 3 — Author the README FIRST, then GATE on approval  ⛔
 Write the **`README.md` before building any database or app** — it is the approval artifact (it replaces the old abstract plan doc). Draft it to the reference-use-case shape: title + intro, the **persona**, an architecture overview (ASCII diagram), the **planned apps** with their **tools table** (name → table/query) and **agents table** (name → action type + workflow), the **database tables** it will need, **sample prompts** (grouped MCP-only vs MCP+A2A, including the multi-step full-workflow prompt), and **how the user will run it**. Also list **what will land in the manual-config gap section** (see Phase 5 / the reference).

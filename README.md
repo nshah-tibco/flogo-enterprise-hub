@@ -39,7 +39,7 @@ Then pick a starting point:
 
 - **[Product Samples](./samples/README.md)** — ready-to-run TIBCO Flogo® samples (quick start).
 - **[Flogo Skill Library](./skills-library/README.md)** — skills for AI coding agents such as Claude Code.
-- **[Industry Agentic AI Demos](./demos/Agentic_AI/README.md)** — end-to-end, vertical-specific demos.
+- **[Agentic AI Samples & Industry Use Cases](./samples/Agentic_AI/README.md)** — connector feature samples plus end-to-end, vertical-specific industry demos.
 
 ---
 
@@ -47,8 +47,8 @@ Then pick a starting point:
 
 Build AI-powered agents, expose business data via MCP, and orchestrate intelligent workflows.
 
-- **[Agentic AI Samples](./samples/Agentic_AI/)** — AI agents with custom guardrails, multi-agent handoff, MCP server integration, the "Flogo as an MCP tool server" pattern, A2A (Agent-to-Agent) protocol, LLM Client Activity, memory conversation store, dynamic MCP/A2A server configuration, dynamic semantic tool selection at scale (150 tools), scheduled reasoning with automated report generation and email delivery, and incident triage. Supports OpenAI, Gemini, Anthropic, Ollama, and vLLM.
-- **[Agentic AI Use-Case Demos](./demos/Agentic_AI/)** — end-to-end, industry-specific Agentic AI demos organized by vertical (banking, insurance, healthcare, telecom, utilities, aerospace, manufacturing, retail, real estate, and more). Each demo uses the same three-app pattern — an MCP Server (read-only tools), an A2A Agents app (guarded write workflows), and a WebSocket AI Orchestrator — backed by PostgreSQL, and shares the browser [Chatbot](./demos/Agentic_AI/Chatbot/) test client.
+- **[Agentic AI Feature Samples](./samples/Agentic_AI/README.md#part-1--connector-feature-samples)** — AI agents with custom guardrails, multi-agent handoff, MCP server integration, the "Flogo as an MCP tool server" pattern, A2A (Agent-to-Agent) protocol, LLM Client Activity, memory conversation store, dynamic MCP/A2A server configuration, dynamic semantic tool selection at scale (150 tools), scheduled reasoning with automated report generation and email delivery, and incident triage. Supports OpenAI, Gemini, Anthropic, Ollama, and vLLM.
+- **[Agentic AI Industry Use Cases](./samples/Agentic_AI/README.md#part-2--industry-use-case-demos)** — end-to-end, industry-specific Agentic AI demos organized by vertical (banking, insurance, healthcare, telecom, utilities, aerospace, manufacturing, retail, real estate, and more). Each uses the same three-app pattern — an MCP Server (read-only tools), an A2A Agents app (guarded write workflows), and a WebSocket AI Orchestrator — backed by PostgreSQL, and shares the browser [Chatbot](./samples/Agentic_AI/Chatbot/) test client.
 - **[Model Context Protocol (MCP) Samples](./samples/Model_Context_Protocol(MCP)/)** — MCP servers exposing business data as AI-accessible tools: stateless, stateful, authenticated, annotated, advanced primitives (elicitation, logging, sampling), JWT and OAuth 2.0 access control (external IdP via JWKS), structured content with annotations, and MCP client gateway.
 - **[OpenAI RAG & Vector Search Extension](./extensions/openAI/)** — Flogo activities for the OpenAI platform: file management, vector-store lifecycle, semantic vector search (RAG), and image generation — build retrieval-augmented AI flows with no code.
 - **[AI Alert Agent Demo](./demos/flogo-ai-alert-agent/)** — Autonomous AI Agent (Flogo AI Agent Activity) that investigates TIBCO Platform application alerts using Platform MCP services as tools and reports its root-cause findings automatically.
@@ -129,13 +129,12 @@ Watch the full playlist: [TIBCO Flogo® Short Videos on YouTube](https://www.you
 ```
 flogo-enterprise-hub/
 ├── samples/                  # Ready-to-run product samples
-│   ├── Agentic_AI/           #   AI agent samples
+│   ├── Agentic_AI/           #   AI agent feature samples + industry use-case demos (by vertical)
 │   ├── Model_Context_Protocol(MCP)/  #   MCP server samples
 │   ├── VSCode_Extension/     #   Flogo core samples (APIs, connectors, flows, testing)
 │   ├── Tibco_Control_Plane/  #   Platform deployment samples
 │   └── DockerFiles/          #   Multi-distro Dockerfile examples
-├── demos/                    # Proof-of-concept demonstrations
-│   └── Agentic_AI/           #   Industry Agentic AI use cases (MCP + A2A + orchestrator), by vertical
+├── demos/                    # Proof-of-concept demonstrations (MCP, GraphQL, ML, alerts)
 ├── extensions/               # Custom-built Flogo extensions
 └── skills-library/           # AI coding agent skills
 ```

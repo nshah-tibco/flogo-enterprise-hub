@@ -35,7 +35,7 @@ Chatbot UI --WebSocket--> AI Orchestrator --MCP (HTTP streamable)--> MCP Server 
 
 ### What you get (generated files)
 
-A new folder (default `demos/Agentic_AI/<UseCase>_Use_Case/`) containing:
+A new folder (default `samples/Agentic_AI/<UseCase>_Use_Case/`) containing:
 
 | File | Purpose |
 |------|---------|
@@ -102,7 +102,7 @@ The skill asks only what changes the build:
 | **Email/notification agent?** | Whether to include an SMTP agent. |
 | **LLM provider + model + base URL** | The orchestrator and A2A agents' AI config (defaults from `config.md`). The base URL **must** be a real endpoint. |
 | **Locale / persona** | So demo data feels realistic. |
-| **Ports & folder** | Distinct port per app/agent; default folder `demos/Agentic_AI/<UseCase>_Use_Case/`. |
+| **Ports & folder** | Distinct port per app/agent; default folder `samples/Agentic_AI/<UseCase>_Use_Case/`. |
 
 Everything else (secrets, connection UUIDs, tool/handler schemas, orchestrator routing wiring) is handled automatically.
 
@@ -115,7 +115,7 @@ Everything else (secrets, connection UUIDs, tool/handler schemas, orchestrator r
 - *"Build an agentic AI demo for a **retail order-management** assistant: customers check order status and can request a return or reschedule delivery. Include an email confirmation agent."*
 - *"Create an FDA-based agentic app set for a **bank customer-service** agent — look up accounts and recent transactions (MCP), and let it open a dispute or block a card (A2A, DB writes)."*
 - *"Scaffold an **insurance claims** assistant: look up policies and claim status; A2A agents to file a new claim and to email the adjuster. LLM = OpenAI gpt-5.6."*
-- *"Build a **logistics/transport** dispatch assistant — track shipments, reassign a driver, and notify the customer by email. Put it in `demos/Agentic_AI/Logistics_Transport_Use_Case/`."*
+- *"Build a **logistics/transport** dispatch assistant — track shipments, reassign a driver, and notify the customer by email. Put it in `samples/Agentic_AI/Logistics_Transport_Use_Case/`."*
 
 ### Prompts to *try the running system* (examples the skill also generates into `prompts.md`)
 

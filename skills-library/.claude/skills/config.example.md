@@ -57,7 +57,7 @@ Password: <your-app-password>
 
 Optional override — a path **relative to the repo root** (or an absolute path) to the
 folder holding the reference Agentic AI use-case apps that the two agentic skills
-clone/study. **Leave this unset** to use the built-in default `demos/Agentic_AI/`,
+clone/study. **Leave this unset** to use the built-in default `samples/Agentic_AI/`,
 which is correct when the skills ship inside `flogo-enterprise-hub`. Set it only if
 your reference apps live elsewhere — e.g. `skills-library/` is installed standalone in
 another project. If the folder can't be found, the skills will ask you to point to it.

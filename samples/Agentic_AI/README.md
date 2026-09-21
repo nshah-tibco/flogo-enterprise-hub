@@ -1,14 +1,17 @@
-# TIBCO Flogo® Agentic AI Connector Samples
+# TIBCO Flogo® Agentic AI — Samples & Industry Use Cases
 
-This directory contains **real-world sample applications** demonstrating the full capabilities of the **TIBCO Flogo® Agentic AI Connector** — the enterprise-grade way to build, orchestrate, and govern AI agents inside Flogo integration flows.
+This directory brings together two complementary collections for the **TIBCO Flogo® Agentic AI Connector** — the enterprise-grade way to build, orchestrate, and govern AI agents inside Flogo integration flows:
 
-New here? Browse the **[Sample Catalog](#sample-catalog)** by industry vertical, follow the **[Suggested Learning Order](#suggested-learning-order)**, then see the **[Quick Start](#quick-start)**.
+- **[Part 1 — Connector Feature Samples](#part-1--connector-feature-samples)** — focused apps that each teach a building block: **LLM Client Activity**, **AI Agent Activity**, **AI Agent Trigger**, custom guardrails, custom conversation stores, the "Flogo as an MCP tool server" pattern, and the **A2A** (Agent-to-Agent) protocol. Start here to learn *how* the connector works.
+- **[Part 2 — Industry Use-Case Demos](#part-2--industry-use-case-demos)** — complete, PostgreSQL-backed, vertical-specific demos (banking, insurance, healthcare, telecom, utilities, aerospace, manufacturing, retail, real estate, and more). Each applies the same repeatable **three-app pattern** — an **MCP Server** (read-only tools), an **A2A Agents** app (guarded write workflows), and a **WebSocket AI Orchestrator** (the conversational brain). Start here to see *what* you can build.
+
+New here? Skim **[What Is the Agentic AI Connector?](#what-is-the-agentic-ai-connector)**, then follow the feature-sample **[Suggested Learning Order](#suggested-learning-order)** or jump straight to an **[industry use case](#use-case-catalog)**. Both collections share the **[Prerequisites](#prerequisites)**, **[Quick Start](#quick-start)**, and the browser **[Flogo Chatbot](#flogo-chatbot--browser-based-websocket-test-client)** test client.
 
 ---
 
 ## What Is the Agentic AI Connector?
 
-The connector provides three primary building blocks. The **Flogo Features Used** column in the catalog below tells you which one (and which activities, triggers, and MCP/A2A features) each sample exercises.
+The connector provides three primary building blocks. The **Flogo Features Used** column in the feature-sample catalog below tells you which one (and which activities, triggers, and MCP/A2A features) each sample exercises.
 
 | Building Block | Best For | Key Capabilities |
 |---|---|---|
@@ -34,9 +37,15 @@ A fourth pattern in this folder — **Flogo as an MCP Tool Server** — turns a 
 
 ---
 
+# Part 1 — Connector Feature Samples
+
+**Real-world sample applications** demonstrating the full capabilities of the Agentic AI Connector, one building block at a time. Browse the **[Sample Catalog](#sample-catalog)** by industry vertical, follow the **[Suggested Learning Order](#suggested-learning-order)**, then dig into the **[Sample Details](#sample-details)**.
+
+> **Using TIBCO Flogo® 3?** Nine of these feature samples are also provided in the **Flogo 3.x** folder-based project format (each app is a folder with `app.fgmd`, `flows/`, `triggers/`, and `connections/` rather than a single `.flogo` file) under [`Flogo3x/`](./Flogo3x/) — Healthcare Patient Support, Mobile Customer Care, Smart Supply Chain, Travel Itinerary Planner, AI Triage, Insurance Claims Processor, Dynamic Semantic Tool Selection, Scheduled Reasoning, and IT Help Desk Advisor. See the [Flogo 3.x samples README](./Flogo3x/README.md).
+
 ## Sample Catalog
 
-Samples grouped by **industry vertical**, plus a browser chat client for testing. The **Flogo Features Used** column lists the Agentic AI building blocks, activities, triggers, and MCP/A2A features each sample exercises. Click any sample name to open its folder and full README.
+Samples grouped by **industry vertical**. The **Flogo Features Used** column lists the Agentic AI building blocks, activities, triggers, and MCP/A2A features each sample exercises. Click any sample name to open its folder and full README.
 
 ### Banking, Financial Services & Insurance
 
@@ -96,13 +105,7 @@ Samples grouped by **industry vertical**, plus a browser chat client for testing
 |---|---|---|---|---|
 | 13 | [Apartment Finder Agent](./Apartment-Finder-Agent/) | Conversational apartment search that ends in a booked, emailed tour | **AI Agent Activity** · Memory Conversation Store · **Flogo MCP Server** (8 tools) · Send Mail write tool · `#mapper` `@conditional` lookup · prompt-level scope guardrails · WebSocket trigger | WebSocket |
 
-### Utility
-
-| Tool | Purpose |
-|---|---|
-| [Flogo Chatbot](./Chatbot/) | Browser-based WebSocket test client for any sample that exposes a WebSocket endpoint. Multiple sessions, editable WS URL, connection status. |
-
----
+> **Testing any WebSocket sample?** Use the shared browser **[Flogo Chatbot](#flogo-chatbot--browser-based-websocket-test-client)** in [`Chatbot/`](./Chatbot/) — it also drives every Part 2 use case.
 
 ## Suggested Learning Order
 
@@ -122,7 +125,7 @@ New to the Agentic AI Connector? This path moves from the simplest building bloc
 12. **[Mortgage AI Processor](./mortgagedemo/)** — apply the MCP-server pattern to autonomous, auditable decisioning.
 13. **[Apartment Finder Agent](./Apartment-Finder-Agent/)** — put both halves together: an AI Agent Activity chats over your own MCP tool server, and one of those tools sends real email.
 
----
+Ready to see the full pattern applied end-to-end? Continue to **[Part 2 — Industry Use-Case Demos](#part-2--industry-use-case-demos)**.
 
 ## Sample Details
 
@@ -167,30 +170,202 @@ A renter describes what they want in plain English and an **AI Agent Activity** 
 
 ---
 
+# Part 2 — Industry Use-Case Demos
+
+End-to-end, **industry-specific Agentic AI demos** built on **TIBCO Flogo® Enterprise**. Where Part 1 isolates individual features, these use cases assemble them into complete, PostgreSQL-backed business scenarios — the same reusable pattern applied to a different vertical each time.
+
+## The Three-App Pattern
+
+Most use cases here ship the same **standard trio** of Flogo apps plus a PostgreSQL database. Understand it once and every use case reads the same way:
+
+| App | Role | Trigger | Talks to |
+|---|---|---|---|
+| **`*MCPServer.flogo`** | Exposes **read-only** business data as MCP tools (query customers, policies, invoices, tickets…). Returns all rows; the orchestrator filters. | HTTP (streamable MCP) | PostgreSQL |
+| **`*A2AServers.flogo`** | One **A2A agent per guarded write action** (open a ticket, submit a claim, schedule a visit, send email…). Each agent runs on its own port. | A2A server (one port each) | PostgreSQL / SMTP |
+| **`*AIOrchestrator.flogo`** | The **conversational brain**: classifies intent, calls MCP read tools, hands off to A2A write agents, and enforces confirm-before-write guardrails. | WebSocket (`wsserver`) | LLM · MCP · A2A |
+
+```
+   Browser Chatbot  ──ws──▶  AI Orchestrator  ──▶  LLM (OpenAI / Gemini / Anthropic)
+                                   │  ├──▶ MCP Server   ──▶ PostgreSQL   (reads)
+                                   │  └──▶ A2A Agents   ──▶ PostgreSQL / SMTP  (guarded writes)
+```
+
+A few use cases deliberately vary this shape — see the **Variant** badge in the [status legend](#status-legend). BusinessWorks (BW6) and REST-tier variants ship their own detailed READMEs.
+
+## Use-Case Catalog
+
+Grouped by **industry vertical**. Click a use case to open its folder and full README. Ports are the defaults baked into each app (all configurable). "Endpoints" reads *WebSocket · MCP · A2A range*.
+
+### Aerospace & Defense
+
+| Use Case | What it does | Endpoints | Database | Status |
+|---|---|---|---|---|
+| [Aerospace MRO & AOG Operations](./Aerospace_Defense_MRO_Use_Case/) | Maintenance/repair/overhaul + aircraft-on-ground assistant — check work orders & parts, then schedule/dispatch. | WS `:8085` `/mro` · MCP `:9095` · A2A `8091–8094` | `aerospace_mro` | ✅ Complete |
+
+### Banking, Financial Services & Insurance
+
+| Use Case | What it does | Endpoints | Database | Status |
+|---|---|---|---|---|
+| [Retail Banking Assistant](./Retail_Banking_Assistant_Use_Case/) | Balances, transactions, cards & payments self-service with guarded write actions. | WS `:8088` `/banking` · MCP `:9096` · A2A `8710–8712` | `banking` | ✅ Complete · 🖼️ deck |
+| [Life & Pensions Member Assistant](./Life_And_Pensions_Use_Case/) | Pension pots, holdings, contributions, beneficiaries, claims & adviser callbacks; email confirmations. | WS `:9600` `/lifepensions` · MCP `:9982` · A2A `9983–9988` | `life_pensions` | ✅ Complete |
+| [Auto Insurance Policyholder Assistant](./Auto_Insurance_Assistant_Use_Case/) | Policy, coverage & claims assistant, **grounded on policy documents via RAG**. | WS `:9700` `/auto-insurance` · MCP `:9701` · A2A `9711–9714` | `auto_insurance` (+ vector store) | 🔍 RAG |
+
+### Healthcare
+
+| Use Case | What it does | Endpoints | Database | Status |
+|---|---|---|---|---|
+| [Hospital Post-Discharge Assistant](./Hospital_AI-Agent_Use_Case/) | Post-discharge coordination — care instructions, appointments, refills, follow-ups. | WS `:8652` `/hospital` · MCP `:9092` · A2A `8070–8073` | `hospital` | 🔌 REST-tier |
+
+### Telecommunications
+
+| Use Case | What it does | Endpoints | Database | Status |
+|---|---|---|---|---|
+| [Telecom Invoice Chatbot](./Telecom_Invoice_Chatbot_Use_Case/) | Explain invoices, usage & charges; dispute, adjust and email confirmations. | WS `:9500` `/telecom` · MCP `:9882` · A2A `9883–9885` | `telecom` | ✅ Complete |
+
+### Utilities & Energy
+
+| Use Case | What it does | Endpoints | Database | Status |
+|---|---|---|---|---|
+| [Electric Power Distribution](./Power_Distribution_Use_Case/) | Residential self-service — bills, usage, outages; report outage, schedule visit, reconnect (past-due guardrail). | WS `:9680` `/grid` · MCP `:9682` · A2A `9683–9686` | `power_distribution` | ✅ Complete · 🖼️ deck |
+| [Residential Water Utility](./Water_Utility_Use_Case/) | Water customer self-service (bills, usage, service requests). | WS `:9780` `/water` · MCP `:9782` · A2A `9783–9786` *(intended)* | `water_utility` *(intended)* | 📄 Stub |
+
+### Manufacturing & Industrial
+
+| Use Case | What it does | Endpoints | Database | Status |
+|---|---|---|---|---|
+| [Semiconductor Customer & Order Assistant](./Semiconductor_Customer_Use_Case/) | Parts catalog, orders, RMAs & lead times for a semiconductor supplier. | WS `:8088` `/semiconductor` · MCP `:9098` · A2A `8730–8735` | `semiconductor` | ✅ Complete |
+| [Predictive Maintenance & Asset Monitoring](./Predictive_Maintenance_Use_Case/) | Asset health, sensor readings & failure prediction with a REST backend and a single chat agent. | WS `:8083` `/ws/chat` · MCP `:9093` · REST api `:9095` | `predictive_maintenance` | 🔌 REST-tier |
+
+### Transportation, Travel & Logistics
+
+| Use Case | What it does | Endpoints | Database | Status |
+|---|---|---|---|---|
+| [Airline Passenger Services](./Airline_Passenger_Services_Use_Case/) | Flights, bookings, seats & baggage passenger assistant. | WS `:8083` `/airline` · MCP `:9093` · A2A `8074–8076` | `airline` | 🔌 REST-tier |
+| [Logistics / Transport Shipper Assistant](./Logistics_Transport_Use_Case/) | Shipment tracking, quotes & bookings; ships runnable binaries + FDA build script. | WS `:9690` `/logistics` · MCP `:9790` · A2A `9791–9794` | `logistics` | 📦 Prebuilt binaries |
+| [Maritime Container Shipping](./Container_Shipping_Use_Case/) | Container-shipping customer self-service. **MCP + DB done; A2A/Orchestrator still being converted.** | MCP `:9720` `/shipping-bss` (real) · WS/A2A *stale* | `container_shipping` | 🚧 WIP |
+
+### Retail & Consumer
+
+| Use Case | What it does | Endpoints | Database | Status |
+|---|---|---|---|---|
+| [Retail — BW & Flogo, Better Together](./Retail_AI_BW_Flogo/) | Retail assistant where **BW6 apps expose domain REST/MCP** and a Flogo **REST** orchestrator drives the LLM. | Flogo REST `:18085` `/api/query` · BW6 MCP `:18000` | *(inside BW6 apps)* | 🏛️ BW6 |
+
+### Real Estate
+
+| Use Case | What it does | Endpoints | Database | Status |
+|---|---|---|---|---|
+| [Real Estate Lead Engagement Assistant](./Real_Estate_Lead_Assistant_Use_Case/) | MLS search & lead engagement; trio generated via `fda` CLI build scripts. | WS `:9590` `/realestate` · MCP `:9592` · A2A `9593–9597` | `realestate` | ✅ Complete |
+
+### Status Legend
+
+| Badge | Meaning |
+|---|---|
+| ✅ **Complete** | Standard MCP + A2A + Orchestrator trio, ready to run out of the box. |
+| 🔍 **RAG** | Adds retrieval-augmented generation (a document ingestion app + vector store) on top of the trio. |
+| 🏛️ **BW6** | Built on **TIBCO BusinessWorks 6** rather than (or alongside) the Flogo trio — different runtime; see its own README. |
+| 🔌 **REST-tier** | Includes legacy REST API / single-agent apps alongside (or instead of) the standard trio. |
+| 📦 **Prebuilt binaries** | Ships compiled `.exe` executables so you can run without building. |
+| 🚧 **WIP** | Work in progress — some apps are unconverted copies; read the in-folder "Build status" note first. |
+| 📄 **Stub** | README documents the intended design, but the runnable apps are not present yet. |
+| 🖼️ **deck** | Includes an architecture slide deck. |
+
+> **Port collisions — don't run these pairs at once (defaults overlap):**
+> Retail Banking & Semiconductor both use WS `:8088`; Airline & Predictive Maintenance both use WS `:8083` (and MCP `:9093`); Life & Pensions and Container Shipping both use WS `:9600` + A2A `9983–9988`. Port `:9095` recurs across Aerospace (MCP), Predictive Maintenance (REST), and Hospital. Change a port in the app properties to run overlapping demos simultaneously.
+
+---
+
 ## Prerequisites
 
-- **TIBCO Flogo® 2.26.4 or later** (2.26.5+ for the [IT Help Desk Advisor](./LLMClient-Dynamic-Config-And-Memory/) memory / dynamic-config sample). See the [documentation](https://docs.tibco.com/pub/flogo/latest/doc/html/Default.htm#connectors/agentic-AI/agentic-AI-overview.htm).
-- An API key for your chosen LLM provider (OpenAI, Gemini, or Anthropic).
-- A WebSocket client for testing: [Flogo Chatbot](./Chatbot/) (included — see below) or [websocat](https://github.com/vi/websocat).
-- Some samples have extra prerequisites (PostgreSQL, Docker, Claude Desktop) — see each sample's README.
+**Every sample and use case needs:**
+
+- **TIBCO Flogo® 2.26.4 or later** (2.26.5+ for the [IT Help Desk Advisor](./LLMClient-Dynamic-Config-And-Memory/) memory / dynamic-config sample), with the [Flogo VS Code extension](https://marketplace.visualstudio.com/items?itemName=tibco.flogo). See the [Agentic AI documentation](https://docs.tibco.com/pub/flogo/latest/doc/html/Default.htm#connectors/agentic-AI/agentic-AI-overview.htm).
+- An **API key** for your chosen LLM provider (OpenAI, Gemini, or Anthropic). Where a base URL is used, point it at a **real endpoint** (e.g. `https://api.openai.com/v1`). The default model referenced in the Part 2 demos is `gpt-5.6`; substitute any model your account can access.
+- A **WebSocket client** for testing WebSocket samples/use cases: the included [Flogo Chatbot](#flogo-chatbot--browser-based-websocket-test-client) (Node.js 16+) or [websocat](https://github.com/vi/websocat).
+
+**The Part 2 industry use cases additionally need:**
+
+- **PostgreSQL 14+** (local or remote) — each use case creates its own database (`database.sql` + `reset_data.sql`).
+
+**Some samples/use cases have extra prerequisites** — check the catalogs and each folder's README:
+
+- **🔍 RAG** ([Auto Insurance](./Auto_Insurance_Assistant_Use_Case/)): a document set + vector store; it ingests policy PDFs.
+- **🏛️ BW6** ([Retail — BW & Flogo](./Retail_AI_BW_Flogo/)): **TIBCO BusinessWorks 6.12** and Node.js for the MCP proxy.
+- **SMTP** (Life & Pensions, Telecom, Power Distribution and others with an email agent): an SMTP account — e.g. Gmail with an App Password over SSL (port 465).
+- **PostgreSQL / Docker / Claude Desktop** for several Part 1 samples (Mortgage AI, BeautyCo Retail, Morning Briefing) — see each sample's README.
+
+> **Credentials are not shipped.** Every app property that held a secret is reset to a placeholder (`SECRET:YOURKEY` for connection API keys). Set your own LLM key, PostgreSQL password, and SMTP credentials before running — see each folder's README / manual-steps section.
+
+---
 
 ## Quick Start
+
+### Part 1 — a connector feature sample
 
 1. Clone or download this repository.
 2. Open the `flogo-enterprise-hub` folder in VS Code with the Flogo extension installed.
 3. Navigate to `samples/Agentic_AI/<sample-name>/` and open the `.flogo` file.
 4. Configure your LLM Provider connection with your API key.
-5. Run the app from VS Code and connect via the [Flogo Chatbot](./Chatbot/), websocat, or a REST client — see the sample's README for the exact endpoint and port.
+5. Run the app from VS Code and connect via the [Flogo Chatbot](#flogo-chatbot--browser-based-websocket-test-client), websocat, or a REST client — see the sample's README for the exact endpoint and port.
+
+### Part 2 — an industry use case (standard trio)
+
+The steps are identical for each ✅ use case; only the database name, ports, and WebSocket path change (see the [catalog](#use-case-catalog)). Example uses Life & Pensions:
+
+**1. Create and load the database:**
+
+```bash
+cd samples/Agentic_AI/Life_And_Pensions_Use_Case
+createdb life_pensions                          # or: psql -U postgres -c "CREATE DATABASE life_pensions;"
+psql -U postgres -d life_pensions -f database.sql
+psql -U postgres -d life_pensions -f reset_data.sql   # optional: refresh demo dates relative to today
+```
+
+**2. Import the three apps** into Flogo Enterprise (VS Code Flogo extension): the `*MCPServer.flogo`, `*A2AServers.flogo`, and `*AIOrchestrator.flogo` for that use case.
+
+**3. Set the app properties** — PostgreSQL host/port/database/user/password, your **LLM API key** and model, ports, and (if the use case has an email agent) SMTP settings. The exact property names are in each folder's README / manual-steps section.
+
+**4. Start the apps in order** (the orchestrator needs the others running first):
+
+```
+1) *MCPServer          → HTTP MCP port ready first
+2) *A2AServers         → all A2A agent ports
+3) *AIOrchestrator     → WebSocket port (needs MCP + A2A up)
+```
+
+**5. Connect the Chatbot** and start chatting:
+
+```bash
+cd samples/Agentic_AI/Chatbot
+npm install
+npm start                 # http://localhost:3000
+# In the UI, set the WebSocket URL for your use case and click Connect, e.g.:
+#   ws://localhost:9600/lifepensions
+```
+
+**6. Run the demo** using the prompts in that use case's `prompts.md`. After a run that performed writes, re-run `reset_data.sql` to restore the seeded data.
+
+> 🏛️ **BW6** and 📦 **prebuilt-binary** use cases start differently (TIBCO Business Studio / running the `.exe` directly) — follow their own READMEs.
 
 ### Flogo Chatbot — Browser-Based WebSocket Test Client
 
-A ready-to-use chat UI in [`Chatbot/`](./Chatbot/) for testing any sample that exposes a WebSocket endpoint:
+A ready-to-use, domain-agnostic chat UI in [`Chatbot/`](./Chatbot/) drives any sample or use case that exposes a WebSocket endpoint. It supports multiple concurrent sessions, an editable WebSocket URL, and a live connection indicator.
 
 ```bash
 cd samples/Agentic_AI/Chatbot
 npm install
 npm start
-# Open http://localhost:3000, set the WebSocket URL for your sample, and click Connect
+# Open http://localhost:3000, set the WebSocket URL for your sample/use case
+# (ws://localhost:<port><path>), and click Connect.
 ```
 
-See each sample's individual `README.md` for detailed configuration and usage instructions.
+See each folder's individual `README.md` for detailed configuration and usage instructions.
+
+---
+
+## Feedback
+
+Please contact us at [integration-pm@tibco.com](mailto:integration-pm@tibco.com) with any queries, feedback, or comments.
+
+<!-- SEO Keywords: TIBCO Flogo, Agentic AI, AI Agents, MCP, MCP Server, Model Context Protocol, A2A, Agent-to-Agent, LLM Orchestration, WebSocket, PostgreSQL, RAG, Retrieval Augmented Generation, BusinessWorks, Industry Use Cases, Banking, Insurance, Healthcare, Telecom, Utilities, Aerospace, Manufacturing, Retail, Real Estate, Low-Code, iPaaS, Enterprise AI -->
+
+**Topics:** `Agentic AI` · `MCP Server` · `A2A` · `LLM Orchestration` · `Industry Demos` · `Low-Code`

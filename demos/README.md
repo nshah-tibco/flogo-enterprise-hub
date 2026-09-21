@@ -9,11 +9,12 @@ End-to-end proof-of-concept demonstrations showcasing **TIBCO Flogo®** as a **l
 | Demo | Category | Description |
 |------|----------|-------------|
 | [Agent AI - Platform Error Alert Agent](./flogo-ai-alert-agent/) | AI & MCP | Flogo Agentic AI scenario consuming Platform MCP servers and Platform Alerts |
-| [Agentic AI Use Cases](./Agentic_AI/) | AI & MCP | Industry-specific Agentic AI demos by vertical — MCP Server + A2A Agents + WebSocket orchestrator, PostgreSQL-backed, with a shared browser Chatbot |
 | [AI-Powered Customer Service](./ai-powered-customer-service/) | AI & MCP | MCP server integrating CRM, order management, and notifications for AI agents (Claude Desktop, Cursor, VS Code) |
 | [AI-Powered MFT](./flogo-mcp-mft/) | AI & MCP | MCP server for TIBCO Managed File Transfer — AI-powered B2B file transfer, user management, and audit trails |
 | [GraphQL](./flogo-graphql/) | Integration | GraphQL trigger with MongoDB resolvers for device data queries, with Docker Compose deployment |
 | [ML Anomaly Detection](./flogo-machine-learning-anomaly-detection/) | AI & ML | Real-time temperature anomaly detection using Python scikit-learn Isolation Forest, deployable to TIBCO Platform |
+
+> **Looking for the Agentic AI industry use cases?** They now live under [`samples/Agentic_AI/`](../samples/Agentic_AI/README.md) — end-to-end, vertical-specific demos (MCP Server + A2A Agents + WebSocket orchestrator, PostgreSQL-backed, with a shared browser Chatbot).
 
 ---
 
@@ -27,7 +28,6 @@ Additional requirements per demo:
 
 | Demo | Additional Prerequisites |
 |------|------------------------|
-| Agentic AI Use Cases | PostgreSQL 14+, an LLM API key (OpenAI / Gemini / Anthropic), and a WebSocket client (the included [Chatbot](./Agentic_AI/Chatbot/)). Some use cases also need SMTP, SQL Server, Weaviate, or TIBCO BusinessWorks — see [demos/Agentic_AI/README.md](./Agentic_AI/) |
 | AI-Powered Customer Service | Node.js v16+, Go v1.19+, MCP-compatible AI client |
 | AI-Powered MFT | TIBCO MFT environment, Claude Desktop, Docker Desktop |
 | GraphQL | Docker, Docker Compose, MongoDB |
