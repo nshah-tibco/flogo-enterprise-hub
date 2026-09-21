@@ -47,7 +47,7 @@ Chatbot UI --WebSocket--> AI Orchestrator --MCP(HTTP streamable)--> MCP Server -
 - **A2A Agents** = action workflows — **write directly to PostgreSQL** (`act_postgresql_query` to validate, `act_postgresql_insert` for INSERT/UPDATE) or send email (`act_general_sendmail`). Own guardrails, separate deploy/scale.
 - **Orchestrator** = the AI brain. WebSocket chat; the LLM decides intent and calls MCP tools or hands off to A2A agents.
 
-> **Default-action hard rule (verified across the reference use cases):** A2A action agents write **directly to PostgreSQL** or send **email** — the canonical write flow is `noop → log → [query to validate] → insert → log → actreturn`, and every use case includes one dedicated `send_confirmation_email` agent (`noop → sendmail → log → actreturn`). **Do NOT create a separate REST/backend service app, and do NOT use `act_general_rest` in the A2A agents, unless the user explicitly asks for a REST backend.** Of the six reference use cases, five (Airline, Life & Pensions, Power Distribution, Retail Banking, Telecom) write directly to Postgres; only **Hospital** calls a REST backend, and it is the documented outlier — do not copy its `#rest` pattern for a default build.
+> **Default-action hard rule (verified across the reference use cases):** A2A action agents write **directly to PostgreSQL** or send **email** — the canonical write flow is `noop → log → [query to validate] → insert → log → actreturn`, and every use case includes one dedicated `send_confirmation_email` agent (`noop → sendmail → log → actreturn`). **Do NOT create a separate REST/backend service app, and do NOT use `act_general_rest` in the A2A agents, unless the user explicitly asks for a REST backend.** Of the six canonical reference use cases, five (Airline, Life & Pensions, Power Distribution, Retail Banking, Telecom) write directly to Postgres; only **Hospital** calls a REST backend, and it is the documented outlier — do not copy its `#rest` pattern for a default build.
 
 ## Reference files (read before building)
 
@@ -63,7 +63,7 @@ FDA-specific method (this skill):
 
 ## Reference use cases (study these before building)
 
-Six already-built Agentic AI use cases live under `demos/Agentic_AI/`. Read the ones closest to the requested domain to match structure, README shape, `prompts.md` format, `database.sql` conventions, and the direct-Postgres A2A pattern. Each ships exactly three apps (`<Prefix>MCPServer` / `<Prefix>A2AServers` / `<Prefix>AIOrchestrator`) plus `database.sql`, `reset_data.sql`, `prompts.md`, `README.md`.
+Several Agentic AI use cases live under the reference folder (resolved in Phase 0b, default `demos/Agentic_AI/`); the **canonical references** to study are the six below. Read the ones closest to the requested domain to match structure, README shape, `prompts.md` format, `database.sql` conventions, and the direct-Postgres A2A pattern. Each ships exactly three apps (`<Prefix>MCPServer` / `<Prefix>A2AServers` / `<Prefix>AIOrchestrator`) plus `database.sql`, `reset_data.sql`, `prompts.md`, `README.md`.
 
 | Use case | Folder | Persona | A2A action pattern |
 |---|---|---|---|
@@ -100,6 +100,14 @@ Present the choice, recommend FDA-CLI (default), and note the clone exception ab
 ### Phase 0 — Read environment config, print tool paths+versions
 Read `skills-library/.claude/skills/config.md` first for: the `psql` path and PostgreSQL host/port/user/password/db; the OpenAI/LLM API key, base URL, and model; the SMTP username/app-password; and the CLI paths for `flogodesign-cli` (`fda`) and `flogobuild`. **Do not hardcode any of these** — read them at build time. Before running any command, print the resolved `fda` and `flogobuild` **path and `version`** so the run is reproducible. Read secrets from config.md into shell/script variables; never echo them.
 
+### Phase 0b — Locate the reference use cases (portability) 📍
+The build recipes are self-contained, but you should **study** the closest existing use case to match its structure, README shape, `prompts.md` format, and `database.sql` conventions. Resolve the **reference folder** in this order, and use it wherever this document says `demos/Agentic_AI/`:
+1. If `config.md` defines `AGENTIC_USE_CASES_DIR`, use that path (relative to the repo root, or an absolute path).
+2. Otherwise, if `demos/Agentic_AI/` exists at the repo root, use it — this is the default when the skill ships inside `flogo-enterprise-hub`.
+3. Otherwise (skills-library installed standalone), **ask the user** to point you to the folder that holds the Agentic AI use-case apps (each a `*MCPServer.flogo` / `*A2AServers.flogo` / `*AIOrchestrator.flogo` trio). If the user has none, proceed from [references/fda-build-recipes.md](references/fda-build-recipes.md) alone — it is self-sufficient — and **do not block the build**; just skip the "study the reference" step.
+
+New use cases are created under `demos/Agentic_AI/<UseCase>_Use_Case/` by default (confirm with the user; **never** inside `skills-library/`).
+
 ### Phase 1 — Identify the persona FIRST (ask before anything else)
 When the user gives only a domain, the **very first question is WHO the end user is** — because the persona determines the tables, the tone, and which actions exist. Ask an either/or framed to the domain, e.g.:
 - Airline → *"Is this for the **passenger/customer** (self-service) or the **airline operator/agent** (back-office)?"*
@@ -135,7 +143,7 @@ Scripting the `fda` calls (a small Python or bash driver that shells out to `fda
 
 ### Phase 5 — Verify (do this before declaring done)
 - **Data:** create/refresh the DB, load `database.sql`, confirm row counts; confirm `reset_data.sql` reloads clean. Run the **exact** SQL from every MCP tool and every A2A query against the DB — this catches any table/column mismatch.
-- **Static:** `python -m json.tool` each `.flogo` (must parse); `fda cm` (check-mappings) each app. **Verify refs RESOLVE, don't just eyeball their format** — for every `input.Connection` and every orchestrator `mcpServers`/`remoteAgents` entry, confirm the `conn://<uuid>` actually matches an `id` in that file's `connections` map (a `conn://` string pointing at a stale/wrong id is dangling and the designer silently clears it → empty dropdown). Also confirm the orchestrator's MCP/A2A `serverUrl`s match the MCP/A2A ports, and that no secret still holds its placeholder if the user intended to set it. (Counting that refs are non-empty `conn://` strings is NOT verification — a real failure slipped through exactly this way.)
+- **Static:** `python -m json.tool` (use `python3` on macOS/Linux) each `.flogo` (must parse); `fda cm` (check-mappings) each app. **Verify refs RESOLVE, don't just eyeball their format** — for every `input.Connection` and every orchestrator `mcpServers`/`remoteAgents` entry, confirm the `conn://<uuid>` actually matches an `id` in that file's `connections` map (a `conn://` string pointing at a stale/wrong id is dangling and the designer silently clears it → empty dropdown). Also confirm the orchestrator's MCP/A2A `serverUrl`s match the MCP/A2A ports, and that no secret still holds its placeholder if the user intended to set it. (Counting that refs are non-empty `conn://` strings is NOT verification — a real failure slipped through exactly this way.)
 - **Build (only if the user explicitly asks — Hard rule #3):** `flogobuild build-exe -f <app>.flogo -c <context>` for each app, in the foreground. Note the cosmetic exit-1 path bug (the `.exe` is still produced next to the `.flogo`; verify by timestamp/size). Do **not** build proactively to "verify a fix" — static checks above are the default verification.
 - **Live run (if requested):** start MCP → A2A → Orchestrator, then send a WebSocket prompt and confirm the LLM calls an MCP tool that returns real DB rows and the answer is written back. See the recipes reference for the exact start/test sequence.
 - Tell the user precisely **what was verified vs. what remains** — and hand them the manual-config gap checklist, which now includes the **FDA Tech-Preview manual steps** (Sync every trigger, validate every connection, set the email password as a `SECRET:` value, and any certificates/branches/loops/error-handlers the use case needs). See [references/fda-limitations.md](references/fda-limitations.md).

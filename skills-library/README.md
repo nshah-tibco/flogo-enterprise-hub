@@ -185,10 +185,14 @@ fda version
 
 ## Configurable Defaults
 
-All environment-specific values live in a **single source of truth**: `.claude/skills/config.md`. Copy the template and fill in your values (the file is git-ignored, so real credentials are never committed):
+All environment-specific values live in a **single source of truth**: `config.md`, next to the skills. Copy the template and fill in your values (the file is git-ignored, so real credentials are never committed). The skills folder lives at `.claude/skills/` in a Marketplace-seeded project, or at `skills-library/.claude/skills/` in this hub repo — run the copy from your repo root accordingly:
 
 ```bash
+# Marketplace-seeded project (skills at the repo root):
 cp .claude/skills/config.example.md .claude/skills/config.md
+
+# this hub repo:
+cp skills-library/.claude/skills/config.example.md skills-library/.claude/skills/config.md
 ```
 
 Key values the skills rely on:
@@ -199,6 +203,7 @@ Key values the skills rely on:
 | `DATAPLANE_NAME` | Default dataplane to deploy to | `tibcop tplatform:list-data-planes` |
 | `CP_URL` / `TIBCOP_TOKEN` | TIBCO Platform control-plane URL and API token | TIBCO Platform console |
 | PostgreSQL / LLM / email | Connection settings for the database, LLM provider, and SMTP | your environment |
+| `AGENTIC_USE_CASES_DIR` | *(optional)* folder of reference Agentic AI use-case apps the two `agentic-ai-use-case*` skills clone/study | leave unset to default to `demos/Agentic_AI/`; set only if the skills are installed standalone away from that folder |
 
 ---
 
@@ -226,10 +231,14 @@ Key values the skills rely on:
 
 ## Example prompts
 
-- *"Create a Flogo app under `Flogo_Apps/` that exposes a REST endpoint `GET /customers/{id}` and queries a MySQL database. Call the app `customer-api`."*
-- *"Read `mapping.xlsx` and create a Flogo flow that performs the mapping defined in the spreadsheet."*
-- *"Build the `Flogo_Apps/customer-api.flogo` app and run it locally for 5 seconds, then show me the logs."*
-- *"Deploy the `Flogo_Apps/customer-api.flogo` app to dataplane `MyDataPlane`."*
+- *"Create a Flogo app under `Flogo_Apps/` that exposes a REST endpoint `GET /customers/{id}` and queries a MySQL database. Call the app `customer-api`."* (`rest-to-database-app`)
+- *"Read `mapping.xlsx` and create a Flogo flow that performs the mapping defined in the spreadsheet."* (`mapping-from-excel`)
+- *"Inspect and validate the mappings in `Flogo_Apps/customer-api.flogo` and fix any unresolved mapper fields."* (`fda-mapping`)
+- *"Build the `Flogo_Apps/customer-api.flogo` app and run it locally for 5 seconds, then show me the logs."* (`flogobuild`)
+- *"Create and run unit tests for `Flogo_Apps/customer-api.flogo` with assertions on the response."* (`flogo-unit-testing`)
+- *"List my TIBCO Platform dataplanes and show the status of the apps running on `MyDataPlane`."* (`tibcop`)
+- *"Deploy the `Flogo_Apps/customer-api.flogo` app to dataplane `MyDataPlane`."* (`flogo-deploy`)
+- *"Build a telecom invoice-support Agentic AI demo (MCP Server + A2A Agents + WebSocket orchestrator) backed by PostgreSQL — ask me whether to use the FDA CLI or the clone method first."* (`agentic-ai-use-case` / `agentic-ai-use-case-fda`)
 
 > **Note:** For more sample prompts, see [skills-library/SamplePrompts/README.md](SamplePrompts/README.md).
 

@@ -6,7 +6,7 @@ user-invocable: true
 
 # Agentic AI Use Case Builder
 
-Scaffolds a complete, runnable Agentic AI demo for any vertical, following the proven 3-app pattern used by the reference use cases in `demos/Agentic_AI/` (Airline Passenger Services, Hospital, Telecom Invoice Chatbot). Everything here is domain-agnostic — you supply the domain, the skill supplies the structure, the wiring, and the gotchas that are easy to get wrong.
+Scaffolds a complete, runnable Agentic AI demo for any vertical, following the proven 3-app pattern used by the reference use cases in `demos/Agentic_AI/` (e.g. Airline Passenger Services, Hospital, Telecom Invoice Chatbot). Everything here is domain-agnostic — you supply the domain, the skill supplies the structure, the wiring, and the gotchas that are easy to get wrong.
 
 ## What it produces
 
@@ -71,6 +71,14 @@ This is the **clone-and-adapt** skill. Its sibling `agentic-ai-use-case-fda` bui
 ### Phase 0 — Read environment config
 Read `skills-library/.claude/skills/config.md` first for the psql path, PostgreSQL host/port/user/password, and CLI paths. Do not hardcode these.
 
+### Phase 0b — Locate the reference use cases (portability) 📍
+This skill **clones an existing use case as the template**, so it must first find the folder that holds them. Resolve the **reference folder** in this order, and use it wherever this document says `demos/Agentic_AI/`:
+1. If `config.md` defines `AGENTIC_USE_CASES_DIR`, use that path (relative to the repo root, or an absolute path).
+2. Otherwise, if `demos/Agentic_AI/` exists at the repo root, use it — this is the default when the skill ships inside `flogo-enterprise-hub`.
+3. Otherwise (skills-library installed standalone, no reference apps on disk), **ask the user** to point you to the folder that holds the Agentic AI use-case apps — each a `*MCPServer.flogo` / `*A2AServers.flogo` / `*AIOrchestrator.flogo` trio. Do not guess a path or fabricate a template from memory; without a reference app to clone, this skill cannot run reliably (use `agentic-ai-use-case-fda`, which builds from self-contained recipes, if the user has no reference apps).
+
+New use cases are still created under `demos/Agentic_AI/<UseCase>_Use_Case/` by default — confirm the target folder with the user.
+
 ### Phase 1 — Frame the use case (tell the user BEFORE anything else)
 Before asking questions or writing code, state back to the user, in a few lines:
 1. **How the end user will interact** — e.g. "A <role> chats in natural language over a WebSocket; the orchestrator answers and can perform write actions on confirmation."
@@ -101,13 +109,13 @@ Plan must list: the tables, the MCP tools (name → table/query), the A2A agents
 ### Phase 5 — Verify (do this before declaring done)
 - Create a scratch DB, load `database.sql`, confirm row counts; confirm `reset_data.sql` reloads clean.
 - Run the **exact** SQL from every MCP tool and every A2A query/insert against the DB (substitute demo values for `?params`) — this catches any table/column mismatch.
-- `python -m json.tool` each `.flogo` file — must parse.
+- `python -m json.tool` (use `python3` on macOS/Linux) each `.flogo` file — must parse.
 - Cross-check: every `conn://<uuid>` resolves to a connection key in that app; the orchestrator's MCP/A2A `serverUrl`s match the MCP/A2A ports; `metadata.endpoints` ports match trigger ports and property values.
 - Tell the user what was verified vs. what still needs a Flogo Enterprise import + live run.
 
 ---
 
-## Key facts (verified across all three reference use cases)
+## Key facts (verified across the reference use cases)
 
 - `appModel`: `1.1.1`; `metadata.flogoVersion`: `2.26.5` (match the reference apps / installed version).
 - **MCP Server** — trigger `#mcpserver` (serverType `HTTP`, `serverEndpointPath` e.g. `/telecom-bss`, port from a property). Each tool = a handler → a flow of `#noop → #query → #actreturn`. Read pattern: `SELECT * FROM <table>` (no params), return `=coerce.toString($activity[PostgreSQLQuery].Output)`. The LLM filters the rows — so tools are simple and the `handlerDescription` must be rich (the LLM chooses tools from it). Set `readOnlyToolHint: true`.

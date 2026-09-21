@@ -53,6 +53,7 @@ Add the function below to your shell startup file so `fda` is available in every
 | OS | Shell | File |
 |---|---|---|
 | Windows | Git Bash | `~/.bashrc` |
+| Windows | PowerShell | `$PROFILE` |
 | macOS | zsh (default) | `~/.zshrc` |
 | Linux | bash | `~/.bashrc` |
 
