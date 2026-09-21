@@ -117,7 +117,7 @@ See `prompts.md` for the full, copy-pasteable prompt list.
 - An **LLM provider** key (OpenAI-compatible). Base URL must be a **real endpoint**, e.g. `https://api.openai.com/v1`.
 - **SMTP** access for the email agent (Gmail: `smtp.gmail.com:465`, SSL, an app-specific password).
 
-## Setup
+## Setup & Run
 
 1. **Database**
    ```bash
@@ -160,7 +160,7 @@ See `prompts.md` for the full, copy-pasteable prompt list.
 
 ---
 
-## ⚠️ Below things are NOT configured — please configure them manually before running the app end to end
+## ⚠️ Below things are NOT configured — please configure them manually before running end to end
 
 The three apps were generated with the Flogo Design CLI and build cleanly to `.exe`, but the
 following are intentionally **not** set (they are environment-, secret-, or backend-specific and

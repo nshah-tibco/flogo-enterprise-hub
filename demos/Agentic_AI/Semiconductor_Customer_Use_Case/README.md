@@ -140,7 +140,7 @@ See `prompts.md` for the full, copy-pasteable prompt list.
   `https://api.openai.com/v1`.
 - **SMTP** access for the email agent (Gmail: `smtp.gmail.com:465`, SSL, an app-specific password).
 
-## Setup
+## Setup & Run
 
 1. **Database**
    ```bash

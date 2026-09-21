@@ -440,7 +440,7 @@ refreshes due/payment/dispute dates relative to today.
 
 ---
 
-## Port Summary
+## Ports
 
 | App | Property | Port | Protocol |
 |-----|----------|------|----------|

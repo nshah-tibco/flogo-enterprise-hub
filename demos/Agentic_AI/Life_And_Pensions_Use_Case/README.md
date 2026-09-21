@@ -6,7 +6,7 @@ An AI-powered member self-service assistant for a mutual life, pensions & invest
 
 ---
 
-## Architecture Overview
+## Architecture
 
 ```
                     ┌─────────────────────────┐
@@ -396,7 +396,7 @@ Agent: Booked — a retirement-planning callback is scheduled for tomorrow after
 
 ---
 
-## Port Summary
+## Ports
 
 | Component | Property | Port | Protocol / path |
 |-----------|----------|------|-----------------|

@@ -254,7 +254,7 @@ Full prompt list ships in [`prompts.md`](prompts.md).
 
 ---
 
-## ⚠️ Below things are NOT configured — please configure them manually before running the app end to end
+## ⚠️ Below things are NOT configured — please configure them manually before running end to end
 
 The three apps were generated with the Flogo Design CLI. Everything structural — the
 `mcpServers` / `remoteAgents` `conn://` arrays, every tool/handler schema, the wsserver headers

@@ -234,7 +234,7 @@ Use the prompts in [prompts.md](prompts.md). Reset between runs with `reset_data
 
 ---
 
-## ⚠️ Below things are NOT configured — please configure them manually before running the app end to end
+## ⚠️ Below things are NOT configured — please configure them manually before running end to end
 
 The three `.flogo` apps were generated with the Flogo Design CLI (all mappings validate clean via
 `check-mappings`), but the following are intentionally **not** finalized because they are

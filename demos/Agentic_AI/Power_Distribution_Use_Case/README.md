@@ -16,7 +16,7 @@ WebSocket).
 
 ---
 
-## Architecture Overview
+## Architecture
 
 ```
                     ┌─────────────────────────┐
@@ -362,7 +362,7 @@ psql -U postgres -d power_distribution -f reset_data.sql
 
 ---
 
-## Port Summary
+## Ports
 
 | App | Port | Protocol |
 |-----|------|----------|

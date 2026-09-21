@@ -421,7 +421,7 @@ Then run the prompts from `prompts.md`. After a demo (especially after rebooking
 
 ---
 
-## ⚠️ Manual configuration needed
+## ⚠️ Below things are NOT configured — please configure them manually before running end to end
 
 The committed `.flogo` files carry placeholders / reference-app values for every secret and a
 **blank** LLM base URL. Replace them with your own before an end-to-end run. **Never commit real

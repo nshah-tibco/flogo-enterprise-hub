@@ -85,7 +85,7 @@ holds the RAG vector-store id. 7 personas; see `prompts.md`.
 
 ---
 
-## Setup
+## Setup & Run
 
 ### 0. Prerequisites
 - TIBCO Flogo Enterprise (VS Code Flogo extension), matching `flogoVersion` **2.26.6**.
@@ -152,15 +152,50 @@ is surfaced. `vectorSearch` has no server-side metadata filter, so one shared st
 is the simplest correct design. For genuinely per-policyholder private documents you would create one
 vector store per policy and store its id per row in `document_index`.
 
-## Verification done
-- **Data:** `database.sql` loads clean into `auto_insurance` (7 policyholders / 7 policies / 7
-  vehicles / 28 coverages / 3 claims / 8 payments; agent tables + `document_index` empty).
-  `reset_data.sql` restores the seed, empties the agent tables, and preserves `document_index`.
-- **PDFs:** `generate_policy_pdfs.py` produces 4 valid multi-page PDFs containing the target clauses
-  (windshield excess, flood exclusion, driving other cars, territorial limits, NCD protection, etc.).
-- **Apps:** each `.flogo` parses as JSON; every `conn://` resolves to a declared connection; trigger
-  ports match `metadata.endpoints`; the orchestrator's MCP/A2A `serverUrl`s match the app ports.
+---
 
-## Needs a live run to confirm (not built to a binary here)
-Actual OpenAI ingestion/search and the end-to-end chat require a running Flogo Enterprise engine with
-the openAI extension registered and a valid API key. No `.exe`/binary was built.
+## ⚠️ Below things are NOT configured — please configure them manually before running end to end
+
+`fda` wires the full app graph, but a few things depend on **your** environment, **your** secrets, and a
+**running engine with the openAI extension** — they can't be baked into a portable, secret-free app. Pull
+values from `skills-library/.claude/skills/config.md` and set them as app properties at import time;
+never commit real secrets.
+
+1. **OpenAI credentials & endpoint.**
+   - On `AutoInsuranceMCPServer` and `AutoInsuranceRAGIngestion` set `OPENAI_API_KEY` (a real key — the
+     committed value is the placeholder `<YOUR_OPENAI_API_KEY>`) and `OPENAI_API_ENDPOINT_URL` (default
+     `https://api.openai.com/v1`). The key needs **Files + Vector Stores** access for RAG.
+   - On `AutoInsuranceA2AServers` and `AutoInsuranceAIOrchestrator` set the OpenAI LLM connection
+     `API_Key`, a real `LLM_Base_URL`, and an `LLM_Model` your key can access.
+
+2. **openAI local extension.** Register `extensions/openAI` in the Flogo VS Code extension
+   (`flogo.extensions.local`) so `vectorStoreCreate` / `fileUpload` / `fileList` / `vectorSearch` load
+   (see Setup step 3). Without it the MCP and Ingestion apps won't open.
+
+3. **RAG corpus path.** On `AutoInsuranceRAGIngestion` set `POLICY_DOCS_DIR` to the **absolute** path of
+   `policy_docs/` (the `#fileUpload` activity reads local file paths).
+
+4. **PostgreSQL database & credentials.** Create the **`auto_insurance`** database, load `database.sql`
+   (reset between demos with `reset_data.sql`), and set `PostgreSQL.PostgresConn.*`
+   (host / port / db / user / `Password`) on every Postgres-using app. `Password` is a `SECRET:` app
+   property — set the real secret in App Properties, not in plaintext.
+
+5. **Email / SMTP** (the `send_confirmation_email` agent). On `AutoInsuranceA2AServers` set
+   `Email_Username`, `To_Email`, and re-enter `Email_App_Password` in App Properties so it stores as a
+   `SECRET:` value (keep the type `string`). Confirm outbound SMTP (SSL:465) is allowed from the host.
+
+6. **Ports free & consistent.** `:9700` (orchestrator WebSocket), `:9701` (MCP), `:9711`–`:9714` (A2A),
+   and `:9720` (ingestion) must be free; the orchestrator's MCP/A2A `serverUrl`s must match those ports.
+
+7. **Flogo designer steps.** Click **Sync** on each non-OpenAPI trigger after import, then open each
+   connection (PostgreSQL, OpenAI, MCP, all four A2A) and **Connect / Test** before running.
+
+8. **Run the ingestion once.** Start `AutoInsuranceRAGIngestion` and `POST
+   http://localhost:9720/ingest` to build the vector store **before** starting the other apps (see Setup
+   step 5). Re-running creates a new store; the MCP tool always uses the most recent id.
+
+9. **Chatbot / WebSocket client.** Point a client at `ws://localhost:9700/auto-insurance` — the shared
+   `demos/Agentic_AI/Chatbot/` UI works. See `prompts.md` for ready-to-paste demo prompts.
+
+> **No binary is built here.** Live OpenAI ingestion/search and the end-to-end chat require a running
+> Flogo Enterprise engine with the openAI extension registered and a valid API key.
