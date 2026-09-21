@@ -24,7 +24,7 @@ ops by email.
   lead time, who's certified and available to fix it, and can you resolve this AOG right now" load
   that normally means a controller juggling the maintenance system, the parts system, the tech
   roster, and email — resolved conversationally, grounded in live data.
-- **Solution shape:** 3 Flogo apps — **1 MCP Server** (read-only lookup tools), **1 A2A Agents app**
+- **Solution shape:** 3 Flogo apps — **1 MCP Server** (read-only lookup tools), **1 A2A Servers / Agents app**
   (action agents that write **directly to PostgreSQL** and send email), and **1 AI Orchestrator**
   (WebSocket chat, LLM routing). All state lives in **PostgreSQL**.
 - **Locale / conventions:** USD for part prices (`NUMERIC(10,2)`); flight hours/cycles as integers;
@@ -38,7 +38,7 @@ ops by email.
 ```
 Chatbot UI --WebSocket--> AI Orchestrator --MCP (HTTP streamable)--> MCP Server --\
                                  |                                                 +--> PostgreSQL
-                                 \-----------A2A (HTTP)-----> A2A Agents ----------/   (+ Gmail SMTP for email)
+                                 \-A2A (HTTP)-----> A2A Servers / Agents ----------/   (+ Gmail SMTP for email)
 ```
 
 ```
@@ -57,10 +57,10 @@ Chatbot UI --WebSocket--> AI Orchestrator --MCP (HTTP streamable)--> MCP Server 
                │  LLM: OpenAI-compatible        │
                └───────┬───────────┬────────────┘
                        │           │
-          MCP (HTTP)   │           │  A2A Agent
+          MCP (HTTP)   │           │  A2A Servers / Agents
                        ▼           ▼
     ┌──────────────────────┐   ┌────────────────────────────────────┐
-    │  Aerospace MRO       │   │  Aerospace MRO A2A Agents          │
+    │  Aerospace MRO       │   │  Aerospace MRO A2A Servers / Agents│
     │  MCP Server          │   │                                    │
     │  Port 9095           │   │  schedule_maintenance_agent  :8091 │
     │  /mromcpserver       │   │  order_part_agent            :8092 │
@@ -85,7 +85,7 @@ Chatbot UI --WebSocket--> AI Orchestrator --MCP (HTTP streamable)--> MCP Server 
 
 - **MCP Server** — read-only lookups. Stateless, safe to retry; the LLM picks a tool from its
   description and filters the returned rows (by tail number, work-order number, part number, etc.).
-- **A2A Agents** — action workflows. Each agent has its own trigger/port, guardrails, and system
+- **A2A Servers / Agents** — action workflows. Each agent has its own trigger/port, guardrails, and system
   prompt. `schedule_maintenance_agent`, `order_part_agent`, and `dispatch_technician_agent` **write
   directly to PostgreSQL**; `send_confirmation_email_agent` sends via Gmail SMTP.
 - **Orchestrator** — the AI brain. WebSocket chat endpoint; the LLM decides intent and either calls
@@ -98,7 +98,7 @@ Chatbot UI --WebSocket--> AI Orchestrator --MCP (HTTP streamable)--> MCP Server 
 | App | File | Trigger | Port (property) + path |
 |-----|------|---------|------------------------|
 | MCP Server | `AerospaceMROMCPServer.flogo` | `#mcpserver` | `MCP_SERVER_PORT` = **9095**, path `/mromcpserver` (Streamable HTTP) |
-| A2A Agents | `AerospaceMROA2AServers.flogo` | `#agent` ×4 | see agent table below (**8091–8094**) |
+| A2A Servers / Agents | `AerospaceMROA2AServers.flogo` | `#agent` ×4 | see agent table below (**8091–8094**) |
 | AI Orchestrator | `AerospaceMROAIOrchestrator.flogo` | `#wsserver` | **8085**, WebSocket path `/mro` |
 
 ---

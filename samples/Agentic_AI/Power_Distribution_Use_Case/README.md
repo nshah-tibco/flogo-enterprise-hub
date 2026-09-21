@@ -116,7 +116,7 @@ workflows).
 | Connect URL | `ws://localhost:9680/grid` |
 | LLM | OpenAI GPT |
 | MCP Server | `http://localhost:9682/grid-bss` |
-| A2A Agents | outage_dispatch (9683), service_appointment (9684), service_change (9685), email (9686) |
+| A2A Servers / Agents | outage_dispatch (9683), service_appointment (9684), service_change (9685), email (9686) |
 
 ---
 

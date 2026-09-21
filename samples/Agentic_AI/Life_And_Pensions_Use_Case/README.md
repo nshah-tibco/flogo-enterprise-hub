@@ -1,6 +1,6 @@
 # Life & Pensions Member Assistant Use Case
 
-An AI-powered member self-service assistant for a mutual life, pensions & investments provider, built on TIBCO Flogo Enterprise. Members ask natural-language questions ("What's my 401(k) balance?", "How am I invested?", "Update my beneficiary", "File a claim") over a WebSocket streaming chat. The system uses a 3-tier agentic architecture — an AI Orchestrator, an MCP Server for read-only book-of-record lookups, and A2A Agents for write workflows — all communicating via standard protocols (MCP, A2A, WebSocket).
+An AI-powered member self-service assistant for a mutual life, pensions & investments provider, built on TIBCO Flogo Enterprise. Members ask natural-language questions ("What's my 401(k) balance?", "How am I invested?", "Update my beneficiary", "File a claim") over a WebSocket streaming chat. The system uses a 3-tier agentic architecture — an AI Orchestrator, an MCP Server for read-only book-of-record lookups, and A2A Servers / Agents for write workflows — all communicating via standard protocols (MCP, A2A, WebSocket).
 
 > **Demo dataset:** a US mutual life, pensions & investments provider — currency **USD** (US Dollar). Members hold protection policies (Life / Critical Illness / Income Protection / Investment), 401(k) and IRA retirement accounts, fund holdings, contribution history, nominated beneficiaries and claims. The flagship persona (James Carter) is engineered so every write workflow has a clear, real reason to fire: an outdated beneficiary, an under-matched 401(k) contribution, an over-weight high-risk fund holding, and a claimable policy with no existing claim.
 
@@ -28,7 +28,7 @@ An AI-powered member self-service assistant for a mutual life, pensions & invest
                        ▼           ▼
     ┌──────────────────────┐   ┌──────────────────────────────────────┐
     │  Life & Pensions     │   │  Life & Pensions                     │
-    │  MCP Server          │   │  A2A Agents                          │
+    │  MCP Server          │   │  A2A Servers / Agents                │
     │  Port 9982           │   │                                      │
     │  /life-pensions      │   │  update_beneficiary_agent     :9983  │
     │                      │   │  change_contribution_agent    :9984  │
@@ -54,7 +54,7 @@ An AI-powered member self-service assistant for a mutual life, pensions & invest
 
 - **MCP Server** — read-only lookups. Stateless and safe to retry; the LLM picks a tool
   from its description and filters the returned rows by `member_id` / name / email.
-- **A2A Agents** — action workflows. Each agent has its own trigger, port, guardrails and
+- **A2A Servers / Agents** — action workflows. Each agent has its own trigger, port, guardrails and
   system prompt. Five agents **write directly to PostgreSQL**; the sixth sends email via SMTP.
 - **AI Orchestrator** — the AI brain. Exposes the WebSocket chat endpoint; the LLM classifies
   intent and either calls an MCP tool (lookup) or hands off to an A2A Agent (write).
@@ -66,7 +66,7 @@ An AI-powered member self-service assistant for a mutual life, pensions & invest
 | App | File | Trigger | Port (property) + path |
 |-----|------|---------|------------------------|
 | MCP Server | `LifePensionsMCPServer.flogo` | `#mcpserver` | `MCP_SERVER_PORT` = **9982**, path `/life-pensions` |
-| A2A Agents | `LifePensionsA2AServers.flogo` | `#agent` ×6 | see agent table below (**9983–9988**) |
+| A2A Servers / Agents | `LifePensionsA2AServers.flogo` | `#agent` ×6 | see agent table below (**9983–9988**) |
 | AI Orchestrator | `LifePensionsAIOrchestrator.flogo` | `#wsserver` | **9600** (set on the trigger), path `/lifepensions` |
 
 ### 1. `LifePensionsMCPServer.flogo` — MCP Server (Port 9982)
@@ -84,7 +84,7 @@ Exposes 8 read-only lookup tools via the Model Context Protocol over Streamable 
 | **GetBeneficiaries** | Nominated beneficiaries per policy with policy context | `beneficiaries JOIN policies` |
 | **GetClaims** | Protection claims with type, amount, status and last update | `SELECT * FROM claims` |
 
-### 2. `LifePensionsA2AServers.flogo` — A2A Agents (Ports 9983–9988)
+### 2. `LifePensionsA2AServers.flogo` — A2A Servers / Agents (Ports 9983–9988)
 
 Six A2A Agents that handle write workflows. Each agent has its own LLM, system prompt, and tool handler. The first five **write directly to PostgreSQL** (validate with a `SELECT`, then INSERT); the sixth sends a confirmation email via SMTP.
 
@@ -106,7 +106,7 @@ The main orchestration app. Exposes a WebSocket endpoint for natural-language ch
 | WebSocket Path | `/lifepensions` |
 | LLM | OpenAI gpt-5.6 |
 | MCP Server | `http://localhost:9982/life-pensions` |
-| A2A Agents | update_beneficiary (9983), change_contribution (9984), fund_switch (9985), submit_claim (9986), adviser_callback (9987), email (9988) |
+| A2A Servers / Agents | update_beneficiary (9983), change_contribution (9984), fund_switch (9985), submit_claim (9986), adviser_callback (9987), email (9988) |
 
 ---
 
@@ -409,7 +409,7 @@ Agent: Booked — a retirement-planning callback is scheduled for tomorrow after
 | A2A — send_confirmation_email | `SendEmail_A2AServer_PORT` | 9988 | HTTP (A2A) |
 | LifePensionsAIOrchestrator | (set on `#wsserver` trigger) | 9600 | WebSocket, `/lifepensions` |
 
-**Start order:** MCP Server → A2A Agents → Orchestrator, then connect the chatbot UI.
+**Start order:** MCP Server → A2A Servers / Agents → Orchestrator, then connect the chatbot UI.
 
 ---
 

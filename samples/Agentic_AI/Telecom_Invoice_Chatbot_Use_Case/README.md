@@ -46,7 +46,7 @@ a confirmation.
                        ▼           ▼
     ┌──────────────────────┐   ┌──────────────────────────────────┐
     │  Telecom Invoice     │   │  Telecom Invoice                 │
-    │  MCP Server          │   │  A2A Agents                      │
+    │  MCP Server          │   │  A2A Servers / Agents            │
     │  Port 9882           │   │                                  │
     │  /telecom-bss        │   │  billing_dispute_agent    :9883  │
     │                      │   │  recharge_agent           :9884  │
@@ -71,7 +71,7 @@ a confirmation.
 
 - **MCP Server** — read-only BSS lookups. Stateless, safe to retry; the LLM picks a tool from its
   description and filters the returned rows by mobile number / customer id.
-- **A2A Agents** — action workflows. Each agent has its own trigger/port, LLM, system prompt and
+- **A2A Servers / Agents** — action workflows. Each agent has its own trigger/port, LLM, system prompt and
   tool handler. Action agents **write directly to PostgreSQL**; one agent sends email via SMTP.
 - **AI Orchestrator** — the AI brain. WebSocket chat endpoint; the LLM decides intent and either
   calls an MCP tool (data lookup) or hands off to an A2A agent (write workflow).
@@ -83,7 +83,7 @@ a confirmation.
 | App | File | Trigger | Port (property) + path |
 |-----|------|---------|------------------------|
 | MCP Server | `TelecomInvoiceMCPServer.flogo` | `#mcpserver` | `MCP_SERVER_PORT` = **9882**, path `/telecom-bss` |
-| A2A Agents | `TelecomInvoiceA2AServers.flogo` | `#agent` ×3 | see agent table below (**9883–9885**) |
+| A2A Servers / Agents | `TelecomInvoiceA2AServers.flogo` | `#agent` ×3 | see agent table below (**9883–9885**) |
 | AI Orchestrator | `TelecomInvoiceAIOrchestrator.flogo` | `#wsserver` | **9500** (WebSocket trigger setting), path `/telecom` |
 
 > The orchestrator's WebSocket port (**9500**) is a trigger setting, not an app property; the MCP
@@ -103,7 +103,7 @@ Exposes 7 read-only BSS lookup tools via the Model Context Protocol over Streama
 | **CheckRechargeOffers** | Catalog of data/IDD/roaming/combo packs | `SELECT * FROM recharge_offers` |
 | **GetDisputes** | Dispute tickets with status and resolution | `SELECT * FROM disputes` |
 
-### 2. `TelecomInvoiceA2AServers.flogo` — A2A Agents (Ports 9883–9885)
+### 2. `TelecomInvoiceA2AServers.flogo` — A2A Servers / Agents (Ports 9883–9885)
 
 Three A2A agents that handle write workflows. Each agent has its own LLM, system prompt, and tool handler, and (except the email agent) **writes directly to PostgreSQL** after validating with a `SELECT`.
 
@@ -116,7 +116,7 @@ The main orchestration app. Exposes a WebSocket endpoint for natural-language ch
 | WebSocket Path | `/telecom` (port 9500) |
 | LLM | OpenAI GPT (`AgenticAI.OpenAIConn.*` + `LLM_Model`) |
 | MCP Server | `http://localhost:9882/telecom-bss` |
-| A2A Agents | billing_dispute (9883), recharge (9884), email (9885) |
+| A2A Servers / Agents | billing_dispute (9883), recharge (9884), email (9885) |
 
 ---
 

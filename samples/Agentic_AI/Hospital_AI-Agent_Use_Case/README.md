@@ -35,7 +35,7 @@ Chatbot UI --WebSocket--> AI Orchestrator                                       
 
 - **MCP Server** (`Hospital_MCP_Server.flogo`) — read-only lookups. Stateless, safe to retry;
   the LLM picks a tool from its description and filters the returned rows.
-- **A2A Agents** (`HospitalA2AServers.flogo`) — action workflows. Each agent has its own
+- **A2A Servers / Agents** (`HospitalA2AServers.flogo`) — action workflows. Each agent has its own
   trigger/port, guardrails, and system prompt. In this original version the write agents **call
   the `endevour-api` REST layer** (which persists to PostgreSQL) rather than writing SQL directly;
   the `SendEmail` agent sends email via SMTP.
@@ -59,7 +59,7 @@ Chatbot UI --WebSocket--> AI Orchestrator                                       
 | App | File | Trigger | Port (property) + path |
 |-----|------|---------|------------------------|
 | MCP Server | `Hospital_MCP_Server.flogo` | `#mcpserver` | `MCP_SERVER_PORT` = **9092**, path `/hospitalmcpserver` |
-| A2A Agents | `HospitalA2AServers.flogo` | `#agent` ×4 | see agent table below (**8070–8073**) |
+| A2A Servers / Agents | `HospitalA2AServers.flogo` | `#agent` ×4 | see agent table below (**8070–8073**) |
 | AI Orchestrator | `HospitalAIOrchestrator.flogo` | `#wsserver` | `WebSocket_PORT` = **8652**, path `/hospital` |
 
 **Extra / supporting apps:**
@@ -199,7 +199,7 @@ results, and [agents.md](agents.md) for each agent's system prompt and handover 
 3. **Set app properties** — PostgreSQL creds, LLM key/base URL/model, SMTP creds, the
    `endevour-api` URLs (`Appointments_URL`, `Discharge_Summary_URL`, `Pharmacy_Orders_URL`,
    `Beds_URL`), the ports, and the recipient email — see the manual-config section below.
-4. **Start order:** `endevour-api` (REST backend) → **MCP Server** → **A2A Agents** →
+4. **Start order:** `endevour-api` (REST backend) → **MCP Server** → **A2A Servers / Agents** →
    **AI Orchestrator**. (`eai-api` is optional; the legacy `post-discharge-agent` is not needed.)
 5. **Connect a WebSocket client** to `ws://<host>:8652/hospital` and start chatting. Using the
    bundled sample UI:

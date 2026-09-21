@@ -53,7 +53,7 @@ passes it to `vectorSearch`. No manual copying of the id.
 | App | File | Trigger / Port | Connections |
 |---|---|---|---|
 | MCP Server | `AutoInsuranceMCPServer.flogo` | `#mcpserver` HTTP `:9701` `/auto-insurance-mcp` | PostgreSQL + OpenAI (properties) |
-| A2A Agents | `AutoInsuranceA2AServers.flogo` | 4× `#agent` `:9711`–`:9714` | OpenAI (LLM) + PostgreSQL |
+| A2A Servers / Agents | `AutoInsuranceA2AServers.flogo` | 4× `#agent` `:9711`–`:9714` | OpenAI (LLM) + PostgreSQL |
 | RAG Ingestion | `AutoInsuranceRAGIngestion.flogo` | `#rest` POST `:9720` `/ingest` | OpenAI (properties) + PostgreSQL |
 | Orchestrator | `AutoInsuranceAIOrchestrator.flogo` | `#wsserver` `:9700` `/auto-insurance` | OpenAI (LLM) + MCP + 4× A2A |
 

@@ -132,7 +132,7 @@ workflows).
 | Connect URL | `ws://localhost:9780/water` |
 | LLM | OpenAI GPT |
 | MCP Server | `http://localhost:9782/water-cis` |
-| A2A Agents | service_request (9783), meter_reading (9784), billing_support (9785), email (9786) |
+| A2A Servers / Agents | service_request (9783), meter_reading (9784), billing_support (9785), email (9786) |
 
 ---
 

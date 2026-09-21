@@ -12,7 +12,7 @@ assistant looks the data up, performs the action against PostgreSQL, and confirm
 - **Problem automated:** the "where's my container / when does it sail / quote me a lane /
   break down these charges / why is my box delayed / file my claim" load that normally ties up a
   customer-service or documentation desk — resolved conversationally, grounded in live data.
-- **Solution shape:** 3 Flogo apps — **1 MCP Server** (read-only tools), **1 A2A Agents app**
+- **Solution shape:** 3 Flogo apps — **1 MCP Server** (read-only tools), **1 A2A Servers / Agents app**
   (action agents that write **directly to PostgreSQL**), and **1 AI Orchestrator** (WebSocket
   chat, LLM routing). All state lives in **PostgreSQL**. Currency is **USD** throughout, and
   ports use **UN/LOCODE** (e.g. `CNSHA` = Shanghai, `USLAX` = Los Angeles).
@@ -31,7 +31,7 @@ container-shipping domain:
 | `ContainerShippingA2AServers.flogo` | ❌ **Stale copy** — the app inside is still `LifePensionsA2AServers` (beneficiary / contribution / fund-switch / claim / adviser-callback / email agents). It does **not** yet implement the container-shipping write agents. |
 | `ContainerShippingAIOrchestrator.flogo` | ❌ **Stale copy** — the app inside is still `LifePensionsAIOrchestrator` (Life & Pensions system prompt, WS path `/lifepensions`, and MCP `serverUrl` pointing at `:9982/life-pensions` instead of the real MCP at `:9720/shipping-bss`). |
 
-The MCP read side and the database run end-to-end today. The **A2A Agents app and the
+The MCP read side and the database run end-to-end today. The **A2A Servers / Agents app and the
 Orchestrator must be rebuilt for this domain** (new system prompt, new write flows, matching
 ports/URLs) before the full chat demo works. The intended container-shipping write agents are
 described below and are driven by `database.sql` (which explicitly names them).
@@ -43,12 +43,12 @@ described below and are driven by `database.sql` (which explicitly names them).
 ```
 Chatbot UI --WebSocket--> AI Orchestrator --MCP (HTTP streamable)--> MCP Server --\
                                  |                                                 +--> PostgreSQL
-                                 \-----------A2A (HTTP)-----> A2A Agents ----------/
+                                 \-A2A (HTTP)-----> A2A Servers / Agents ----------/
 ```
 
 - **MCP Server** — read-only lookups. Stateless, safe to retry; the LLM picks a tool from its
   description and filters the returned rows (by `customer_code`, `booking_ref`, `container_no`, lane, etc.).
-- **A2A Agents** — action workflows. Each agent has its own trigger/port, guardrails, and system
+- **A2A Servers / Agents** — action workflows. Each agent has its own trigger/port, guardrails, and system
   prompt, and **writes directly to PostgreSQL** (validate with a `SELECT`, then INSERT).
 - **Orchestrator** — the AI brain. WebSocket chat endpoint; the LLM decides intent and either
   calls an MCP tool or hands off to an A2A agent.
@@ -60,7 +60,7 @@ Chatbot UI --WebSocket--> AI Orchestrator --MCP (HTTP streamable)--> MCP Server 
 | App | File | Trigger | Port (property) + path |
 |-----|------|---------|------------------------|
 | MCP Server | `ContainerShippingMCPServer.flogo` | `#mcpserver` | `MCP_SERVER_PORT` = **9720**, path `/shipping-bss` |
-| A2A Agents | `ContainerShippingA2AServers.flogo` | `#agent` ×N | see agent table (⚠️ currently stale ports **9983–9988**) |
+| A2A Servers / Agents | `ContainerShippingA2AServers.flogo` | `#agent` ×N | see agent table (⚠️ currently stale ports **9983–9988**) |
 | AI Orchestrator | `ContainerShippingAIOrchestrator.flogo` | `#wsserver` | **9600** (⚠️ shipped path `/lifepensions`; should be a container-shipping path) |
 
 ---
@@ -145,7 +145,7 @@ Flagship demo data hooks:
 ## Demo scenarios
 
 Prompts are copy-pasteable; start every session by identifying yourself. (Read scenarios work
-today against the MCP server; write scenarios require the rebuilt A2A Agents app + Orchestrator.)
+today against the MCP server; write scenarios require the rebuilt A2A Servers / Agents app + Orchestrator.)
 
 1. **Identify the customer.** "I'm CUST-SHIP-1001." → `GetCustomerProfile`.
 2. **List bookings.** "Show my bookings and their status." → `GetBookings`.
@@ -184,12 +184,12 @@ today against the MCP server; write scenarios require the rebuilt A2A Agents app
    ```
    Use `reset_data.sql` to restore a clean state between demos.
 2. **Import / build the three apps** into Flogo Enterprise (or build each to an `.exe` with `flogobuild`).
-   The MCP Server is ready; **rebuild the A2A Agents app and the Orchestrator for this domain** first
+   The MCP Server is ready; **rebuild the A2A Servers / Agents app and the Orchestrator for this domain** first
    (see Build status).
 3. **Set app properties** — PostgreSQL `Host` / `Port` / `Database_Name` / `User` / `Password`;
    LLM `API_Key` / `LLM_Base_URL` / `LLM_Model`; the MCP and A2A ports; SMTP creds if you keep an
    email agent. See the manual-config section below.
-4. **Start order:** **MCP Server → A2A Agents → Orchestrator.**
+4. **Start order:** **MCP Server → A2A Servers / Agents → Orchestrator.**
 5. **Connect a WebSocket client** to `ws://<host>:<wsPort>/<path>` (as shipped that is
    `ws://<host>:9600/lifepensions` — rename the path when you rebuild the Orchestrator) and start chatting.
 
@@ -277,7 +277,7 @@ with your own before an end-to-end run. Never commit real secrets.
 
 **Quick pre-flight checklist**
 
-- [ ] A2A Agents app + Orchestrator **rebuilt for container shipping** (not the stale Life & Pensions copies)
+- [ ] A2A Servers / Agents app + Orchestrator **rebuilt for container shipping** (not the stale Life & Pensions copies)
 - [ ] DB `container_shipping` created, `database.sql` loaded, row counts sane (customers 6, bookings 8, containers 10, rates 8, tracking_events 22)
 - [ ] LLM `API_Key`, `LLM_Base_URL` (real endpoint), `LLM_Model` set
 - [ ] PostgreSQL `Password` set; MCP tool `SELECT`s and A2A write SQL run cleanly

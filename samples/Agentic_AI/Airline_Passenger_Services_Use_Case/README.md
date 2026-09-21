@@ -14,7 +14,7 @@ assistant looks the data up, performs the action against PostgreSQL, and emails 
 - **Problem automated:** the "is my flight delayed, will I make my connection, please rebook me,
   and email me the confirmation" load that normally ties up a gate agent or a call-center rep —
   resolved conversationally, grounded in live flight and booking data.
-- **Solution shape:** 3 Flogo apps — **1 MCP Server** (read-only lookup tools), **1 A2A Agents app**
+- **Solution shape:** 3 Flogo apps — **1 MCP Server** (read-only lookup tools), **1 A2A Servers / Agents app**
   (action agents that assess risk, write **directly to PostgreSQL**, and send email), and **1 AI
   Orchestrator** (WebSocket chat, LLM routing). All state lives in **PostgreSQL**.
 - **Locale:** No currency — loyalty value is expressed as **miles / tier** (Basic, Silver, Gold,
@@ -28,7 +28,7 @@ assistant looks the data up, performs the action against PostgreSQL, and emails 
 ```
 Chatbot UI --WebSocket--> AI Orchestrator --MCP (HTTP streamable)--> MCP Server --\
                                  |                                                 +--> PostgreSQL
-                                 \-----------A2A (HTTP)-----> A2A Agents ----------/   (+ Gmail SMTP for email)
+                                 \-A2A (HTTP)-----> A2A Servers / Agents ----------/   (+ Gmail SMTP for email)
 ```
 
 ```
@@ -51,7 +51,7 @@ Chatbot UI --WebSocket--> AI Orchestrator --MCP (HTTP streamable)--> MCP Server 
                        ▼           ▼
     ┌──────────────────────┐   ┌──────────────────────────────┐
     │  Passenger Services  │   │  Passenger Services          │
-    │  MCP Server          │   │  A2A Agents                  │
+    │  MCP Server          │   │  A2A Servers / Agents        │
     │  Port 9093           │   │                              │
     │  /airlinemcpserver   │   │  connection_risk_agent :8074 │
     │                      │   │  rebook_passenger_agent:8075 │
@@ -74,7 +74,7 @@ Chatbot UI --WebSocket--> AI Orchestrator --MCP (HTTP streamable)--> MCP Server 
 
 - **MCP Server** — read-only lookups. Stateless, safe to retry; the LLM picks a tool from its
   description and filters the returned rows (by flight number, PNR, passenger id, etc.).
-- **A2A Agents** — action/analysis workflows. Each agent has its own trigger/port, guardrails, and
+- **A2A Servers / Agents** — action/analysis workflows. Each agent has its own trigger/port, guardrails, and
   system prompt. `rebook_passenger_agent` **writes directly to PostgreSQL**; `send_confirmation_email`
   sends via Gmail SMTP; `connection_risk_agent` is read-only analysis.
 - **Orchestrator** — the AI brain. WebSocket chat endpoint; the LLM decides intent and either calls
@@ -87,7 +87,7 @@ Chatbot UI --WebSocket--> AI Orchestrator --MCP (HTTP streamable)--> MCP Server 
 | App | File | Trigger | Port (property) + path |
 |-----|------|---------|------------------------|
 | MCP Server | `PassengerServicesMCPServer.flogo` | `#mcpserver` | `MCP_SERVER_PORT` = **9093**, path `/airlinemcpserver` (Streamable HTTP) |
-| A2A Agents | `PassengerServicesA2AServers.flogo` | `#agent` ×3 | see agent table below (**8074–8076**) |
+| A2A Servers / Agents | `PassengerServicesA2AServers.flogo` | `#agent` ×3 | see agent table below (**8074–8076**) |
 | AI Orchestrator | `PassengerServicesAIOrchestrator.flogo` | `#wsserver` | **8083**, WebSocket path `/airline` |
 
 > **Legacy / alternate apps (kept for reference — not part of the current 3-app set):**
