@@ -130,14 +130,14 @@ Rich `handlerDescription`s matter — the orchestrator LLM chooses tools from th
 
 ---
 
-## § A2A Agents (`<Prefix>A2AServers.flogo`)
+## § A2A Agents (`<Prefix>Agents.flogo`)
 
 One `tr_agent` trigger per action agent. **By default each agent's flow writes DIRECTLY to PostgreSQL** (`act_postgresql_query` to validate → `act_postgresql_insert` for the INSERT/UPDATE) **or sends email** (`act_general_sendmail`), and returns a result string. This is the pattern used by all the customer-facing reference use cases (Airline, Life & Pensions, Power Distribution, Retail Banking, Telecom). **Do NOT use `act_general_rest` / create a separate REST backend app unless the user explicitly asked for one** — the REST steps below are clearly marked *opt-in*. Because the loop is repetitive, drive it from Python `subprocess` (see driver above; point `FILE` at the A2A file).
 
 ### 1. Project, properties, LLM connection
 
 ```bash
-$FDA cp <Prefix>A2AServers "<UseCase> A2A Agents"
+$FDA cp <Prefix>Agents "<UseCase> A2A Agents"
 # LLM properties (from config.md)
 $FDA cap AgenticAI.OpenAIConn.LLM_Provider string <provider>            # e.g. OpenAI
 $FDA cap AgenticAI.OpenAIConn.API_Key      string <apiKey>              # SECRET where supported
@@ -398,7 +398,7 @@ $FDA cm -f "<app>.flogo"                        # check-mappings: refs, imports,
 
 ```bash
 ./<Prefix>MCPServer.exe      &   # listens on <mcpPort>
-./<Prefix>A2AServers.exe     &   # listens on each <agentPort>; discovers MCP tools
+./<Prefix>Agents.exe         &   # listens on each <agentPort>; discovers MCP tools
 ./<Prefix>AIOrchestrator.exe &   # WS on <wsPort>; connects to MCP + all A2A on startup
 ```
 On startup the orchestrator log should show it discovered the MCP tool list and connected to every A2A agent card. Then connect a WebSocket client to `ws://localhost:<wsPort>/<usecase>` and send a natural-language prompt; a healthy run logs `Executing tool[toolName:<Tool>]`, `Agent execution completed … used_tools:[<Tool>]`, `Flow Instance … completed`, and returns the answer as a WS frame.

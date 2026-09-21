@@ -31,8 +31,10 @@ A new folder (default `samples/Agentic_AI/<UseCase>_Use_Case/`, confirm with the
 | `database.sql` | PostgreSQL schema + demo data, engineered so each demo scenario works |
 | `reset_data.sql` | TRUNCATE + reload; clears agent-written tables; volatile dates relative to today |
 | `<Prefix>MCPServer.flogo` | **1 MCP Server** — N read-only tools, each querying one table/join |
-| `<Prefix>A2AServers.flogo` | **1 A2A Agents app** — M action agents that **write directly to PostgreSQL** (`act_postgresql_query`/`act_postgresql_insert`) or send email, each its own trigger/port. **No separate REST/backend app unless the user explicitly asks** (see the default-action hard rule below). |
+| `<Prefix>Agents.flogo` | **1 A2A Agents app** — M action agents that **write directly to PostgreSQL** (`act_postgresql_query`/`act_postgresql_insert`) or send email, each its own trigger/port. **No separate REST/backend app unless the user explicitly asks** (see the default-action hard rule below). |
 | `<Prefix>AIOrchestrator.flogo` | **1 AI Orchestrator** — WebSocket trigger + AI Agent activity routing to MCP tools / A2A agents |
+
+> **A2A app naming:** name the A2A-agents app **`<Prefix>Agents`** (file `<Prefix>Agents.flogo`), not `<Prefix>A2AServers`. Existing reference apps under `samples/Agentic_AI/` still use the older `A2AServers` name — leave those as-is; use `Agents` for anything new.
 | `prompts.md` | Demo prompts grouped by scenario |
 | `README.md` | **Authored FIRST as the approval artifact** (use case, persona, planned apps/tools/agents, sample prompts, how-to-run), then **finalized at the end** with real ports/commands + the **"below things are not configured…"** section. Architecture, apps/tools/agents tables, DB summary, demo scenarios, prerequisites + setup, ports, troubleshooting. |
 
@@ -63,7 +65,7 @@ FDA-specific method (this skill):
 
 ## Reference use cases (study these before building)
 
-Several Agentic AI use cases live under the reference folder (resolved in Phase 0b, default `samples/Agentic_AI/`); the **canonical references** to study are the six below. Read the ones closest to the requested domain to match structure, README shape, `prompts.md` format, `database.sql` conventions, and the direct-Postgres A2A pattern. Each ships exactly three apps (`<Prefix>MCPServer` / `<Prefix>A2AServers` / `<Prefix>AIOrchestrator`) plus `database.sql`, `reset_data.sql`, `prompts.md`, `README.md`.
+Several Agentic AI use cases live under the reference folder (resolved in Phase 0b, default `samples/Agentic_AI/`); the **canonical references** to study are the six below. Read the ones closest to the requested domain to match structure, README shape, `prompts.md` format, `database.sql` conventions, and the direct-Postgres A2A pattern. Each ships exactly three apps (`<Prefix>MCPServer` / `<Prefix>A2AServers` / `<Prefix>AIOrchestrator`; name new A2A-agents builds `<Prefix>Agents`) plus `database.sql`, `reset_data.sql`, `prompts.md`, `README.md`.
 
 | Use case | Folder | Persona | A2A action pattern |
 |---|---|---|---|
@@ -104,7 +106,7 @@ Read `skills-library/.claude/skills/config.md` first for: the `psql` path and Po
 The build recipes are self-contained, but you should **study** the closest existing use case to match its structure, README shape, `prompts.md` format, and `database.sql` conventions. Resolve the **reference folder** in this order, and use it wherever this document says `samples/Agentic_AI/`:
 1. If `config.md` defines `AGENTIC_USE_CASES_DIR`, use that path (relative to the repo root, or an absolute path).
 2. Otherwise, if `samples/Agentic_AI/` exists at the repo root, use it — this is the default when the skill ships inside `flogo-enterprise-hub`.
-3. Otherwise (skills-library installed standalone), **ask the user** to point you to the folder that holds the Agentic AI use-case apps (each a `*MCPServer.flogo` / `*A2AServers.flogo` / `*AIOrchestrator.flogo` trio). If the user has none, proceed from [references/fda-build-recipes.md](references/fda-build-recipes.md) alone — it is self-sufficient — and **do not block the build**; just skip the "study the reference" step.
+3. Otherwise (skills-library installed standalone), **ask the user** to point you to the folder that holds the Agentic AI use-case apps (each a `*MCPServer.flogo` / `*Agents.flogo`, older reference apps `*A2AServers.flogo` / `*AIOrchestrator.flogo` trio). If the user has none, proceed from [references/fda-build-recipes.md](references/fda-build-recipes.md) alone — it is self-sufficient — and **do not block the build**; just skip the "study the reference" step.
 
 New use cases are created under `samples/Agentic_AI/<UseCase>_Use_Case/` by default (confirm with the user; **never** inside `skills-library/`).
 
@@ -135,7 +137,7 @@ Then **STOP and get explicit user approval on the README before creating any dat
 1. `database.sql` — schema + **dummy/demo data** engineered per scenario (one clean case + one exception case per write-agent). Agent-written tables (disputes, tickets, orders, callbacks…) start empty. See the sibling `data-and-docs.md`.
 2. `reset_data.sql` — same data, agent-written tables emptied, volatile dates relative to today.
 3. `<Prefix>MCPServer.flogo` — build with `fda` per **[references/fda-build-recipes.md](references/fda-build-recipes.md) § MCP Server**. One read tool per lookup, each `act_postgresql_query` against a table/join; each tool handler MUST get input+output schemas (gotcha 1) or the MCP runtime panics.
-4. `<Prefix>A2AServers.flogo` — build with `fda` per **§ A2A Agents**. One `tr_agent` trigger per agent; wire the tool handler with `--input toolParams:object --output response:object` + schemas. **Default action = write directly to PostgreSQL** (`act_postgresql_query` to validate → `act_postgresql_insert` for INSERT/UPDATE) or `act_general_sendmail` for the email agent. **Do NOT build a REST-backend agent (`act_general_rest`) or a separate backend app unless the user explicitly asked** — if they did, use the opt-in REST steps in the recipe.
+4. `<Prefix>Agents.flogo` — build with `fda` per **§ A2A Agents**. One `tr_agent` trigger per agent; wire the tool handler with `--input toolParams:object --output response:object` + schemas. **Default action = write directly to PostgreSQL** (`act_postgresql_query` to validate → `act_postgresql_insert` for INSERT/UPDATE) or `act_general_sendmail` for the email agent. **Do NOT build a REST-backend agent (`act_general_rest`) or a separate backend app unless the user explicitly asked** — if they did, use the opt-in REST steps in the recipe.
 5. `<Prefix>AIOrchestrator.flogo` — build with `fda` per **§ Orchestrator**. Create the LLM/MCP/A2A connections, read their `conn://` UUIDs back from the file, then set `mcpServers` / `remoteAgents` arrays with `sa activity --jsonValue`. Apply the **three wsserver gotchas** (headers output schema, `wsconnection`/`content` = `any`, real LLM base URL).
 6. **Finalize the README** (from Phase 3) + `prompts.md`: fill in the real ports, exact start commands, and append the manual-config gap section — **ending by telling the user exactly what they must configure manually to run end to end** (see Phase 5 / [references/manual-config-gap.md](references/manual-config-gap.md)).
 

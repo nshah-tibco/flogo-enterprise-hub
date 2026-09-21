@@ -42,7 +42,7 @@ A new folder (default `samples/Agentic_AI/<UseCase>_Use_Case/`) containing:
 | `database.sql` | PostgreSQL schema + demo data, engineered so each demo scenario works (one clean case + one exception case per action agent). |
 | `reset_data.sql` | Truncate + reload to reset between demos; volatile dates are relative to today. |
 | `<Prefix>MCPServer.flogo` | The MCP Server app — N read-only tools. |
-| `<Prefix>A2AServers.flogo` | The A2A Agents app — M action agents. |
+| `<Prefix>Agents.flogo` | The A2A Agents app — M action agents. |
 | `<Prefix>AIOrchestrator.flogo` | The AI Orchestrator app — WebSocket trigger + AI Agent routing. |
 | `prompts.md` | Demo prompts grouped by scenario, to try against the running system. |
 | `README.md` | Architecture, tool/agent tables, DB summary, demo scenarios, ports, troubleshooting, and the **"below things are not configured…"** manual checklist. |

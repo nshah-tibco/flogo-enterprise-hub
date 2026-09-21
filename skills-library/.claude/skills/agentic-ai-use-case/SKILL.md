@@ -17,10 +17,12 @@ A new folder `samples/Agentic_AI/<UseCase>_Use_Case/` containing:
 | `database.sql` | PostgreSQL schema + demo data, engineered so each demo scenario works |
 | `reset_data.sql` | TRUNCATE + reload; clears agent-written tables; volatile dates made relative to today |
 | `<Prefix>MCPServer.flogo` | **1 MCP Server** — N read-only tools, each querying one table/join |
-| `<Prefix>A2AServers.flogo` | **1 A2A Agents app** — M business-logic agents (write workflows), each its own trigger/port |
+| `<Prefix>Agents.flogo` | **1 A2A Agents app** — M business-logic agents (write workflows), each its own trigger/port |
 | `<Prefix>AIOrchestrator.flogo` | **1 AI Orchestrator** — WebSocket trigger, an AI Agent activity that routes to MCP tools or A2A agents |
 | `prompts.md` | Demo prompts grouped by scenario |
 | `README.md` | Architecture, apps/tools/agents tables, DB summary, demo scenarios, **prerequisites + setup steps (manual steps folded in)**, ports, troubleshooting |
+
+> **A2A app naming:** name the A2A-agents app **`<Prefix>Agents.flogo`**, not `<Prefix>A2AServers.flogo`. (Existing reference apps under `samples/Agentic_AI/` still use the older `A2AServers` name — leave those as-is; use `Agents` for anything new.)
 
 The architecture (all three use cases share it):
 
@@ -75,7 +77,7 @@ Read `skills-library/.claude/skills/config.md` first for the psql path, PostgreS
 This skill **clones an existing use case as the template**, so it must first find the folder that holds them. Resolve the **reference folder** in this order, and use it wherever this document says `samples/Agentic_AI/`:
 1. If `config.md` defines `AGENTIC_USE_CASES_DIR`, use that path (relative to the repo root, or an absolute path).
 2. Otherwise, if `samples/Agentic_AI/` exists at the repo root, use it — this is the default when the skill ships inside `flogo-enterprise-hub`.
-3. Otherwise (skills-library installed standalone, no reference apps on disk), **ask the user** to point you to the folder that holds the Agentic AI use-case apps — each a `*MCPServer.flogo` / `*A2AServers.flogo` / `*AIOrchestrator.flogo` trio. Do not guess a path or fabricate a template from memory; without a reference app to clone, this skill cannot run reliably (use `agentic-ai-use-case-fda`, which builds from self-contained recipes, if the user has no reference apps).
+3. Otherwise (skills-library installed standalone, no reference apps on disk), **ask the user** to point you to the folder that holds the Agentic AI use-case apps — each a `*MCPServer.flogo` / `*Agents.flogo` (older reference apps: `*A2AServers.flogo`) / `*AIOrchestrator.flogo` trio. Do not guess a path or fabricate a template from memory; without a reference app to clone, this skill cannot run reliably (use `agentic-ai-use-case-fda`, which builds from self-contained recipes, if the user has no reference apps).
 
 New use cases are still created under `samples/Agentic_AI/<UseCase>_Use_Case/` by default — confirm the target folder with the user.
 
@@ -100,7 +102,7 @@ Plan must list: the tables, the MCP tools (name → table/query), the A2A agents
 1. `database.sql` — schema + demo data. Engineer the data so each scenario is demonstrable (e.g. one record that is a clean case, one that is the "discrepancy/exception" case a write-agent acts on). See [references/data-and-docs.md](references/data-and-docs.md).
 2. `reset_data.sql` — same data, agent-written tables emptied, volatile dates relative to today.
 3. `<Prefix>MCPServer.flogo` — one read tool per lookup. See [references/flogo-app-templates.md](references/flogo-app-templates.md).
-4. `<Prefix>A2AServers.flogo` — one agent per write workflow. Use the INSERT/UPDATE param pattern from [references/postgres-activity-patterns.md](references/postgres-activity-patterns.md) exactly.
+4. `<Prefix>Agents.flogo` — one agent per write workflow. Use the INSERT/UPDATE param pattern from [references/postgres-activity-patterns.md](references/postgres-activity-patterns.md) exactly.
 5. `<Prefix>AIOrchestrator.flogo` — WebSocket trigger + AI Agent activity wired to the MCP server connection and all A2A connections.
 6. `README.md` + `prompts.md`.
 

@@ -213,7 +213,7 @@ Rules:
 
 ```python
 import json, re
-d = json.load(open("<App>A2AServers.flogo", encoding="utf-8"))
+d = json.load(open("<App>Agents.flogo", encoding="utf-8"))
 for res in d["resources"]:
     for t in res["data"]["tasks"]:
         a = t.get("activity", {})
