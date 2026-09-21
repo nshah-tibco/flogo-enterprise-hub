@@ -59,9 +59,8 @@ representative at an online or offline event.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the community leaders responsible for enforcement at
-**conduct-contact@example.com**.
-*(maintainers: replace this placeholder with your monitored contact address.)*
+reported to the community leaders responsible for enforcement by contacting the
+maintainers of this repository.
 
 All complaints will be reviewed and investigated promptly and fairly.
 

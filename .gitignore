@@ -17,14 +17,11 @@ npm-debug.log*
 *.dylib
 *.so
 
-# Flogo compiled app binaries.
-# flogobuild produces a Windows .exe (covered above) or an EXTENSION-LESS
-# executable on Linux/macOS (darwin/linux GOOS). Since those have no extension,
-# ignore everything under Flogo_Apps/ except the .flogo source and subfolders.
-Flogo_Apps/*
-!Flogo_Apps/*/
-!Flogo_Apps/*.flogo
-!Flogo_Apps/.gitignore
+# Flogo_Apps/ is the local working folder for building and experimenting with
+# Flogo apps. It is not shipped as repo content — keep the entire folder out of
+# git so local scratch apps (and any live secrets baked into their .flogo files)
+# can never be committed by accident.
+Flogo_Apps/
 
 # Flogo build output: any "builds/" directory holds packaged artifacts
 # (flogo-engine binaries, .zip bundles, values.yaml, deploy payloads).

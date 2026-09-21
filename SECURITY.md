@@ -28,9 +28,8 @@ Report vulnerabilities **privately** using GitHub's built-in private reporting:
    - Step-by-step instructions to reproduce.
    - Any suggested remediation, if you have one.
 
-If you are unable to use GitHub's private advisory feature, you may contact the
-maintainers directly at **<security-contact@example.com>**
-*(maintainers: replace this placeholder with your monitored security contact address).*
+If you are unable to use GitHub's private advisory feature, please contact the
+maintainers of this repository directly.
 
 We will acknowledge your report, keep you updated on our progress, and coordinate a
 disclosure timeline with you. Please give us a reasonable amount of time to
