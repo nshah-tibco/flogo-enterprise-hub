@@ -84,6 +84,10 @@ skills-library/.claude/skills/config.md
 # values. Kept out of the repo so they can't be committed by accident.
 demos/Agentic_AI/Hospital_FDA_Rebuild/
 
+# Air Liquide demo (BW6 stack): kept local — carries obfuscated provider creds
+# and third-party fixture docs not cleared for redistribution.
+demos/Agentic_AI/air_liquide_demo/
+
 # Local scratch / scaffold projects at the repo root (throwaway experiments,
 # not demo content). Root-anchored so real demo .flogo files are unaffected.
 /flogo-project.flogo
