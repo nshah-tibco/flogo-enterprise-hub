@@ -67,7 +67,7 @@ Import all 3 `.flogo` files into TIBCO Flogo Enterprise:
 | Property | Value |
 |----------|-------|
 | `AgenticAI.OpenAIConn.API_Key` | Your OpenAI API key |
-| `LLM_Model` | `gpt-4o` (or preferred model) |
+| `LLM_Model` | `gpt-5.6` (or preferred model) |
 | `PostgreSQL.PostgresConn.Host` | `localhost` |
 | `PostgreSQL.PostgresConn.Database_Name` | `airline` |
 | `PostgreSQL.PostgresConn.User` | `postgres` |
@@ -84,7 +84,7 @@ Import all 3 `.flogo` files into TIBCO Flogo Enterprise:
 | Property | Value |
 |----------|-------|
 | `AgenticAI.OpenAIConn.API_Key` | Your OpenAI API key |
-| `LLM_Model` | `gpt-4o` (or preferred model) |
+| `LLM_Model` | `gpt-5.6` (or preferred model) |
 
 ---
 

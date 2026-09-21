@@ -380,10 +380,3 @@ This is a working demo. For production the design calls for: TLS on all endpoint
 A2A), Bearer-token auth on the MCP Server, API-gateway rate limiting, an on-premises LLM for data
 residency, and swapping the PostgreSQL-backed tools for real utility backend integrations (Billing/CIS,
 CRM, Meter Data Management, Network/Outage Management, Field Service).
-
----
-
-<!-- The "⚠️ Below things are NOT configured…" manual-config gap section will be appended here at
-     finalize time (Phase 5), covering LLM creds/endpoint, DB creds, ports, SMTP-password-as-secret,
-     WebSocket client, and the FDA Tech-Preview manual steps (Sync every trigger, validate every
-     connection). -->

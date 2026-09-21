@@ -70,7 +70,7 @@ flowchart LR
   Ops -->|"Execute approved action"| Inventory
   Ops -->|"Execute approved action"| Orders
   Ops -->|"Execute approved action"| Promotions
-  Agent -->|"Conversation + trace"| SQL
+  Flogo -->|"Conversation + trace"| SQL
   Ops -->|"Approvals"| SQL
 ```
 
@@ -118,7 +118,6 @@ Retail_AI_BW_Flogo/
 | **TIBCO BusinessWorks 6** | **6.12.0 HF3** or later, with the **AI Plugin**, **JDBC**, **REST/JSON**, and **Java** palettes |
 | **Node.js** | Required by the BW6 MCP Gateway — it uses `npx mcp-remote` to bridge STDIO MCP to the BW6 MCP Server |
 | **Java** | JDK 17+  |
-| **Go** | 1.25.11+  |
 | **Docker** | For SQL Server and Weaviate containers |
 | **OpenAI API key** | Used by both the Flogo orchestrator and BW6 Java classes for LLM calls |
 | **Python 3** | (or any static file server) to serve the UI |
@@ -160,6 +159,9 @@ The BW6 domain APIs require:
 - **Node.js** — the MCP Gateway uses `npx mcp-remote` to bridge to the BW6 MCP Server. Ensure Node.js is installed and `npx` is on your PATH.
 
 ### 3. SQL Server
+
+> **Note:** The passwords below (`bw6retail@123`, `bw6retail@456`) are example values for a
+> local Docker instance only. Change them to your own secrets before any non-local use.
 
 ```bash
 docker run -d \
@@ -362,9 +364,9 @@ Start services in this order:
 Run the `RetailAIOrchestrator.flogo` app using the Flogo Enterprise CLI or VS Code Flogo extension:
 
 ```bash
-# Using Flogo CLI
-<flogo-cli-path>/RetailAIOrchestrator.exe --app --debug \
-  -o <output-path> RetailAIOrchestrator.flogo
+# Using the Flogo build CLI (paths/versions in skills-library/.claude/skills/config.md)
+# Input is the .flogo source; this produces RetailAIOrchestrator.exe
+flogobuild build-exe -f RetailAIOrchestrator.flogo -c <context>
 ```
 
 Or launch it directly from VS Code using the **Flogo extension** — right-click the `.flogo` file and select **Run**. You will see flow execution logs in the terminal:

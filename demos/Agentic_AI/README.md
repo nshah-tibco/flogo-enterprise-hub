@@ -108,7 +108,7 @@ Grouped by **industry vertical**. Click a use case to open its folder and full R
 | 🖼️ **deck** | Includes an architecture slide deck. |
 
 > **Port collisions — don't run these pairs at once (defaults overlap):**
-> Retail Banking & Semiconductor both use WS `:8088`; Airline & Predictive Maintenance both use WS `:8083`; Life & Pensions and Container Shipping both use WS `:9600` + A2A `9983–9988`. Hospital's two variants share the same ports because they are the same demo built two ways. Change a port in the app properties to run overlapping demos simultaneously.
+> Retail Banking & Semiconductor both use WS `:8088`; Airline & Predictive Maintenance both use WS `:8083` (and MCP `:9093`); Life & Pensions and Container Shipping both use WS `:9600` + A2A `9983–9988`. Port `:9095` recurs across Aerospace (MCP), Predictive Maintenance (REST), and Hospital. Hospital's two variants share the same ports because they are the same demo built two ways. Change a port in the app properties to run overlapping demos simultaneously.
 
 ---
 

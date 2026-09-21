@@ -421,8 +421,8 @@ with your own before an end-to-end run. Never commit real secrets — pull value
 
 1. **LLM credentials & endpoint** (A2A Servers + Orchestrator).
    - `AgenticAI.OpenAIConn.API_Key` — your real provider key (kept as a `SECRET:` app property).
-   - `AgenticAI.OpenAIConn.LLM_Base_URL` — leave blank for OpenAI, or set a **real endpoint** for an
-     OpenAI-compatible provider. An empty value against a non-OpenAI provider fails with
+   - `AgenticAI.OpenAIConn.LLM_Base_URL` — set to your provider's endpoint; for OpenAI use
+     `https://api.openai.com/v1`. Leaving it blank can make the LLM call fail with
      `unsupported protocol scheme`.
    - `LLM_Model` — confirm the model name is one your key can access.
 

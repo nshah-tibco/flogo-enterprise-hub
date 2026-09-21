@@ -173,7 +173,7 @@ PII / model value — replace them with your own before an end-to-end run:
    - `LLM_Base_URL` — already set to a **real endpoint** (`https://api.openai.com/v1`). It is
      deliberately not blank: an empty value becomes the literal `New_value` and the LLM call fails
      with `unsupported protocol scheme`. Change it only if you use a different OpenAI-compatible host.
-   - `LLM_Model` — confirm the model name (`gpt-4o` placeholder) is one your key can access.
+   - `LLM_Model` — confirm the model name (`gpt-5.6` placeholder) is one your key can access.
 
 2. **PostgreSQL database & credentials.**
    - Create a database (the build assumes **`logistics`**) and load `database.sql`; run

@@ -365,7 +365,7 @@ are stored as `SECRET:` app properties (type stays `string`).
 |----------|-------|
 | `AgenticAI.OpenAIConn.API_Key` | `<your-llm-key>` (SECRET) |
 | `AgenticAI.OpenAIConn.LLM_Base_URL` | `<real-llm-endpoint>` (e.g. `https://api.openai.com/v1`) |
-| `LLM_Model` | `<model-name>` (e.g. `gpt-4o`, or your preferred / on-prem model) |
+| `LLM_Model` | `<model-name>` (e.g. `gpt-5.6`, or your preferred / on-prem model) |
 | `PostgreSQL.PostgresConn.Host` | `<db-host>` |
 | `PostgreSQL.PostgresConn.Database_Name` | `telecom` |
 | `PostgreSQL.PostgresConn.User` | `<db-user>` |
@@ -549,4 +549,4 @@ with your own before an end-to-end run. **Never commit real secrets.**
 
 ## Security & Production Notes (from the design)
 
-This is the Phase-1 working demo. For production the design calls for: TLS on all endpoints (WebSocket + MCP + A2A), Bearer-token auth on the MCP Server, API-gateway rate limiting, an on-premises LLM for data residency, and swapping the PostgreSQL-backed tools for real BSS API calls (Billing, CRM, Product Catalog, Payment Gateway). See the source deck `Telecom-Invoice-Chatbot-Flogo-Agentic-AI-v2.pdf`.
+This is the Phase-1 working demo. For production the design calls for: TLS on all endpoints (WebSocket + MCP + A2A), Bearer-token auth on the MCP Server, API-gateway rate limiting, an on-premises LLM for data residency, and swapping the PostgreSQL-backed tools for real BSS API calls (Billing, CRM, Product Catalog, Payment Gateway).

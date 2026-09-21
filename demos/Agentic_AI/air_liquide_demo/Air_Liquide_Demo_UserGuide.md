@@ -141,7 +141,8 @@ Before running the RAG apps, set your OpenAI key and the vector-store path:
 - Edit `RAG_Air_Liquide_Ingestion/Resources/rest_download/IngestRAGConfiguration.ragResource`
 - Edit `RAG_Air_Liquide_Query/Resources/rag_image_query/RAGConfiguration.ragResource`
 - In each, set `openAIKey`, confirm `openAIModelType` / `embeddingOpenAIModelName`,
-  and confirm `localStorageFileLocation` (default `C:\tmp\air_liquide_demo\localvector.txt`).
+  and confirm `localStorageFileLocation` (default `C:\tmp\air_liquide_demo\localvector.txt` on
+  Windows, or e.g. `/tmp/air_liquide_demo/localvector.txt` on macOS/Linux).
   Create that folder first if it doesn't exist. Both apps must point at the
   **same** vector-store file so that queries can find what ingestion wrote.
 
@@ -258,7 +259,7 @@ via MCP and (2) complemented by a document knowledge base — all built in BW6.*
 | RAG query port | `RAG_Air_Liquide_Query/META-INF/default.substvar` → `imgUploadPort` | `7312` |
 | LLM model | `*.ragResource` (`openAIModelType`) and `demo.html` (`model`) | `gpt-5.6` |
 | Embedding model | `*.ragResource` (`embeddingOpenAIModelName`) | `text-embedding-3-large` |
-| Vector store | `*.ragResource` (`embeddingStorageProvider=local`, `localStorageFileLocation`) | `C:\tmp\air_liquide_demo\localvector.txt` |
+| Vector store | `*.ragResource` (`embeddingStorageProvider=local`, `localStorageFileLocation`) | `C:\tmp\air_liquide_demo\localvector.txt` (Windows) or `/tmp/air_liquide_demo/localvector.txt` (macOS/Linux) |
 | Browser API endpoints | `demo.html` → `const API` | see Step C |
 
 The RAG shared resource also supports **Weaviate**, **Ollama** embeddings, and a
