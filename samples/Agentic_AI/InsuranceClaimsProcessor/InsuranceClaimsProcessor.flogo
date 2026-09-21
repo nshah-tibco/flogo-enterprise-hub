@@ -323,7 +323,7 @@
     {
       "name": "LLMClient.openai.API_Key",
       "type": "string",
-      "value": "SECRET:hlsodaWQfMyIz87nkwOSKAosKdhufK4Q/dS8fvqf/BZL/Qaa74XEfEdKqiCNKLUyG1YgVP/z4CzIdyP5iYLm/EEvxYmCaZ6jXiYt1+5AQ8KhQnzDQJpAcw7BYLo0khaaKDN62Kltwcfw+3lVO83Y0qnE1TgehbNxRMFAw0jlGIRR2qK2RwDNHfKJpgkZRDaVCUWrYhk+FpZW4tsUlLjHGYWSSm5Hq6OQgZm6yEoVGsoeohPd"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "LLMClient.openai.LLM_Model",
@@ -343,7 +343,7 @@
     {
       "name": "LLMClient.A2A.Fraud.Auth_Token",
       "type": "string",
-      "value": "SECRET:mOR7MON82xp5vjxJd2tbldLPP5oAi2Y="
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "WebSocket_PORT",
@@ -378,7 +378,7 @@
         "description": "FraudDetection A2A Server",
         "serverUrl": "http://localhost:9604",
         "authType": "Static Token",
-        "authToken": "SECRET:H02dUopYNxuLeJOiEmORk/6/5aIDhk0="
+        "authToken": "SECRET:YOURKEY"
       }
     }
   },

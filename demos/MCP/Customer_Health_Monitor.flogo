@@ -974,7 +974,7 @@
     {
       "name": "Salesforce.customer-account-info-sf.Client_Secret",
       "type": "string",
-      "value": "SECRET:l40UePhJ4lrpoevmclc82lLu3Ju7jCK+k5lhdTDVanYwG2ZZdJ9fihYxVZ/DOY//qh6gGdqWEUCPE5yyjZdMBtt1BNDJD9iIIuMK41ZPXnU="
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "Salesforce.customer-account-info-sf.OAuth2_Token",
@@ -1004,7 +1004,7 @@
     {
       "name": "PostgreSQL.pg-new-opportunities-data.Password",
       "type": "string",
-      "value": "SECRET:t55NDPkgDEcIhRqEzQTPjkCfUbo="
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "PostgreSQL.pg-new-opportunities-data.Maximum_Open_Connections",

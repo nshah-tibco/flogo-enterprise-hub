@@ -654,7 +654,7 @@
     {
       "name": "PostgreSQL.PostgreSQL-SSL-Conn.Password",
       "type": "string",
-      "value": "SECRET:/v3s33BXQaHSsq+SNjvvOCr6oJmQInlwznxTC5npO76dn2Dz2A8ujJe/07Y7UcSzXB0E"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "PostgreSQL.PostgreSQL-SSL-Conn.Maximum_Open_Connections",

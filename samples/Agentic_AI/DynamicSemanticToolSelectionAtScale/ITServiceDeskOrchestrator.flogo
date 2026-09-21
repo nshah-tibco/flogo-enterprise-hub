@@ -317,7 +317,7 @@
     {
       "name": "AgenticAI.OpenAI.API_Key",
       "type": "string",
-      "value": "SECRET:hcFDGJp6nI0fY+xZdrSvG42JO+2k/sek5a7fM4HMxTyl5V1Um2JQDody5jRT78hne6gzSDpD4FjnlZXV9NiM2vq8AuZ90hpAqS0Yo109c1i9LnlrzCCXyUBg20fWkP0KNI5whZHJiubkum3UiUyJWHPW4/DxKfCAIeRNFxqPEzTD/vU4Tj1hamaOprJ1SbdET2gxD5MRhsUDH9IRLIulTlIHqU71JDnA5utvLdqJUCtAwF8b"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "AgenticAI.OpenAI.LLM_Base_URL",
@@ -342,7 +342,7 @@
     {
       "name": "LLMClient.openai.LLM_APIKey",
       "type": "string",
-      "value": "SECRET:F05jsfgaqzfSJswhSmlbUowhqnMUAZ7O+QfHibJ/c0U5kHAIHYNv/59IbJuCXleZFpyGVwODUCPBOy2c3WFKTxUytX3SjOexru/cP0uKGU6chpmaWJzOYe0JbROAdXgzWAFQSV/NPyxCaxxyWR4VPn5dTQs9cDbDaZ+QotiyOWNT6R48fb+PAexzXhcsFqw7EMzlQf4ufSRnLqS0+/aCoftGvbPxTI+Npju70qDPNwWPtUCn"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "AgenticAI.systemPrompt",

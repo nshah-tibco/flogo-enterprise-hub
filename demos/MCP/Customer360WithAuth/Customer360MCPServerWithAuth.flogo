@@ -779,7 +779,7 @@
     {
       "name": "MCPServer.SECRET",
       "type": "string",
-      "value": "SECRET:nYRStHEwMtdOAEbwc4a4SjRyUUeu1g=="
+      "value": "SECRET:YOURKEY"
     }
   ],
   "schemas": {

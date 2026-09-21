@@ -247,7 +247,7 @@
     {
       "name": "AgenticAI.OpenAI.API_Key",
       "type": "string",
-      "value": "SECRET:n/sQ0Ryz2SY+4SzFUgikrqRB9eDuNEL3T49QcVVCBnSHyQLeiy0QFwhbj8bdv6f47CCDIfgBTFifsUqt8axI7DKfv6DfuQdlRO0+Z0Vc+f4F9C5GrI+z/wR8+q1CsA9tHKQuHrQVybhZ6vYWQo8o8qknv02gi/kH4CmLabNUL7/NMDdJiS8nivMHOdTbuzEw/sVeEV3LONTAQrn+D7DUOwqb0x5jP2XhNfw3/5Kn33PGanq1"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "AgenticAI.OpenAI.LLM_Base_URL",

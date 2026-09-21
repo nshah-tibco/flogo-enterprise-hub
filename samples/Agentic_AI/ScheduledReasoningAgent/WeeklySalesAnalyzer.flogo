@@ -841,7 +841,7 @@
     {
       "name": "LLMClient.APIKey",
       "type": "string",
-      "value": "SECRET:RWgD8FgwBWbrwlmhqFf8cGap5mvD1FbS0fXy7H3Y3xAUPgk00Q4pK0k5ouqq3gnVugPNwO6nSVk/Zhtgu5AWiXctXpbeeThAD9AfOSx7fwEw6toqH6rgYjP89eqW1u5bLrUuA74iN4t5+D/K7HNYgwoi0DiZdAhpoSWsIBEqGCygjtlje1G6/p0y9YQ38aXfHws3IAl0ktL+n/nwLkfEFymJJJVGyXksoGITkotG4lOQ2gxq"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "LLMClient.htmlFormatPrompt",
@@ -881,7 +881,7 @@
     {
       "name": "Email.SMTP.Password",
       "type": "string",
-      "value": "SECRET:Im99nLH4sY26DChtKbXZMVz1dmffL0Kt5rZokA3PhdUwsEU="
+      "value": "SECRET:YOURKEY"
     }
   ],
   "connections": {

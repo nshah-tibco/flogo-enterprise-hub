@@ -257,7 +257,7 @@
     {
       "name": "LLMClient.API_Key",
       "type": "string",
-      "value": "SECRET:EQRbUxsfEf6Q5uxQXH9Zs7SMg5aDMRPgxL+ahBx1TT6U1H3FXHojdsbBYYj6MBqNXiQnvWiok3vIzK3wbUqEjLUcxi7vNenlFSZH0s8lpSI6ialt0NMI9JnjVChLeQoQ6azMhj1skmfPIfX3Df1v8/yWud9Cyta6iFg4o5PbYyE9IuqOfzjGk4py7dVFrGG+Al8OQpi3D10JqGRN0S/MV/mHKF/WXOUoRjfwzwpDP72d0GKW"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "LLMClient.LLM_Model",

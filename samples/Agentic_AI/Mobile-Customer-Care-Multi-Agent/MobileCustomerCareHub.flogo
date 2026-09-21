@@ -1314,7 +1314,7 @@
     {
       "name": "AgenticAI.openai-Mobile.API_Key",
       "type": "string",
-      "value": "SECRET:Wv3eVlfu1TdGxHtpQpnUrUxMbhFZ6BRkepBanSu41eDLVGTWSuFGRXBiSJaGiBX398lVmQOJ4f97YrdkM/deeeB0DCx9hO2bu9R1eoWhMUVjYWrJiMCuh23hEPzhFuactSi0fEFZceeLVFEzrUf0edBes5j+3rJkjyi1V4CNINVPoFpdW3OCQ6McrpvDKiQl0qvHGPHYpVQg2WXPz/uY8sAef8vFoTW/zbVRqc+yv+A2BJ3H"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "AgenticAI.openai-Mobile.LLM_Base_URL",

@@ -521,7 +521,7 @@
     {
       "name": "AgenticAI.openai.API_Key",
       "type": "string",
-      "value": "SECRET:Zr0HQT+SrRwXX615pxacYMuM7tAaQLBlzC/EHJEhB8F+w2xc8EjywQ4pn1ZAp2dSlG0BY9bUVuERugG7+l0WHFcW3Bs/CoelYhubuXWd8ZZhIPBUrUfzIIlwaqdjTOltWYA2P2gkqFD/3vq0PIcMRNbUqxlQQxlTMFOG70EgHKlsRRcY9qR9ozCsJ8YbmZlgHr2w8VMtosEoc7+4F8Id41VeDI5XQ70NQxJ2W4SzDv4ksVrW"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "AgenticAI.openai.LLM_Base_URL",
@@ -598,7 +598,7 @@
         "description": "Connection to the TravelItineraryPlanner A2A Server on port 9898",
         "serverUrl": "http://localhost:9898",
         "authType": "Static Token",
-        "authToken": "SECRET:UGunCutakmdQkX/JWC5TDfRhGll7y/Lv589zdahsATiLwti2Lo3t+9NYQjw="
+        "authToken": "SECRET:YOURKEY"
       }
     },
     "f97616a4-d66d-4151-8bae-26541f00fb74": {
@@ -611,7 +611,7 @@
         "description": "",
         "serverUrl": "https://pltdemo.pmorg.int-pm.dataplanes.pro/tibco/apps/d9c9000ktegs73dr1vrg/TravelPlannerA2AServer",
         "authType": "Static Token",
-        "authToken": "SECRET:tNSMMg+h9gNopJF2YYfYLy5+C3IJZk05xSsCVQTodE7uqA+73omwj9kTztM="
+        "authToken": "SECRET:YOURKEY"
       }
     }
   },

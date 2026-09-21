@@ -1382,7 +1382,7 @@
     {
       "name": "AgenticAI.OpenAI_LLMProvider.API_Key",
       "type": "string",
-      "value": "SECRET:2jlmTKOOcyh+u3iHZT1anVrW0ginqVBoAmvNGG1msKaz+B9Leog35chupUObGcY7D9NSFY0CMKJzka5tdkjtWHuyMO8JF/UHGoqGEluXpnEymQxOuL3MJyerIIaf6stHXv4VYhjWsEODDZkEbTsPik5NnJTzZtJIkwQ0N0RgpNCiExSAAZ6fa+IHiCHIzSvpaElI9y29iu6xnCTyf7xZXvnZE/wTEcmUm1foGjlkp4OQxjBz"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "AgenticAI.OpenAI_LLMProvider.LLM_Base_URL",
