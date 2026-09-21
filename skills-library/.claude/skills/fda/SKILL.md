@@ -61,6 +61,7 @@ Task: create-spec (csp)               Create an API specification for a Flogo Pr
 Task: remove-spec (rsp)               Removes a spec from a Flogo Project
 Task: create-schema (cs)              Create a schema for a Flogo Project
 Task: remove-schema (rs)              Removes a schema from a Flogo Project
+Task: update-schema (us)              Add or remove a single property in an existing schema
 Task: create-app-property (cap)       Create an application property for a Flogo Project
 Task: remove-app-property (rap)       Removes an application property from a Flogo Project
 Task: set-attribute (sa)              Set attribute for a Flogo Object
@@ -95,6 +96,7 @@ Task: check-mappings (cm)             Check mappings (refs, imports, @foreach sc
 Task: wire-trigger-handler (wth)      Wire a trigger handler ↔ flow (inputs + reply mappings)
 Task: set-mapping-schema (sms)        Attach a JSON Schema to a mappable activity OR to a flow's input/output (typed-tree UI)
 Task: remove-mapping-schema (rms)     Detach a JSON Schema from a mappable activity
+Task: update-mapping-schema (ums)     Add or remove a single property in a mappable activity's attached schema
  --- history ---- 
 Task: show-history (sh)               Show the history of executed tasks
 Task: restore-history (rhi)           Restores your flogo application to the version in the history
