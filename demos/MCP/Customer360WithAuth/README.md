@@ -4,7 +4,7 @@
 
 This sample demonstrates how to run the **TIBCO Flogo® MCP Customer 360 Server** over **HTTPS (TLS)** with **JWT Token authentication**. It exposes **Customer 360 data** — including **customers**, **products**, and **sales** — as MCP tools, secured with TLS encryption and token-based authentication.
 
-This is the secure variant of the [Customer360MCPServer](../Customer360/README.md) sample. Use this when:
+This is the secure variant of the [Customer360MCPServer](../Customer360MCPServer.flogo) sample. Use this when:
 - Your AI agent client requires a **secure (HTTPS) transport**, or
 - You want to **restrict access** to the MCP server using **JWT Token** or **API Key** authentication.
 
@@ -37,11 +37,11 @@ This is the secure variant of the [Customer360MCPServer](../Customer360/README.m
 
 Import `Customer360MCPServerWithAuth.flogo` in VS Code.
 
-You will also need the REST API backend app — import `CustProdSaleAPI.flogo` from the [Customer360](../Customer360/) folder.
+You will also need the REST API backend app — import [`Customer360API.flogo`](../Customer360API.flogo) from the parent `demos/MCP` folder.
 
 ## Understanding the configuration
 
-- **CustProdSaleAPI.flogo** — REST API server that returns dummy customers, products, and sales data.
+- **Customer360API.flogo** — REST API server that returns dummy customers, products, and sales data.
 - **Customer360MCPServerWithAuth.flogo** — Flogo MCP Server that exposes customers, products, and sales as MCP tools over **HTTPS** with **JWT Token authentication**.
 
 ### App Properties
@@ -103,12 +103,12 @@ When using JWT, generate tokens that include:
 
 ## Run the application
 
-1. Run **CustProdSaleAPI.flogo** from VS Code. This starts the REST API backend at:
+1. Run **Customer360API.flogo** from VS Code. This starts the REST API backend at:
    - `http://localhost:18080/customers`
    - `http://localhost:18080/products`
    - `http://localhost:18080/sales`
 
-2. Update the app properties `CustInvokeRESTServiceURL`, `ProdInvokeRESTServiceURL`, and `SaleInvokeRESTServiceURL` in **Customer360MCPServerWithAuth.flogo** to point to where your `CustProdSaleAPI` app is running.
+2. Update the app properties `CustInvokeRESTServiceURL`, `ProdInvokeRESTServiceURL`, and `SaleInvokeRESTServiceURL` in **Customer360MCPServerWithAuth.flogo** to point to where your `Customer360API` app is running.
 
 3. Configure `MCPServer.SERVER_CERT` and `MCPServer.SERVER_PRIVATE_KEY` with your certificate and private key.
 
