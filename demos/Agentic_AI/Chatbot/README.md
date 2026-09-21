@@ -1,6 +1,6 @@
-# Hospital Chatbot
+# Flogo Agentic AI Chatbot
 
-A minimalist hospital-themed chatbot web application with WebSocket support, multiple chat sessions, and a clean, modern UI.
+A minimalist, domain-agnostic chatbot web application with WebSocket support, multiple chat sessions, and a clean, modern UI. It is the shared browser front-end for every use case under `demos/Agentic_AI/`.
 
 > **Shared UI for all Agentic AI use cases.** This is the common front-end web chat client used by
 > every demo under `demos/Agentic_AI/` (Power Distribution, Retail Banking, Semiconductor, Telecom,
@@ -10,9 +10,8 @@ A minimalist hospital-themed chatbot web application with WebSocket support, mul
 > `ws://<host>:<wsPort>/<path>`, then click **Connect**. Examples:
 > Power Distribution `ws://localhost:9680/grid` · Retail Banking `ws://localhost:8088/banking` ·
 > Semiconductor `ws://localhost:8088/semiconductor`. Each use case's README lists its exact URL.
-> (The "hospital" theme below is cosmetic — the UI is domain-agnostic.)
 
-## 🏥 Features
+## ✨ Features
 
 - **Multiple Chat Sessions**: Create, switch between, and manage multiple chat conversations
 - **WebSocket Integration**: Real-time communication with backend WebSocket server
@@ -20,7 +19,7 @@ A minimalist hospital-themed chatbot web application with WebSocket support, mul
 - **Connection Management**: Visual connection status indicator with connect/disconnect controls
 - **Message History**: Persistent chat history with timestamps
 - **Responsive Design**: Works seamlessly on desktop and mobile devices
-- **Hospital Theme**: Clean, minimalist design with blue and red accent colors
+- **Clean, Minimalist Theme**: Modern design with configurable accent colors
 
 ## 📋 Prerequisites
 
@@ -130,7 +129,7 @@ Chatbot/
 │   └── config.js          # Configuration module (loads env variables)
 ├── public/
 │   ├── css/
-│   │   └── style.css      # Main stylesheet (hospital theme)
+│   │   └── style.css      # Main stylesheet (theme)
 │   └── js/
 │       └── app.js         # Main application JavaScript
 ├── routes/
@@ -252,5 +251,5 @@ For issues or questions:
 
 ---
 
-**Built with ❤️ for healthcare communication**
+**A shared WebSocket test client for TIBCO Flogo® Agentic AI demos**
 

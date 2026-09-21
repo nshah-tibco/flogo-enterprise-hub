@@ -31,7 +31,7 @@ LLM Provider: OpenAI
 
 API Key: <your-openai-api-key>
 
-LLM Model: gpt-5.5
+LLM Model: gpt-5.6
 ---
 
 ## Email Server, Username and app password

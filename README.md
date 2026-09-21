@@ -25,6 +25,7 @@ If you have purchased commercial support for TIBCO Flogo®, please create a Serv
 Build AI-powered agents, expose business data via MCP, and orchestrate intelligent workflows.
 
 - **[Agentic AI Samples](./samples/Agentic_AI/)** — AI agents with custom guardrails, multi-agent handoff, MCP server integration, the "Flogo as an MCP tool server" pattern, A2A (Agent-to-Agent) protocol, LLM Client Activity, memory conversation store, dynamic MCP/A2A server configuration, dynamic semantic tool selection at scale (150 tools), scheduled reasoning with automated report generation and email delivery, and incident triage. Supports OpenAI, Gemini, Anthropic, Ollama, and vLLM.
+- **[Agentic AI Use-Case Demos](./demos/Agentic_AI/)** — end-to-end, industry-specific Agentic AI demos organized by vertical (banking, insurance, healthcare, telecom, utilities, aerospace, manufacturing, retail, real estate, and more). Each demo uses the same three-app pattern — an MCP Server (read-only tools), an A2A Agents app (guarded write workflows), and a WebSocket AI Orchestrator — backed by PostgreSQL, and shares the browser [Chatbot](./demos/Agentic_AI/Chatbot/) test client.
 - **[Model Context Protocol (MCP) Samples](./samples/Model_Context_Protocol(MCP)/)** — MCP servers exposing business data as AI-accessible tools: stateless, stateful, authenticated, annotated, advanced primitives (elicitation, logging, sampling), JWT and OAuth 2.0 access control (external IdP via JWKS), structured content with annotations, and MCP client gateway.
 - **[OpenAI RAG & Vector Search Extension](./extensions/openAI/)** — Flogo activities for the OpenAI platform: file management, vector-store lifecycle, semantic vector search (RAG), and image generation — build retrieval-augmented AI flows with no code.
 - **[AI Alert Agent Demo](./demos/flogo-ai-alert-agent/)** — Autonomous AI Agent (Flogo AI Agent Activity) that investigates TIBCO Platform application alerts using Platform MCP services as tools and reports its root-cause findings automatically.
@@ -64,11 +65,15 @@ A library of **skills for AI coding agents** (such as **Claude Code**) to design
 | Skill | Purpose |
 |---|---|
 | `fda` | Reference for the Flogo Design Assistant CLI — every task to create/modify a `.flogo` file. |
+| `fda-mapping` | Focused reference for building, inspecting, and validating Flogo mappings with `fda`. |
 | `flogobuild` | Reference for building executables and deployment artifacts from `.flogo` files. |
 | `tibcop` | Reference for the TIBCO Platform CLI — manage builds, deployments, scaling. |
 | `flogo-deploy` | End-to-end recipe to deploy a `.flogo` app to a TIBCO Platform dataplane. |
+| `flogo-unit-testing` | Recipe to create and run unit tests for Flogo apps (test cases, assertions, execution). |
 | `mapping-from-excel` | Recipe to build a Flogo flow from an Excel mapping spec (input fields → output fields with rules). |
 | `rest-to-database-app` | Recipe to scaffold a REST API Flogo app that queries a database. |
+| `agentic-ai-use-case` | Scaffold a complete, runnable Agentic AI demo for any vertical — MCP Server + A2A Agents + WebSocket orchestrator, backed by PostgreSQL. |
+| `agentic-ai-use-case-fda` | The same 3-app Agentic AI demo, built entirely via the `fda` CLI (command-by-command). |
 
 For full details, see the [Flogo Skill Library README](./skills-library/README.md).
 
@@ -107,6 +112,7 @@ flogo-enterprise-hub/
 │   ├── Tibco_Control_Plane/  #   Platform deployment samples
 │   └── DockerFiles/          #   Multi-distro Dockerfile examples
 ├── demos/                    # Proof-of-concept demonstrations
+│   └── Agentic_AI/           #   Industry Agentic AI use cases (MCP + A2A + orchestrator), by vertical
 ├── extensions/               # Custom-built Flogo extensions
 └── skills-library/           # AI coding agent skills
 ```

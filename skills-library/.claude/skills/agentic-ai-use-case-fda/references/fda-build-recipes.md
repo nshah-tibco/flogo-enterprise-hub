@@ -122,7 +122,9 @@ $FDA sa handler <Prefix>MCPServer.<flow>.schemas.reply.response   ToolResponse -
 $FDA mm <flow>.Return.input.mappings.response.mapping.data '=coerce.toString($activity[PostgreSQLQuery].Output)' -f "$FILE"
 ```
 
-> **Parameterized reads:** for a `WHERE <col> = ?p` query, set `input.Query` with a `?`-placeholder whose name does NOT equal a column name, then map values under `input.mapping.parameters` (e.g. `$FDA mm <flow>.PostgreSQLQuery.input.mapping.parameters.<p> '=$flow.<field>'`). See the sibling `postgres-activity-patterns.md`. Simple demos use `SELECT *` and let the LLM filter.
+> **Parameterized reads:** for a `WHERE <col> = ?p` query, set `input.Query` with a `?`-placeholder whose name does NOT equal a column name, then map values under **`input.input.mapping.parameters`** (e.g. `$FDA mm <flow>.PostgreSQLQuery.input.input.mapping.parameters.<p> '=$flow.<field>'`). See the sibling `postgres-activity-patterns.md`. Simple demos use `SELECT *` and let the LLM filter.
+>
+> ⚠️ **`mm` selector is DOUBLE-input — `input.input.mapping.parameters`, NOT `input.mapping.parameters`.** The `mm` selector path is `<activity>.input` + the field path inside the input object, and the postgres param object is itself named `input`. The single-input form `input.mapping.parameters` is design-time valid (`fda cm` passes) but lands the params in the WRONG slot `activity.input.mapping` — which the runtime does **not** read, so the query runs with unbound `?p` placeholders and silently returns nothing / errors. Empirically verified: `mm --help` and the reference JSON both use the double-input path, and a built file with the correct selector has params at `activity.input.input.mapping.parameters` (confirmed with the Aerospace MRO A2A build). Applies to every parameterized `act_postgresql_query` **and** `act_postgresql_insert` (INSERT/UPDATE) mapping below.
 
 Rich `handlerDescription`s matter — the orchestrator LLM chooses tools from them.
 
@@ -186,14 +188,14 @@ $FDA ca <Agent>_flow ValidateQuery act_postgresql_query  "PostgreSQL Query"  -C 
 $FDA sa activity <Agent>_flow.ValidateQuery.input.Connection "$PG_REF"   # gotcha 7: literal conn:// (see § MCP step 4)
 $FDA sa activity <Agent>_flow.ValidateQuery.input.Query  "SELECT ... FROM public.<table> WHERE <col> = ?id;"
 $FDA sa activity <Agent>_flow.ValidateQuery.input.Schema public
-$FDA mm <Agent>_flow.ValidateQuery.input.mapping.parameters.id '=$flow.toolParams.<field>'
+$FDA mm <Agent>_flow.ValidateQuery.input.input.mapping.parameters.id '=$flow.toolParams.<field>'   # DOUBLE-input: input.input.mapping (see ⚠️ note in § MCP parameterized reads)
 $FDA ca <Agent>_flow WriteRow act_postgresql_insert  "PostgreSQL Insert"  -C PostgresConn
 $FDA sa activity <Agent>_flow.WriteRow.input.Connection "$PG_REF"   # gotcha 7: literal conn:// (see § MCP step 4)
 $FDA sa activity <Agent>_flow.WriteRow.input.Query  "INSERT INTO public.<table> (<cols>) VALUES (?p1, ?p2);"
 #       (act_postgresql_insert runs UPDATE too — e.g. "UPDATE public.cards SET status='BLOCKED' WHERE card_id=?p1;")
 $FDA sa activity <Agent>_flow.WriteRow.input.Schema public
-$FDA mm <Agent>_flow.WriteRow.input.mapping.parameters.p1 '=$flow.toolParams.<field1>'
-$FDA mm <Agent>_flow.WriteRow.input.mapping.parameters.p2 '=$flow.toolParams.<field2>'
+$FDA mm <Agent>_flow.WriteRow.input.input.mapping.parameters.p1 '=$flow.toolParams.<field1>'   # DOUBLE-input (see ⚠️ note in § MCP parameterized reads)
+$FDA mm <Agent>_flow.WriteRow.input.input.mapping.parameters.p2 '=$flow.toolParams.<field2>'
 #
 #   (b) DEFAULT — Email (the dedicated send_confirmation_email agent):
 $FDA ca <Agent>_flow SendMail act_general_sendmail "Send Mail"

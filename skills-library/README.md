@@ -94,105 +94,92 @@ If you already have a project, copy the `.claude/skills/` folder from the seed r
 
 ## Required Tools
 
-The skills assume the following CLIs are installed and on your `PATH`:
+The skills drive the following tools. **`fda` and `flogobuild` ship inside the TIBCO Flogo VS Code extension** — they are not on your `PATH` by default, so set up the `fda` alias (see [Setting up the `fda` alias](#setting-up-the-fda-alias)) to run them from any terminal. **`tibcop`** is installed separately and should be on your `PATH`.
 
 | Tool | Purpose | Documentation |
 |---|---|---|
-| **fda** (Flogo Design Assistant) | Design-time edits to `.flogo` files | [Flogo](https://docs.tibco.com/products/tibco-flogo-enterprise) |
-| **flogobuild** | Build executables and Platform deployment artifacts | [Flogo](https://docs.tibco.com/products/tibco-flogo-enterprise) |
+| **fda** (Flogo Design Assistant) | Design-time edits to `.flogo` files (ships inside the Flogo VS Code extension) | [Flogo](https://docs.tibco.com/products/tibco-flogo-enterprise) |
+| **flogobuild** | Build executables and Platform deployment artifacts (ships inside the Flogo VS Code extension) | [Flogo](https://docs.tibco.com/products/tibco-flogo-enterprise) |
 | **tibcop** (TIBCO Platform CLI) | Deploy and manage applications on the TIBCO Platform | [TIBCO Platform](https://www.tibco.com/platform) |
-| **VS Code + Flogo Extension** (optional) | Visual designer for `.flogo` files | [Flogo](https://docs.tibco.com/products/tibco-flogo-enterprise) |
+| **TIBCO Flogo VS Code extension** | Provides `fda` + `flogobuild`, plus the visual designer for `.flogo` files | [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=tibco.flogo) |
 | **Claude Code** (or another coding agent) | Reads and applies the skills | [Claude Code](https://www.anthropic.com/claude-code) |
 
 ---
 
 ## Setting up the `fda` alias
 
-The Flogo Design Assistant CLI ships with the **TIBCO Flogo VS Code extension** at a long path like `<vscode-extensions-dir>/tibco.flogo-<version>/bin/flogodesign-cli`. Set up an `fda` alias so you (and the coding agent) can simply run `fda <task>` from any terminal.
+The Flogo Design Assistant CLI (`flogodesign-cli`) ships inside the [**TIBCO Flogo VS Code extension**](https://marketplace.visualstudio.com/items?itemName=tibco.flogo) at a long, versioned path like `<vscode-extensions-dir>/tibco.flogo-<VERSION>/bin/flogodesign-cli`. Because that path **changes with every extension update**, don't hardcode it — set up an `fda` alias that **discovers the latest installed version dynamically**, so you (and the coding agent) can simply run `fda <task>` from any terminal.
 
-![Alias setup examples for zsh, PowerShell and CMD](./images/fda-alias-setup.png)
+> **Never hardcode the extension folder name** (e.g. `tibco.flogo-2.26.6-2851`). The glob `tibco.flogo-*/bin/flogodesign-cli*` sorted by newest always resolves to the latest installed version. If the binary can't be found, install the TIBCO Flogo VS Code extension.
 
-### Find the path to `flogodesign-cli`
+Add the function below to your shell startup file so `fda` is available in every terminal session:
 
-The exact path depends on your OS, your username, and the installed Flogo extension version:
+| OS | Shell | Startup file |
+|---|---|---|
+| Windows | Git Bash | `~/.bashrc` |
+| Windows | PowerShell | `$PROFILE` |
+| macOS | zsh (default) | `~/.zshrc` |
+| Linux | bash | `~/.bashrc` |
 
-| OS | Typical path |
-|---|---|
-| macOS / Linux | `/Users/<USERNAME>/.vscode/extensions/tibco.flogo-<VERSION>/bin/flogodesign-cli` |
-| Windows | `C:\Users\<USERNAME>\.vscode\extensions\tibco.flogo-<VERSION>\bin\flogodesign-cli` |
+### macOS / Linux / Windows (Git Bash) — Bash or Zsh function
 
-> **Tip:** List installed extension versions with `ls ~/.vscode/extensions | grep tibco.flogo` (macOS/Linux) or `dir %USERPROFILE%\.vscode\extensions | findstr tibco.flogo` (Windows).
-
-### macOS / Linux (zsh or bash)
-
-Add the alias to your shell startup file — `~/.zshrc` for zsh (the macOS default) or `~/.bashrc` for bash:
+Add to `~/.bashrc` (bash / Git Bash) or `~/.zshrc` (macOS zsh):
 
 ```bash
-# ~/.zshrc  or  ~/.bashrc
-alias fda='/Users/<USERNAME>/.vscode/extensions/tibco.flogo-<VERSION>/bin/flogodesign-cli'
-
-# Optional shorter aliases
-alias fdev='fda'
-alias f='fda'
+fda() {
+  local cmd="" home_dir="${HOME:-$USERPROFILE}" ext_name="flogodesign-cli"
+  if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
+    ext_name="flogodesign-cli.exe"
+  fi
+  for dir in "$home_dir/.vscode/extensions" \
+             "$home_dir/.vscode-insiders/extensions" \
+             "$home_dir/.vscode-server/extensions"; do
+    cmd=$(ls -td "$dir/tibco.flogo-"*/bin/"$ext_name" 2>/dev/null | head -1)
+    [ -n "$cmd" ] && break
+  done
+  if [ -z "$cmd" ]; then
+    echo "Error: flogodesign-cli not found. Install the TIBCO Flogo VS Code extension." >&2
+    return 1
+  fi
+  "$cmd" "$@"
+}
 ```
 
-Reload the shell so the alias takes effect:
+Reload the shell so the function takes effect:
 
 ```bash
 source ~/.zshrc   # or: source ~/.bashrc
 ```
 
-Verify:
+### Windows — PowerShell function
+
+PowerShell aliases cannot accept arguments, so define `fda` as a **function**. Add to your PowerShell profile (`$PROFILE`):
+
+```powershell
+function fda {
+  $cli = Get-ChildItem "$env:USERPROFILE\.vscode\extensions\tibco.flogo-*\bin\flogodesign-cli.exe" -ErrorAction SilentlyContinue |
+         Sort-Object LastWriteTime -Descending | Select-Object -First 1
+  if (-not $cli) {
+    $cli = Get-ChildItem "$env:USERPROFILE\.vscode-insiders\extensions\tibco.flogo-*\bin\flogodesign-cli.exe" -ErrorAction SilentlyContinue |
+           Sort-Object LastWriteTime -Descending | Select-Object -First 1
+  }
+  if (-not $cli) { Write-Error "flogodesign-cli not found. Install the TIBCO Flogo VS Code extension."; return }
+  & $cli.FullName @args
+}
+```
+
+If `$PROFILE` doesn't exist yet, create it first, then reload it:
+
+```powershell
+New-Item -Type File -Path $PROFILE -Force   # only if it doesn't exist yet
+. $PROFILE
+```
+
+### Verify
 
 ```bash
 fda version
 ```
-
-### Windows — PowerShell (recommended)
-
-PowerShell aliases cannot accept arguments, so define `fda` as a **function** and use `Set-Alias` for the shorter names. Add to your PowerShell profile (`$PROFILE`):
-
-```powershell
-function fda { & 'C:\Users\<USERNAME>\.vscode\extensions\tibco.flogo-<VERSION>\bin\flogodesign-cli' @args }
-Set-Alias -Name fdev -Value fda
-Set-Alias -Name f    -Value fda
-```
-
-Open or create your profile with:
-
-```powershell
-notepad $PROFILE
-```
-
-If `$PROFILE` doesn't exist yet, create it first:
-
-```powershell
-New-Item -Type File -Path $PROFILE -Force
-```
-
-Reload the profile:
-
-```powershell
-. $PROFILE
-```
-
-Verify:
-
-```powershell
-fda version
-```
-
-### Windows — Command Prompt (legacy)
-
-If you're using the classic `cmd.exe`, use `doskey`. Note that `doskey` macros only live in the current session — to make them permanent, save the commands in a `.cmd` file and register it via `HKCU\Software\Microsoft\Command Processor\AutoRun`.
-
-```cmd
-doskey fda=C:\Users\<USERNAME>\.vscode\extensions\tibco.flogo-<VERSION>\bin\flogodesign-cli $*
-doskey fdev=fda $*
-doskey f=fda $*
-```
-
-The trailing `$*` forwards all arguments to the underlying command.
 
 ---
 
@@ -237,16 +224,6 @@ Key values the skills rely on:
 └── Flogo_Apps/                       # Place your .flogo applications here
 ```
 
-## Getting Started with Skills
-
-1. Open this project in VS Code with Claude Code installed.
-2. Copy `.claude/skills/config.example.md` to `.claude/skills/config.md` and fill in the values for your environment. Agent conventions live in `AGENT.md`.
-3. Make sure the following CLIs are installed and on your `PATH`:
-    - `fda` — Flogo Design Assistant
-    - `flogobuild` — Flogo build CLI
-    - `tibcop` — TIBCO Platform CLI
-4. Ask the agent to design, build, run, or deploy a Flogo app — it will use the skills in `.claude/skills/` automatically.
-
 ## Example prompts
 
 - *"Create a Flogo app under `Flogo_Apps/` that exposes a REST endpoint `GET /customers/{id}` and queries a MySQL database. Call the app `customer-api`."*
@@ -255,21 +232,6 @@ Key values the skills rely on:
 - *"Deploy the `Flogo_Apps/customer-api.flogo` app to dataplane `MyDataPlane`."*
 
 > **Note:** For more sample prompts, see [skills-library/SamplePrompts/README.md](SamplePrompts/README.md).
-
-## Skills overview
-
-| Skill | Purpose |
-|---|---|
-| `fda` | Reference for the Flogo Design Assistant CLI — every task to create/modify a `.flogo` file. |
-| `fda-mapping` | Reference for building, inspecting, and validating Flogo mappings with the `fda` CLI. |
-| `flogobuild` | Reference for building executables and deployment artifacts from `.flogo` files. |
-| `tibcop` | Reference for the TIBCO Platform CLI — manage builds, deployments, scaling. |
-| `flogo-deploy` | End-to-end recipe to deploy a `.flogo` app to a TIBCO Platform dataplane. |
-| `flogo-unit-testing` | Recipe to create and run unit tests for Flogo apps (test cases, assertions, execution). |
-| `mapping-from-excel` | Recipe to build a Flogo flow from an Excel mapping spec (input fields → output fields with rules). |
-| `rest-to-database-app` | Recipe to scaffold a REST API Flogo app that queries a database. |
-| `agentic-ai-use-case` | Scaffold a full Agentic AI use case (MCP Server + A2A Agents + WebSocket AI Orchestrator) for any vertical. |
-| `agentic-ai-use-case-fda` | Same 3-app Agentic AI use case, built entirely via the `fda` CLI instead of cloned JSON. |
 
 ---
 

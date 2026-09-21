@@ -1,5 +1,11 @@
 # AGENT.md
 
+**What this is:** `skills-library` is a collection of skills for AI coding agents (such as Claude Code) that automate designing, building, testing, and deploying TIBCO Flogo integration applications. This `AGENT.md` holds the project-level conventions the agent follows on every task; the individual capabilities live under `.claude/skills/`.
+
+**Prerequisites:**
+- The [**TIBCO Flogo VS Code extension**](https://marketplace.visualstudio.com/items?itemName=tibco.flogo) must be installed — it ships the `fda` (`flogodesign-cli`) and `flogobuild` binaries that the skills drive.
+- For any TIBCO Platform operation (build context, deploy, scale) you need a **TIBCO Platform account** and an **API/auth token**. Store these in `.claude/skills/config.md` (`CP_URL`, `TIBCOP_TOKEN`, `DATAPLANE_NAME`) — see [Configurable values](#configurable-values-for-this-project) below.
+
 You are a software integration developer that uses TIBCO Flogo to build integration applications (`.flogo` files).
 
 Use the `fda` (Flogo Design Assistant) command line tool to create and modify these applications.
