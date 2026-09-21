@@ -1,0 +1,783 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/tibco/flogo-general/src/app/General/activity/mapper",
+    "github.com/tibco/wi-postgres/src/app/PostgreSQL/activity/query",
+    "github.com/tibco/flogo-general/src/app/General/activity/log",
+    "github.com/tibco/flogo-amqp-connector/src/app/AMQP/activity/sendmessage",
+    "github.com/tibco/wi-postgres/src/app/PostgreSQL/activity/insert",
+    "github.com/tibco/flogo-amqp-connector/src/app/AMQP/activity/acknowledge",
+    "github.com/tibco/flogo-amqp-connector/src/app/AMQP/trigger/consumer",
+    "github.com/project-flogo/contrib/function/coerce",
+    "github.com/project-flogo/contrib/function/json",
+    "github.com/project-flogo/contrib/function/array",
+    "github.com/tibco/flogo-amqp-connector/src/app/AMQP/connector/amqp",
+    "github.com/tibco/wi-postgres/src/app/PostgreSQL/connector/connection"
+  ],
+  "name": "ReeferMonitorProcessor_AMQP",
+  "description": "Reefer cold-chain monitor: AMQP Receive Message -> enrich (PostgreSQL) -> detect breach -> AMQP Send Message alert + audit + Acknowledge",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#consumer",
+      "name": "tibco-amqp-consumer-trigger",
+      "description": "AMQP Consumer Trigger that continuously listens to a topic and receives reefer telemetry from an AMQP broker",
+      "settings": {
+        "Connection": "conn://9d8e7f60-5c4b-4a39-b28f-0e1d2c3b4a59"
+      },
+      "id": "ReeferConsumer",
+      "handlers": [
+        {
+          "description": "Receive reefer telemetry and process it",
+          "settings": {
+            "entityType": "Topic",
+            "entityName": "=$property[\"TelemetryTopic\"]",
+            "durableSubscription": true,
+            "sharedDurableSubscriber": true,
+            "subscriptionName": "=$property[\"SubscriptionName\"]",
+            "queueName": "",
+            "messageType": "TextMessage",
+            "acknowledgementMode": "Client",
+            "prefetchCount": 10,
+            "networkRecoveryInterval": 5000
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:ProcessTelemetryFlow"
+            },
+            "input": {
+              "body": "=$.body",
+              "messageProperties": "=$.messageProperties",
+              "userProperties": "=$.userProperties"
+            }
+          },
+          "schemas": {
+            "output": {
+              "messageProperties": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"deliveryMode\":{\"type\":\"string\"},\"messageID\":{\"type\":\"string\"},\"timestamp\":{\"type\":\"integer\"},\"expiration\":{\"type\":\"integer\"},\"priority\":{\"type\":\"integer\"},\"type\":{\"type\":\"string\"},\"contentType\":{\"type\":\"string\"}}}",
+                "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"deliveryMode\":{\"type\":\"string\"},\"messageID\":{\"type\":\"string\"},\"timestamp\":{\"type\":\"integer\"},\"expiration\":{\"type\":\"integer\"},\"priority\":{\"type\":\"integer\"},\"type\":{\"type\":\"string\"},\"contentType\":{\"type\":\"string\"}}}"
+              },
+              "userProperties": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"property\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"},\"type\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"property\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"},\"type\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+              }
+            }
+          },
+          "name": "ProcessTelemetryFlow"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:ProcessTelemetryFlow",
+      "data": {
+        "name": "ProcessTelemetryFlow",
+        "description": "Flogo Flow created with Flogo Design",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "ParseTelemetry",
+            "type": "label",
+            "label": "StartActivity to ParseTelemetry"
+          },
+          {
+            "id": 2,
+            "from": "ParseTelemetry",
+            "to": "LookupContainer",
+            "type": "label",
+            "label": "ParseTelemetry to LookupContainer"
+          },
+          {
+            "id": 3,
+            "from": "LookupContainer",
+            "to": "EnrichReading",
+            "type": "label",
+            "label": "LookupContainer to EnrichReading"
+          },
+          {
+            "id": 4,
+            "from": "EnrichReading",
+            "to": "LogNormal",
+            "type": "expression",
+            "label": "normal",
+            "value": "$activity[EnrichReading].output.powerStatus == \"ON\" && $activity[EnrichReading].output.temperatureC <= $activity[EnrichReading].output.upperLimit && $activity[EnrichReading].output.temperatureC >= $activity[EnrichReading].output.lowerLimit"
+          },
+          {
+            "id": 5,
+            "from": "EnrichReading",
+            "to": "PublishAlert",
+            "type": "expression",
+            "label": "breach",
+            "value": "$activity[EnrichReading].output.powerStatus != \"ON\" || $activity[EnrichReading].output.temperatureC > $activity[EnrichReading].output.upperLimit || $activity[EnrichReading].output.temperatureC < $activity[EnrichReading].output.lowerLimit"
+          },
+          {
+            "id": 6,
+            "from": "PublishAlert",
+            "to": "PersistAlert",
+            "type": "label",
+            "label": "PublishAlert to PersistAlert"
+          },
+          {
+            "id": 7,
+            "from": "PersistAlert",
+            "to": "LogAlert",
+            "type": "label",
+            "label": "PersistAlert to LogAlert"
+          },
+          {
+            "id": 8,
+            "from": "LogNormal",
+            "to": "AckNormal",
+            "type": "label",
+            "label": "LogNormal to AckNormal"
+          },
+          {
+            "id": 9,
+            "from": "LogAlert",
+            "to": "AckBreach",
+            "type": "label",
+            "label": "LogAlert to AckBreach"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "ParseTelemetry",
+            "name": "ParseTelemetry",
+            "description": "Parse telemetry JSON into typed fields",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "containerId": "=coerce.toString(json.get(coerce.toObject($flow.body), \"container_id\"))",
+                    "temperatureC": "=coerce.toFloat64(json.get(coerce.toObject($flow.body), \"temperature_c\"))",
+                    "humidityPct": "=coerce.toFloat64(json.get(coerce.toObject($flow.body), \"humidity_pct\"))",
+                    "powerStatus": "=coerce.toString(json.get(coerce.toObject($flow.body), \"power_status\"))",
+                    "latitude": "=coerce.toFloat64(json.get(coerce.toObject($flow.body), \"latitude\"))",
+                    "longitude": "=coerce.toFloat64(json.get(coerce.toObject($flow.body), \"longitude\"))",
+                    "eventTime": "=coerce.toString(json.get(coerce.toObject($flow.body), \"event_time\"))"
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://ReeferTelemetry"
+                },
+                "output": {
+                  "output": "schema://ReeferTelemetry"
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LookupContainer",
+            "name": "LookupContainer",
+            "description": "Lookup container reference + thresholds",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#query",
+              "input": {
+                "Connection": "conn://d1cb0507-7eca-4e50-80b4-ee785c19927b",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "SELECT set_point_c, allowed_deviation_c, cargo_type, customer_name, destination_port, priority FROM reefer_containers WHERE container_id = ?containerId;",
+                "manualmode": false,
+                "fetchMetadata": "",
+                "Fields": [
+                  {
+                    "FieldName": "containerId",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "set_point_c",
+                    "Type": "NUMERIC",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "allowed_deviation_c",
+                    "Type": "NUMERIC",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "cargo_type",
+                    "Type": "LONGVARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "customer_name",
+                    "Type": "LONGVARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "destination_port",
+                    "Type": "LONGVARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "priority",
+                    "Type": "LONGVARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  }
+                ],
+                "RuntimeQuery": "",
+                "State": "861b2eae-efa2-4346-b535-c1e0e0754de1SELECT set_point_c, allowed_deviation_c, cargo_type, customer_name, destination_port, priority FROM reefer_containers WHERE container_id = ?containerId;",
+                "input": {
+                  "mapping": {
+                    "parameters": {
+                      "containerId": "=$activity[ParseTelemetry].output.containerId"
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{\"containerId\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{\"containerId\":{\"type\":\"string\"}}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"set_point_c\":{\"type\":\"number\"},\"allowed_deviation_c\":{\"type\":\"number\"},\"cargo_type\":{\"type\":\"string\"},\"customer_name\":{\"type\":\"string\"},\"destination_port\":{\"type\":\"string\"},\"priority\":{\"type\":\"string\"}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"set_point_c\":{\"type\":\"number\"},\"allowed_deviation_c\":{\"type\":\"number\"},\"cargo_type\":{\"type\":\"string\"},\"customer_name\":{\"type\":\"string\"},\"destination_port\":{\"type\":\"string\"},\"priority\":{\"type\":\"string\"}}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "EnrichReading",
+            "name": "EnrichReading",
+            "description": "Enrich reading + compute temperature limits",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "containerId": "=$activity[ParseTelemetry].output.containerId",
+                    "temperatureC": "=$activity[ParseTelemetry].output.temperatureC",
+                    "humidityPct": "=$activity[ParseTelemetry].output.humidityPct",
+                    "powerStatus": "=$activity[ParseTelemetry].output.powerStatus",
+                    "eventTime": "=$activity[ParseTelemetry].output.eventTime",
+                    "cargoType": "=coerce.toString(json.get(array.get($activity[LookupContainer].Output.records, 0), \"cargo_type\"))",
+                    "customerName": "=coerce.toString(json.get(array.get($activity[LookupContainer].Output.records, 0), \"customer_name\"))",
+                    "destinationPort": "=coerce.toString(json.get(array.get($activity[LookupContainer].Output.records, 0), \"destination_port\"))",
+                    "priority": "=coerce.toString(json.get(array.get($activity[LookupContainer].Output.records, 0), \"priority\"))",
+                    "setPoint": "=coerce.toFloat64(json.get(array.get($activity[LookupContainer].Output.records, 0), \"set_point_c\"))",
+                    "allowedDeviation": "=coerce.toFloat64(json.get(array.get($activity[LookupContainer].Output.records, 0), \"allowed_deviation_c\"))",
+                    "upperLimit": "=coerce.toFloat64(json.get(array.get($activity[LookupContainer].Output.records, 0), \"set_point_c\")) + coerce.toFloat64(json.get(array.get($activity[LookupContainer].Output.records, 0), \"allowed_deviation_c\"))",
+                    "lowerLimit": "=coerce.toFloat64(json.get(array.get($activity[LookupContainer].Output.records, 0), \"set_point_c\")) - coerce.toFloat64(json.get(array.get($activity[LookupContainer].Output.records, 0), \"allowed_deviation_c\"))"
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://ContainerEnriched"
+                },
+                "output": {
+                  "output": "schema://ContainerEnriched"
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LogNormal",
+            "name": "LogNormal",
+            "description": "Log an in-range reading",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=\" [REEFER NORMAL] \"+$activity[EnrichReading].output.containerId+\" (\"+$activity[EnrichReading].output.cargoType+\") temp=\"+coerce.toString($activity[EnrichReading].output.temperatureC)+\"C within [\"+coerce.toString($activity[EnrichReading].output.lowerLimit)+\",\"+coerce.toString($activity[EnrichReading].output.upperLimit)+\"]C power=\"+$activity[EnrichReading].output.powerStatus",
+                "logLevel": ""
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "AckNormal",
+            "name": "AckNormal",
+            "description": "Acknowledge the consumed message (in-range path)",
+            "activity": {
+              "ref": "#acknowledge"
+            }
+          },
+          {
+            "id": "PublishAlert",
+            "name": "PublishAlert",
+            "description": "Publish enriched breach alert to the alerts topic (AMQP Send Message)",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#sendmessage",
+              "settings": {
+                "Connection": "conn://9d8e7f60-5c4b-4a39-b28f-0e1d2c3b4a59",
+                "entityType": "Topic",
+                "entityName": "=$property[\"AlertsTopic\"]",
+                "exchangeType": "Direct",
+                "exchangeName": "",
+                "routingKey": "",
+                "messageType": "TextMessage",
+                "ensureDelivery": true
+              },
+              "input": {
+                "body": "=\"{\\\"container_id\\\":\\\"\"+$activity[EnrichReading].output.containerId+\"\\\",\\\"cargo_type\\\":\\\"\"+$activity[EnrichReading].output.cargoType+\"\\\",\\\"customer_name\\\":\\\"\"+$activity[EnrichReading].output.customerName+\"\\\",\\\"destination_port\\\":\\\"\"+$activity[EnrichReading].output.destinationPort+\"\\\",\\\"priority\\\":\\\"\"+$activity[EnrichReading].output.priority+\"\\\",\\\"temperature_c\\\":\"+coerce.toString($activity[EnrichReading].output.temperatureC)+\",\\\"set_point_c\\\":\"+coerce.toString($activity[EnrichReading].output.setPoint)+\",\\\"upper_limit_c\\\":\"+coerce.toString($activity[EnrichReading].output.upperLimit)+\",\\\"lower_limit_c\\\":\"+coerce.toString($activity[EnrichReading].output.lowerLimit)+\",\\\"power_status\\\":\\\"\"+$activity[EnrichReading].output.powerStatus+\"\\\",\\\"event_time\\\":\\\"\"+$activity[EnrichReading].output.eventTime+\"\\\"}\"",
+                "messageProperties": {
+                  "mapping": {
+                    "deliveryMode": "Persistent",
+                    "priority": 4,
+                    "contentType": "application/json"
+                  }
+                },
+                "userProperties": {
+                  "mapping": {
+                    "property": [
+                      {
+                        "name": "container_id",
+                        "type": "string",
+                        "value": "=$activity[EnrichReading].output.containerId"
+                      },
+                      {
+                        "name": "priority",
+                        "type": "string",
+                        "value": "=$activity[EnrichReading].output.priority"
+                      }
+                    ]
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "messageProperties": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"deliveryMode\":{\"type\":\"string\",\"enum\":[\"Persistent\",\"Non-persistent\"]},\"messageID\":{\"type\":\"string\"},\"expiration\":{\"type\":\"integer\",\"minimum\":0},\"priority\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":10},\"type\":{\"type\":\"string\"},\"contentType\":{\"type\":\"string\"}},\"required\":[\"deliveryMode\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"deliveryMode\":{\"type\":\"string\",\"enum\":[\"Persistent\",\"Non-persistent\"]},\"messageID\":{\"type\":\"string\"},\"expiration\":{\"type\":\"integer\",\"minimum\":0},\"priority\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":10},\"type\":{\"type\":\"string\"},\"contentType\":{\"type\":\"string\"}},\"required\":[\"deliveryMode\"]}"
+                  },
+                  "userProperties": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"property\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"type\":{\"type\":\"string\",\"enum\":[\"string\",\"number\",\"boolean\"]},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"property\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"type\":{\"type\":\"string\",\"enum\":[\"string\",\"number\",\"boolean\"]},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "PersistAlert",
+            "name": "PersistAlert",
+            "description": "Persist breach to audit table",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#insert",
+              "input": {
+                "Connection": "conn://d1cb0507-7eca-4e50-80b4-ee785c19927b",
+                "QueryName": "",
+                "Schema": "public",
+                "Query": "INSERT INTO reefer_alerts (container_id, cargo_type, reported_temp_c, set_point_c, deviation_c, power_status, alert_reason, event_time) VALUES (?container_id, ?cargo_type, ?reported_temp_c, ?set_point_c, ?deviation_c, ?power_status, ?alert_reason, ?event_time);",
+                "manualmode": false,
+                "Fields": [
+                  {
+                    "FieldName": "container_id",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": true
+                  },
+                  {
+                    "FieldName": "cargo_type",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": true
+                  },
+                  {
+                    "FieldName": "reported_temp_c",
+                    "Type": "NUMERIC",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": true
+                  },
+                  {
+                    "FieldName": "set_point_c",
+                    "Type": "NUMERIC",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": true
+                  },
+                  {
+                    "FieldName": "deviation_c",
+                    "Type": "NUMERIC",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": true
+                  },
+                  {
+                    "FieldName": "power_status",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": true
+                  },
+                  {
+                    "FieldName": "alert_reason",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": true
+                  },
+                  {
+                    "FieldName": "event_time",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": true
+                  }
+                ],
+                "RuntimeQuery": "",
+                "State": "48be4a5b-23ee-4200-8471-3d55d15db6a0INSERT INTO reefer_alerts (container_id, cargo_type, reported_temp_c, set_point_c, deviation_c, power_status, alert_reason, event_time) VALUES (?container_id, ?cargo_type, ?reported_temp_c, ?set_point_c, ?deviation_c, ?power_status, ?alert_reason, ?event_time);",
+                "input": {
+                  "mapping": {
+                    "parameters": {
+                      "container_id": "=$activity[EnrichReading].output.containerId",
+                      "cargo_type": "=$activity[EnrichReading].output.cargoType",
+                      "reported_temp_c": "=$activity[EnrichReading].output.temperatureC",
+                      "set_point_c": "=$activity[EnrichReading].output.setPoint",
+                      "deviation_c": "=$activity[EnrichReading].output.allowedDeviation",
+                      "power_status": "=$activity[EnrichReading].output.powerStatus",
+                      "alert_reason": "=\"power=\"+$activity[EnrichReading].output.powerStatus+\", temp=\"+coerce.toString($activity[EnrichReading].output.temperatureC)+\"C, allowed \"+coerce.toString($activity[EnrichReading].output.lowerLimit)+\" to \"+coerce.toString($activity[EnrichReading].output.upperLimit)+\"C, setpoint=\"+coerce.toString($activity[EnrichReading].output.setPoint)+\"C\"",
+                      "event_time": "=$activity[EnrichReading].output.eventTime"
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"values\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{}}},\"parameters\":{\"type\":\"object\",\"properties\":{\"container_id\":{\"type\":\"string\"},\"cargo_type\":{\"type\":\"string\"},\"reported_temp_c\":{\"type\":\"number\"},\"set_point_c\":{\"type\":\"number\"},\"deviation_c\":{\"type\":\"number\"},\"power_status\":{\"type\":\"string\"},\"alert_reason\":{\"type\":\"string\"},\"event_time\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"values\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{}}},\"parameters\":{\"type\":\"object\",\"properties\":{\"container_id\":{\"type\":\"string\"},\"cargo_type\":{\"type\":\"string\"},\"reported_temp_c\":{\"type\":\"number\"},\"set_point_c\":{\"type\":\"number\"},\"deviation_c\":{\"type\":\"number\"},\"power_status\":{\"type\":\"string\"},\"alert_reason\":{\"type\":\"string\"},\"event_time\":{\"type\":\"string\"}}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "LogAlert",
+            "name": "LogAlert",
+            "description": "Log the breach alert",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=\" [REEFER BREACH] \"+$activity[EnrichReading].output.priority+\" \"+$activity[EnrichReading].output.containerId+\" (\"+$activity[EnrichReading].output.cargoType+\") cust=\"+$activity[EnrichReading].output.customerName+\" dest=\"+$activity[EnrichReading].output.destinationPort+\" temp=\"+coerce.toString($activity[EnrichReading].output.temperatureC)+\"C setpoint=\"+coerce.toString($activity[EnrichReading].output.setPoint)+\"C allowed=[\"+coerce.toString($activity[EnrichReading].output.lowerLimit)+\",\"+coerce.toString($activity[EnrichReading].output.upperLimit)+\"]C power=\"+$activity[EnrichReading].output.powerStatus",
+                "logLevel": ""
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "AckBreach",
+            "name": "AckBreach",
+            "description": "Acknowledge the consumed message (breach path)",
+            "activity": {
+              "ref": "#acknowledge"
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiUGFyc2VUZWxlbWV0cnkiOnsieCI6MzUwLCJ5IjoxMDB9LCJMb29rdXBDb250YWluZXIiOnsieCI6NjAwLCJ5IjoxMDB9LCJFbnJpY2hSZWFkaW5nIjp7IngiOjg1MCwieSI6MTAwfSwiTG9nTm9ybWFsIjp7IngiOjExMDAsInkiOjEwMH0sIkFja05vcm1hbCI6eyJ4IjoxMzUwLCJ5IjoxMDB9LCJQdWJsaXNoQWxlcnQiOnsieCI6MTEwMCwieSI6MzAwfSwiUGVyc2lzdEFsZXJ0Ijp7IngiOjEzNTAsInkiOjMwMH0sIkxvZ0FsZXJ0Ijp7IngiOjE2MDAsInkiOjMwMH0sIkFja0JyZWFjaCI6eyJ4IjoxODUwLCJ5IjozMDB9fQ==",
+        "metadata": {
+          "input": [
+            {
+              "name": "body",
+              "type": "string"
+            },
+            {
+              "name": "messageProperties",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"deliveryMode\":{\"type\":\"string\"},\"messageID\":{\"type\":\"string\"},\"timestamp\":{\"type\":\"integer\"},\"expiration\":{\"type\":\"integer\"},\"priority\":{\"type\":\"integer\"},\"type\":{\"type\":\"string\"},\"contentType\":{\"type\":\"string\"}}"
+              }
+            },
+            {
+              "name": "userProperties",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"property\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"},\"type\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}"
+              }
+            }
+          ],
+          "output": [],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"ReeferConsumer\",\"properties\":{\"body\":{\"type\":\"string\",\"required\":false},\"messageProperties\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"deliveryMode\":{\"type\":\"string\"},\"messageID\":{\"type\":\"string\"},\"timestamp\":{\"type\":\"integer\"},\"expiration\":{\"type\":\"integer\"},\"priority\":{\"type\":\"integer\"},\"type\":{\"type\":\"string\"},\"contentType\":{\"type\":\"string\"}}},\"userProperties\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"property\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"},\"type\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}}}"
+          }
+        }
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "AMQP.amqp-1_0-connection.Host",
+      "type": "string",
+      "value": "localhost"
+    },
+    {
+      "name": "AMQP.amqp-1_0-connection.Port",
+      "type": "float64",
+      "value": 5672
+    },
+    {
+      "name": "AMQP.amqp-1_0-connection.Virtual_Host",
+      "type": "string",
+      "value": "/"
+    },
+    {
+      "name": "AMQP.amqp-1_0-connection.User_Name",
+      "type": "string",
+      "value": "admin"
+    },
+    {
+      "name": "AMQP.amqp-1_0-connection.Password",
+      "type": "string",
+      "value": "admin"
+    },
+    {
+      "name": "AMQP.amqp-1_0-connection.Connection_Timeout",
+      "type": "float64",
+      "value": 30000
+    },
+    {
+      "name": "AMQP.amqp-1_0-connection.Client_ID",
+      "type": "string",
+      "value": ""
+    },
+    {
+      "name": "PostgreSQL.ReeferDB.Host",
+      "type": "string",
+      "value": "localhost"
+    },
+    {
+      "name": "PostgreSQL.ReeferDB.Port",
+      "type": "float64",
+      "value": 5432
+    },
+    {
+      "name": "PostgreSQL.ReeferDB.Database_Name",
+      "type": "string",
+      "value": "reefer_monitoring"
+    },
+    {
+      "name": "PostgreSQL.ReeferDB.User",
+      "type": "string",
+      "value": "postgres"
+    },
+    {
+      "name": "PostgreSQL.ReeferDB.Password",
+      "type": "string",
+      "value": "admin"
+    },
+    {
+      "name": "PostgreSQL.ReeferDB.Maximum_Open_Connections",
+      "type": "float64",
+      "value": 0
+    },
+    {
+      "name": "PostgreSQL.ReeferDB.Maximum_Idle_Connections",
+      "type": "float64",
+      "value": 2
+    },
+    {
+      "name": "PostgreSQL.ReeferDB.Maximum_Connection_Lifetime",
+      "type": "string",
+      "value": 0
+    },
+    {
+      "name": "PostgreSQL.ReeferDB.Maximum_Connection_Retry_Attempts",
+      "type": "float64",
+      "value": 3
+    },
+    {
+      "name": "PostgreSQL.ReeferDB.Connection_Retry_Delay",
+      "type": "float64",
+      "value": 5
+    },
+    {
+      "name": "PostgreSQL.ReeferDB.Connection_Timeout",
+      "type": "float64",
+      "value": 20
+    },
+    {
+      "name": "TelemetryTopic",
+      "type": "string",
+      "value": "topic/reefer/telemetry"
+    },
+    {
+      "name": "AlertsTopic",
+      "type": "string",
+      "value": "topic/reefer/alerts"
+    },
+    {
+      "name": "SubscriptionName",
+      "type": "string",
+      "value": "reefer-telemetry-sub"
+    }
+  ],
+  "schemas": {
+    "ReeferTelemetry": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"containerId\": {\n      \"type\": \"string\"\n    },\n    \"temperatureC\": {\n      \"type\": \"number\"\n    },\n    \"humidityPct\": {\n      \"type\": \"number\"\n    },\n    \"powerStatus\": {\n      \"type\": \"string\"\n    },\n    \"latitude\": {\n      \"type\": \"number\"\n    },\n    \"longitude\": {\n      \"type\": \"number\"\n    },\n    \"eventTime\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"containerId\": {\n      \"type\": \"string\"\n    },\n    \"temperatureC\": {\n      \"type\": \"number\"\n    },\n    \"humidityPct\": {\n      \"type\": \"number\"\n    },\n    \"powerStatus\": {\n      \"type\": \"string\"\n    },\n    \"latitude\": {\n      \"type\": \"number\"\n    },\n    \"longitude\": {\n      \"type\": \"number\"\n    },\n    \"eventTime\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+    },
+    "ContainerEnriched": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"containerId\": {\n      \"type\": \"string\"\n    },\n    \"temperatureC\": {\n      \"type\": \"number\"\n    },\n    \"humidityPct\": {\n      \"type\": \"number\"\n    },\n    \"powerStatus\": {\n      \"type\": \"string\"\n    },\n    \"eventTime\": {\n      \"type\": \"string\"\n    },\n    \"cargoType\": {\n      \"type\": \"string\"\n    },\n    \"customerName\": {\n      \"type\": \"string\"\n    },\n    \"destinationPort\": {\n      \"type\": \"string\"\n    },\n    \"priority\": {\n      \"type\": \"string\"\n    },\n    \"setPoint\": {\n      \"type\": \"number\"\n    },\n    \"allowedDeviation\": {\n      \"type\": \"number\"\n    },\n    \"upperLimit\": {\n      \"type\": \"number\"\n    },\n    \"lowerLimit\": {\n      \"type\": \"number\"\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"containerId\": {\n      \"type\": \"string\"\n    },\n    \"temperatureC\": {\n      \"type\": \"number\"\n    },\n    \"humidityPct\": {\n      \"type\": \"number\"\n    },\n    \"powerStatus\": {\n      \"type\": \"string\"\n    },\n    \"eventTime\": {\n      \"type\": \"string\"\n    },\n    \"cargoType\": {\n      \"type\": \"string\"\n    },\n    \"customerName\": {\n      \"type\": \"string\"\n    },\n    \"destinationPort\": {\n      \"type\": \"string\"\n    },\n    \"priority\": {\n      \"type\": \"string\"\n    },\n    \"setPoint\": {\n      \"type\": \"number\"\n    },\n    \"allowedDeviation\": {\n      \"type\": \"number\"\n    },\n    \"upperLimit\": {\n      \"type\": \"number\"\n    },\n    \"lowerLimit\": {\n      \"type\": \"number\"\n    }\n  }\n}"
+    }
+  },
+  "connections": {
+    "9d8e7f60-5c4b-4a39-b28f-0e1d2c3b4a59": {
+      "id": "9d8e7f60-5c4b-4a39-b28f-0e1d2c3b4a59",
+      "name": "amqp-1.0-connection",
+      "ref": "#amqp",
+      "isGlobal": false,
+      "settings": {
+        "name": "amqp-1.0-connection",
+        "description": "AMQP client configuration",
+        "amqpVersion": "AMQP 1.0",
+        "host": "=$property[\"AMQP.amqp-1_0-connection.Host\"]",
+        "port": "=$property[\"AMQP.amqp-1_0-connection.Port\"]",
+        "vhost": "=$property[\"AMQP.amqp-1_0-connection.Virtual_Host\"]",
+        "userName": "=$property[\"AMQP.amqp-1_0-connection.User_Name\"]",
+        "password": "=$property[\"AMQP.amqp-1_0-connection.Password\"]",
+        "authMode": "None",
+        "clientCert": "",
+        "clientKey": "",
+        "serverCert": "",
+        "connectionTimeout": "=$property[\"AMQP.amqp-1_0-connection.Connection_Timeout\"]",
+        "clientId": "=$property[\"AMQP.amqp-1_0-connection.Client_ID\"]"
+      }
+    },
+    "d1cb0507-7eca-4e50-80b4-ee785c19927b": {
+      "id": "d1cb0507-7eca-4e50-80b4-ee785c19927b",
+      "name": "ReeferDB",
+      "ref": "#connection",
+      "isGlobal": false,
+      "settings": {
+        "databaseType": "PostgreSQL",
+        "name": "ReeferDB",
+        "description": "Your PostgreSQL Connector",
+        "host": "=$property[\"PostgreSQL.ReeferDB.Host\"]",
+        "port": "=$property[\"PostgreSQL.ReeferDB.Port\"]",
+        "databaseName": "=$property[\"PostgreSQL.ReeferDB.Database_Name\"]",
+        "user": "=$property[\"PostgreSQL.ReeferDB.User\"]",
+        "password": "=$property[\"PostgreSQL.ReeferDB.Password\"]",
+        "maxopenconnection": "=$property[\"PostgreSQL.ReeferDB.Maximum_Open_Connections\"]",
+        "maxidleconnection": "=$property[\"PostgreSQL.ReeferDB.Maximum_Idle_Connections\"]",
+        "connmaxlifetime": "=$property[\"PostgreSQL.ReeferDB.Maximum_Connection_Lifetime\"]",
+        "maxconnectattempts": "=$property[\"PostgreSQL.ReeferDB.Maximum_Connection_Retry_Attempts\"]",
+        "connectionretrydelay": "=$property[\"PostgreSQL.ReeferDB.Connection_Retry_Delay\"]",
+        "connectiontimeout": "=$property[\"PostgreSQL.ReeferDB.Connection_Timeout\"]",
+        "onprem": false,
+        "tlsconfig": false,
+        "tlsparam": "VerifyCA",
+        "cacert": "",
+        "clientcert": "",
+        "clientkey": ""
+      }
+    }
+  },
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1hbXFwLWNvbm5lY3Rvci9zcmMvYXBwL0FNUVAiLCJpZCI6IkFNUVAiLCJ2ZXJzaW9uIjoiMS4wLjAiLCJ0YWciOiIxLjAuMC1iMDEiLCJuYW1lIjoiQU1RUCIsInMzbG9jYXRpb24iOiJUaWJjby9BTVFQIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWdlbmVyYWwvc3JjL2FwcC9HZW5lcmFsIiwiaWQiOiJHZW5lcmFsIiwidmVyc2lvbiI6IjEuNi4xNyIsInRhZyI6IjEuNi4xNy1iMDIiLCJuYW1lIjoiR2VuZXJhbCIsInMzbG9jYXRpb24iOiJUaWJjby9HZW5lcmFsIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL3dpLXBvc3RncmVzL3NyYy9hcHAvUG9zdGdyZVNRTCIsImlkIjoiUG9zdGdyZVNRTCIsInZlcnNpb24iOiIyLjcuMiIsInRhZyI6IjIuNy4yLWIwMSIsIm5hbWUiOiJQb3N0Z3JlU1FMIiwiczNsb2NhdGlvbiI6IlRpYmNvL1Bvc3RncmVTUUwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
+  "metadata": {
+    "endpoints": [],
+    "flogoVersion": "2.26.8"
+  }
+}

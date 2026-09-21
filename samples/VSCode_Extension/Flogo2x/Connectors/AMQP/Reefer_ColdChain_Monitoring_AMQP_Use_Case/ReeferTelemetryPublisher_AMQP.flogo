@@ -1,0 +1,526 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/tibco/flogo-general/src/app/General/activity/mapper",
+    "github.com/tibco/flogo-amqp-connector/src/app/AMQP/activity/sendmessage",
+    "github.com/tibco/flogo-general/src/app/General/trigger/timer",
+    "github.com/project-flogo/contrib/function/datetime",
+    "github.com/project-flogo/contrib/function/coerce",
+    "github.com/project-flogo/contrib/function/array",
+    "github.com/project-flogo/contrib/function/json",
+    "github.com/tibco/flogo-amqp-connector/src/app/AMQP/connector/amqp"
+  ],
+  "name": "ReeferTelemetryPublisher_AMQP",
+  "description": "Reefer cold-chain telemetry producer: timer-driven simulator publishing container telemetry over AMQP",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#timer",
+      "name": "tibco-wi-timer",
+      "description": "Fires periodically to publish reefer telemetry",
+      "settings": {},
+      "id": "PublishTimer",
+      "handlers": [
+        {
+          "description": "Timer-driven: build a batch of reefer telemetry readings and publish each over AMQP",
+          "settings": {
+            "Scheduler Options": "Timer",
+            "Start Time": "",
+            "Repeating": true,
+            "Delayed Start": false,
+            "Time Interval": "=$property[\"PublishInterval_sec\"]",
+            "Interval Unit": "Second",
+            "Cron Expression": "CRON_TZ=Asia/Calcutta * * * * *"
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:PublishTelemetryFlow"
+            }
+          },
+          "name": "PublishTelemetryFlow"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:PublishTelemetryFlow",
+      "data": {
+        "name": "PublishTelemetryFlow",
+        "description": "Timer-driven: build a batch of reefer telemetry readings and publish each over AMQP",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "BuildReadings",
+            "type": "label",
+            "label": "StartActivity to BuildReadings"
+          },
+          {
+            "id": 2,
+            "from": "BuildReadings",
+            "to": "Publish1",
+            "type": "label",
+            "label": "BuildReadings to Publish1"
+          },
+          {
+            "id": 3,
+            "from": "Publish1",
+            "to": "Publish2",
+            "type": "label",
+            "label": "Publish1 to Publish2"
+          },
+          {
+            "id": 4,
+            "from": "Publish2",
+            "to": "Publish3",
+            "type": "label",
+            "label": "Publish2 to Publish3"
+          },
+          {
+            "id": 5,
+            "from": "Publish3",
+            "to": "Publish4",
+            "type": "label",
+            "label": "Publish3 to Publish4"
+          },
+          {
+            "id": 6,
+            "from": "Publish4",
+            "to": "Publish5",
+            "type": "label",
+            "label": "Publish4 to Publish5"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "BuildReadings",
+            "name": "BuildReadings",
+            "description": "Build a batch of reefer telemetry readings (JSON strings)",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "readings": "=array.create(\"{\\\"container_id\\\":\\\"RCON-1001\\\",\\\"temperature_c\\\":-20.1,\\\"humidity_pct\\\":62,\\\"power_status\\\":\\\"ON\\\",\\\"latitude\\\":1.264,\\\"longitude\\\":103.84,\\\"event_time\\\":\\\"\"+coerce.toString(datetime.currentDatetime())+\"\\\"}\", \"{\\\"container_id\\\":\\\"RCON-1002\\\",\\\"temperature_c\\\":-8.0,\\\"humidity_pct\\\":58,\\\"power_status\\\":\\\"ON\\\",\\\"latitude\\\":1.265,\\\"longitude\\\":103.842,\\\"event_time\\\":\\\"\"+coerce.toString(datetime.currentDatetime())+\"\\\"}\", \"{\\\"container_id\\\":\\\"RCON-1003\\\",\\\"temperature_c\\\":13.2,\\\"humidity_pct\\\":85,\\\"power_status\\\":\\\"OFF\\\",\\\"latitude\\\":1.266,\\\"longitude\\\":103.844,\\\"event_time\\\":\\\"\"+coerce.toString(datetime.currentDatetime())+\"\\\"}\", \"{\\\"container_id\\\":\\\"RCON-1004\\\",\\\"temperature_c\\\":4.2,\\\"humidity_pct\\\":70,\\\"power_status\\\":\\\"ON\\\",\\\"latitude\\\":1.267,\\\"longitude\\\":103.846,\\\"event_time\\\":\\\"\"+coerce.toString(datetime.currentDatetime())+\"\\\"}\", \"{\\\"container_id\\\":\\\"RCON-1005\\\",\\\"temperature_c\\\":9.3,\\\"humidity_pct\\\":52,\\\"power_status\\\":\\\"ON\\\",\\\"latitude\\\":1.268,\\\"longitude\\\":103.848,\\\"event_time\\\":\\\"\"+coerce.toString(datetime.currentDatetime())+\"\\\"}\")"
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://TelemetryBatch"
+                },
+                "output": {
+                  "output": "schema://TelemetryBatch"
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Publish1",
+            "name": "Publish1",
+            "description": "Publish RCON-1001 vaccines reading (normal)",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#sendmessage",
+              "settings": {
+                "Connection": "conn://7c2f1a3e-4b5d-4c6e-8f90-1a2b3c4d5e6f",
+                "entityType": "Topic",
+                "entityName": "=$property[\"TelemetryTopic\"]",
+                "exchangeType": "Direct",
+                "exchangeName": "",
+                "routingKey": "",
+                "messageType": "TextMessage",
+                "ensureDelivery": true
+              },
+              "input": {
+                "body": "=array.get($activity[BuildReadings].output.readings, 0)",
+                "messageProperties": {
+                  "mapping": {
+                    "deliveryMode": "Persistent",
+                    "priority": 4,
+                    "contentType": "application/json"
+                  }
+                },
+                "userProperties": {
+                  "mapping": {
+                    "property": [
+                      {
+                        "name": "container_id",
+                        "type": "string",
+                        "value": "=coerce.toString(json.get(coerce.toObject(array.get($activity[BuildReadings].output.readings, 0)), \"container_id\"))"
+                      }
+                    ]
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "messageProperties": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"deliveryMode\":{\"type\":\"string\",\"enum\":[\"Persistent\",\"Non-persistent\"]},\"messageID\":{\"type\":\"string\"},\"expiration\":{\"type\":\"integer\",\"minimum\":0},\"priority\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":10},\"type\":{\"type\":\"string\"},\"contentType\":{\"type\":\"string\"}},\"required\":[\"deliveryMode\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"deliveryMode\":{\"type\":\"string\",\"enum\":[\"Persistent\",\"Non-persistent\"]},\"messageID\":{\"type\":\"string\"},\"expiration\":{\"type\":\"integer\",\"minimum\":0},\"priority\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":10},\"type\":{\"type\":\"string\"},\"contentType\":{\"type\":\"string\"}},\"required\":[\"deliveryMode\"]}"
+                  },
+                  "userProperties": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"property\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"type\":{\"type\":\"string\",\"enum\":[\"string\",\"number\",\"boolean\"]},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"property\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"type\":{\"type\":\"string\",\"enum\":[\"string\",\"number\",\"boolean\"]},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Publish2",
+            "name": "Publish2",
+            "description": "Publish RCON-1002 seafood reading (breach: too warm)",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#sendmessage",
+              "settings": {
+                "Connection": "conn://7c2f1a3e-4b5d-4c6e-8f90-1a2b3c4d5e6f",
+                "entityType": "Topic",
+                "entityName": "=$property[\"TelemetryTopic\"]",
+                "exchangeType": "Direct",
+                "exchangeName": "",
+                "routingKey": "",
+                "messageType": "TextMessage",
+                "ensureDelivery": true
+              },
+              "input": {
+                "body": "=array.get($activity[BuildReadings].output.readings, 1)",
+                "messageProperties": {
+                  "mapping": {
+                    "deliveryMode": "Persistent",
+                    "priority": 4,
+                    "contentType": "application/json"
+                  }
+                },
+                "userProperties": {
+                  "mapping": {
+                    "property": [
+                      {
+                        "name": "container_id",
+                        "type": "string",
+                        "value": "=coerce.toString(json.get(coerce.toObject(array.get($activity[BuildReadings].output.readings, 1)), \"container_id\"))"
+                      }
+                    ]
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "messageProperties": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"deliveryMode\":{\"type\":\"string\",\"enum\":[\"Persistent\",\"Non-persistent\"]},\"messageID\":{\"type\":\"string\"},\"expiration\":{\"type\":\"integer\",\"minimum\":0},\"priority\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":10},\"type\":{\"type\":\"string\"},\"contentType\":{\"type\":\"string\"}},\"required\":[\"deliveryMode\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"deliveryMode\":{\"type\":\"string\",\"enum\":[\"Persistent\",\"Non-persistent\"]},\"messageID\":{\"type\":\"string\"},\"expiration\":{\"type\":\"integer\",\"minimum\":0},\"priority\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":10},\"type\":{\"type\":\"string\"},\"contentType\":{\"type\":\"string\"}},\"required\":[\"deliveryMode\"]}"
+                  },
+                  "userProperties": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"property\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"type\":{\"type\":\"string\",\"enum\":[\"string\",\"number\",\"boolean\"]},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"property\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"type\":{\"type\":\"string\",\"enum\":[\"string\",\"number\",\"boolean\"]},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Publish3",
+            "name": "Publish3",
+            "description": "Publish RCON-1003 produce reading (breach: power off)",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#sendmessage",
+              "settings": {
+                "Connection": "conn://7c2f1a3e-4b5d-4c6e-8f90-1a2b3c4d5e6f",
+                "entityType": "Topic",
+                "entityName": "=$property[\"TelemetryTopic\"]",
+                "exchangeType": "Direct",
+                "exchangeName": "",
+                "routingKey": "",
+                "messageType": "TextMessage",
+                "ensureDelivery": true
+              },
+              "input": {
+                "body": "=array.get($activity[BuildReadings].output.readings, 2)",
+                "messageProperties": {
+                  "mapping": {
+                    "deliveryMode": "Persistent",
+                    "priority": 4,
+                    "contentType": "application/json"
+                  }
+                },
+                "userProperties": {
+                  "mapping": {
+                    "property": [
+                      {
+                        "name": "container_id",
+                        "type": "string",
+                        "value": "=coerce.toString(json.get(coerce.toObject(array.get($activity[BuildReadings].output.readings, 2)), \"container_id\"))"
+                      }
+                    ]
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "messageProperties": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"deliveryMode\":{\"type\":\"string\",\"enum\":[\"Persistent\",\"Non-persistent\"]},\"messageID\":{\"type\":\"string\"},\"expiration\":{\"type\":\"integer\",\"minimum\":0},\"priority\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":10},\"type\":{\"type\":\"string\"},\"contentType\":{\"type\":\"string\"}},\"required\":[\"deliveryMode\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"deliveryMode\":{\"type\":\"string\",\"enum\":[\"Persistent\",\"Non-persistent\"]},\"messageID\":{\"type\":\"string\"},\"expiration\":{\"type\":\"integer\",\"minimum\":0},\"priority\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":10},\"type\":{\"type\":\"string\"},\"contentType\":{\"type\":\"string\"}},\"required\":[\"deliveryMode\"]}"
+                  },
+                  "userProperties": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"property\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"type\":{\"type\":\"string\",\"enum\":[\"string\",\"number\",\"boolean\"]},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"property\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"type\":{\"type\":\"string\",\"enum\":[\"string\",\"number\",\"boolean\"]},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Publish4",
+            "name": "Publish4",
+            "description": "Publish RCON-1004 dairy reading (normal)",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#sendmessage",
+              "settings": {
+                "Connection": "conn://7c2f1a3e-4b5d-4c6e-8f90-1a2b3c4d5e6f",
+                "entityType": "Topic",
+                "entityName": "=$property[\"TelemetryTopic\"]",
+                "exchangeType": "Direct",
+                "exchangeName": "",
+                "routingKey": "",
+                "messageType": "TextMessage",
+                "ensureDelivery": true
+              },
+              "input": {
+                "body": "=array.get($activity[BuildReadings].output.readings, 3)",
+                "messageProperties": {
+                  "mapping": {
+                    "deliveryMode": "Persistent",
+                    "priority": 4,
+                    "contentType": "application/json"
+                  }
+                },
+                "userProperties": {
+                  "mapping": {
+                    "property": [
+                      {
+                        "name": "container_id",
+                        "type": "string",
+                        "value": "=coerce.toString(json.get(coerce.toObject(array.get($activity[BuildReadings].output.readings, 3)), \"container_id\"))"
+                      }
+                    ]
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "messageProperties": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"deliveryMode\":{\"type\":\"string\",\"enum\":[\"Persistent\",\"Non-persistent\"]},\"messageID\":{\"type\":\"string\"},\"expiration\":{\"type\":\"integer\",\"minimum\":0},\"priority\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":10},\"type\":{\"type\":\"string\"},\"contentType\":{\"type\":\"string\"}},\"required\":[\"deliveryMode\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"deliveryMode\":{\"type\":\"string\",\"enum\":[\"Persistent\",\"Non-persistent\"]},\"messageID\":{\"type\":\"string\"},\"expiration\":{\"type\":\"integer\",\"minimum\":0},\"priority\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":10},\"type\":{\"type\":\"string\"},\"contentType\":{\"type\":\"string\"}},\"required\":[\"deliveryMode\"]}"
+                  },
+                  "userProperties": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"property\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"type\":{\"type\":\"string\",\"enum\":[\"string\",\"number\",\"boolean\"]},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"property\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"type\":{\"type\":\"string\",\"enum\":[\"string\",\"number\",\"boolean\"]},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Publish5",
+            "name": "Publish5",
+            "description": "Publish RCON-1005 insulin reading (breach: too warm, HIGH)",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#sendmessage",
+              "settings": {
+                "Connection": "conn://7c2f1a3e-4b5d-4c6e-8f90-1a2b3c4d5e6f",
+                "entityType": "Topic",
+                "entityName": "=$property[\"TelemetryTopic\"]",
+                "exchangeType": "Direct",
+                "exchangeName": "",
+                "routingKey": "",
+                "messageType": "TextMessage",
+                "ensureDelivery": true
+              },
+              "input": {
+                "body": "=array.get($activity[BuildReadings].output.readings, 4)",
+                "messageProperties": {
+                  "mapping": {
+                    "deliveryMode": "Persistent",
+                    "priority": 4,
+                    "contentType": "application/json"
+                  }
+                },
+                "userProperties": {
+                  "mapping": {
+                    "property": [
+                      {
+                        "name": "container_id",
+                        "type": "string",
+                        "value": "=coerce.toString(json.get(coerce.toObject(array.get($activity[BuildReadings].output.readings, 4)), \"container_id\"))"
+                      }
+                    ]
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "messageProperties": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"deliveryMode\":{\"type\":\"string\",\"enum\":[\"Persistent\",\"Non-persistent\"]},\"messageID\":{\"type\":\"string\"},\"expiration\":{\"type\":\"integer\",\"minimum\":0},\"priority\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":10},\"type\":{\"type\":\"string\"},\"contentType\":{\"type\":\"string\"}},\"required\":[\"deliveryMode\"]}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"deliveryMode\":{\"type\":\"string\",\"enum\":[\"Persistent\",\"Non-persistent\"]},\"messageID\":{\"type\":\"string\"},\"expiration\":{\"type\":\"integer\",\"minimum\":0},\"priority\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":10},\"type\":{\"type\":\"string\"},\"contentType\":{\"type\":\"string\"}},\"required\":[\"deliveryMode\"]}"
+                  },
+                  "userProperties": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"property\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"type\":{\"type\":\"string\",\"enum\":[\"string\",\"number\",\"boolean\"]},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"property\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"type\":{\"type\":\"string\",\"enum\":[\"string\",\"number\",\"boolean\"]},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo0NX0sIkJ1aWxkUmVhZGluZ3MiOnsieCI6MjUwLCJ5Ijo0NX0sIlB1Ymxpc2gxIjp7IngiOjQ1MCwieSI6NDV9LCJQdWJsaXNoMiI6eyJ4Ijo2NTAsInkiOjQ1fSwiUHVibGlzaDMiOnsieCI6MjUwLCJ5IjoxOTV9LCJQdWJsaXNoNCI6eyJ4Ijo0NTAsInkiOjE5NX0sIlB1Ymxpc2g1Ijp7IngiOjY1MCwieSI6MTk1fX0=",
+        "metadata": {
+          "input": [],
+          "output": [],
+          "fe_metadata": {}
+        }
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "AMQP.amqp-1_0-connection.Host",
+      "type": "string",
+      "value": "localhost"
+    },
+    {
+      "name": "AMQP.amqp-1_0-connection.Port",
+      "type": "float64",
+      "value": 5672
+    },
+    {
+      "name": "AMQP.amqp-1_0-connection.Virtual_Host",
+      "type": "string",
+      "value": "/"
+    },
+    {
+      "name": "AMQP.amqp-1_0-connection.User_Name",
+      "type": "string",
+      "value": "admin"
+    },
+    {
+      "name": "AMQP.amqp-1_0-connection.Password",
+      "type": "string",
+      "value": "admin"
+    },
+    {
+      "name": "AMQP.amqp-1_0-connection.Connection_Timeout",
+      "type": "float64",
+      "value": 30000
+    },
+    {
+      "name": "AMQP.amqp-1_0-connection.Client_ID",
+      "type": "string",
+      "value": ""
+    },
+    {
+      "name": "TelemetryTopic",
+      "type": "string",
+      "value": "topic/reefer/telemetry"
+    },
+    {
+      "name": "PublishInterval_sec",
+      "type": "float64",
+      "value": 10
+    }
+  ],
+  "schemas": {
+    "TelemetryBatch": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"readings\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"readings\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    }\n  }\n}"
+    }
+  },
+  "connections": {
+    "7c2f1a3e-4b5d-4c6e-8f90-1a2b3c4d5e6f": {
+      "id": "7c2f1a3e-4b5d-4c6e-8f90-1a2b3c4d5e6f",
+      "name": "amqp-1.0-connection",
+      "ref": "#amqp",
+      "isGlobal": false,
+      "settings": {
+        "name": "amqp-1.0-connection",
+        "description": "AMQP client configuration",
+        "amqpVersion": "AMQP 1.0",
+        "host": "=$property[\"AMQP.amqp-1_0-connection.Host\"]",
+        "port": "=$property[\"AMQP.amqp-1_0-connection.Port\"]",
+        "vhost": "=$property[\"AMQP.amqp-1_0-connection.Virtual_Host\"]",
+        "userName": "=$property[\"AMQP.amqp-1_0-connection.User_Name\"]",
+        "password": "=$property[\"AMQP.amqp-1_0-connection.Password\"]",
+        "authMode": "None",
+        "clientCert": "",
+        "clientKey": "",
+        "serverCert": "",
+        "connectionTimeout": "=$property[\"AMQP.amqp-1_0-connection.Connection_Timeout\"]",
+        "clientId": "=$property[\"AMQP.amqp-1_0-connection.Client_ID\"]"
+      }
+    }
+  },
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTciLCJ0YWciOiIxLjYuMTctYjAyIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1hbXFwLWNvbm5lY3Rvci9zcmMvYXBwL0FNUVAiLCJpZCI6IkFNUVAiLCJ2ZXJzaW9uIjoiMS4wLjAiLCJ0YWciOiIxLjAuMC1iMDEiLCJuYW1lIjoiQU1RUCIsInMzbG9jYXRpb24iOiJUaWJjby9BTVFQIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
+  "metadata": {
+    "endpoints": [],
+    "flogoVersion": "2.26.8"
+  }
+}
