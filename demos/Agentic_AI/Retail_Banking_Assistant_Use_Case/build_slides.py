@@ -251,7 +251,7 @@ cbox(Inches(8.9),Inches(4.7),Inches(3.5),Inches(1.05),A2A,
 cbox(Inches(4.6),Inches(6.25),Inches(4.1),Inches(0.7),DATA,
      [("PostgreSQL — database “banking” · 7 tables",13.5,WHITE,True)])
 # LLM + SMTP
-cbox(Inches(11.3),Inches(2.95),Inches(1.7),Inches(0.75),EXT,[("OpenAI LLM",12.5,WHITE,True),("gpt-5.5",11,RGBColor(0xF3,0xE8,0xFF),False)])
+cbox(Inches(11.3),Inches(2.95),Inches(1.7),Inches(0.75),EXT,[("OpenAI LLM",12.5,WHITE,True),("gpt-5.6",11,RGBColor(0xF3,0xE8,0xFF),False)])
 cbox(Inches(11.3),Inches(4.85),Inches(1.7),Inches(0.7),EXT,[("SMTP",12.5,WHITE,True),("Gmail SSL:465",10.5,RGBColor(0xF3,0xE8,0xFF),False)])
 # connectors
 connector(s, Inches(6.55),Inches(2.5), Inches(6.55),Inches(3.0))

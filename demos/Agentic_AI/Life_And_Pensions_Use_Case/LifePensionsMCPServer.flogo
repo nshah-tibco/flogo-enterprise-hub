@@ -1938,7 +1938,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:d6w9xBrCmPCHTU5ROkcyh37/4QMf"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",

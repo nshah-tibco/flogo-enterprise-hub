@@ -13,7 +13,7 @@
     "github.com/tibco/flogo-ai-agent/src/app/AgenticAI/connector/llmprovider",
     "github.com/tibco/wi-postgres/src/app/PostgreSQL/connector/connection"
   ],
-  "name": "PassengerServicesA2AServers",
+  "name": "PassengerServicesAgents",
   "description": "Airline Passenger Services A2A Servers - Connection risk assessment, rebooking, and email confirmation agents",
   "version": "1.0.0",
   "type": "flogo:app",
@@ -347,7 +347,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation started: \",$flowctx[\"FlowName\"], \" PNR: \", $flow.toolParams.pnr)",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -525,7 +535,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "14ff17b7-679e-4f4c-8ffe-f768138848abSELECT bs.id, bs.booking_id, bs.segment_order, bs.flight_number, bs.origin, bs.destination, bs.departure_time, bs.arrival_time, bs.seat_number, bs.cabin, bs.segment_status, f.status as flight_status, f.delay_minutes, f.estimated_departure, f.estimated_arrival, f.scheduled_departure, f.scheduled_arrival, f.gate, f.origin_city, f.destination_city, f.delay_reason FROM booking_segments bs JOIN flights f ON bs.flight_number = f.flight_number JOIN bookings b ON bs.booking_id = b.id WHERE b.pnr = ?pnr ORDER BY bs.segment_order ASC;",
+                "State": "98e549c7-ac51-4800-a7bb-0fcbb6af153aSELECT bs.id, bs.booking_id, bs.segment_order, bs.flight_number, bs.origin, bs.destination, bs.departure_time, bs.arrival_time, bs.seat_number, bs.cabin, bs.segment_status, f.status as flight_status, f.delay_minutes, f.estimated_departure, f.estimated_arrival, f.scheduled_departure, f.scheduled_arrival, f.gate, f.origin_city, f.destination_city, f.delay_reason FROM booking_segments bs JOIN flights f ON bs.flight_number = f.flight_number JOIN bookings b ON bs.booking_id = b.id WHERE b.pnr = ?pnr ORDER BY bs.segment_order ASC;",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -686,7 +696,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "d222ae44-5ea4-4219-bf0c-447432ed5ebaSELECT * FROM public.flights WHERE status != 'CANCELLED' ORDER BY flight_number ASC;"
+                "State": "888924f9-0b29-4b5b-a27b-94ce9777a306SELECT * FROM public.flights WHERE status != 'CANCELLED' ORDER BY flight_number ASC;"
               },
               "schemas": {
                 "input": {
@@ -718,7 +728,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation completed: \",$flowctx[\"FlowName\"])",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -830,7 +850,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation started: \",$flowctx[\"FlowName\"], \" Rebooking PNR: \", $flow.toolParams.pnr, \" from \", $flow.toolParams.original_flight, \" to \", $flow.toolParams.new_flight)",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -886,7 +916,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "68d8bc60-7252-418a-a4e6-84b843e7f09aUPDATE booking_segments SET flight_number = ?new_flight, seat_number = ?new_seat, segment_status = 'REBOOKED' FROM bookings WHERE booking_segments.booking_id = bookings.id AND bookings.pnr = ?pnr AND booking_segments.flight_number = ?original_flight;",
+                "State": "908a9407-30bb-4ae2-8b49-02e643264e97UPDATE booking_segments SET flight_number = ?new_flight, seat_number = ?new_seat, segment_status = 'REBOOKED' FROM bookings WHERE booking_segments.booking_id = bookings.id AND bookings.pnr = ?pnr AND booking_segments.flight_number = ?original_flight;",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -978,7 +1008,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "7901f49e-0db6-4d82-be7e-a0b7747684b1INSERT INTO rebooking_log (pnr, original_flight, new_flight, new_seat, reason) VALUES (?pnr, ?original_flight, ?new_flight, ?new_seat, ?reason);",
+                "State": "2a34347f-7c90-4ae9-9170-59964926fecaINSERT INTO rebooking_log (pnr, original_flight, new_flight, new_seat, reason) VALUES (?pnr, ?original_flight, ?new_flight, ?new_seat, ?reason);",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -1021,7 +1051,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation completed: \",$flowctx[\"FlowName\"], \" Rebooking completed for PNR: \", $flow.toolParams.pnr)",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -1166,7 +1206,17 @@
                 "flowInfo": false,
                 "message": "****Rebooking Confirmation Email sent successfully to the configured service mailbox",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -1226,7 +1276,7 @@
     {
       "name": "AgenticAI.OpenAIConn.API_Key",
       "type": "string",
-      "value": "SECRET:+H6/zLwMrmBAt9bmyKF08+gHLj6caRUSW4UAFOeAqW6XVj0WhFMy8VO0TlNIBCNhiz5TAE+SVMA2L4NnhAUeIZ1u0xgS2Xpvt6veyPvmjBgu1fYnWfUElMtx7rw+a0CEj/oO+MOPyWDhrI0Ejc7wrf2KyFoGUVA3ax/oM9Nk+tfbLcuoveGM74RicvWEuB/4i731NaDhoRf1qcoMZz0p97l/B9TuiatQYepprsdXU5/x/tqT"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "AgenticAI.OpenAIConn.LLM_Base_URL",
@@ -1256,7 +1306,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:/jHsb0Wp/9IB4wDOENy+rqmeTswH"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",
@@ -1291,22 +1341,22 @@
     {
       "name": "LLM_Model",
       "type": "string",
-      "value": "gpt-5.5"
+      "value": "gpt-5.6"
     },
     {
       "name": "To_Email",
       "type": "string",
-      "value": "recipient@example.com"
+      "value": "nikhil.shah.84@gmail.com"
     },
     {
       "name": "Email_Username",
       "type": "string",
-      "value": "your-email@gmail.com"
+      "value": "nikhil.shah.84@gmail.com"
     },
     {
       "name": "Email_App_Password",
       "type": "string",
-      "value": "SECRET:VluT5qHKKWFfxpPzxkFAZTaq+9xUvyAz0BZ/2HtFsnpccpc="
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "Connection_Risk_A2AServer_PORT",
@@ -1387,7 +1437,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS4zIiwidGFnIjoiMC45LjMtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWdlbmVyYWwvc3JjL2FwcC9HZW5lcmFsIiwiaWQiOiJHZW5lcmFsIiwidmVyc2lvbiI6IjEuNi4xNCIsInRhZyI6IjEuNi4xNC1iMDQiLCJuYW1lIjoiR2VuZXJhbCIsInMzbG9jYXRpb24iOiJUaWJjby9HZW5lcmFsIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL3dpLXBvc3RncmVzL3NyYy9hcHAvUG9zdGdyZVNRTCIsImlkIjoiUG9zdGdyZVNRTCIsInZlcnNpb24iOiIyLjcuMSIsInRhZyI6IjIuNy4xLWIwMSIsIm5hbWUiOiJQb3N0Z3JlU1FMIiwiczNsb2NhdGlvbiI6IlRpYmNvL1Bvc3RncmVTUUwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS40IiwidGFnIjoiMC45LjQtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWdlbmVyYWwvc3JjL2FwcC9HZW5lcmFsIiwiaWQiOiJHZW5lcmFsIiwidmVyc2lvbiI6IjEuNi4xNiIsInRhZyI6IjEuNi4xNi1iMDUiLCJuYW1lIjoiR2VuZXJhbCIsInMzbG9jYXRpb24iOiJUaWJjby9HZW5lcmFsIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL3dpLXBvc3RncmVzL3NyYy9hcHAvUG9zdGdyZVNRTCIsImlkIjoiUG9zdGdyZVNRTCIsInZlcnNpb24iOiIyLjcuMiIsInRhZyI6IjIuNy4yLWIwMSIsIm5hbWUiOiJQb3N0Z3JlU1FMIiwiczNsb2NhdGlvbiI6IlRpYmNvL1Bvc3RncmVTUUwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
   "metadata": {
     "endpoints": [
       {
@@ -1409,6 +1459,6 @@
         "name": "SendEmailAgent"
       }
     ],
-    "flogoVersion": "2.26.5"
+    "flogoVersion": "2.26.7"
   }
 }

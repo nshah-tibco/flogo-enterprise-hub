@@ -7,7 +7,7 @@ FDA  = os.environ["FDA"]
 DIR  = os.path.dirname(os.path.abspath(__file__))
 FILE = os.path.join(DIR, "RealEstateAIOrchestrator.flogo")
 
-LLM_PROVIDER="OpenAI"; LLM_BASE="https://api.openai.com/v1"; LLM_MODEL="gpt-5.5"
+LLM_PROVIDER="OpenAI"; LLM_BASE="https://api.openai.com/v1"; LLM_MODEL="gpt-5.6"
 LLM_KEY = os.environ["LLM_API_KEY"]
 WS_PORT="9590"; WS_PATH="/realestate"
 MCP_URL="http://localhost:9592/realestate-mls"

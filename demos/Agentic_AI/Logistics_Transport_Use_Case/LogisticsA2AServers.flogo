@@ -1331,7 +1331,7 @@
     {
       "name": "AgenticAI.OpenAIConn.API_Key",
       "type": "string",
-      "value": "SECRET:jBJN31IJlqCNlHd+4u9wn81TH2KOCqrRXdPML/ZXTy+7qFn+0akCLlBiUxpsgSZsWzTpBgw48/TtA2wBtq5reDWchuGDjnwwBSFWS/l/VqM9OfEpYUdKQWNcRLaNqPeMrIIxzDRwvFonhZ9N+o6Y52ajZijBfmN9//+k54bWqDuRed8fw6954cedZLaXG2Q3tcsjoGfYDAEygDvdnqZUUJyUN4JnPm6UEvIArCdOxzzzDMYj"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "AgenticAI.OpenAIConn.LLM_Base_URL",
@@ -1361,7 +1361,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:erDVygliAhl2JQjKc17FU6m9U9ND"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",
@@ -1446,7 +1446,7 @@
     {
       "name": "Email_App_Password",
       "type": "string",
-      "value": "SECRET:uS5EowyNd5MQAIqeMZnQktX7Z6uSkp6mV/cjyGH2RXrQ3wg="
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "To_Email",

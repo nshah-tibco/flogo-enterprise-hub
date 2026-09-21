@@ -1630,7 +1630,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:C/CcDP56YQPIorgEJpGygkNfT3Ex"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",

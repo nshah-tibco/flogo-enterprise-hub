@@ -30,7 +30,13 @@
         "serverCertificate": "",
         "serverPrivateKey": "",
         "authType": "None",
-        "authToken": ""
+        "authToken": "",
+        "oauthIssuer": "",
+        "oauthJWKSURL": "",
+        "oauthAudience": "",
+        "oauthAuthorizationServers": "",
+        "oauthRequiredScopes": "",
+        "oauthResourceURL": ""
       },
       "id": "AirlineMCPServer",
       "handlers": [
@@ -441,7 +447,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "da0ec9a1-986d-4251-a11a-c90595a3accdSELECT * FROM public.flights ORDER BY flight_number ASC;"
+                "State": "81be581b-3436-4f3e-b17a-ca4ce43a1da7SELECT * FROM public.flights ORDER BY flight_number ASC;"
               },
               "schemas": {
                 "input": {
@@ -616,7 +622,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "f6f0f53a-3ef8-4695-9743-e8e726393423SELECT * FROM public.passengers ORDER BY passenger_id ASC;"
+                "State": "bea02216-e0cf-4bf0-847a-341fe08489e8SELECT * FROM public.passengers ORDER BY passenger_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -777,7 +783,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "a38e8a18-3af9-4ba5-82e4-73b5c2332bf8SELECT * FROM public.frequentflyer ORDER BY passenger_id ASC;"
+                "State": "9d9258c8-11e5-4f34-b0ad-1d98809d9c80SELECT * FROM public.frequentflyer ORDER BY passenger_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -938,7 +944,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "134b4c0e-9dd1-4550-a4e7-343030627874SELECT * FROM public.bookings ORDER BY pnr ASC;"
+                "State": "8c38973e-73e3-4a61-81fe-6cec79e2817bSELECT * FROM public.bookings ORDER BY pnr ASC;"
               },
               "schemas": {
                 "input": {
@@ -1134,7 +1140,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "419c94e4-1336-4eb2-941d-817117c8cffaSELECT * FROM public.booking_segments ORDER BY booking_id, segment_order ASC;"
+                "State": "e243ace8-95bb-41c0-8131-b1a3f67669e6SELECT * FROM public.booking_segments ORDER BY booking_id, segment_order ASC;"
               },
               "schemas": {
                 "input": {
@@ -1227,7 +1233,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:siacC5G2BB1DdxRVc3MiH42aO4Rx"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",
@@ -1295,7 +1301,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuMyIsInRhZyI6IjEuMC4zLWIwMiIsIm5hbWUiOiJNb2RlbCBDb250ZXh0IFByb3RvY29sIChNQ1ApIiwiczNsb2NhdGlvbiI6IlRpYmNvL01DUCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjEiLCJ0YWciOiIyLjcuMS1iMDEiLCJuYW1lIjoiUG9zdGdyZVNRTCIsInMzbG9jYXRpb24iOiJUaWJjby9Qb3N0Z3JlU1FMIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuNCIsInRhZyI6IjEuMC40LWIwMiIsIm5hbWUiOiJNb2RlbCBDb250ZXh0IFByb3RvY29sIChNQ1ApIiwiczNsb2NhdGlvbiI6IlRpYmNvL01DUCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjIiLCJ0YWciOiIyLjcuMi1iMDEiLCJuYW1lIjoiUG9zdGdyZVNRTCIsInMzbG9jYXRpb24iOiJUaWJjby9Qb3N0Z3JlU1FMIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
   "metadata": {
     "endpoints": [
       {
@@ -1305,6 +1311,6 @@
         "type": "public"
       }
     ],
-    "flogoVersion": "2.26.5"
+    "flogoVersion": "2.26.7"
   }
 }

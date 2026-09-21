@@ -12,8 +12,13 @@ from pptx.enum.shapes import MSO_SHAPE, MSO_CONNECTOR
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.oxml.ns import qn
 
-TEMPLATE = r"C:/Users/nshah/Downloads/Copy of TIBCO-NewPresentation-template-2026.pptx"
-OUT      = r"c:/Work/github/flogo-enterprise-hub/demos/Agentic_AI/Power_Distribution_Use_Case/PowerDistribution_Architecture.pptx"
+# Internal deck-authoring tool. You do NOT need this to run the demo -- it only
+# regenerates the architecture slide deck. It requires the TIBCO corporate PPTX
+# template, which is NOT distributed in this repo. Provide paths via env vars:
+#   DECK_TEMPLATE = path to your .pptx template   DECK_OUT = output .pptx path
+_HERE    = os.path.dirname(os.path.abspath(__file__))
+TEMPLATE = os.environ.get("DECK_TEMPLATE", os.path.join(_HERE, "deck_template.pptx"))
+OUT      = os.environ.get("DECK_OUT", os.path.join(_HERE, "PowerDistribution_Architecture.pptx"))
 
 # ---- TIBCO 2026 brand palette (from template theme) ----
 BLUE  = "3A8DDE"   # MCP
@@ -154,7 +159,7 @@ s = prs.slides.add_slide(L_CONTENT)
 set_title(s, "How it fits together — the 3-app pattern")
 # boxes
 box(s, 0.30, 2.35, 1.75, 0.95, [("Chatbot UI", True), ("(browser)", False)], GRAY, title_col=SLATE, cap_col=SLATE, title_sz=10.5, cap_sz=8)
-box(s, 3.05, 1.02, 2.00, 0.52, [("OpenAI LLM — gpt-5.5", True)], LAV, title_col=SLATE, title_sz=9.5)
+box(s, 3.05, 1.02, 2.00, 0.52, [("OpenAI LLM — gpt-5.6", True)], LAV, title_col=SLATE, title_sz=9.5)
 box(s, 2.55, 2.00, 2.55, 1.48, [
     ("AI Orchestrator", True),
     ("PowerDistributionAIOrchestrator", False),

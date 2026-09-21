@@ -10,7 +10,7 @@ FILE = os.path.join(DIR, "RealEstateA2AServers.flogo")
 
 PG_HOST="localhost"; PG_PORT="5432"; PG_DB="realestate"; PG_USER="postgres"
 PG_PWD = os.environ["PG_PWD"]
-LLM_PROVIDER="OpenAI"; LLM_BASE="https://api.openai.com/v1"; LLM_MODEL="gpt-5.5"
+LLM_PROVIDER="OpenAI"; LLM_BASE="https://api.openai.com/v1"; LLM_MODEL="gpt-5.6"
 LLM_KEY = os.environ["LLM_API_KEY"]
 EMAIL_USER="your-email@gmail.com"; TO_EMAIL="your-email@gmail.com"
 EMAIL_PWD = os.environ["SMTP_PWD"]

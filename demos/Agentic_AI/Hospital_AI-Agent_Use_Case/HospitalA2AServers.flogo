@@ -1212,7 +1212,7 @@
     {
       "name": "AgenticAI.OpenAIConn.API_Key",
       "type": "string",
-      "value": "SECRET:i4csy62E9BmzksUBfmDbd+mPqXKmICpRtYNTcWP427r5UtjHhrEcMkAzsHTDkalVDhF41K5OoNOogxGpYfmXJf78LjY36F3p1fRCUJcVx6m58Clq74HLJsxZOIk8mQJYAF/9E1aFpbdIf5raYVc94eQt8bJfbIFGFXGoDCgUdKxj3XmJ8NLRIYaZA9Gv+TKtJzpQRmkKrVOxNrU9RMMNRNsZ1tvNRkz+14aFUWm99nHgruvr"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "AgenticAI.OpenAIConn.LLM_Base_URL",
@@ -1222,7 +1222,7 @@
     {
       "name": "LLM_Model",
       "type": "string",
-      "value": "gpt-5.5"
+      "value": "gpt-5.6"
     },
     {
       "name": "API_PORT",
@@ -1262,7 +1262,7 @@
     {
       "name": "Email_App_Password",
       "type": "string",
-      "value": "SECRET:L4eJcv2XKb3kguM35gmXGeIiKtpHboV5mAqfwBm6FeyoD9c="
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "SendEmail_A2AServer_PORT",
@@ -1334,7 +1334,7 @@
         "description": "Key to use with claude ",
         "llmProvider": "Anthropic",
         "anthropicProvider": "Default",
-        "apiKey": "SECRET:b+GvmYZDwp6CTn1M0lgXbOf5cPQwEIpTw00Xcha8JQ==",
+        "apiKey": "SECRET:YOURKEY",
         "llmProviderUrl": "",
         "azureDeployment": "",
         "azureRegion": "",

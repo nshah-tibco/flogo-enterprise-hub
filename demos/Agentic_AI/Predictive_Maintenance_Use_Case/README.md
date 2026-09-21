@@ -311,7 +311,7 @@ with your own before an end-to-end run. **Never commit real secrets.**
    - `AgenticAI.OpenAIConn.LLM_Base_URL` — **currently blank**; set a real endpoint
      (`https://api.openai.com/v1`). An empty value becomes the literal `New_value` and the call fails
      with `unsupported protocol scheme`.
-   - `LLM_Model` — the committed value is `gpt-5.5`; confirm it is a model your key can access.
+   - `LLM_Model` — the committed value is `gpt-5.6`; confirm it is a model your key can access.
 
 2. **PostgreSQL database & credentials** (MCP app `PostgresConn`, API app `PredMaintConn`).
    - Create the **`predictive_maintenance`** database; load `database.sql`; run `reset_data.sql` to

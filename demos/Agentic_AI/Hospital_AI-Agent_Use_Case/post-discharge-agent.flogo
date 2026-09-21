@@ -1387,7 +1387,7 @@
     {
       "name": "AgenticAI.OpenAIConn.API_Key",
       "type": "string",
-      "value": "SECRET:hf40EdPPdSeQVbVXF54McWeOwIDroRHT9ReQx8v/gm3LJR2PpktPYzcyZHZXmxmJxCdNOC4vdTBLLdf8jMPXX87sPJ6xAw5mQrjmBWXdtjDZyjUDFDigfhnqXCN/FQuYiIADuJhy1oEipsKvALR6hQWjcV9QnKq2Lbeo22zwGoOmg6JQLPCErdbXx7jqDWZ2Yp4lP2pCArY2H0xb+D6aa+zZQQ7otZvIBSFnO8fVTje7YgH0"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "AgenticAI.OpenAIConn.LLM_Base_URL",
@@ -1397,7 +1397,7 @@
     {
       "name": "LLM_Model",
       "type": "string",
-      "value": "gpt-5.5"
+      "value": "gpt-5.6"
     },
     {
       "name": "API_PORT",
@@ -1469,7 +1469,7 @@
         "description": "Key to use with claude ",
         "llmProvider": "Anthropic",
         "anthropicProvider": "Default",
-        "apiKey": "SECRET:x8DSyBR+K5janaXbtl8ta17hkAZYSzJR3Xxufj/NXA==",
+        "apiKey": "SECRET:YOURKEY",
         "llmProviderUrl": "",
         "azureDeployment": "",
         "azureRegion": "",

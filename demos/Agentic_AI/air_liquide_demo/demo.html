@@ -315,7 +315,7 @@ tr:last-child td{border-bottom:none}
           <input type="password" id="oaKey" placeholder="sk-…"
             style="width:185px;font-size:11px;padding:5px 9px;font-family:var(--fm)"
             oninput="saveOaKey()"/>
-          <span style="font-size:10px;color:var(--text3);font-family:var(--fm)">gpt-5.5</span>
+          <span style="font-size:10px;color:var(--text3);font-family:var(--fm)">gpt-5.6</span>
           <span style="font-size:10px;color:var(--text3)">·</span>
           <span style="font-size:10px;color:var(--text3)">3 MCP tools via BW6</span>
         </div>
@@ -335,7 +335,7 @@ tr:last-child td{border-bottom:none}
           <div class="ava ava-ai">AI</div>
           <div>
             <div class="bubble">Hello! I'm connected to your TIBCO BusinessWorks 6 MCP tools. Ask me anything about gas cylinder inventory — I'll invoke the right workflow automatically.<br><br><strong>Available tools:</strong>&nbsp; <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;font-family:var(--fm);font-size:11px">searchGasStock</code>&nbsp; <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;font-family:var(--fm);font-size:11px">getCylinderStatus</code>&nbsp; <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;font-family:var(--fm);font-size:11px">dispatchCylinder</code></div>
-            <div class="mtime">Ready · MCP server: 10.182.34.53:18000</div>
+            <div class="mtime">Ready · MCP server: localhost:18000</div>
           </div>
         </div>
       </div>
@@ -469,7 +469,7 @@ const API = {
   cyl: 'http://localhost:8080/api/v1',
   up:  'http://localhost:5000',
   rag: 'http://localhost:7312',
-  mcp: 'http://10.182.34.53:18000/rest/mcp'
+  mcp: 'http://localhost:18000/rest/mcp'
 };
 
 // ── State ────────────────────────────────────────────────────────────
@@ -897,7 +897,7 @@ async function callOpenAI(messages) {
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
     body: JSON.stringify({
-      model:'gpt-5.5', messages, tools:MCP_TOOLS,
+      model:'gpt-5.6', messages, tools:MCP_TOOLS,
       tool_choice:'auto', max_completion_tokens:1024
     })
   });

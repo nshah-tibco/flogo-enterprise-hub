@@ -1091,7 +1091,7 @@
     {
       "name": "PostgreSQL.PredMaintConn.Password",
       "type": "string",
-      "value": "SECRET:qSqNtDjHc9KYODnSy03ewmLiKkfU"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "PostgreSQL.PredMaintConn.Maximum_Open_Connections",

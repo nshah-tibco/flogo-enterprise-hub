@@ -178,7 +178,7 @@ results, and [agents.md](agents.md) for each agent's system prompt and handover 
 - **TIBCO Flogo Enterprise** (import the `.flogo` apps into the designer) — or the `flogobuild`
   CLI if you prefer to build `.exe`s. CLI tool paths/versions live in
   `skills-library/.claude/skills/config.md` (see `config.example.md` for the template).
-- An **LLM provider** key (OpenAI-compatible; the apps default to model `gpt-5.5`). The base URL
+- An **LLM provider** key (OpenAI-compatible; the apps default to model `gpt-5.6`). The base URL
   must be a **real endpoint**, e.g. `https://api.openai.com/v1` — it ships **blank** and must be set.
 - **SMTP** access for the `SendEmail` agent (Gmail: `smtp.gmail.com`, an app-specific password).
 - A **chatbot / WebSocket client** — the shared UI under `demos/Agentic_AI/Chatbot` works
@@ -258,7 +258,7 @@ them with your own before an end-to-end run. **Never commit real secrets.**
    - `LLM_Base_URL` — a **real endpoint** (`https://api.openai.com/v1`). It ships **blank**; an
      empty value becomes the literal `New_value` and the LLM call fails with
      `unsupported protocol scheme`.
-   - `LLM_Model` — confirm the model name (default `gpt-5.5`) is one your key can access.
+   - `LLM_Model` — confirm the model name (default `gpt-5.6`) is one your key can access.
 
 2. **PostgreSQL database & credentials.**
    - Create the database and load `database.sql`; run `reset_data.sql` to reset between demos.

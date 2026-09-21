@@ -23,7 +23,7 @@ Operations"). The UI has two tabs:
 
 ### Tab 1 — Smart Cylinder Operations (MCP / agentic)
 You chat with an AI assistant about gas-cylinder inventory. The LLM
-(OpenAI `gpt-5.5`) is given three tools and calls them autonomously:
+(OpenAI `gpt-5.6`) is given three tools and calls them autonomously:
 
 | Tool (LLM function) | BW6 REST operation | What it does |
 |---|---|---|
@@ -62,7 +62,7 @@ database required). Four cylinders ship with the demo:
                          └───┬───────────────┬───────────────┬─────────┘
                              │               │               │
              OpenAI API      │               │ POST /upload  │ POST /ragimgquery
-        (gpt-5.5 + tools)    │               │  (files)      │  (question + images)
+        (gpt-5.6 + tools)    │               │  (files)      │  (question + images)
                              ▼               ▼               ▼
                    ┌──────────────┐   ┌──────────────┐  ┌──────────────┐
                    │  api.openai  │   │ BW6: RAG      │  │ BW6: RAG     │
@@ -109,14 +109,14 @@ it as plain HTTP with CORS.
   the **RAG** and **MCP server** capabilities, to run/deploy the three BW apps.
 - **Node.js 18+** and **npm** (for `mcp-proxy` and `npx mcp-remote`).
 - An **OpenAI API key** with access to the models referenced by the demo
-  (`gpt-5.5` and `text-embedding-3-large`). The key is used in two places:
+  (`gpt-5.6` and `text-embedding-3-large`). The key is used in two places:
   - The **browser** (Tab 1) — you paste it into the UI; it stays in
     `sessionStorage` and is sent directly to `api.openai.com`.
   - The **BW6 RAG apps** — the key is stored (encrypted) in each app's
     `*.ragResource`. You must set your own key there before deploying.
 - A modern browser.
 
-> **Model note:** `gpt-5.5` and `text-embedding-3-large` are what the demo is
+> **Model note:** `gpt-5.6` and `text-embedding-3-large` are what the demo is
 > configured to request. If your OpenAI account doesn't have those exact models,
 > switch to available ones (see *Configuration* below) or the calls will fail.
 
@@ -163,12 +163,12 @@ connect to:
 ```json
 {
   "command": "npx",
-  "args": ["mcp-remote", "http://10.182.34.53:18000/rest/mcp", "--allow-http"],
+  "args": ["mcp-remote", "http://localhost:18000/rest/mcp", "--allow-http"],
   "env": {}
 }
 ```
 
-**Point this at your BW6 MCP server.** Replace `10.182.34.53:18000` with the host
+**Point this at your BW6 MCP server.** Replace `localhost:18000` with the host
 and port where your Smart Cylinder app's MCP server is running (use `localhost`
 if you deployed it locally). `--allow-http` permits the plain-HTTP MCP endpoint.
 
@@ -198,7 +198,7 @@ const API = {
   cyl: 'http://localhost:8080/api/v1',              // Smart Cylinder REST (via MCP)
   up:  'http://localhost:5000',                     // RAG ingestion
   rag: 'http://localhost:7312',                     // RAG query
-  mcp: 'http://10.182.34.53:18000/rest/mcp'         // BW6 MCP server (informational)
+  mcp: 'http://localhost:18000/rest/mcp'         // BW6 MCP server (informational)
 };
 ```
 
@@ -252,11 +252,11 @@ via MCP and (2) complemented by a document knowledge base — all built in BW6.*
 | Setting | Where | Default |
 |---|---|---|
 | Smart Cylinder REST port | app substvar / httpConnResource | `8080` |
-| BW6 MCP server URL | `mcp-proxy/mcp-config.json` → `args[1]` | `http://10.182.34.53:18000/rest/mcp` |
+| BW6 MCP server URL | `mcp-proxy/mcp-config.json` → `args[1]` | `http://localhost:18000/rest/mcp` |
 | MCP proxy port | `PORT` env for `mcp-proxy` (`server.js`) | `3001` |
 | RAG ingestion port | `RAG_Air_Liquide_Ingestion/META-INF/default.substvar` → `UploadPort` | `5000` |
 | RAG query port | `RAG_Air_Liquide_Query/META-INF/default.substvar` → `imgUploadPort` | `7312` |
-| LLM model | `*.ragResource` (`openAIModelType`) and `demo.html` (`model`) | `gpt-5.5` |
+| LLM model | `*.ragResource` (`openAIModelType`) and `demo.html` (`model`) | `gpt-5.6` |
 | Embedding model | `*.ragResource` (`embeddingOpenAIModelName`) | `text-embedding-3-large` |
 | Vector store | `*.ragResource` (`embeddingStorageProvider=local`, `localStorageFileLocation`) | `C:\tmp\air_liquide_demo\localvector.txt` |
 | Browser API endpoints | `demo.html` → `const API` | see Step C |
@@ -274,7 +274,7 @@ The RAG shared resource also supports **Weaviate**, **Ollama** embeddings, and a
   cylinder API is reached *through* the MCP server, not by the browser).
 - **"OpenAI API key required".** Enter the key in Tab 1's key field; RAG (Tab 2)
   uses the key stored in the BW6 `.ragResource`, not the browser field.
-- **Model errors (404 / model not found).** Your account may not have `gpt-5.5`
+- **Model errors (404 / model not found).** Your account may not have `gpt-5.6`
   or `text-embedding-3-large`. Change the model in `demo.html` (`callOpenAI`) and
   in both `.ragResource` files to a model you can access.
 - **Search returns nothing.** The Smart Cylinder search
@@ -305,7 +305,7 @@ The RAG shared resource also supports **Weaviate**, **Ollama** embeddings, and a
 - The browser sends your OpenAI key straight to `api.openai.com`; it is kept only
   in `sessionStorage`. Use a key you're comfortable exposing client-side for a
   demo (ideally a scoped/temporary key).
-- `mcp-config.json` points at a specific internal host (`10.182.34.53`). Update
-  it for your environment and avoid publishing internal addresses.
+- `mcp-config.json` defaults to `localhost:18000`. Point it at the host and port
+  where your BW6 MCP server actually runs, and avoid publishing internal addresses.
 </content>
 </invoke>

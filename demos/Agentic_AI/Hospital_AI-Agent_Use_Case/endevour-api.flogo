@@ -2272,7 +2272,7 @@
     {
       "name": "PostgreSQL.postgreslocal.Password",
       "type": "string",
-      "value": "SECRET:rn1DDzSa+YGWd1CV0xN7+cPpJw9P"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "PostgreSQL.postgreslocal.Maximum_Open_Connections",

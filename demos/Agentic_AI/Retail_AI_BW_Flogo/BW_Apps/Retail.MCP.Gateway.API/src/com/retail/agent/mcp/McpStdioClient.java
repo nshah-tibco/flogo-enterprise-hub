@@ -48,9 +48,16 @@ public class McpStdioClient implements AutoCloseable {
     }
 
     public static McpStdioClient forBw6Remote() throws IOException {
+        // Resolve the npx launcher per-OS: "npx.cmd" on Windows, "npx" elsewhere.
+        // Relies on npx being on PATH (install Node.js). Override with the MCP_NPX env var.
+        String npxEnv = System.getenv("MCP_NPX");
+        String npx = npxEnv != null && !npxEnv.isEmpty()
+                ? npxEnv
+                : (System.getProperty("os.name", "").toLowerCase().contains("win") ? "npx.cmd" : "npx");
+        String mcpUrl = System.getenv().getOrDefault("MCP_REMOTE_URL", "http://localhost:18000/rest/mcp");
         return new McpStdioClient(
-                "C:\\Program Files\\nodejs\\npx.cmd",
-                List.of("mcp-remote", "http://localhost:18000/rest/mcp", "--allow-http")
+                npx,
+                List.of("mcp-remote", mcpUrl, "--allow-http")
         );
     }
 

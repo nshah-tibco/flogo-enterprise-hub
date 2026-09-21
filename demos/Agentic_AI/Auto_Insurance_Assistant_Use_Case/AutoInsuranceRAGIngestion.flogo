@@ -483,7 +483,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "68916671-6553-4867-83be-34ab4a84917dINSERT INTO public.document_index (vector_store_id, store_name, files_ingested, ingested_at) VALUES (?vs_id1, 'AutoPolicyKnowledgeBase', 4, TO_CHAR(CURRENT_TIMESTAMP,'YYYY-MM-DD HH24:MI'));",
+                "State": "8326e157-f9da-4041-bb70-a9d3cbc5a04fINSERT INTO public.document_index (vector_store_id, store_name, files_ingested, ingested_at) VALUES (?vs_id1, 'AutoPolicyKnowledgeBase', 4, TO_CHAR(CURRENT_TIMESTAMP,'YYYY-MM-DD HH24:MI'));",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -607,7 +607,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:TSmHlSThVhGWW1QFntvsTjxclJR8"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",
@@ -642,7 +642,7 @@
     {
       "name": "OPENAI_API_KEY",
       "type": "string",
-      "value": "<YOUR_OPENAI_API_KEY>"
+      "value": "sk-REPLACE-WITH-YOUR-OPENAI-KEY"
     },
     {
       "name": "OPENAI_API_ENDPOINT_URL",
@@ -652,7 +652,7 @@
     {
       "name": "POLICY_DOCS_DIR",
       "type": "string",
-      "value": "c:/Work/github/flogo-enterprise-hub/demos/Agentic_AI/Auto_Insurance_Assistant_Use_Case/policy_docs"
+      "value": "./policy_docs"
     },
     {
       "name": "INGEST_PORT",

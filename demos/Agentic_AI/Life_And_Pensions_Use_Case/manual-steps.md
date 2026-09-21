@@ -10,7 +10,7 @@ Step-by-step instructions to deploy and run the Life & Pensions Member Assistant
 
 - TIBCO Flogo Enterprise v2.26.5+
 - PostgreSQL 14+ (local or remote)
-- OpenAI API key (or an on-premises OpenAI-compatible LLM endpoint) — model `gpt-5.5`
+- OpenAI API key (or an on-premises OpenAI-compatible LLM endpoint) — model `gpt-5.6`
 - Gmail account with an App Password (for the email agent; SMTP over SSL, port 465)
 - Chatbot UI (from `demos/Agentic_AI/Chatbot/`)
 
@@ -72,7 +72,7 @@ Values in the tables below reference `config.md` generically — substitute your
 | Property | Value |
 |----------|-------|
 | `AgenticAI.OpenAIConn.API_Key` | Your OpenAI API key |
-| `LLM_Model` | `gpt-5.5` (or your preferred / on-prem model) |
+| `LLM_Model` | `gpt-5.6` (or your preferred / on-prem model) |
 | `PostgreSQL.PostgresConn.Host` | `localhost` |
 | `PostgreSQL.PostgresConn.Port` | `5432` |
 | `PostgreSQL.PostgresConn.Database_Name` | `life_pensions` |
@@ -95,7 +95,7 @@ Values in the tables below reference `config.md` generically — substitute your
 | Property | Value |
 |----------|-------|
 | `AgenticAI.OpenAIConn.API_Key` | Your OpenAI API key |
-| `LLM_Model` | `gpt-5.5` (or your preferred / on-prem model) |
+| `LLM_Model` | `gpt-5.6` (or your preferred / on-prem model) |
 | `Orchestrator_WS_PORT` | `9600` |
 | WebSocket Path | `/lifepensions` |
 

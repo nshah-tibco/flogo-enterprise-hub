@@ -161,7 +161,7 @@
             }
           }
         ],
-        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkFJQWdlbnQiOnsieCI6MjUwLCJ5IjoxNTB9LCJXZWJzb2NrZXRXcml0ZURhdGEiOnsieCI6NDUwLCJ5IjoyNTB9fQ==",
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkFJQWdlbnQiOnsieCI6MjUxLCJ5IjoxNTB9LCJXZWJzb2NrZXRXcml0ZURhdGEiOnsieCI6NDUwLCJ5IjoyNTB9fQ==",
         "metadata": {
           "input": [
             {
@@ -206,7 +206,7 @@
     {
       "name": "AgenticAI.OpenAIConn.API_Key",
       "type": "string",
-      "value": "<YOUR_OPENAI_API_KEY>"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "AgenticAI.OpenAIConn.LLM_Base_URL",
@@ -216,7 +216,7 @@
     {
       "name": "LLM_Model",
       "type": "string",
-      "value": "gpt-5.5"
+      "value": "gpt-5.6"
     },
     {
       "name": "Websocket_PORT",

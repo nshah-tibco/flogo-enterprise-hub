@@ -200,7 +200,7 @@
     {
       "name": "AgenticAI.OpenAI.API_Key",
       "type": "string",
-      "value": "SECRET:TheeN1FB+K4c0rKdKFRxZmiEDizVK0K6PmX2k1P39w=="
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "AgenticAI.OpenAI.LLM_Base_URL",
@@ -215,7 +215,7 @@
     {
       "name": "LLM_Model",
       "type": "string",
-      "value": "gpt-5.5"
+      "value": "gpt-5.6"
     },
     {
       "name": "WEBSOCKET_PORT",

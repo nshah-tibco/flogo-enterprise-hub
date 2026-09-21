@@ -901,7 +901,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:xnD5STm/qA2zMlnBwvHUkNiaiQiw"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "MCP_SERVER_PORT",

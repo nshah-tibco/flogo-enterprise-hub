@@ -2220,7 +2220,7 @@
     {
       "name": "AgenticAI.OpenAIConn.API_Key",
       "type": "string",
-      "value": "SECRET:Vno2Ef+PK6c6DrTZrJan5xz3J+NZ8VTR50Iz3AEnV4dKVijagEfvACNmBwqU1CHZEbYJrC4xbvGoaq7D5ri9ecYA27FpLfBSJhUqk9eSfU5eRdWXIzyMgpjyPp1btPMgib4phUlHKvXFuOVUyuuFHKdvBcG+FLYAmXNiW+iPA2bdD9yPQlCxV+irE/OY7JRt+L/TNr+2EBmpvixQNxXe8sYO1xprwfuWqH7NFRr+9YubJPOV"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "AgenticAI.OpenAIConn.LLM_Base_URL",
@@ -2250,7 +2250,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:MQd4tgHnQtM1/egmu8jmqagDUkWg"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",
@@ -2285,7 +2285,7 @@
     {
       "name": "LLM_Model",
       "type": "string",
-      "value": "gpt-5.5"
+      "value": "gpt-5.6"
     },
     {
       "name": "To_Email",
@@ -2300,7 +2300,7 @@
     {
       "name": "Email_App_Password",
       "type": "string",
-      "value": "SECRET:mN2Od4WBbbqbA3Y1U91DFxSlWYuM17/s9xCuf5LEWWzeMdo="
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "UpdateBeneficiary_A2AServer_PORT",

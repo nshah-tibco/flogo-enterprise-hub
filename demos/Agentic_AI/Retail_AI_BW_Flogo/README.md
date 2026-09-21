@@ -133,7 +133,7 @@ Before running the Flogo orchestrator, update the **app properties** in `RetailA
 |---|---|---|
 | `LLMClient.API_Key` | `YOUR_OPENAI_API_KEY` | **Required** — replace with your own OpenAI API key |
 | `LLMClient.LLM_Provider` | `OpenAI` | Change if using a different provider (Anthropic, Gemini, Ollama, etc.) |
-| `LLMClient.LLM_Model` | `gpt-5.5` | Change to your preferred model (e.g., `gpt-4.1-mini`, `gpt-4.1`) |
+| `LLMClient.LLM_Model` | `gpt-5.6` | Change to your preferred model (e.g., `gpt-4.1-mini`, `gpt-4.1`) |
 | `MCP_Server_URL` | `http://localhost:18000/rest/mcp` | Update if the BW6 MCP Server runs on a different host/port |
 | `RetailAgent.SystemPrompt` | _(pre-configured)_ | No change needed — defines the AI assistant's behavior and tool usage rules |
 

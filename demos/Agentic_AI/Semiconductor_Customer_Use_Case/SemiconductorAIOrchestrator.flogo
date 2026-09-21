@@ -208,7 +208,7 @@
     {
       "name": "AgenticAI.OpenAIConn.API_Key",
       "type": "string",
-      "value": "SECRET:jous1Fw7v/+YvYH7dnbeI8nDk4dxN0Ph5vGh772OKoV9NT4z2GXeaPG59B61YJ+5QDjfmtrQHf5ZQmpwHLav+1qUehfiA09e74buekUeEzOiTlHPgBBsCjwGTsqPmxtRPi+Uz0J01Yce0LjhPMVr+OmZVM8ij0O/rA8MP7787LEsOanMn6nCs+y91aryTTmkKoWcsRXJhtM5WnUOx8qlNRnekWxmYV8MebWCIK0HkN7ti/eG"
+      "value": "SECRET:YOURKEY"
     },
     {
       "name": "AgenticAI.OpenAIConn.LLM_Base_URL",
@@ -218,7 +218,7 @@
     {
       "name": "LLM_Model",
       "type": "string",
-      "value": "gpt-5.5"
+      "value": "gpt-5.6"
     },
     {
       "name": "Websocket_PORT",

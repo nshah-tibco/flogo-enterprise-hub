@@ -1408,7 +1408,7 @@
     {
       "name": "LLM_Model",
       "type": "string",
-      "value": "gpt-5.5"
+      "value": "gpt-5.6"
     },
     {
       "name": "PostgreSQL.PostgresConn.Host",

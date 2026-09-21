@@ -119,7 +119,7 @@ psql -U postgres -d banking -f reset_data.sql
 
 - **TIBCO Flogo Enterprise** v2.26.5 (to import/build the three `.flogo` apps).
 - **PostgreSQL** 14+ with a database named `banking`.
-- An **OpenAI API key** (the apps ship configured for `gpt-5.5`; the key is an app property).
+- An **OpenAI API key** (the apps ship configured for `gpt-5.6`; the key is an app property).
 - A **Gmail App Password** for the confirmation-email agent (SMTP `smtp.gmail.com:465` SSL).
 - The **chatbot UI** in `demos/Agentic_AI/Chatbot`.
 
@@ -148,7 +148,7 @@ Import each `.flogo` into Flogo Enterprise and set its app properties:
 | Property | Value |
 |---|---|
 | `AgenticAI.OpenAIConn.API_Key` | your OpenAI API key |
-| `LLM_Model` | `gpt-5.5` |
+| `LLM_Model` | `gpt-5.6` |
 | `PostgreSQL.PostgresConn.*` | your PostgreSQL connection, DB `banking` |
 | `Email_Username` / `Email_App_Password` / `To_Email` | Gmail sender / app password / recipient mailbox |
 | `DisputeTransaction_A2AServer_PORT` / `BlockCard_A2AServer_PORT` / `SendEmail_A2AServer_PORT` | `8710` / `8711` / `8712` |
@@ -157,7 +157,7 @@ Import each `.flogo` into Flogo Enterprise and set its app properties:
 | Property | Value |
 |---|---|
 | `AgenticAI.OpenAIConn.API_Key` | your OpenAI API key |
-| `LLM_Model` | `gpt-5.5` |
+| `LLM_Model` | `gpt-5.6` |
 | `Websocket_PORT` (trigger) | `8088` |
 
 > The orchestrator's connections point at `http://localhost:9096/retail-banking` (MCP) and
@@ -233,7 +233,7 @@ with your own before an end-to-end run. Never commit real secrets — pull value
    - `AgenticAI.OpenAIConn.LLM_Base_URL` — leave blank for OpenAI, or set a **real endpoint** for an
      OpenAI-compatible provider. An empty value against a non-OpenAI provider fails with
      `unsupported protocol scheme`.
-   - `LLM_Model` — confirm the model (`gpt-5.5` by default) is one your key can access.
+   - `LLM_Model` — confirm the model (`gpt-5.6` by default) is one your key can access.
 
 2. **PostgreSQL database & credentials** (MCP + A2A).
    - Create the **`banking`** database and load `database.sql`; run `reset_data.sql` to reset between demos.
@@ -266,7 +266,7 @@ with your own before an end-to-end run. Never commit real secrets — pull value
 **Quick pre-flight checklist**
 
 - [ ] DB `banking` created, `database.sql` + `reset_data.sql` loaded; row counts sane (customers 7, accounts 9, transactions 15)
-- [ ] LLM `AgenticAI.OpenAIConn.API_Key` and `LLM_Model` (`gpt-5.5`) set on A2A + Orchestrator; `LLM_Base_URL` correct for your provider
+- [ ] LLM `AgenticAI.OpenAIConn.API_Key` and `LLM_Model` (`gpt-5.6`) set on A2A + Orchestrator; `LLM_Base_URL` correct for your provider
 - [ ] PostgreSQL `Password` set on MCP + A2A; MCP tool `SELECT`s and A2A write SQL run cleanly
 - [ ] All ports free (8088, 9096, 8710–8712); orchestrator MCP/A2A URLs match the MCP/A2A ports
 - [ ] `Email_App_Password` set as a Gmail App Password; `To_Email` set; SMTP `smtp.gmail.com:465` reachable

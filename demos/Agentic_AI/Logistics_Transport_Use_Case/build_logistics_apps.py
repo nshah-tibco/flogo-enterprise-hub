@@ -17,8 +17,15 @@ Run:  python build_logistics_apps.py [mcp|a2a|orc|all]
 """
 import subprocess, os, sys, json, tempfile
 
-# ---- resolved fda path (tool path, not a secret) -------------------------------
-FDA = r"C:\Users\nshah\.vscode\extensions\tibco.flogo-2.26.6-3093\bin\flogodesign-cli.exe"
+# ---- Flogo Design CLI path (tool path, not a secret) ---------------------------
+# Set the FDA env var to your flogodesign-cli(.exe) so this runs on any OS:
+#   Windows (PowerShell): $env:FDA="C:\Users\<you>\.vscode\extensions\tibco.flogo-<ver>\bin\flogodesign-cli.exe"
+#   macOS / Linux:        export FDA="$HOME/.vscode/extensions/tibco.flogo-<ver>/bin/flogodesign-cli"
+try:
+    FDA = os.environ["FDA"]
+except KeyError:
+    sys.exit("ERROR: set the FDA environment variable to your Flogo Design CLI path "
+             "(flogodesign-cli or flogodesign-cli.exe). See the use-case README.")
 HERE = os.path.dirname(os.path.abspath(__file__))
 os.chdir(HERE)
 
