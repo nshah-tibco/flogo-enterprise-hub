@@ -3,6 +3,7 @@ Generate Insurance Claims Processor slides and add them to the
 Flogo-Industry-Vertical-UseCases.pptx presentation.
 """
 import copy
+import os
 from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
 from pptx.enum.text import PP_ALIGN
@@ -10,8 +11,11 @@ from pptx.enum.shapes import MSO_SHAPE
 from pptx.dml.color import RGBColor
 from lxml import etree
 
-SRC = r"C:\Users\nshah\Downloads\Flogo-Industry-Vertical-UseCases.pptx"
-OUT = r"C:\Users\nshah\Downloads\Flogo-Industry-Vertical-UseCases.pptx"
+# Internal deck-authoring tool (not required to run the sample). Point these at your
+# own .pptx via env vars so it runs on any OS. Both default to a deck in this folder.
+_HERE = os.path.dirname(os.path.abspath(__file__))
+SRC = os.environ.get("DECK_SRC", os.path.join(_HERE, "Flogo-Industry-Vertical-UseCases.pptx"))
+OUT = os.environ.get("DECK_OUT", SRC)
 
 FONT = "Nata Sans"
 DARK = RGBColor(0x24, 0x3C, 0x55)
