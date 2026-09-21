@@ -20,6 +20,29 @@ If you have purchased commercial support for TIBCO Flogo®, please create a Serv
 
 ---
 
+## **Getting Started**
+
+**Prerequisites**
+
+- **Visual Studio Code** with the **[TIBCO Flogo® Extension](https://marketplace.visualstudio.com/items?itemName=tibco.flogo)** — also available from the [TIBCO downloads page](https://www.tibco.com/downloads/11810)
+- **TIBCO Flogo® 2.26.x** or later
+
+**Clone and open**
+
+```bash
+git clone https://github.com/TIBCOSoftware/flogo-enterprise-hub.git
+cd flogo-enterprise-hub
+code .
+```
+
+Then pick a starting point:
+
+- **[Product Samples](./samples/README.md)** — ready-to-run TIBCO Flogo® samples (quick start).
+- **[Flogo Skill Library](./skills-library/README.md)** — skills for AI coding agents such as Claude Code.
+- **[Industry Agentic AI Demos](./demos/Agentic_AI/README.md)** — end-to-end, vertical-specific demos.
+
+---
+
 ## **AI & Agents**
 
 Build AI-powered agents, expose business data via MCP, and orchestrate intelligent workflows.

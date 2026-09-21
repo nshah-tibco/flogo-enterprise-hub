@@ -20,7 +20,7 @@ End-to-end proof-of-concept demonstrations showcasing **TIBCO Flogo®** as a **l
 ## Prerequisites
 
 All demos require:
-- **Microsoft Visual Studio Code** with the **TIBCO Flogo® Extension** installed
+- **Microsoft Visual Studio Code** with the **[TIBCO Flogo® Extension](https://marketplace.visualstudio.com/items?itemName=tibco.flogo)** installed
 - **TIBCO Flogo® 2.26.x** or later
 
 Additional requirements per demo:
