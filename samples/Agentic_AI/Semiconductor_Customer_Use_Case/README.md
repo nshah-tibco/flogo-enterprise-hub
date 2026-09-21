@@ -12,7 +12,7 @@ assistant looks the data up, performs the action against PostgreSQL, and emails 
 - **Problem automated:** the "what's the price/stock/lead-time, where's my order, is this part
   going EOL, open me an RMA, send me samples" load that normally ties up a distributor FAE or a
   customer-service desk — resolved conversationally, grounded in live data.
-- **Solution shape:** 3 Flogo apps — **1 MCP Server** (read-only tools), **1 A2A Servers app**
+- **Solution shape:** 3 Flogo apps — **1 MCP Server** (read-only tools), **1 A2A Servers / Agents app**
   (action agents that write **directly to PostgreSQL** + send email), and **1 AI Orchestrator**
   (WebSocket chat, LLM routing). All state lives in **PostgreSQL**. Currency is **USD** throughout.
 - **Vendor-neutral:** part numbers are fictional-but-realistic MPNs plus genuinely multi-vendor
@@ -26,12 +26,12 @@ assistant looks the data up, performs the action against PostgreSQL, and emails 
 ```
 Chatbot UI --WebSocket--> AI Orchestrator --MCP (HTTP streamable)--> MCP Server --\
                                  |                                                 +--> PostgreSQL
-                                 \-----------A2A (HTTP)-----> A2A Servers ---------/   (+ SMTP for email)
+                                 \--A2A (HTTP)-----> A2A Servers / Agents ---------/   (+ SMTP for email)
 ```
 
 - **MCP Server** — read-only lookups. Stateless, safe to retry; the LLM picks a tool from its
   description and filters the returned rows.
-- **A2A Servers** — action workflows. Each agent has its own trigger/port, guardrails, and system
+- **A2A Servers / Agents** — action workflows. Each agent has its own trigger/port, guardrails, and system
   prompt. Action agents **write directly to PostgreSQL**; one agent sends email via SMTP.
 - **Orchestrator** — the AI brain. WebSocket chat endpoint; the LLM decides intent and either
   calls an MCP tool or hands off to an A2A agent.
@@ -43,7 +43,7 @@ Chatbot UI --WebSocket--> AI Orchestrator --MCP (HTTP streamable)--> MCP Server 
 | App | File | Trigger | Port (property) |
 |-----|------|---------|-----------------|
 | MCP Server | `SemiconductorMCPServer.flogo` | `#mcpserver` | `MCP_SERVER_PORT` = **9098**, path `/semiconductor-parts` |
-| A2A Servers | `SemiconductorA2AServers.flogo` | `#agent` ×6 | see agent table below (**8730–8735**) |
+| A2A Servers / Agents | `SemiconductorA2AServers.flogo` | `#agent` ×6 | see agent table below (**8730–8735**) |
 | AI Orchestrator | `SemiconductorAIOrchestrator.flogo` | `#wsserver` | **8088**, path `/semiconductor` |
 
 ---
@@ -151,7 +151,7 @@ See `prompts.md` for the full, copy-pasteable prompt list.
 2. **Import the three apps** into Flogo Enterprise (or build each to an `.exe` with `flogobuild`).
 3. **Set app properties** (DB creds, LLM key/base URL/model, SMTP creds, ports, recipient email) —
    see the manual-config section below.
-4. **Start order:** MCP Server → A2A Servers → Orchestrator.
+4. **Start order:** MCP Server → A2A Servers / Agents → Orchestrator.
 5. **Connect a WebSocket client** to `ws://<host>:8088/semiconductor` and start chatting.
 
 ## Ports

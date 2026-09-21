@@ -10,7 +10,7 @@ confirmation, performs the action and emails a confirmation.
   assistant reads shipment data and performs actions on their behalf.
 - **Problem automated:** the "where is my package / change my delivery / file a claim" support
   load that normally hits a call center — resolved conversationally, grounded in live data.
-- **Solution shape:** 3 Flogo apps — **1 MCP Server** (read-only tools), **1 A2A Servers app**
+- **Solution shape:** 3 Flogo apps — **1 MCP Server** (read-only tools), **1 A2A Servers / Agents app**
   (action agents that write **directly to PostgreSQL** + send email), and **1 AI Orchestrator**
   (WebSocket chat, LLM routing). All state lives in **PostgreSQL**.
 
@@ -21,12 +21,12 @@ confirmation, performs the action and emails a confirmation.
 ```
 Chatbot UI --WebSocket--> AI Orchestrator --MCP (HTTP streamable)--> MCP Server --\
                                  |                                                 +--> PostgreSQL
-                                 \-----------A2A (HTTP)-----> A2A Servers ---------/   (+ SMTP for email)
+                                 \--A2A (HTTP)-----> A2A Servers / Agents ---------/   (+ SMTP for email)
 ```
 
 - **MCP Server** — read-only lookups. Stateless, safe to retry; the LLM picks a tool from its
   description.
-- **A2A Servers** — action workflows. Each agent has its own trigger/port, guardrails, and
+- **A2A Servers / Agents** — action workflows. Each agent has its own trigger/port, guardrails, and
   system prompt. Action agents **write directly to PostgreSQL**; one agent sends email via SMTP.
 - **Orchestrator** — the AI brain. WebSocket chat endpoint; the LLM decides intent and either
   calls an MCP tool or hands off to an A2A agent.
@@ -38,7 +38,7 @@ Chatbot UI --WebSocket--> AI Orchestrator --MCP (HTTP streamable)--> MCP Server 
 | App | File | Trigger | Port (property) |
 |-----|------|---------|-----------------|
 | MCP Server | `LogisticsMCPServer.flogo` | `tr_mcpserver` | `MCP_SERVER_PORT` = **9790** |
-| A2A Servers | `LogisticsA2AServers.flogo` | `tr_agent` ×4 | see agent table below |
+| A2A Servers / Agents | `LogisticsA2AServers.flogo` | `tr_agent` ×4 | see agent table below |
 | AI Orchestrator | `LogisticsAIOrchestrator.flogo` | `tr_wsserver` | `WS_SERVER_PORT` = **9690**, path `/logistics` |
 
 ---
@@ -136,7 +136,7 @@ See `prompts.md` for the full, copy-pasteable prompt list.
    ```
 3. **Set app properties** (DB creds, LLM key/base URL/model, SMTP creds, ports, recipient email) —
    see the manual-config section below.
-4. **Start order:** MCP Server → A2A Servers → Orchestrator.
+4. **Start order:** MCP Server → A2A Servers / Agents → Orchestrator.
 5. **Connect a WebSocket client** to `ws://<host>:9690/logistics` and start chatting.
 
 ## Ports

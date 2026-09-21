@@ -15,7 +15,7 @@ purification services), built on TIBCO Flogo Enterprise. Customers chat in natur
 ("Why is my water bill so high?", "I think I have a leak", "Let me send my own meter reading",
 "Is the water safe to drink in my area?", "Can I pay this in installments?") over a WebSocket
 streaming chat. The system uses a 3-tier agentic architecture — an AI Orchestrator, an MCP Server
-for read-only billing / meter / network lookups, and A2A Servers for write workflows (service
+for read-only billing / meter / network lookups, and A2A Servers / Agents for write workflows (service
 requests, self meter readings, payment plans & disputes, and email) — all communicating via standard
 protocols (MCP, A2A, WebSocket).
 
@@ -51,7 +51,7 @@ protocols (MCP, A2A, WebSocket).
                        ▼           ▼
     ┌──────────────────────┐   ┌──────────────────────────────────────┐
     │  Water Utility       │   │  Water Utility                       │
-    │  MCP Server          │   │  A2A Servers                         │
+    │  MCP Server          │   │  A2A Servers / Agents                │
     │  Port 9782           │   │                                      │
     │  /water-cis          │   │  service_request_agent        :9783  │
     │                      │   │  meter_reading_agent          :9784  │
@@ -107,7 +107,7 @@ a string; the LLM filters by account number / phone / zone.
 | **GetServiceRequests** | Leak / meter-fault / low-pressure / no-water / quality tickets and status | `SELECT * FROM service_requests` |
 | **GetBillingRequests** | Payment plans and bill disputes and their status | `SELECT * FROM billing_requests` |
 
-### 2. `WaterUtilityA2AServers.flogo` — A2A Servers (Ports 9783–9786)
+### 2. `WaterUtilityA2AServers.flogo` — A2A Servers / Agents (Ports 9783–9786)
 
 Four A2A agents that handle write workflows. Each agent has its own LLM, system prompt, and tool
 handler, and writes to PostgreSQL (the email agent sends via SMTP).
@@ -390,7 +390,7 @@ reference-app values for every secret; replace them with your own before an end-
 real secrets — pull values from `skills-library/.claude/skills/config.md` and set them as app properties
 at import time.
 
-1. **LLM credentials & endpoint** (A2A Servers + Orchestrator).
+1. **LLM credentials & endpoint** (A2A Servers / Agents + Orchestrator).
    - `AgenticAI.OpenAIConn.API_Key` — your real provider key (kept as a `SECRET:` app property).
    - `AgenticAI.OpenAIConn.LLM_Base_URL` — set to your provider's endpoint; for OpenAI use
      `https://api.openai.com/v1`. Leaving it blank can make the LLM call fail with
@@ -401,7 +401,7 @@ at import time.
    - Create the **`water_utility`** database and load `database.sql`; run `reset_data.sql` to reset
      between demos.
    - Set `PostgreSQL.PostgresConn.Host` / `Port` / `Database_Name` / `User` / `Password` on **both** the
-     MCP Server and A2A Servers apps. `Password` is a `SECRET:` app property — set the real secret in
+     MCP Server and A2A Servers / Agents apps. `Password` is a `SECRET:` app property — set the real secret in
      App Properties, not in plaintext.
 
 3. **Email / SMTP** (the `send_confirmation_email` agent).

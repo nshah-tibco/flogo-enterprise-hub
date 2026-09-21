@@ -18,10 +18,10 @@ itself, and the write actions are persisted to PostgreSQL through a REST API ser
   **PostgreSQL**.
 
 > ### ⚠️ How this demo diverges from the standard 3-app WebSocket pattern
-> This use case is **not** the textbook "MCP Server + separate A2A Servers app + separate
+> This use case is **not** the textbook "MCP Server + separate A2A Servers / Agents app + separate
 > Orchestrator" trio (as in the Semiconductor / Telecom demos). The differences are deliberate —
 > document and demo them as they actually are:
-> 1. **The A2A Agents are embedded in the Orchestrator app**, not a separate "A2A Servers" app.
+> 1. **The A2A Agents are embedded in the Orchestrator app**, not a separate "A2A Servers / Agents" app.
 >    `predictive-maintenance-agent.flogo` contains the `#wsserver` orchestrator **and** all four
 >    `#agent` triggers.
 > 2. **All four A2A Agents share a single agent port (`8080`)** rather than one port per agent.

@@ -4,7 +4,7 @@ An AI-powered self-service assistant for a residential electric power distributi
 TIBCO Flogo Enterprise. Residents chat in natural language ("Why is my bill so high?", "Is there an
 outage in my area?", "My power is out — send a crew", "I paid my balance, please reconnect me") over a
 WebSocket streaming chat. The system uses a 3-tier agentic architecture — an AI Orchestrator, an MCP
-Server for read-only grid/BSS lookups, and A2A Servers for write workflows (outage tickets, service
+Server for read-only grid/BSS lookups, and A2A Servers / Agents for write workflows (outage tickets, service
 appointments, service requests, and email) — all communicating via standard protocols (MCP, A2A,
 WebSocket).
 
@@ -38,7 +38,7 @@ WebSocket).
                        ▼           ▼
     ┌──────────────────────┐   ┌──────────────────────────────────────┐
     │  Power Distribution  │   │  Power Distribution                  │
-    │  MCP Server          │   │  A2A Servers                         │
+    │  MCP Server          │   │  A2A Servers / Agents                │
     │  Port 9682           │   │                                      │
     │  /grid-bss           │   │  outage_dispatch_agent        :9683  │
     │                      │   │  service_appointment_agent    :9684  │
@@ -67,7 +67,7 @@ WebSocket).
 classifies each message and routes it. Read questions (account, bill, usage, payments, rate plans,
 outages, ticket/appointment/request status) go to the **MCP Server**, which exposes 9 read-only
 PostgreSQL lookup tools. Actions that change state (report an outage, schedule an appointment, submit
-a reconnect, send an email) go to the **A2A Servers**, one write agent per port.
+a reconnect, send an email) go to the **A2A Servers / Agents**, one write agent per port.
 
 ---
 
@@ -91,7 +91,7 @@ as a string; the LLM filters by account number / phone / zip.
 | **GetServiceAppointments** | Scheduled field appointments (inspection, upgrade, survey) | `SELECT * FROM service_appointments` |
 | **GetServiceRequests** | Reconnect / disconnect / transfer requests and status | `SELECT * FROM service_requests` |
 
-### 2. `PowerDistributionA2AServers.flogo` — A2A Servers (Ports 9683–9686)
+### 2. `PowerDistributionA2AServers.flogo` — A2A Servers / Agents (Ports 9683–9686)
 
 Four A2A agents that handle write workflows. Each agent has its own LLM, system prompt, and tool
 handler, and writes to PostgreSQL (the email agent sends via SMTP).
@@ -399,7 +399,7 @@ psql -U postgres -d power_distribution -f reset_data.sql
 | `reset_data.sql` | Reset script (today-relative dates; clears agent-written rows) |
 | `prompts.md` | Demo prompts organized by scenario |
 | `PowerDistributionMCPServer.flogo` | MCP Server app (9 read-only tools) |
-| `PowerDistributionA2AServers.flogo` | A2A Servers app (4 write agents) |
+| `PowerDistributionA2AServers.flogo` | A2A Servers / Agents app (4 write agents) |
 | `PowerDistributionAIOrchestrator.flogo` | AI Orchestrator app (WebSocket brain) |
 
 ---
@@ -419,7 +419,7 @@ The committed `.flogo` files carry placeholders / reference-app values for every
 with your own before an end-to-end run. Never commit real secrets — pull values from
 `skills-library/.claude/skills/config.md` and set them as app properties at import time.
 
-1. **LLM credentials & endpoint** (A2A Servers + Orchestrator).
+1. **LLM credentials & endpoint** (A2A Servers / Agents + Orchestrator).
    - `AgenticAI.OpenAIConn.API_Key` — your real provider key (kept as a `SECRET:` app property).
    - `AgenticAI.OpenAIConn.LLM_Base_URL` — set to your provider's endpoint; for OpenAI use
      `https://api.openai.com/v1`. Leaving it blank can make the LLM call fail with
@@ -430,7 +430,7 @@ with your own before an end-to-end run. Never commit real secrets — pull value
    - Create the **`power_distribution`** database and load `database.sql`; run `reset_data.sql` to
      reset between demos.
    - Set `PostgreSQL.PostgresConn.Host` / `Port` / `Database_Name` / `User` / `Password` on **both** the
-     MCP Server and A2A Servers apps. `Password` is a `SECRET:` app property — set the real secret in
+     MCP Server and A2A Servers / Agents apps. `Password` is a `SECRET:` app property — set the real secret in
      App Properties, not in plaintext.
 
 3. **Email / SMTP** (the `send_confirmation_email` agent).

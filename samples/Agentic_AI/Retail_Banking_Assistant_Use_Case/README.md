@@ -42,7 +42,7 @@ by the `agentic-ai-use-case` skill.
 ```
 
 - **MCP Server** = read-only lookups. Stateless, safe to retry; the LLM picks a tool by intent and filters rows.
-- **A2A Servers** = write workflows (file a dispute = INSERT, block a card = UPDATE, send email = SMTP).
+- **A2A Servers / Agents** = write workflows (file a dispute = INSERT, block a card = UPDATE, send email = SMTP).
 - **Orchestrator** = the AI brain. WebSocket chat, decides intent, calls MCP tools or hands off to A2A agents, confirms before writes.
 
 ---
@@ -63,7 +63,7 @@ by the `agentic-ai-use-case` skill.
 
 Each tool is a flow `#noop → #query (SELECT * FROM <table>) → #actreturn`. All read-only.
 
-### 2. `BankingA2AServers.flogo` — A2A Servers (write workflows)
+### 2. `BankingA2AServers.flogo` — A2A Servers / Agents (write workflows)
 
 | Agent | Port | Tool | Workflow |
 |-------|------|------|----------|
@@ -228,7 +228,7 @@ The committed `.flogo` files carry placeholders / reference-app values for every
 with your own before an end-to-end run. Never commit real secrets — pull values from
 `skills-library/.claude/skills/config.md` and set them as app properties at import time.
 
-1. **LLM credentials & endpoint** (A2A Servers + Orchestrator).
+1. **LLM credentials & endpoint** (A2A Servers / Agents + Orchestrator).
    - `AgenticAI.OpenAIConn.API_Key` — your real provider key (kept as a `SECRET:` app property).
    - `AgenticAI.OpenAIConn.LLM_Base_URL` — set to your provider's endpoint; for OpenAI use
      `https://api.openai.com/v1`. Leaving it blank can make the LLM call fail with
@@ -238,7 +238,7 @@ with your own before an end-to-end run. Never commit real secrets — pull value
 2. **PostgreSQL database & credentials** (MCP + A2A).
    - Create the **`banking`** database and load `database.sql`; run `reset_data.sql` to reset between demos.
    - Set `PostgreSQL.PostgresConn.Host` / `Port` / `Database_Name` / `User` / `Password` on **both** the
-     MCP Server and A2A Servers apps. `Password` is a `SECRET:` app property — set the real secret in
+     MCP Server and A2A Servers / Agents apps. `Password` is a `SECRET:` app property — set the real secret in
      App Properties, not in plaintext.
 
 3. **Email / SMTP** (the `send_confirmation_email` agent).

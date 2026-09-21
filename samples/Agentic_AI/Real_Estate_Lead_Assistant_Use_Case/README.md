@@ -46,7 +46,7 @@ tour), the assistant automatically **advances their funnel stage** so the pipeli
 ```
 
 - **MCP Server** = read-only lookups. Stateless, safe to retry; the LLM picks a tool by intent and filters rows.
-- **A2A Servers** = write workflows (book a showing = INSERT, advance the funnel = UPDATE + activity log, send recommendations = INSERT activity, log a follow-up = INSERT, send email = SMTP).
+- **A2A Servers / Agents** = write workflows (book a showing = INSERT, advance the funnel = UPDATE + activity log, send recommendations = INSERT activity, log a follow-up = INSERT, send email = SMTP).
 - **Orchestrator** = the AI brain. WebSocket chat; decides intent, calls MCP tools or hands off to A2A agents, and confirms before any write.
 
 ---
@@ -66,7 +66,7 @@ tour), the assistant automatically **advances their funnel stage** so the pipeli
 
 Each tool is a flow `#query (SELECT * FROM <table>) → #actreturn`. All read-only.
 
-### 2. `RealEstateA2AServers.flogo` — A2A Servers (write workflows)
+### 2. `RealEstateA2AServers.flogo` — A2A Servers / Agents (write workflows)
 
 | Agent | Port | Tool | Workflow |
 |-------|------|------|----------|

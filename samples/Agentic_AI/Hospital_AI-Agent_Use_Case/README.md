@@ -14,7 +14,7 @@ summary.
   discharge summary, book the right specialty follow-up, order every prescribed medication, flag
   the vacated bed for housekeeping, and notify the patient — resolved conversationally, grounded
   in live data.
-- **Solution shape:** 3 Flogo apps — **1 MCP Server** (read-only tools), **1 A2A Servers app**
+- **Solution shape:** 3 Flogo apps — **1 MCP Server** (read-only tools), **1 A2A Servers / Agents app**
   (action agents), and **1 AI Orchestrator** (WebSocket chat, LLM intent routing). All state
   lives in **PostgreSQL**.
 
