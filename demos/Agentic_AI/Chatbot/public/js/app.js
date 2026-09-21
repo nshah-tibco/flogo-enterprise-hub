@@ -7,7 +7,7 @@ class FlogoChatbot {
     constructor() {
         // WebSocket connection
         this.ws = null;
-        this.wsUrl = 'ws://localhost:8082/ws/chat';
+        this.wsUrl = 'ws://localhost:9600/lifepensions';
         this.isConnected = false;
         
         // Chat sessions management

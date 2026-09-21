@@ -25,7 +25,7 @@ A minimalist, domain-agnostic chatbot web application with WebSocket support, mu
 
 Before you begin, ensure you have the following installed:
 
-- **Node.js**: Version 14.0.0 or higher
+- **Node.js**: Version 16.0.0 or higher
 - **npm**: Usually comes with Node.js (version 6.0.0 or higher)
 
 To check your versions:
@@ -55,7 +55,7 @@ npm --version
    
    Edit the `.env` file if you want to customize:
    - `PORT`: Server port (default: 3000)
-   - `WS_URL`: WebSocket backend URL (default: ws://localhost:8082/ws/chat)
+   - `WS_URL`: WebSocket backend URL (default: ws://localhost:9600/lifepensions)
 
 ## 🏃 Running the Application
 
@@ -74,7 +74,7 @@ The application will be available at: **http://localhost:3000**
 
 ### Start the WebSocket Backend
 
-Make sure your WebSocket backend server is running on `ws://localhost:8082/ws/chat` (or update the URL in the UI).
+Make sure your WebSocket backend server is running on `ws://localhost:9600/lifepensions` (or update the URL in the UI).
 
 ## 📖 Usage
 
@@ -83,7 +83,7 @@ Make sure your WebSocket backend server is running on `ws://localhost:8082/ws/ch
 1. **Configure WebSocket URL** (if needed):
    - Enter your WebSocket URL in the input field at the top of the chat area
    - Click the refresh icon (🔄) to update the URL
-   - Default URL: `ws://localhost:8082/ws/chat`
+   - Default URL: `ws://localhost:9600/lifepensions`
 
 2. **Connect**:
    - Click the "Connect" button in the header
@@ -151,7 +151,7 @@ Create a `.env` file in the root directory:
 
 ```env
 PORT=3000
-WS_URL=ws://localhost:8082/ws/chat
+WS_URL=ws://localhost:9600/lifepensions
 ```
 
 ### WebSocket Message Format
