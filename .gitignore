@@ -37,8 +37,43 @@ flogo-engine
 *.log
 # Packaged archives (build outputs, backups).
 *.zip
+# Architecture decks / slide exports are kept local (large binaries, not runnable content).
+*.pptx
+*.ppt
 # Test run output.
 test-results/
+
+# --- Python ---
+# Byte-compiled / cache files from the demo build/helper scripts.
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# --- Secrets & environment files ---
+# Never commit real credentials. Environment files are ignored by default;
+# the tracked *.env.example templates (safe placeholders) are re-included.
+.env
+*.env
+!*.env.example
+!.env.example
+# Defensive: keys / certs / keystores should not be committed. (Any demo certs
+# already tracked upstream are unaffected; this only blocks NEW accidental adds.)
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+*.jks
+
+# --- Local scratch / generated artifacts (not shipped) ---
+# Generated architecture PNG exports.
+demos/Agentic_AI/_deck_png/
+# Generated report artifacts.
+reports/
+# Local conversation dumps (may contain PII / PHI).
+conversations/
 
 # Local skills config holds real credentials (API keys, tokens, passwords).
 # Track config.example.md instead; each user copies it to config.md locally.
