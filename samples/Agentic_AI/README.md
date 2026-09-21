@@ -181,7 +181,7 @@ Most use cases here ship the same **standard trio** of Flogo apps plus a Postgre
 | App | Role | Trigger | Talks to |
 |---|---|---|---|
 | **`*MCPServer.flogo`** | Exposes **read-only** business data as MCP tools (query customers, policies, invoices, tickets…). Returns all rows; the orchestrator filters. | HTTP (streamable MCP) | PostgreSQL |
-| **`*A2AServers.flogo`** | One **A2A agent per guarded write action** (open a ticket, submit a claim, schedule a visit, send email…). Each agent runs on its own port. | A2A server (one port each) | PostgreSQL / SMTP |
+| **`*A2AServers.flogo`** *(a.k.a. `*Agents.flogo`)* | One **A2A agent per guarded write action** (open a ticket, submit a claim, schedule a visit, send email…). Each agent runs on its own port. | A2A server (one port each) | PostgreSQL / SMTP |
 | **`*AIOrchestrator.flogo`** | The **conversational brain**: classifies intent, calls MCP read tools, hands off to A2A write agents, and enforces confirm-before-write guardrails. | WebSocket (`wsserver`) | LLM · MCP · A2A |
 
 ```
@@ -189,6 +189,8 @@ Most use cases here ship the same **standard trio** of Flogo apps plus a Postgre
                                    │  ├──▶ MCP Server   ──▶ PostgreSQL   (reads)
                                    │  └──▶ A2A Agents   ──▶ PostgreSQL / SMTP  (guarded writes)
 ```
+
+> **Naming:** the write-tier app is the **A2A Agents** app. The current samples name its file `*A2AServers.flogo`; newer apps and the build skills name it `*Agents.flogo` — **same app, either name**.
 
 A few use cases deliberately vary this shape — see the **Variant** badge in the [status legend](#status-legend). BusinessWorks (BW6) and REST-tier variants ship their own detailed READMEs.
 
@@ -320,16 +322,16 @@ psql -U postgres -d life_pensions -f database.sql
 psql -U postgres -d life_pensions -f reset_data.sql   # optional: refresh demo dates relative to today
 ```
 
-**2. Import the three apps** into Flogo Enterprise (VS Code Flogo extension): the `*MCPServer.flogo`, `*A2AServers.flogo`, and `*AIOrchestrator.flogo` for that use case.
+**2. Import the three apps** into Flogo Enterprise (VS Code Flogo extension): the `*MCPServer.flogo`, `*A2AServers.flogo` (a.k.a. `*Agents.flogo`), and `*AIOrchestrator.flogo` for that use case.
 
 **3. Set the app properties** — PostgreSQL host/port/database/user/password, your **LLM API key** and model, ports, and (if the use case has an email agent) SMTP settings. The exact property names are in each folder's README / manual-steps section.
 
 **4. Start the apps in order** (the orchestrator needs the others running first):
 
 ```
-1) *MCPServer          → HTTP MCP port ready first
-2) *A2AServers         → all A2A agent ports
-3) *AIOrchestrator     → WebSocket port (needs MCP + A2A up)
+1) *MCPServer               → HTTP MCP port ready first
+2) *A2AServers / *Agents    → all A2A agent ports
+3) *AIOrchestrator          → WebSocket port (needs MCP + A2A up)
 ```
 
 **5. Connect the Chatbot** and start chatting:
