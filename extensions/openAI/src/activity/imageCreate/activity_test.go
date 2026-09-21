@@ -9,6 +9,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -21,8 +22,33 @@ func init() {
 	loadEnvFile()
 }
 
+// openEnvFile opens .env from the current working directory or any ancestor
+// directory. This lets a single shared .env at extensions/openAI/src/ serve
+// all activity tests while a per-package .env (if present) still wins because
+// it is found first.
+func openEnvFile() (*os.File, error) {
+	if f, err := os.Open(".env"); err == nil {
+		return f, nil
+	}
+	dir, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+	for {
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
+		if f, err := os.Open(filepath.Join(dir, ".env")); err == nil {
+			return f, nil
+		}
+	}
+	return nil, os.ErrNotExist
+}
+
 func loadEnvFile() {
-	file, err := os.Open(".env")
+	file, err := openEnvFile()
 	if err != nil {
 		return
 	}
@@ -46,7 +72,7 @@ func loadEnvFile() {
 
 func populateSettingsFromEnv() *Settings {
 	return &Settings{
-		ApiKey:      os.Getenv("OPEN_AI_API_KEY"),
+		ApiKey:      os.Getenv("OPENAI_API_KEY"),
 		EndPointURL: os.Getenv("OPENAI_API_ENDPOINT_URL"),
 	}
 }
@@ -61,27 +87,10 @@ func TestRegister(t *testing.T) {
 // Cross-field validation tests (no network).
 // ----------------------------------------------------------------------------
 
-func TestValidate_DallE3_RejectsNGreaterThanOne(t *testing.T) {
-	s := &Settings{Model: "dall-e-3", NumberOfImages: 2}
-	in := &Input{Prompt: "hi"}
-	err := validateInput(s, in)
+func TestValidate_NumberOfImagesRange(t *testing.T) {
+	err := validateInput(&Settings{Model: "gpt-image-1", NumberOfImages: 11}, &Input{Prompt: "hi"})
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "dall-e-3 only supports numberOfImages=1")
-}
-
-func TestValidate_DallE3_RejectsInvalidQuality(t *testing.T) {
-	s := &Settings{Model: "dall-e-3", Quality: "high"}
-	in := &Input{Prompt: "hi"}
-	err := validateInput(s, in)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "dall-e-3 only supports quality")
-}
-
-func TestValidate_DallE2_RejectsHd(t *testing.T) {
-	s := &Settings{Model: "dall-e-2", Quality: "hd"}
-	in := &Input{Prompt: "hi"}
-	err := validateInput(s, in)
-	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "between 1 and 10")
 }
 
 func TestValidate_GPTImage_AcceptsHighQuality(t *testing.T) {
@@ -90,36 +99,12 @@ func TestValidate_GPTImage_AcceptsHighQuality(t *testing.T) {
 	assert.NoError(t, validateInput(s, in))
 }
 
-func TestValidate_StyleOnlyForDallE3(t *testing.T) {
-	s := &Settings{Model: "gpt-image-1", Style: "vivid"}
+func TestValidate_RejectsInvalidQuality(t *testing.T) {
+	s := &Settings{Model: "gpt-image-1", Quality: "hd"}
 	in := &Input{Prompt: "hi"}
 	err := validateInput(s, in)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "'style' is only supported by dall-e-3")
-}
-
-func TestValidate_ResponseFormatAndOutputFormatMutuallyExclusive(t *testing.T) {
-	s := &Settings{Model: "dall-e-3", ResponseFormat: "url", OutputFormat: "png"}
-	in := &Input{Prompt: "hi"}
-	err := validateInput(s, in)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "mutually exclusive")
-}
-
-func TestValidate_ResponseFormatNotAllowedForGPTImage(t *testing.T) {
-	s := &Settings{Model: "gpt-image-1", ResponseFormat: "url"}
-	in := &Input{Prompt: "hi"}
-	err := validateInput(s, in)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "responseFormat is only supported by dall-e-2/dall-e-3")
-}
-
-func TestValidate_OutputFormatNotAllowedForDallE(t *testing.T) {
-	s := &Settings{Model: "dall-e-3", OutputFormat: "png"}
-	in := &Input{Prompt: "hi"}
-	err := validateInput(s, in)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "outputFormat is only supported by gpt-image models")
+	assert.Contains(t, err.Error(), "quality=low|medium|high|auto")
 }
 
 func TestValidate_TransparentBackgroundRequiresPngOrWebp(t *testing.T) {
@@ -134,22 +119,6 @@ func TestValidate_TransparentBackgroundAllowsPng(t *testing.T) {
 	s := &Settings{Model: "gpt-image-1", Background: "transparent", OutputFormat: "png"}
 	in := &Input{Prompt: "hi"}
 	assert.NoError(t, validateInput(s, in))
-}
-
-func TestValidate_BackgroundOnlyForGPTImage(t *testing.T) {
-	s := &Settings{Model: "dall-e-3", Background: "transparent"}
-	in := &Input{Prompt: "hi"}
-	err := validateInput(s, in)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "background is only supported by gpt-image models")
-}
-
-func TestValidate_OutputCompressionOnlyForGPTImage(t *testing.T) {
-	s := &Settings{Model: "dall-e-3", OutputCompression: 50}
-	in := &Input{Prompt: "hi"}
-	err := validateInput(s, in)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "outputCompression is only supported by gpt-image models")
 }
 
 func TestValidate_OutputCompressionRequiresWebpOrJpeg(t *testing.T) {
@@ -168,26 +137,15 @@ func TestValidate_OutputCompressionRangeCheck(t *testing.T) {
 	assert.Contains(t, err.Error(), "between 1 and 100")
 }
 
-func TestValidate_ModerationOnlyForGPTImage(t *testing.T) {
-	s := &Settings{Model: "dall-e-3", Moderation: "low"}
-	in := &Input{Prompt: "hi"}
-	err := validateInput(s, in)
+func TestValidate_GPTImage1_AllowedSize(t *testing.T) {
+	assert.NoError(t, validateInput(&Settings{Model: "gpt-image-1", Size: "1024x1024"}, &Input{Prompt: "hi"}))
+	assert.NoError(t, validateInput(&Settings{Model: "gpt-image-1", Size: "1536x1024"}, &Input{Prompt: "hi"}))
+	err := validateInput(&Settings{Model: "gpt-image-1", Size: "512x512"}, &Input{Prompt: "hi"})
 	assert.Error(t, err)
-}
-
-func TestValidate_DallE2_AllowedSize(t *testing.T) {
-	assert.NoError(t, validateInput(&Settings{Model: "dall-e-2", Size: "512x512"}, &Input{Prompt: "hi"}))
-	assert.Error(t, validateInput(&Settings{Model: "dall-e-2", Size: "1792x1024"}, &Input{Prompt: "hi"}))
-}
-
-func TestValidate_DallE3_AllowedSize(t *testing.T) {
-	assert.NoError(t, validateInput(&Settings{Model: "dall-e-3", Size: "1792x1024"}, &Input{Prompt: "hi"}))
-	assert.Error(t, validateInput(&Settings{Model: "dall-e-3", Size: "512x512"}, &Input{Prompt: "hi"}))
 }
 
 func TestValidate_GPTImage_AutoSize(t *testing.T) {
 	assert.NoError(t, validateInput(&Settings{Model: "gpt-image-1", Size: "auto"}, &Input{Prompt: "hi"}))
-	assert.Error(t, validateInput(&Settings{Model: "dall-e-2", Size: "auto"}, &Input{Prompt: "hi"}))
 }
 
 func TestValidate_GPTImage2_ArbitrarySize(t *testing.T) {
@@ -207,20 +165,26 @@ func TestValidate_GPTImage2_ArbitrarySize(t *testing.T) {
 	assert.Contains(t, err.Error(), "maximum")
 }
 
-func TestValidate_PromptLengthByModel(t *testing.T) {
-	long := strings.Repeat("a", 1500)
-	err := validateInput(&Settings{Model: "dall-e-2"}, &Input{Prompt: long})
+func TestValidate_PromptLengthLimit(t *testing.T) {
+	long := strings.Repeat("a", 32001)
+	err := validateInput(&Settings{Model: "gpt-image-1"}, &Input{Prompt: long})
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "exceeds limit 1000")
-
-	// dall-e-3 accepts 1500.
-	assert.NoError(t, validateInput(&Settings{Model: "dall-e-3"}, &Input{Prompt: long}))
+	assert.Contains(t, err.Error(), "exceeds limit 32000")
 }
 
 func TestValidate_UnknownModel(t *testing.T) {
 	err := validateInput(&Settings{Model: "bogus-model"}, &Input{Prompt: "hi"})
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "unknown model")
+}
+
+// DALL·E models were deprecated on May 12, 2026 and are no longer accepted.
+func TestValidate_DallEModelsRejected(t *testing.T) {
+	for _, m := range []string{"dall-e-2", "dall-e-3"} {
+		err := validateInput(&Settings{Model: m}, &Input{Prompt: "hi"})
+		assert.Error(t, err, "model %q should be rejected", m)
+		assert.Contains(t, err.Error(), "unknown model")
+	}
 }
 
 // ----------------------------------------------------------------------------
@@ -241,9 +205,9 @@ func TestImageCreate_Integration(t *testing.T) {
 	settings := map[string]interface{}{
 		"apiKey":         s.ApiKey,
 		"endPointURL":    s.EndPointURL,
-		"model":          "dall-e-2",
+		"model":          "gpt-image-1",
 		"numberOfImages": int64(1),
-		"size":           "256x256",
+		"size":           "1024x1024",
 	}
 	initCtx := test.NewActivityInitContext(settings, nil)
 	a, err := New(initCtx)

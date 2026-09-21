@@ -83,14 +83,14 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 	}
 
 	// Validate input parameters
-	if input.FileName == "" {
-		err := errors.New("validation failed: file name is required but not provided in input")
+	if input.FileName == "" && input.FileID == "" {
+		err := errors.New("validation failed: either 'filename' or 'fileId' must be provided in input")
 		logger.Error(err.Error())
 		return false, err
 	}
 
-	if input.VectorStoreID == "" {
-		err := errors.New("validation failed: vectorStoreID is required but not provided in input")
+	if input.FileID != "" && input.VectorStoreID == "" {
+		err := errors.New("validation failed: vectorStoreID is required when FileID is provided to associate the file with a vector store")
 		logger.Error(err.Error())
 		return false, err
 	}
@@ -102,37 +102,78 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 
 	logger.Infof("Setting upload timeout to %d seconds for large file transfers", a.Settings.TimeoutSeconds)
 
-	fileReader, err := os.Open(input.FileName)
-	if err != nil {
-		contextErr := fmt.Errorf("validation failed: unable to open file '%s': %w", input.FileName, err)
-		logger.Error(contextErr.Error())
-		return false, contextErr
-	}
-	defer fileReader.Close()
-	fileName := filepath.Base(input.FileName)
+	var (
+		fileID       string
+		fileName     string
+		respObject   string
+		respBytes    int64
+		respCreated  int64
+		respFilename string
+		respPurpose  string
+	)
 
-	mimeType := mime.TypeByExtension(filepath.Ext(input.FileName))
-	logger.Infof("MimeType: %s", mimeType)
-
-	inputFile := openai.File(fileReader, fileName, mimeType)
-
-	// invoke the API
-	fileResp, err := a.oaiClient.Files.New(clientCtx, openai.FileNewParams{
-		File:    inputFile,
-		Purpose: openai.FilePurpose(a.Settings.Purpose),
-	})
-	if err != nil {
-		// Check for timeout specifically
-		if clientCtx.Err() == context.DeadlineExceeded {
-			contextErr := fmt.Errorf("upload timeout: file '%s' upload exceeded %d seconds - consider increasing timeout for large files",
-				fileName, a.Settings.TimeoutSeconds)
+	// Two mutually exclusive paths drive how we obtain the OpenAI file ID that
+	// will be attached to the vector store:
+	//
+	//   1. FileID path (input.FileID is set): the caller already uploaded the
+	//      file to OpenAI in a previous run (or via another activity) and just
+	//      wants to register it against this vector store. We skip the upload
+	//      API call entirely, so no local file is opened and the upload-related
+	//      outputs (object/bytes/createdAt/filename/purpose) stay empty — only
+	//      `id` is meaningful in this case.
+	//
+	//   2. FileName path (input.FileName is set): the file lives on the local
+	//      filesystem. We open it, upload it via Files.New to get a fresh
+	//      OpenAI file ID, and populate the full set of upload response
+	//      outputs from the API response.
+	//
+	// Input validation above guarantees exactly one of these is usable.
+	if input.FileID != "" {
+		// Path 1: reuse an existing OpenAI file; no upload, no local file I/O.
+		fileID = input.FileID
+		logger.Infof("Using provided fileId '%s'; skipping file upload", fileID)
+	} else {
+		// Path 2: upload the local file to OpenAI, then use the returned ID.
+		fileReader, err := os.Open(input.FileName)
+		if err != nil {
+			contextErr := fmt.Errorf("validation failed: unable to open file '%s': %w", input.FileName, err)
 			logger.Error(contextErr.Error())
 			return false, contextErr
 		}
-		contextErr := fmt.Errorf("OpenAI API error: failed to upload file '%s' to endpoint '%s' with purpose '%s': %w",
-			fileName, a.Settings.EndPointURL, a.Settings.Purpose, err)
-		logger.Error(contextErr.Error())
-		return false, contextErr
+		defer fileReader.Close()
+		fileName = filepath.Base(input.FileName)
+
+		mimeType := mime.TypeByExtension(filepath.Ext(input.FileName))
+		logger.Infof("MimeType: %s", mimeType)
+
+		inputFile := openai.File(fileReader, fileName, mimeType)
+
+		// Upload the file bytes to OpenAI; this is the call we skip on the FileID path.
+		fileResp, err := a.oaiClient.Files.New(clientCtx, openai.FileNewParams{
+			File:    inputFile,
+			Purpose: openai.FilePurpose(a.Settings.Purpose),
+		})
+		if err != nil {
+			// Check for timeout specifically
+			if clientCtx.Err() == context.DeadlineExceeded {
+				contextErr := fmt.Errorf("upload timeout: file '%s' upload exceeded %d seconds - consider increasing timeout for large files",
+					fileName, a.Settings.TimeoutSeconds)
+				logger.Error(contextErr.Error())
+				return false, contextErr
+			}
+			contextErr := fmt.Errorf("OpenAI API error: failed to upload file '%s' to endpoint '%s' with purpose '%s': %w",
+				fileName, a.Settings.EndPointURL, a.Settings.Purpose, err)
+			logger.Error(contextErr.Error())
+			return false, contextErr
+		}
+
+		// Capture the upload response so the activity outputs reflect the new file.
+		fileID = fileResp.ID
+		respObject = string(fileResp.Object)
+		respBytes = fileResp.Bytes
+		respCreated = fileResp.CreatedAt
+		respFilename = fileResp.Filename
+		respPurpose = string(fileResp.Purpose)
 	}
 
 	logger.Info("Populating custom metadata from source data...")
@@ -147,7 +188,7 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 	if input.VectorStoreID != "" {
 		_, err = a.oaiClient.VectorStores.Files.New(clientCtx, input.VectorStoreID,
 			openai.VectorStoreFileNewParams{
-				FileID:     fileResp.ID,
+				FileID:     fileID,
 				Attributes: customMetadata,
 				ChunkingStrategy: openai.FileChunkingStrategyParamOfStatic(openai.StaticFileChunkingStrategyParam{
 					MaxChunkSizeTokens: a.Settings.MaxChunkSizeTokens,
@@ -160,26 +201,24 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 			// Check for timeout specifically
 			if clientCtx.Err() == context.DeadlineExceeded {
 				contextErr := fmt.Errorf("vector store timeout: adding file '%s' (ID: %s) to vector store '%s' exceeded %d seconds",
-					fileName, fileResp.ID, input.VectorStoreID, a.Settings.TimeoutSeconds)
+					fileName, fileID, input.VectorStoreID, a.Settings.TimeoutSeconds)
 				logger.Error(contextErr.Error())
 				return false, contextErr
 			}
 			contextErr := fmt.Errorf("vector store operation failed: unable to add file '%s' (ID: %s) to vector store '%s': %w",
-				fileName, fileResp.ID, input.VectorStoreID, err)
+				fileName, fileID, input.VectorStoreID, err)
 			logger.Error(contextErr.Error())
 			return false, contextErr
 		}
 	}
 
 	// construct activity output
-	//	ctx.SetOutput(oMetaData)
-	ctx.SetOutput("id", fileResp.ID)
-	ctx.SetOutput("object", fileResp.Object)
-	ctx.SetOutput("bytes", fileResp.Bytes)
-	ctx.SetOutput("createdAt", fileResp.CreatedAt)
-	// ctx.SetOutput("expireAt", fileResp.ExpireAt)  expireAt is not returned in the response for file upload API, so commenting out for now. Will revisit when we have more clarity on this.
-	ctx.SetOutput("filename", fileResp.Filename)
-	ctx.SetOutput("purpose", fileResp.Purpose)
+	ctx.SetOutput("id", fileID)
+	ctx.SetOutput("object", respObject)
+	ctx.SetOutput("bytes", respBytes)
+	ctx.SetOutput("createdAt", respCreated)
+	ctx.SetOutput("filename", respFilename)
+	ctx.SetOutput("purpose", respPurpose)
 
 	return true, nil
 }

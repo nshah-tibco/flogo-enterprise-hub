@@ -67,21 +67,17 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 
 // model family classification
 const (
-	familyDallE2    = "dall-e-2"
-	familyDallE3    = "dall-e-3"
 	familyGPTImage  = "gpt-image"
 	familyGPTImage2 = "gpt-image-2"
 )
 
 func modelFamily(model string) string {
 	switch {
-	case model == "" || model == "dall-e-2":
-		return familyDallE2
-	case model == "dall-e-3":
-		return familyDallE3
 	case strings.HasPrefix(model, "gpt-image-2"):
 		return familyGPTImage2
-	case strings.HasPrefix(model, "gpt-image"):
+	// OpenAI's /v1/images/generations endpoint defaults to gpt-image-1
+	// when no model is specified, so treat empty the same as gpt-image.
+	case model == "" || strings.HasPrefix(model, "gpt-image"):
 		return familyGPTImage
 	default:
 		return ""
@@ -96,19 +92,12 @@ var arbitraryWxH = regexp.MustCompile(`^(\d+)x(\d+)$`)
 func validateInput(s *Settings, in *Input) error {
 	fam := modelFamily(s.Model)
 	if fam == "" {
-		return fmt.Errorf("validation failed: unknown model %q", s.Model)
+		return fmt.Errorf("validation failed: unknown model %q (DALL·E 2/3 were deprecated by OpenAI on May 12, 2026; use gpt-image-1 or gpt-image-1-mini instead)", s.Model)
 	}
 
-	// Prompt length per model family.
-	maxPromptLen := 0
-	switch fam {
-	case familyDallE2:
-		maxPromptLen = 1000
-	case familyDallE3:
-		maxPromptLen = 4000
-	case familyGPTImage, familyGPTImage2:
-		maxPromptLen = 32000
-	}
+	// Prompt length per model family. All currently supported families
+	// (gpt-image-*) accept up to 32 000 characters.
+	const maxPromptLen = 32000
 	if len(in.Prompt) > maxPromptLen {
 		return fmt.Errorf("validation failed: prompt length %d exceeds limit %d for model %q",
 			len(in.Prompt), maxPromptLen, s.Model)
@@ -119,75 +108,32 @@ func validateInput(s *Settings, in *Input) error {
 		if s.NumberOfImages < 1 || s.NumberOfImages > 10 {
 			return fmt.Errorf("validation failed: numberOfImages must be between 1 and 10 (got %d)", s.NumberOfImages)
 		}
-		if fam == familyDallE3 && s.NumberOfImages != 1 {
-			return errors.New("validation failed: dall-e-3 only supports numberOfImages=1")
-		}
 	}
 
 	// quality
 	if s.Quality != "" && s.Quality != "auto" {
-		switch fam {
-		case familyDallE2:
-			if s.Quality != "standard" {
-				return fmt.Errorf("validation failed: dall-e-2 only supports quality=standard|auto (got %q)", s.Quality)
-			}
-		case familyDallE3:
-			if s.Quality != "standard" && s.Quality != "hd" {
-				return fmt.Errorf("validation failed: dall-e-3 only supports quality=standard|hd|auto (got %q)", s.Quality)
-			}
-		case familyGPTImage, familyGPTImage2:
-			if s.Quality != "low" && s.Quality != "medium" && s.Quality != "high" {
-				return fmt.Errorf("validation failed: gpt-image models support quality=low|medium|high|auto (got %q)", s.Quality)
-			}
+		if s.Quality != "low" && s.Quality != "medium" && s.Quality != "high" {
+			return fmt.Errorf("validation failed: gpt-image models support quality=low|medium|high|auto (got %q)", s.Quality)
 		}
 	}
 
-	// style — dall-e-3 only
-	if s.Style != "" && fam != familyDallE3 {
-		return fmt.Errorf("validation failed: 'style' is only supported by dall-e-3 (got model %q)", s.Model)
-	}
-
-	// response_format vs output_format mutual exclusivity & model gating
-	if s.ResponseFormat != "" && s.OutputFormat != "" {
-		return errors.New("validation failed: responseFormat and outputFormat are mutually exclusive")
-	}
-	if s.ResponseFormat != "" && fam != familyDallE2 && fam != familyDallE3 {
-		return fmt.Errorf("validation failed: responseFormat is only supported by dall-e-2/dall-e-3 (got model %q)", s.Model)
-	}
-	if s.OutputFormat != "" && fam != familyGPTImage && fam != familyGPTImage2 {
-		return fmt.Errorf("validation failed: outputFormat is only supported by gpt-image models (got model %q)", s.Model)
-	}
-
-	// background — gpt-image only; transparent requires png/webp output
-	if s.Background != "" {
-		if fam != familyGPTImage && fam != familyGPTImage2 {
-			return fmt.Errorf("validation failed: background is only supported by gpt-image models (got model %q)", s.Model)
-		}
-		if s.Background == "transparent" {
-			if s.OutputFormat != "" && s.OutputFormat != "png" && s.OutputFormat != "webp" {
-				return fmt.Errorf("validation failed: background=transparent requires outputFormat=png|webp (got %q)", s.OutputFormat)
-			}
+	// background — transparent requires png/webp output
+	if s.Background == "transparent" {
+		if s.OutputFormat != "" && s.OutputFormat != "png" && s.OutputFormat != "webp" {
+			return fmt.Errorf("validation failed: background=transparent requires outputFormat=png|webp (got %q)", s.OutputFormat)
 		}
 	}
 
-	// output_compression — gpt-image only, 1-100, only with webp/jpeg.
+	// output_compression — 1-100, only with webp/jpeg.
 	// Note: a value of 0 is treated as "not provided" since Flogo's metadata
 	// reflection cannot distinguish a missing input from a zero int.
 	if s.OutputCompression != 0 {
-		if fam != familyGPTImage && fam != familyGPTImage2 {
-			return fmt.Errorf("validation failed: outputCompression is only supported by gpt-image models (got model %q)", s.Model)
-		}
 		if s.OutputCompression < 1 || s.OutputCompression > 100 {
 			return fmt.Errorf("validation failed: outputCompression must be between 1 and 100 (got %d)", s.OutputCompression)
 		}
 		if s.OutputFormat != "" && s.OutputFormat != "webp" && s.OutputFormat != "jpeg" {
 			return fmt.Errorf("validation failed: outputCompression only applies when outputFormat=webp|jpeg (got %q)", s.OutputFormat)
 		}
-	}
-
-	// moderation — gpt-image only
-	if s.Moderation != "" && fam != familyGPTImage && fam != familyGPTImage2 {
-		return fmt.Errorf("validation failed: moderation is only supported by gpt-image models (got model %q)", s.Model)
 	}
 
 	// size
@@ -203,27 +149,10 @@ func validateSize(size, fam string) error {
 		return nil
 	}
 	if size == "auto" {
-		if fam != familyGPTImage && fam != familyGPTImage2 {
-			return fmt.Errorf("validation failed: size=auto is only supported by gpt-image models")
-		}
 		return nil
 	}
 
 	switch fam {
-	case familyDallE2:
-		switch size {
-		case "256x256", "512x512", "1024x1024":
-			return nil
-		default:
-			return fmt.Errorf("validation failed: dall-e-2 supports size 256x256|512x512|1024x1024 (got %q)", size)
-		}
-	case familyDallE3:
-		switch size {
-		case "1024x1024", "1792x1024", "1024x1792":
-			return nil
-		default:
-			return fmt.Errorf("validation failed: dall-e-3 supports size 1024x1024|1792x1024|1024x1792 (got %q)", size)
-		}
 	case familyGPTImage:
 		switch size {
 		case "1024x1024", "1536x1024", "1024x1536":
@@ -288,12 +217,6 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 	}
 	if s.Quality != "" {
 		params.Quality = openai.ImageGenerateParamsQuality(s.Quality)
-	}
-	if s.Style != "" {
-		params.Style = openai.ImageGenerateParamsStyle(s.Style)
-	}
-	if s.ResponseFormat != "" {
-		params.ResponseFormat = openai.ImageGenerateParamsResponseFormat(s.ResponseFormat)
 	}
 	if s.OutputFormat != "" {
 		params.OutputFormat = openai.ImageGenerateParamsOutputFormat(s.OutputFormat)

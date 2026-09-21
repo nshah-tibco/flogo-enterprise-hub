@@ -17,12 +17,10 @@ import (
 const (
 	sAPIKey         = "apiKey"
 	sEndpointURL    = "endPointURL"
-	iVectorStoreID  = "vectorStoreID"
 	iLimit          = "limit"
-	iFilter         = "filter"
+	iPurpose        = "purpose"
 	iOrder          = "order"
 	iAfter          = "after"
-	iBefore         = "before"
 	iTimeoutSeconds = "timeoutSeconds"
 	oFiles          = "files"
 )
@@ -56,12 +54,10 @@ func (s *Settings) FromMap(values map[string]interface{}) error {
 
 // Input defines what data the activity receives
 type Input struct {
-	VectorStoreID  string `md:"vectorStoreID"`
 	Limit          int    `md:"limit"`
-	Filter         string `md:"filter"`
+	Purpose        string `md:"purpose"`
 	Order          string `md:"order"`
 	After          string `md:"after"`
-	Before         string `md:"before"`
 	TimeoutSeconds int    `md:"timeoutSeconds"`
 }
 
@@ -77,11 +73,6 @@ func (i *Input) FromMap(values map[string]interface{}) error {
 
 	var err error
 
-	i.VectorStoreID, err = coerce.ToString(values[iVectorStoreID])
-	if err != nil {
-		return err
-	}
-
 	if val, ok := values[iLimit]; ok && val != nil {
 		i.Limit, err = coerce.ToInt(val)
 		if err != nil {
@@ -91,8 +82,8 @@ func (i *Input) FromMap(values map[string]interface{}) error {
 		i.Limit = 20
 	}
 
-	if val, ok := values[iFilter]; ok && val != nil {
-		i.Filter, err = coerce.ToString(val)
+	if val, ok := values[iPurpose]; ok && val != nil {
+		i.Purpose, err = coerce.ToString(val)
 		if err != nil {
 			return err
 		}
@@ -114,13 +105,6 @@ func (i *Input) FromMap(values map[string]interface{}) error {
 		}
 	}
 
-	if val, ok := values[iBefore]; ok && val != nil {
-		i.Before, err = coerce.ToString(val)
-		if err != nil {
-			return err
-		}
-	}
-
 	if val, ok := values[iTimeoutSeconds]; ok && val != nil {
 		i.TimeoutSeconds, err = coerce.ToInt(val)
 		if err != nil {
@@ -136,19 +120,17 @@ func (i *Input) FromMap(values map[string]interface{}) error {
 // ToMap converts the struct to a map
 func (i *Input) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		iVectorStoreID:  i.VectorStoreID,
 		iLimit:          i.Limit,
-		iFilter:         i.Filter,
+		iPurpose:        i.Purpose,
 		iOrder:          i.Order,
 		iAfter:          i.After,
-		iBefore:         i.Before,
 		iTimeoutSeconds: i.TimeoutSeconds,
 	}
 }
 
 // Output defines what data the activity returns
 type Output struct {
-	Files []*openai.VectorStoreFile `md:"files"`
+	Files []*openai.FileObject `md:"files"`
 }
 
 // ToMap converts the struct to a map
@@ -169,7 +151,7 @@ func (o *Output) FromMap(values map[string]interface{}) error {
 		return err
 	}
 
-	var files []*openai.VectorStoreFile
+	var files []*openai.FileObject
 	fileData, err := json.Marshal(res)
 	if err != nil {
 		return err

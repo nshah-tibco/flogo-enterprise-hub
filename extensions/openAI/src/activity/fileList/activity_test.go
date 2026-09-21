@@ -10,6 +10,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -24,8 +25,33 @@ func init() {
 	loadEnvFile()
 }
 
+// openEnvFile opens .env from the current working directory or any ancestor
+// directory. This lets a single shared .env at extensions/openAI/src/ serve
+// all activity tests while a per-package .env (if present) still wins because
+// it is found first.
+func openEnvFile() (*os.File, error) {
+	if f, err := os.Open(".env"); err == nil {
+		return f, nil
+	}
+	dir, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+	for {
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
+		if f, err := os.Open(filepath.Join(dir, ".env")); err == nil {
+			return f, nil
+		}
+	}
+	return nil, os.ErrNotExist
+}
+
 func loadEnvFile() {
-	file, err := os.Open(".env")
+	file, err := openEnvFile()
 	if err != nil {
 		fmt.Printf("No .env file found: %v\n", err)
 		return
@@ -89,25 +115,27 @@ func TestActivity_Input(t *testing.T) {
 	assert.Equal(t, 30, i.TimeoutSeconds)
 
 	values := map[string]interface{}{
-		"vectorStoreID":  "vs_123",
 		"limit":          10,
-		"filter":         "completed",
+		"purpose":        "assistants",
 		"order":          "asc",
+		"after":          "file-abc",
 		"timeoutSeconds": 60,
 	}
 
 	err = i.FromMap(values)
 	require.NoError(t, err)
-	assert.Equal(t, "vs_123", i.VectorStoreID)
 	assert.Equal(t, 10, i.Limit)
-	assert.Equal(t, "completed", i.Filter)
+	assert.Equal(t, "assistants", i.Purpose)
 	assert.Equal(t, "asc", i.Order)
+	assert.Equal(t, "file-abc", i.After)
 	assert.Equal(t, 60, i.TimeoutSeconds)
 
 	toMap := i.ToMap()
-	assert.Equal(t, "vs_123", toMap["vectorStoreID"])
 	assert.Equal(t, 10, toMap["limit"])
-	assert.Equal(t, "completed", toMap["filter"])
+	assert.Equal(t, "assistants", toMap["purpose"])
+	assert.Equal(t, "asc", toMap["order"])
+	assert.Equal(t, "file-abc", toMap["after"])
+	assert.Equal(t, 60, toMap["timeoutSeconds"])
 }
 
 func TestActivity_New_ValidationErrors(t *testing.T) {
@@ -130,43 +158,20 @@ func TestActivity_New_ValidationErrors(t *testing.T) {
 	assert.Contains(t, err.Error(), "endpoint URL is required")
 }
 
-func TestActivity_Eval_ValidationError(t *testing.T) {
-	// Create activity with valid settings
-	ctx := test.NewActivityInitContext(map[string]interface{}{
-		"apiKey":      "test-key",
-		"endPointURL": "https://api.openai.com/v1",
-	}, nil)
-
-	act, err := New(ctx)
-	require.NoError(t, err)
-
-	// Test with missing vector store ID
-	evalCtx := test.NewActivityContext(act.Metadata())
-
-	done, err := act.Eval(evalCtx)
-	assert.False(t, done)
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "validation failed: vector store ID is required but not provided in input")
-}
-
 // Integration test - only runs when RUN_INTEGRATION=1
 func TestActivity_Integration(t *testing.T) {
 	if os.Getenv("RUN_INTEGRATION") != "1" {
 		t.Skip("Skipping integration test. Set RUN_INTEGRATION=1 to run.")
 	}
 
-	apiKey := os.Getenv("OPEN_AI_API_KEY")
+	apiKey := os.Getenv("OPENAI_API_KEY")
 	endpointURL := os.Getenv("OPENAI_API_ENDPOINT_URL")
-	vectorStoreID := os.Getenv("VECTOR_STORE_ID")
 
 	if apiKey == "" {
-		t.Skip("Skipping integration test: OPEN_AI_API_KEY not set")
+		t.Skip("Skipping integration test: OPENAI_API_KEY not set")
 	}
 	if endpointURL == "" {
 		t.Skip("Skipping integration test: OPENAI_API_ENDPOINT_URL not set")
-	}
-	if vectorStoreID == "" {
-		t.Skip("Skipping integration test: VECTOR_STORE_ID not set")
 	}
 
 	// Create activity
@@ -180,7 +185,6 @@ func TestActivity_Integration(t *testing.T) {
 
 	// Execute activity
 	evalCtx := test.NewActivityContext(act.Metadata())
-	evalCtx.SetInput("vectorStoreID", vectorStoreID)
 	evalCtx.SetInput("limit", 5)
 	evalCtx.SetInput("order", "desc")
 	evalCtx.SetInput("timeoutSeconds", 30)

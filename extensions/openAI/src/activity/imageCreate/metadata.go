@@ -21,8 +21,6 @@ const (
 	sNumberOfImages    = "numberOfImages"
 	sSize              = "size"
 	sQuality           = "quality"
-	sStyle             = "style"
-	sResponseFormat    = "responseFormat"
 	sOutputFormat      = "outputFormat"
 	sBackground        = "background"
 	sOutputCompression = "outputCompression"
@@ -51,8 +49,6 @@ type Settings struct {
 	NumberOfImages    int64  `md:"numberOfImages"`
 	Size              string `md:"size"`
 	Quality           string `md:"quality"`
-	Style             string `md:"style"`
-	ResponseFormat    string `md:"responseFormat"`
 	OutputFormat      string `md:"outputFormat"`
 	Background        string `md:"background"`
 	OutputCompression int64  `md:"outputCompression"`
@@ -81,12 +77,6 @@ func (s *Settings) FromMap(values map[string]interface{}) error {
 		return err
 	}
 	if s.Quality, err = coerce.ToString(values[sQuality]); err != nil {
-		return err
-	}
-	if s.Style, err = coerce.ToString(values[sStyle]); err != nil {
-		return err
-	}
-	if s.ResponseFormat, err = coerce.ToString(values[sResponseFormat]); err != nil {
 		return err
 	}
 	if s.OutputFormat, err = coerce.ToString(values[sOutputFormat]); err != nil {

@@ -85,8 +85,8 @@ code --install-extension /path/to/tibco-flogo-<version>.vsix
 ## 3. Clone the Repository
 
 ```bash
-git clone https://github.com/<org>/flogo-enterprise-hub-rag-framework.git
-cd flogo-enterprise-hub-rag-framework
+git clone https://github.com/<org>/flogo-enterprise-hub.git
+cd flogo-enterprise-hub
 code .
 ```
 
@@ -109,20 +109,20 @@ Add the **absolute** path to the `extensions/openAI` directory of this cloned re
 **Linux / macOS** (forward slashes `/`):
 
 ```
-/home/<you>/projects/flogo-enterprise-hub-rag-framework/extensions/openAI
+/home/<you>/projects/flogo-enterprise-hub/extensions/openAI
 ```
 
 **Windows** (backslashes `\`, or escaped `\\` inside `settings.json`):
 
 ```
-C:\Users\<you>\projects\flogo-enterprise-hub-rag-framework\extensions\openAI
+C:\Users\<you>\projects\flogo-enterprise-hub\extensions\openAI
 ```
 
 In `settings.json` on Windows, escape the backslashes:
 
 ```json
 "flogo.extensions.local": [
-  "C:\\Users\\<you>\\projects\\flogo-enterprise-hub-rag-framework\\extensions\\openAI"
+  "C:\\Users\\<you>\\projects\\flogo-enterprise-hub\\extensions\\openAI"
 ]
 ```
 
@@ -130,7 +130,7 @@ On Linux / macOS:
 
 ```json
 "flogo.extensions.local": [
-  "/home/<you>/projects/flogo-enterprise-hub-rag-framework/extensions/openAI"
+  "/home/<you>/projects/flogo-enterprise-hub/extensions/openAI"
 ]
 ```
 
@@ -217,7 +217,7 @@ This flow is **automatically triggered** — no manual request is required. As s
 
 ## 9. Clean Up
 
-To avoid lingering OpenAI resources / billing, use the helper scripts under [`bin/`](../../../../bin/):
+To avoid lingering OpenAI resources / billing, use the helper scripts under [`bin/`]
 
 - `openai-filelist-openai` — list uploaded files
 - `openai-filedelete-openai` — delete uploaded files

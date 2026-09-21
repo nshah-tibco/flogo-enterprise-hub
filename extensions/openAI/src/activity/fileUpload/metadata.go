@@ -27,6 +27,7 @@ const (
 	sChunkOverlapTokens = "chunkOverlapTokens"
 	sTimeoutSeconds     = "timeoutSeconds"
 	iFilename           = "filename"
+	iFileID             = "fileId"
 	iVectorStoreID      = "vectorStoreID"
 	iFileAttributeNames = "fileAttributeNames"
 	iFileAttributes     = "fileAttributes"
@@ -101,6 +102,7 @@ func (s *Settings) FromMap(values map[string]interface{}) error {
 // Input defines what data the activity receives
 type Input struct {
 	FileName           string              `md:"filename"`
+	FileID             string              `md:"fileId"`
 	VectorStoreID      string              `md:"vectorStoreID"`
 	FileAttributeNames []interface{}       `md:"fileAttributeNames"`
 	FileAttributes     []FileAttributeData `md:"fileAttributes"`
@@ -117,6 +119,11 @@ func (i *Input) FromMap(values map[string]interface{}) error {
 	var err error
 
 	i.FileName, err = coerce.ToString(values[iFilename])
+	if err != nil {
+		return err
+	}
+
+	i.FileID, err = coerce.ToString(values[iFileID])
 	if err != nil {
 		return err
 	}
@@ -162,6 +169,7 @@ func (i *Input) FromMap(values map[string]interface{}) error {
 func (i *Input) ToMap() map[string]interface{} {
 	return map[string]interface{}{
 		iFilename:           i.FileName,
+		iFileID:             i.FileID,
 		iVectorStoreID:      i.VectorStoreID,
 		iFileAttributeNames: i.FileAttributeNames,
 		iFileAttributes:     i.FileAttributes,

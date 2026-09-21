@@ -6,7 +6,7 @@
     "github.com/tibco/flogo-general/src/app/General/activity/log",
     "github.com/TIBCOSoftware/flogo-enterprise-hub/extensions/openAI/activity/fileUpload",
     "github.com/tibco/flogo-general/src/app/General/activity/sleep",
-    "github.com/TIBCOSoftware/flogo-enterprise-hub/extensions/openAI/activity/fileList",
+    "github.com/TIBCOSoftware/flogo-enterprise-hub/extensions/openAI/activity/vectorStoreFileList",
     "github.com/TIBCOSoftware/flogo-enterprise-hub/extensions/openAI/activity/vectorSearch",
     "github.com/TIBCOSoftware/flogo-enterprise-hub/extensions/openAI/activity/fileDelete",
     "github.com/TIBCOSoftware/flogo-enterprise-hub/extensions/openAI/activity/vectorStoreDelete",
@@ -34,17 +34,17 @@
           "action": {
             "ref": "github.com/project-flogo/flow",
             "settings": {
-              "flowURI": "res://flow:VectorStoreE2E"
+              "flowURI": "res://flow:VectorStore_E2E"
             }
           },
-          "name": "VectorStoreE2E"
+          "name": "VectorStore_E2E"
         }
       ]
     }
   ],
   "resources": [
     {
-      "id": "flow:VectorStoreE2E",
+      "id": "flow:VectorStore_E2E",
       "data": {
         "note": {
           "author": {
@@ -56,7 +56,7 @@
           "lastUpdatedAt": 1777471523969,
           "title": "Flow Note"
         },
-        "name": "VectorStoreE2E",
+        "name": "VectorStore E2E",
         "description": "",
         "links": [
           {
@@ -220,13 +220,15 @@
               "settings": {
                 "endPointURL": "=$property[\"OPENAI_API_ENDPOINT_URL\"]",
                 "apiKey": "=$property[\"OPENAI_API_KEY\"]",
+                "operation": "Upload new file",
                 "purpose": "assistants",
                 "maxChunkSizeTokens": 800,
                 "chunkOverlapTokens": 400,
                 "timeoutSeconds": 300
               },
               "input": {
-                "filename": "extensions/openAI/src/activity/fileUpload/testdata/TIB-bwce_6.12_concepts.pdf",
+                "filename": "extensions/openAI/testdata/AL-243-342_Operating_Guide.md",
+                "fileId": "",
                 "vectorStoreID": "=$activity[CreateVectorStore].id"
               }
             }
@@ -268,7 +270,7 @@
               }
             },
             "activity": {
-              "ref": "#fileList",
+              "ref": "#vectorStoreFileList",
               "settings": {
                 "endPointURL": "=$property[\"OPENAI_API_ENDPOINT_URL\"]",
                 "apiKey": "=$property[\"OPENAI_API_KEY\"]"
@@ -431,7 +433,7 @@
             }
           }
         ],
-        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjAsInkiOjE5OX0sIkNyZWF0ZVZlY3RvclN0b3JlIjp7IngiOjEzMSwieSI6MTkxfSwiTG9nTWVzc2FnZSI6eyJ4IjozMDQsInkiOjQyfSwiVXBsb2FkRmlsZSI6eyJ4Ijo0NjQsInkiOjIwM30sIkxvZ01lc3NhZ2UyIjp7IngiOjYxNywieSI6Mzd9LCJTbGVlcCI6eyJ4Ijo3OTUsInkiOjM3fSwiRmlsZUxpc3QiOnsieCI6OTU3LCJ5IjoyMjd9LCJMb2dNZXNzYWdlMyI6eyJ4IjoxMTEyLCJ5Ijo0NH0sIlZlY3RvclNlYXJjaCI6eyJ4IjoxMjY4LCJ5IjoyMTd9LCJMb2dNZXNzYWdlNCI6eyJ4IjoxNTA0LCJ5IjoyMjJ9LCJGaWxlRGVsZXRlIjp7IngiOjEzMSwieSI6NDI3fSwiTG9nTWVzc2FnZTUiOnsieCI6Mjg3LCJ5Ijo1NTd9LCJEZWxldGVWZWN0b3JTdG9yZSI6eyJ4Ijo0ODcsInkiOjQyOH0sIlJldHVybiI6eyJ4IjoxNTExLCJ5Ijo0Mjl9fQ==",
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjAsInkiOjE5OX0sIkNyZWF0ZVZlY3RvclN0b3JlIjp7IngiOjEzMiwieSI6MTkxfSwiTG9nTWVzc2FnZSI6eyJ4IjozMDQsInkiOjQyfSwiVXBsb2FkRmlsZSI6eyJ4Ijo1NTAsInkiOjE4OH0sIkxvZ01lc3NhZ2UyIjp7IngiOjgyMSwieSI6MjZ9LCJTbGVlcCI6eyJ4IjoxMDcwLCJ5IjoyN30sIkZpbGVMaXN0Ijp7IngiOjEzMDUsInkiOjIzMn0sIkxvZ01lc3NhZ2UzIjp7IngiOjE1OTMsInkiOjU0fSwiVmVjdG9yU2VhcmNoIjp7IngiOjE2NCwieSI6NjkzfSwiTG9nTWVzc2FnZTQiOnsieCI6MzU4LCJ5Ijo4NDd9LCJGaWxlRGVsZXRlIjp7IngiOjU3MiwieSI6NzAxfSwiTG9nTWVzc2FnZTUiOnsieCI6ODU5LCJ5Ijo4NjB9LCJEZWxldGVWZWN0b3JTdG9yZSI6eyJ4IjoxMDk2LCJ5Ijo2OTR9LCJSZXR1cm4iOnsieCI6MTUwNywieSI6Njk1fX0=",
         "metadata": {
           "input": [],
           "output": [],
@@ -444,7 +446,7 @@
     {
       "name": "OPENAI_API_KEY",
       "type": "string",
-      "value": "<YOUR_OPENAI_API_KEY>"
+      "value": "REPLACE_ME"
     },
     {
       "name": "OPENAI_API_ENDPOINT_URL",
@@ -453,9 +455,9 @@
     }
   ],
   "connections": {},
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTUiLCJ0YWciOiIxLjYuMTUtYjA0IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS9USUJDT1NvZnR3YXJlL2Zsb2dvLWVudGVycHJpc2UtaHViL2V4dGVuc2lvbnMvb3BlbkFJIiwiaWQiOiJvcGVuQUkiLCJ2ZXJzaW9uIjoiMS4wLjEiLCJ0YWciOiIxLjAuMSIsIm5hbWUiOiJPcGVuQUkiLCJzM2xvY2F0aW9uIjoie1VTRVJJRH0vb3BlbkFJIiwiaXNVc2VyRXh0ZW5zaW9uIjp0cnVlfV0=",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTEiLCJ0YWciOiIxLjYuMTEtYjAyIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS9USUJDT1NvZnR3YXJlL2Zsb2dvLWVudGVycHJpc2UtaHViL2V4dGVuc2lvbnMvb3BlbkFJIiwiaWQiOiJvcGVuQUkiLCJ2ZXJzaW9uIjoiMS4wLjEiLCJ0YWciOiIxLjAuMSIsIm5hbWUiOiJPcGVuQUkiLCJzM2xvY2F0aW9uIjoie1VTRVJJRH0vb3BlbkFJIiwiaXNVc2VyRXh0ZW5zaW9uIjp0cnVlfV0=",
   "metadata": {
     "endpoints": [],
-    "flogoVersion": "2.26.6"
+    "flogoVersion": "2.26.0"
   }
 }

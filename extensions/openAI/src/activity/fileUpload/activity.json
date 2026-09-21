@@ -18,6 +18,7 @@
     }
   },
   "settings": [
+ 
     {
       "name": "endPointURL",
       "type": "string",
@@ -37,6 +38,21 @@
         "description": "OpenAI key that is required to authenticate with the OpenAI API",
         "appPropertySupport": true
       }
+    },
+    {
+      "name": "operation",
+      "type": "string",
+      "required": true,
+      "value": "Upload new file",
+      "display": {
+        "name": "Operation",
+        "description": "The file operation to perform"
+      },
+      "allowed": [
+        "Upload new file",
+        "Upload new file and associate to VectorStore",
+        "Associate existing file to VectorStore"
+      ]
     },
     {
       "name": "purpose",
@@ -94,12 +110,17 @@
     {
       "name": "filename",
       "type": "string",
-      "required": true
+      "required": false
+    },
+    {
+      "name": "fileId",
+      "type": "string",
+      "required": false
     },
     {
       "name": "vectorStoreID",
       "type": "string",
-      "required": true
+      "required": false
     },
     {
       "name": "fileAttributes",

@@ -9,21 +9,61 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/openai/openai-go/v3"
+	"github.com/openai/openai-go/v3/option"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/support/test"
 	"github.com/stretchr/testify/assert"
 )
+
+// newTestActivity builds an Activity the same way New() does, so tests that
+// bypass the Flogo init path still get a fully initialized OpenAI client.
+func newTestActivity(s *Settings) *Activity {
+	return &Activity{
+		Settings: s,
+		oaiClient: openai.NewClient(
+			option.WithAPIKey(s.ApiKey),
+			option.WithBaseURL(s.EndPointURL),
+		),
+	}
+}
 
 // Load environment variables from .env file
 func init() {
 	loadEnvFile()
 }
 
+// openEnvFile opens .env from the current working directory or any ancestor
+// directory. This lets a single shared .env at extensions/openAI/src/ serve
+// all activity tests while a per-package .env (if present) still wins because
+// it is found first.
+func openEnvFile() (*os.File, error) {
+	if f, err := os.Open(".env"); err == nil {
+		return f, nil
+	}
+	dir, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+	for {
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
+		if f, err := os.Open(filepath.Join(dir, ".env")); err == nil {
+			return f, nil
+		}
+	}
+	return nil, os.ErrNotExist
+}
+
 func loadEnvFile() {
-	file, err := os.Open(".env")
+	file, err := openEnvFile()
 	if err != nil {
 		fmt.Printf("No .env file found: %v\n", err)
 		return
@@ -53,7 +93,7 @@ func loadEnvFile() {
 
 func populateSettingsFromEnv() *Settings {
 	return &Settings{
-		ApiKey:      os.Getenv("OPEN_AI_API_KEY"),
+		ApiKey:      os.Getenv("OPENAI_API_KEY"),
 		EndPointURL: os.Getenv("OPENAI_API_ENDPOINT_URL"),
 	}
 }
@@ -76,9 +116,7 @@ func TestSearchDocumentsDefault(t *testing.T) {
 	// Initialize settings from environment variables
 	s := populateSettingsFromEnv()
 
-	act := &Activity{
-		Settings: s,
-	}
+	act := newTestActivity(s)
 
 	tc := test.NewActivityContext(act.Metadata())
 	tc.SetInput("searchString", "tell me something about tibco businessworks")
@@ -110,9 +148,7 @@ func TestSearchDocumentsInvalidVectorStoreId(t *testing.T) {
 	// Initialize settings from environment variables
 	s := populateSettingsFromEnv()
 
-	act := &Activity{
-		Settings: s,
-	}
+	act := newTestActivity(s)
 
 	tc := test.NewActivityContext(act.Metadata())
 	tc.SetInput("searchString", "tell me something about tibco businessworks")

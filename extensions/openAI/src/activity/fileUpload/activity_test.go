@@ -27,8 +27,33 @@ func init() {
 
 }
 
+// openEnvFile opens .env from the current working directory or any ancestor
+// directory. This lets a single shared .env at extensions/openAI/src/ serve
+// all activity tests while a per-package .env (if present) still wins because
+// it is found first.
+func openEnvFile() (*os.File, error) {
+	if f, err := os.Open(".env"); err == nil {
+		return f, nil
+	}
+	dir, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+	for {
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
+		if f, err := os.Open(filepath.Join(dir, ".env")); err == nil {
+			return f, nil
+		}
+	}
+	return nil, os.ErrNotExist
+}
+
 func loadEnvFile() {
-	file, err := os.Open(".env")
+	file, err := openEnvFile()
 	if err != nil {
 		fmt.Printf("No .env file found: %v\n", err)
 		return
@@ -60,7 +85,7 @@ func populateSettingsFromEnv() *Settings {
 	cvrtMaxChunkSizeTokens, _ := strconv.ParseInt(os.Getenv("TEST_MAX_CHUNK_SIZE_TOKENS"), 10, 64)
 	cvrtTimeoutSecords, _ := strconv.ParseInt(os.Getenv("TEST_TIMEOUT_SECONDS"), 10, 32)
 	return &Settings{
-		ApiKey:             os.Getenv("OPEN_AI_API_KEY"),
+		ApiKey:             os.Getenv("OPENAI_API_KEY"),
 		EndPointURL:        os.Getenv("OPENAI_API_ENDPOINT_URL"),
 		Purpose:            os.Getenv("TEST_PURPOSE"),
 		ChunkOverlapTokens: cvrtChunkOverlapTokens,

@@ -3,7 +3,7 @@ module github.com/TIBCOSoftware/flogo-enterprise-hub/extensions/openAI
 go 1.25
 
 require (
-	github.com/openai/openai-go/v3 v3.31.0
+	github.com/openai/openai-go/v3 v3.37.0
 	github.com/project-flogo/core v1.6.18
 	github.com/stretchr/testify v1.11.1
 )

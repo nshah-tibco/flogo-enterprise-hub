@@ -30,7 +30,7 @@ func init() {
 	_ = activity.Register(&Activity{}, New)
 }
 
-// Activity is a ChatGPT API activity
+// Activity is an OpenAI Vector Store Search activity
 type Activity struct {
 	Settings  *Settings
 	oaiClient openai.Client

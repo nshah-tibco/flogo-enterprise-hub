@@ -32,7 +32,7 @@ func init() {
 	_ = activity.Register(&Activity{}, New)
 }
 
-// Activity is an OpenAI list vector store files activity
+// Activity is an OpenAI list files activity (GET /files)
 type Activity struct {
 	Settings  *Settings
 	oaiClient openai.Client
@@ -78,61 +78,47 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 		return false, err
 	}
 
-	// Validate input parameters
-	if input.VectorStoreID == "" {
-		err := errors.New("validation failed: vector store ID is required but not provided in input")
-		logger.Error(err.Error())
-		return false, err
-	}
-
 	// Create context with timeout
 	clientCtx, cancel := context.WithTimeout(context.Background(),
 		time.Duration(input.TimeoutSeconds)*time.Second)
 	defer cancel()
 
 	logger.Infof("Setting request timeout to %d seconds", input.TimeoutSeconds)
-	logger.Infof("Listing files for vector store: %s", input.VectorStoreID)
+	logger.Infof("Listing OpenAI files")
 
 	// Prepare list parameters
-	listParams := openai.VectorStoreFileListParams{
-		Limit: openai.Int(int64(input.Limit)),
-		Order: openai.VectorStoreFileListParamsOrder(input.Order),
+	listParams := openai.FileListParams{
+		Order: openai.FileListParamsOrder(input.Order),
 	}
 
-	// Add optional filter if specified
-	if input.Filter != "" {
-		switch input.Filter {
-		case "in_progress", "completed", "failed", "cancelled":
-			listParams.Filter = openai.VectorStoreFileListParamsFilter(input.Filter)
-			logger.Infof("Applying status filter: %s", input.Filter)
-		default:
-			logger.Warnf("Invalid filter value '%s', ignoring filter", input.Filter)
-		}
+	if input.Limit > 0 {
+		listParams.Limit = openai.Int(int64(input.Limit))
 	}
 
-	// Add pagination cursors if specified
+	// Add optional purpose filter if specified
+	if input.Purpose != "" {
+		listParams.Purpose = openai.String(input.Purpose)
+		logger.Infof("Applying purpose filter: %s", input.Purpose)
+	}
+
+	// Add pagination cursor if specified
 	if input.After != "" {
 		listParams.After = openai.String(input.After)
 		logger.Infof("Using 'after' cursor: %s", input.After)
 	}
 
-	if input.Before != "" {
-		listParams.Before = openai.String(input.Before)
-		logger.Infof("Using 'before' cursor: %s", input.Before)
-	}
-
 	// Call the OpenAI API
-	pages, err := a.oaiClient.VectorStores.Files.List(clientCtx, input.VectorStoreID, listParams)
+	pages, err := a.oaiClient.Files.List(clientCtx, listParams)
 	if err != nil {
 		// Check for timeout specifically
 		if clientCtx.Err() == context.DeadlineExceeded {
-			contextErr := fmt.Errorf("request timeout: listing vector store files exceeded %d seconds",
+			contextErr := fmt.Errorf("request timeout: listing files exceeded %d seconds",
 				input.TimeoutSeconds)
 			logger.Error(contextErr.Error())
 			return false, contextErr
 		}
-		contextErr := fmt.Errorf("OpenAI API error: failed to list files for vector store '%s' at endpoint '%s': %w",
-			input.VectorStoreID, a.Settings.EndPointURL, err)
+		contextErr := fmt.Errorf("OpenAI API error: failed to list files at endpoint '%s': %w",
+			a.Settings.EndPointURL, err)
 		logger.Error(contextErr.Error())
 		return false, contextErr
 	}
@@ -161,7 +147,7 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 		pages = nextPage
 	}
 
-	logger.Infof("Successfully retrieved %d files from vector store '%s'", fileCount, input.VectorStoreID)
+	logger.Infof("Successfully retrieved %d files", fileCount)
 
 	err = ctx.SetOutputObject(out)
 	if err != nil {
