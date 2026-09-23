@@ -4,10 +4,38 @@ The `wi-postgres` `#query` and `#insert` activities parameterize via `?placehold
 `Fields[]` entries, an `input.mapping` object, and a `schemas.input.input.value` JSON-Schema string.
 Get any of these out of alignment and the Flogo mapper shows a red ✗ on the activity's Input tab.
 
-**Golden rule (activity level):** for a given activity, the set of `?params` in the Query must exactly
-equal the `Fields` param names, the `input.mapping.parameters` keys, and the schema's
-`parameters.properties` keys. Never use `RuntimeQuery` for parameters. Verify by running the real SQL
-against a loaded DB.
+**Golden rule (activity level) — it is MODE-AWARE.** A `wi-postgres` write activity can be wired in
+**two valid, mutually exclusive modes**. The authoritative signal for which mode an activity is in is
+the **`Fields[].Value` flag** — read it FIRST. Whatever the mode, three things must all agree with that
+flag: the **`Fields` classification**, the **`mapping` container**, and the **populated schema
+container**. When they disagree, the designer reads the *empty* container the flag points at and renders
+the whole mapping as one raw "Not Mappable" JSON blob on the node — which looks like "my mappings
+vanished". The fix is never "move the schema" blind; it is: **read `Fields[].Value`, decide the mode,
+then make the other two containers match it.**
+
+| mode | `Fields[].Value` | `Fields[].Parameter` | `mapping` container | populated schema container |
+|---|---|---|---|---|
+| **values-mode** — designer-generated simple column INSERT; placeholder names **equal** column names | `true` | `false` | `input.input.mapping.values[0]` (ONE object inside the array) | `properties.values.items.properties` (leave `parameters.properties` = `{}`) |
+| **parameters-mode** — hand-written SQL / computed exprs / suffixed `?pN` names that **differ** from columns | `false` | `true` | `input.input.mapping.parameters` | `properties.parameters.properties` (leave `values.items.properties` = `{}`) |
+
+Both modes are correct — what breaks is a **hybrid**: e.g. `Fields[].Value:true` (says values-mode) but
+the mapping and schema sitting under `parameters` (says parameters-mode). The designer then reads the
+empty `values` container the flag points at and shows nothing. This is the single most common mapping
+defect; the validator at the bottom of this file detects it.
+
+> ⚠️ **`Fields[].Value` / `Fields[].Parameter` may be JSON booleans (`true`/`false`) OR the STRINGS
+> `"true"`/`"false"`** — both occur in shipped apps (e.g. Hospital uses booleans, mortgage uses strings).
+> When you read the flag in code, normalize: a bare `"false"` string is *truthy* in Python/JS, so
+> `if field["Value"]` misreads parameters-mode as values-mode. Compare `str(v).lower() == "true"`.
+> Also note the mapped fields in **values-mode carry BOTH `Value:true` and `Parameter:true`** — so
+> `Parameter` is **not** a mode signal; only `Value` is.
+
+Independent of mode: **every `?placeholder` in the Query must have exactly one mapping entry** (else
+runtime `query execution failed: missing substitution for: <name>`); **`Fields` must be non-empty on any
+write** (with no column metadata the designer renders nothing); the populated schema container's names
+must equal the mapping keys; and `input.State` must stay a verbatim copy of `input.Query`. Never use
+`RuntimeQuery` for parameters. Verify by running the real SQL against a loaded DB **and** by running the
+validator at the bottom of this file before you declare the app done.
 
 **Two levels of wiring.** The golden rule above is the *activity-level* alignment. Inside an **A2A agent
 flow** there is a second, *flow-level* piece: the flow must declare `toolParams` as a flow input (with a
@@ -113,7 +141,21 @@ Schema `input.value`: `{"...","properties":{"parameters":{"type":"object","prope
 
 ---
 
-## C. INSERT — THE ONE THAT BREAKS. Suffix placeholder names so they DON'T match columns.
+## C. INSERT — THE ONE THAT BREAKS. Two valid shapes; pick one and keep it internally consistent.
+
+> **There are two correct ways to wire an INSERT — do not treat either as "the wrong one".**
+> - **values-mode** (what the designer generates for a plain `INSERT (cols) VALUES (?cols)` with
+>   placeholder names *equal* to the columns): `Fields[].Value:true`, mapping under
+>   `input.mapping.values[0]`, schema under `values.items.properties`. Ground truth:
+>   `Hospital_AI-Agent_Use_Case/endevour-api.flogo → appointment-booking/PostgreSQLInsert`.
+> - **parameters-mode** (the suffix trick below): placeholder names *differ* from columns, so every one
+>   stays a parameter. Ground truth: the shipped `PostgreSQL-CRUD` sample and
+>   `Aerospace_Defense_MRO_Use_Case/…A2AServers.flogo → dispatch_technician_agent_flow/WriteRow`.
+>
+> The failure the rest of this section fixes is **not** "you used values-mode"; it is a **hybrid** —
+> the `Fields[].Value` flag says one mode while the mapping/schema live in the other container. If you
+> INSERT with column-named placeholders, either let it be a clean values-mode activity, or apply the
+> suffix trick below to make it a clean parameters-mode one. Never leave it split across both.
 
 For `INSERT INTO t (colA, colB, ...) VALUES (?...)`, the designer auto-classifies each `?placeholder`:
 a placeholder whose **name matches a column in the column-list** is moved to the `values` slot; a
@@ -209,34 +251,61 @@ Rules:
 
 ---
 
-## Consistency check (run after authoring any A2A app)
+## E. Password-typed connector fields — the value must carry a `SECRET:` prefix
 
-```python
-import json, re
-d = json.load(open("<App>Agents.flogo", encoding="utf-8"))
-for res in d["resources"]:
-    for t in res["data"]["tasks"]:
-        a = t.get("activity", {})
-        if a.get("ref") not in ("#insert", "#query"): continue
-        inp = a["input"]
-        qp = sorted(re.findall(r"\?(\w+)", inp["Query"]))
-        fp = sorted(f["FieldName"] for f in inp["Fields"] if f.get("Parameter"))
-        mp = sorted(inp.get("input", {}).get("mapping", {}).get("parameters", {}).keys())
-        sp = sorted(json.loads(a["schemas"]["input"]["input"]["value"])["properties"]["parameters"]["properties"].keys())
-        assert qp == fp == mp == sp, (t["id"], qp, fp, mp, sp)
-print("all query/insert params aligned")
+Some connector inputs are **password-typed** in the activity's own schema — the clearest example is the
+`#sendmail` `Password` input. The designer does **not** read a JSON `type:"password"` (app-property JSON
+`type` is always `string`); it **derives `dataType=password` from the value having a leading `SECRET:`
+prefix**. So a password-typed field whose backing value is a plain string makes the designer infer
+`dataType=string` and the field errors with **`wrongTypeProp`** ("mapping is not there" / red ✗).
+
+Rules (generic — applies to any connector field the designer types as `password`):
+- Bind the field to an **app property**, e.g. `#sendmail.Password = "=$property[<EmailPwdProp>]"` — don't
+  inline a literal.
+- That property's **value must resolve to a `SECRET:`-prefixed string**, never a plain placeholder.
+- Keep the property JSON `type` as **`string`** — do **not** set `type:"password"` (the designer drops
+  it on save).
+- **How to get a working `SECRET:` value without shipping a real secret:** the value the designer stores
+  is AES ciphertext under Flogo's data-secret key (the shared build-time default when
+  `FLOGO_DATA_SECRET_KEY` is unset), so a **designer-produced `SECRET:` blob of a *dummy* value is
+  portable** across apps that use that default key — it decrypts cleanly, keeps `dataType=password`, and
+  leaks nothing. This is the same "carry `SECRET:` values verbatim from a cloned app" rule the SKILL
+  states — reuse an existing dummy blob; **never fabricate a `SECRET:` string from scratch** (fake
+  ciphertext fails to decrypt → *"An error occurred while attempting to decrypt secrets"* and the app
+  won't render), and never scrub a password-typed field to a bare placeholder (that reintroduces
+  `wrongTypeProp`). Verify a scrubbed dummy by loading the app in the designer.
+- **Distinction from ordinary secret scrubbing:** non-password-typed secrets (OpenAI key, DB password in
+  a connection block) are scrubbed to *plain* placeholders per SECURITY.md; only genuinely
+  *password-typed activity fields* need the `SECRET:`-dummy treatment.
+
+---
+
+## Validation gate — run before declaring any app done
+
+`references/validate_flogo_apps.py` is a generic, no-hardcoding checker for the two defect classes above
+plus the 3-part `toolParams` contract. Run it on every `.flogo` you author or edit; fix everything it
+prints before you tell the user the app is done.
+
+```bash
+python references/validate_flogo_apps.py <path/to/App1.flogo> [App2.flogo ...]
+# or, from the use-case folder, scan everything:
+python /full/path/to/validate_flogo_apps.py            # globs **/*.flogo under cwd
 ```
-For INSERTs also assert `values.items.properties` is empty and that no `?param` equals a target column name.
 
-Also verify each agent flow declares the **flow-input `toolParams` schema** (part #2 of the 3-part
-contract) — a flow that reads `$flow.toolParams.*` but has no `toolParams` input schema will red-✗ in the
-designer:
+It verifies, for every `#query`/`#insert`/`#update` activity, walking any app (no app/column/property
+names baked in):
 
-```python
-for res in d["resources"]:
-    md_in = res.get("data", {}).get("metadata", {}).get("input", [])
-    tp = next((i for i in md_in if i.get("name") == "toolParams"), None)
-    uses_tp = "$flow.toolParams" in json.dumps(res)
-    assert not uses_tp or (tp and tp.get("schema", {}).get("value")), (res.get("id"), "missing toolParams flow-input schema — click trigger Sync")
-print("all agent flows declare toolParams input schema")
-```
+1. **Mapping-mode integrity** — reads the authoritative `Fields[].Value` flag, then confirms the mapping
+   container (`values[0]` vs `parameters`) and the populated schema container agree with it. Flags the
+   **hybrid** (flag says one mode, mapping/schema in the other) — the single most common defect.
+2. **Every `?placeholder` is mapped** (else runtime `missing substitution for: <name>`).
+3. **`Fields[]` non-empty on writes**, and **`State` carries a verbatim copy of `Query`**.
+4. **Schema names == mapping keys** in the populated container.
+5. **`toolParams` flow-input schema present** on any flow that reads `$flow.toolParams` (3-part
+   contract #2 — otherwise click the trigger **Sync**).
+6. **Password-typed fields** (e.g. `#sendmail Password`) resolve to a `SECRET:` value, not a plain
+   string.
+
+Exit code is non-zero when it finds anything, so it can gate a build. Note it catches design-time
+alignment and secret-type issues, not table/column existence — still run the real SQL against a loaded DB
+(Phase 5) to catch schema mismatches.
