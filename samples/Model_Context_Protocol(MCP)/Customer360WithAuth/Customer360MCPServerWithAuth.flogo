@@ -797,7 +797,7 @@
     {
       "name": "MCPServer.SECRET",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SET_YOUR_MCP_SECRET"
     }
   ],
   "schemas": {

@@ -176,10 +176,10 @@ Import `ApartmentFinderMCPTools.flogo` and `ApartmentFinderAgent.flogo` into Flo
 | `FlogoMcpServer.PORT` | `9606` | leave as-is unless the port is taken |
 | `SendMail.Server` | `smtp.gmail.com` | your SMTP host |
 | `SendMail.Port` | `465` | your SMTP SSL port |
-| `SendMail.username` | `teamflogo@gmail.com` | your sending mailbox |
-| `SendMail.Password` | *(empty)* | **your SMTP password / app password** |
+| `SendMail.username` | `sender@example.com` | your sending mailbox |
+| `SendMail.Password` | `SET_YOUR_EMAIL_APP_PASSWORD` | **your SMTP password / app password** |
 
-`SendMail.Password` ships empty — `schedule_visit` will fail until you set it. The other seven tools work without it.
+`SendMail.Password` ships as a placeholder — `schedule_visit` will fail until you set it. The other seven tools work without it.
 
 > The connection security is fixed to `SSL` on the `SendAppointmentEmail` activity. Change it there if your relay needs `TLS` or `NONE`.
 

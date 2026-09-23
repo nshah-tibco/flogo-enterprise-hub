@@ -9,7 +9,7 @@ A minimalist, domain-agnostic chatbot web application with WebSocket support, mu
 > URL field, or via `WS_URL` in `.env` — to that use case's orchestrator, in the form
 > `ws://<host>:<wsPort>/<path>`, then click **Connect**. Examples:
 > Power Distribution `ws://localhost:9680/grid` · Retail Banking `ws://localhost:8088/banking` ·
-> Semiconductor `ws://localhost:8088/semiconductor`. Each use case's README lists its exact URL.
+> Semiconductor `ws://localhost:9310/semiconductor`. Each use case's README lists its exact URL.
 
 ## ✨ Features
 

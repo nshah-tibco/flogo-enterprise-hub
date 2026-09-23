@@ -42,13 +42,28 @@ investigate and remediate before any public disclosure.
 All sample and demo applications in this repository ship with **placeholder
 credentials only**. You will see values such as:
 
-- `SECRET:YOURKEY`
-- `sk-REPLACE-WITH-YOUR-OPENAI-KEY`
-- `SET_YOUR_...`
+- `sk-REPLACE-WITH-YOUR-OPENAI-KEY` (OpenAI/LLM API key)
+- `sk-ant-REPLACE-WITH-YOUR-ANTHROPIC-KEY` (Anthropic API key)
+- `SET_YOUR_DB_PASSWORD`, `SET_YOUR_EMAIL_APP_PASSWORD`
+- `SET_YOUR_AUTH_TOKEN`, `SET_YOUR_CLIENT_SECRET`, `SET_YOUR_JWT_SECRET`
+- `SET_YOUR_...` (any other credential)
 
 These are **intentional placeholders**, not real secrets. To run any sample you
 **must supply your own credentials** via **App Properties**, **environment
 variables**, or your platform's secret-management mechanism.
+
+> ⚠️ **Scrubbing secrets from a `.flogo` app — do NOT use `SECRET:YOURKEY`.**
+> When neutralizing a credential for public release, use a **plain-string
+> placeholder from the list above** (no prefix). Do **not** write `SECRET:YOURKEY`
+> (or any `SECRET:<non-ciphertext>`): the Flogo designer AES-decrypts everything
+> after the `SECRET:` prefix on load, so a fake ciphertext makes the app fail to
+> render — *"Can't render this application… An error occurred while attempting to
+> decrypt secrets."* Placeholders live in top-level app `properties` (`"value"`,
+> keyed by the sibling `name`) or inline in connection settings under `apiKey` /
+> `authToken`. Edit them as **surgical text replacements** (never round-trip the
+> file through a JSON formatter — it reflows the whole file), and if the app is
+> open in the Flogo designer, close/Discard its tabs first or its Sync will write
+> the original encrypted blob back over your scrub.
 
 **Never commit real secrets, credentials, API keys, tokens, connection strings,
 or customer data to this repository** — in samples, demos, skills, tests, or

@@ -4,14 +4,11 @@
     "github.com/project-flogo/contrib/activity/noop",
     "github.com/tibco/flogo-general/src/app/General/activity/rest",
     "github.com/project-flogo/contrib/activity/jsexec",
+    "github.com/tibco/flogo-ai-agent/src/app/AgenticAI/activity/agentactivity",
     "github.com/tibco/flogo-general/src/app/General/activity/log",
-    "github.com/project-flogo/contrib/activity/actreturn",
     "rest_1 github.com/tibco/flogo-general/src/app/General/trigger/rest",
     "github.com/tibco/flogo-general/src/app/General/trigger/timer",
-    "github.com/tibco/flogo-ai-agent/src/app/AgenticAI/activity/agentactivity",
-    "github.com/tibco/flogo-ai-agent/src/app/AgenticAI/connector/llmprovider",
-    "github.com/project-flogo/contrib/function/coerce",
-    "github.com/project-flogo/contrib/function/string"
+    "github.com/tibco/flogo-ai-agent/src/app/AgenticAI/connector/llmprovider"
   ],
   "name": "morning-briefing",
   "description": "Daily morning briefing that aggregates Slack messages, email, calendar events, and reminders, then calls Claude AI to produce a prioritized markdown report in three tiers: Needs Attention, Important Today, and Awareness.",
@@ -96,7 +93,6 @@
             "Scheduler Options": "Cron",
             "Repeating": true,
             "Delayed Start": true,
-            "Delayed Start Time": "23:59",
             "Time Interval": 1440,
             "Interval Unit": "Minute",
             "Cron Expression": "0 7 * * *"
@@ -155,21 +151,18 @@
             "label": "got reminders"
           },
           {
-            "id": 9,
-            "from": "LogBriefing",
-            "to": "ReturnBriefing",
-            "type": "label",
-            "label": "logged"
-          },
-          {
-            "id": 10,
+            "id": 6,
             "from": "BuildBriefingPrompt",
-            "to": "GenerateBriefing"
+            "to": "GenerateBriefing",
+            "type": "label",
+            "label": "BuildBriefingPrompt to GenerateBriefing"
           },
           {
-            "id": 11,
+            "id": 7,
             "from": "GenerateBriefing",
-            "to": "LogBriefing"
+            "to": "LogBriefing",
+            "type": "label",
+            "label": "GenerateBriefing to LogBriefing"
           }
         ],
         "tasks": [
@@ -194,7 +187,6 @@
             "activity": {
               "ref": "#rest",
               "input": {
-                "enableASR": false,
                 "swagger": "",
                 "authorization": false,
                 "authorizationConn": "",
@@ -258,7 +250,6 @@
             "activity": {
               "ref": "#rest",
               "input": {
-                "enableASR": false,
                 "swagger": "",
                 "authorization": false,
                 "authorizationConn": "",
@@ -322,7 +313,6 @@
             "activity": {
               "ref": "#rest",
               "input": {
-                "enableASR": false,
                 "swagger": "",
                 "authorization": false,
                 "authorizationConn": "",
@@ -386,7 +376,6 @@
             "activity": {
               "ref": "#rest",
               "input": {
-                "enableASR": false,
                 "swagger": "",
                 "authorization": false,
                 "authorizationConn": "",
@@ -475,6 +464,7 @@
                 "redactSensitiveData": false,
                 "responseType": "Text",
                 "agentHandoffs": "",
+                "remoteAgents": [],
                 "mcpServers": [],
                 "conversationStoreType": "None",
                 "memoryMaxSize": 10,
@@ -483,7 +473,17 @@
               "input": {
                 "userPrompt": "=$activity[BuildBriefingPrompt].result.userPrompt",
                 "conversationId": "\"morning-briefing\""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "filteredToolNames": {
+                    "type": "json",
+                    "value": "{\r\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\r\n  \"type\": \"array\",\r\n  \"items\": {\r\n    \"type\": \"string\"\r\n  }\r\n}\r\n",
+                    "fe_metadata": "{\r\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\r\n  \"type\": \"array\",\r\n  \"items\": {\r\n    \"type\": \"string\"\r\n  }\r\n}\r\n"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -497,25 +497,21 @@
                 "flowInfo": false,
                 "message": "=$activity[GenerateBriefing].response",
                 "logLevel": ""
-              }
-            }
-          },
-          {
-            "id": "ReturnBriefing",
-            "name": "ReturnBriefing",
-            "description": "Return the morning briefing as HTTP 200 JSON response",
-            "activity": {
-              "ref": "#actreturn",
-              "settings": {
-                "mappings": {
-                  "code": 200,
-                  "responseBody": "=$activity[GenerateBriefing].response"
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
                 }
-              }
+              },
+              "feSchemaMap": {}
             }
           }
         ],
-        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6NTl9LCJHZXRTbGFja01lc3NhZ2VzIjp7IngiOjM1MCwieSI6NTB9LCJHZXRFbWFpbHMiOnsieCI6NjAwLCJ5Ijo1MH0sIkdldENhbGVuZGFyRXZlbnRzIjp7IngiOjg1MCwieSI6NTB9LCJHZXRSZW1pbmRlcnMiOnsieCI6MTEwMCwieSI6NTB9LCJCdWlsZEJyaWVmaW5nUHJvbXB0Ijp7IngiOjEzNTAsInkiOjUwfSwiQ2FsbENsYXVkZUFJIjp7IngiOjE2MDAsInkiOjUwfSwiTG9nQnJpZWZpbmciOnsieCI6MTg1MCwieSI6NTB9fQ==",
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkdldFNsYWNrTWVzc2FnZXMiOnsieCI6MjUwLCJ5IjoxNTB9LCJHZXRFbWFpbHMiOnsieCI6NDUwLCJ5IjoyNTB9LCJHZXRDYWxlbmRhckV2ZW50cyI6eyJ4Ijo2NTAsInkiOjM1MH0sIkdldFJlbWluZGVycyI6eyJ4Ijo4NTAsInkiOjQ1MH0sIkJ1aWxkQnJpZWZpbmdQcm9tcHQiOnsieCI6MTA1MCwieSI6NTUwfSwiR2VuZXJhdGVCcmllZmluZyI6eyJ4IjoxMjUwLCJ5Ijo1NTB9LCJMb2dCcmllZmluZyI6eyJ4IjoxNDUwLCJ5Ijo1NTB9fQ==",
         "metadata": {
           "input": [],
           "output": [
@@ -537,6 +533,21 @@
     }
   ],
   "properties": [
+    {
+      "name": "AgenticAI.LLMConn.LLM_Provider",
+      "type": "string",
+      "value": "openai"
+    },
+    {
+      "name": "AgenticAI.LLMConn.API_Key",
+      "type": "string",
+      "value": "sk-REPLACE-WITH-YOUR-OPENAI-KEY"
+    },
+    {
+      "name": "AgenticAI.LLMConn.LLM_Base_URL",
+      "type": "string",
+      "value": "https://api.openai.com/v1"
+    },
     {
       "name": "App.Port",
       "type": "float64",
@@ -570,7 +581,7 @@
     {
       "name": "OpenAI.Model",
       "type": "string",
-      "value": "gpt-4o"
+      "value": "gpt-5.5"
     },
     {
       "name": "OpenAI.MaxTokens",
@@ -580,27 +591,12 @@
     {
       "name": "OpenAI.ApiKey",
       "type": "string",
-      "value": "Bearer <YOUR_OPENAI_API_KEY>"
-    },
-    {
-      "name": "AgenticAI.LLMConn.LLM_Provider",
-      "type": "string",
-      "value": "openai"
-    },
-    {
-      "name": "AgenticAI.LLMConn.LLM_Base_URL",
-      "type": "string",
-      "value": "https://api.openai.com/v1"
-    },
-    {
-      "name": "AgenticAI.LLMConn.API_Key",
-      "type": "string",
-      "value": "<YOUR_OPENAI_API_KEY>"
+      "value": "Bearer sk-REPLACE-WITH-YOUR-OPENAI-KEY"
     },
     {
       "name": "LLM_MODEL",
       "type": "string",
-      "value": "gpt-4o"
+      "value": "gpt-5.5"
     }
   ],
   "connections": {
@@ -615,11 +611,15 @@
         "llmProvider": "=$property[\"AgenticAI.LLMConn.LLM_Provider\"]",
         "anthropicProvider": "Default",
         "apiKey": "=$property[\"AgenticAI.LLMConn.API_Key\"]",
-        "llmProviderUrl": "=$property[\"AgenticAI.LLMConn.LLM_Base_URL\"]"
+        "llmProviderUrl": "=$property[\"AgenticAI.LLMConn.LLM_Base_URL\"]",
+        "azureDeployment": "",
+        "azureRegion": "",
+        "azureResourceName": "",
+        "azureApiVersion": ""
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTIiLCJ0YWciOiIxLjYuMTItYjA2IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9XQ==",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTYiLCJ0YWciOiIxLjYuMTYtYjA1IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS40IiwidGFnIjoiMC45LjQtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
   "metadata": {
     "endpoints": [
       {
@@ -667,6 +667,6 @@
         }
       }
     ],
-    "flogoVersion": "2.26.2"
+    "flogoVersion": "2.26.7"
   }
 }

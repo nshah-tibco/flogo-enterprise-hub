@@ -563,7 +563,7 @@
     {
       "name": "AgenticAI.openai.API_Key",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "sk-REPLACE-WITH-YOUR-OPENAI-KEY"
     },
     {
       "name": "AgenticAI.openai.LLM_Base_URL",
@@ -583,7 +583,7 @@
     {
       "name": "Trigger_Settings.LLM_Model",
       "type": "string",
-      "value": "gpt-5.2"
+      "value": "gpt-5.5"
     },
     {
       "name": "Trigger_Settings.Token_Limit",
@@ -613,7 +613,7 @@
     {
       "name": "A2A.AuthToken",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SET_YOUR_AUTH_TOKEN"
     },
     {
       "name": "A2A.port",
@@ -656,6 +656,6 @@
         "type": "public"
       }
     ],
-    "flogoVersion": "2.26.6"
+    "flogoVersion": "2.26.7"
   }
 }

@@ -347,7 +347,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation started: \",$flowctx[\"FlowName\"], \" Filing dispute \", $flow.toolParams.dispute_id, \" for invoice \", $flow.toolParams.invoice_id)",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -441,7 +451,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "b3b242ec-f5ed-46a5-b86d-fe653aa2ef9eSELECT li.category, li.description, li.amount, u.billing_period, u.data_used_gb, u.data_limit_gb, u.intl_call_minutes, u.roaming_days, u.roaming_country FROM invoice_line_items li LEFT JOIN usage_records u ON li.customer_id = u.customer_id WHERE li.invoice_id = ?invoice_id ORDER BY li.id ASC;",
+                "State": "f2013dc8-8907-49e7-b10e-2b224244c1a3SELECT li.category, li.description, li.amount, u.billing_period, u.data_used_gb, u.data_limit_gb, u.intl_call_minutes, u.roaming_days, u.roaming_country FROM invoice_line_items li LEFT JOIN usage_records u ON li.customer_id = u.customer_id WHERE li.invoice_id = ?invoice_id ORDER BY li.id ASC;",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -522,7 +532,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "54f80b45-be8e-42eb-ab0f-3383c09c18e2INSERT INTO disputes (dispute_id, customer_id, invoice_id, reason, status, estimated_resolution, last_update) VALUES (?dispute_id1, ?customer_id1, ?invoice_id1, ?reason1, 'OPEN', CURRENT_DATE + INTERVAL '5 days', CURRENT_TIMESTAMP);",
+                "State": "d45e8cc1-ffbb-44ab-be3f-59ced29a863cINSERT INTO disputes (dispute_id, customer_id, invoice_id, reason, status, estimated_resolution, last_update) VALUES (?dispute_id1, ?customer_id1, ?invoice_id1, ?reason1, 'OPEN', CURRENT_DATE + INTERVAL '5 days', CURRENT_TIMESTAMP);",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -564,7 +574,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation completed: \",$flowctx[\"FlowName\"], \" Dispute \", $flow.toolParams.dispute_id, \" created\")",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -669,7 +689,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation started: \",$flowctx[\"FlowName\"], \" Applying recharge \", $flow.toolParams.recharge_id, \" (\", $flow.toolParams.offer_id, \") for customer \", $flow.toolParams.customer_id)",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -741,7 +771,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "5d92c1b0-0371-45bc-923f-2f3fae87e023INSERT INTO recharges (recharge_id, customer_id, offer_id, offer_name, amount, data_added_gb, status, validity_start, validity_end) VALUES (?recharge_id1, ?customer_id1, ?offer_id1, ?offer_name1, ?amount1, ?data_added_gb1, 'ACTIVE', CURRENT_DATE, CURRENT_DATE + INTERVAL '30 days');",
+                "State": "64d3848d-fbc7-4c13-9e20-007c95ec0dc3INSERT INTO recharges (recharge_id, customer_id, offer_id, offer_name, amount, data_added_gb, status, validity_start, validity_end) VALUES (?recharge_id1, ?customer_id1, ?offer_id1, ?offer_name1, ?amount1, ?data_added_gb1, 'ACTIVE', CURRENT_DATE, CURRENT_DATE + INTERVAL '30 days');",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -785,7 +815,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation completed: \",$flowctx[\"FlowName\"], \" Recharge \", $flow.toolParams.recharge_id, \" activated\")",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -890,6 +930,7 @@
                 "authorizationType": "Basic",
                 "Username": "=$property[\"Email_Username\"]",
                 "Password": "=$property[\"Email_App_Password\"]",
+                "authorizationConn": "",
                 "Connection Security": "SSL",
                 "serverCertificate": "",
                 "message_content_type": "text/plain",
@@ -929,7 +970,17 @@
                 "flowInfo": false,
                 "message": "****Confirmation Email sent successfully to the configured service mailbox",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -989,7 +1040,7 @@
     {
       "name": "AgenticAI.OpenAIConn.API_Key",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "sk-REPLACE-WITH-YOUR-OPENAI-KEY"
     },
     {
       "name": "AgenticAI.OpenAIConn.LLM_Base_URL",
@@ -1019,7 +1070,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",
@@ -1054,7 +1105,7 @@
     {
       "name": "LLM_Model",
       "type": "string",
-      "value": "gpt-5.6"
+      "value": "gpt-5.5"
     },
     {
       "name": "To_Email",
@@ -1064,12 +1115,12 @@
     {
       "name": "Email_Username",
       "type": "string",
-      "value": "your-email@gmail.com"
+      "value": "sender@example.com"
     },
     {
       "name": "Email_App_Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "BillingDispute_A2AServer_PORT",
@@ -1150,7 +1201,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS40IiwidGFnIjoiMC45LjQtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWdlbmVyYWwvc3JjL2FwcC9HZW5lcmFsIiwiaWQiOiJHZW5lcmFsIiwidmVyc2lvbiI6IjEuNi4xNSIsInRhZyI6IjEuNi4xNS1iMDQiLCJuYW1lIjoiR2VuZXJhbCIsInMzbG9jYXRpb24iOiJUaWJjby9HZW5lcmFsIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL3dpLXBvc3RncmVzL3NyYy9hcHAvUG9zdGdyZVNRTCIsImlkIjoiUG9zdGdyZVNRTCIsInZlcnNpb24iOiIyLjcuMSIsInRhZyI6IjIuNy4xLWIwMSIsIm5hbWUiOiJQb3N0Z3JlU1FMIiwiczNsb2NhdGlvbiI6IlRpYmNvL1Bvc3RncmVTUUwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS40IiwidGFnIjoiMC45LjQtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWdlbmVyYWwvc3JjL2FwcC9HZW5lcmFsIiwiaWQiOiJHZW5lcmFsIiwidmVyc2lvbiI6IjEuNi4xNiIsInRhZyI6IjEuNi4xNi1iMDUiLCJuYW1lIjoiR2VuZXJhbCIsInMzbG9jYXRpb24iOiJUaWJjby9HZW5lcmFsIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL3dpLXBvc3RncmVzL3NyYy9hcHAvUG9zdGdyZVNRTCIsImlkIjoiUG9zdGdyZVNRTCIsInZlcnNpb24iOiIyLjcuMiIsInRhZyI6IjIuNy4yLWIwMSIsIm5hbWUiOiJQb3N0Z3JlU1FMIiwiczNsb2NhdGlvbiI6IlRpYmNvL1Bvc3RncmVTUUwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
   "metadata": {
     "endpoints": [
       {
@@ -1172,6 +1223,6 @@
         "name": "SendEmailAgent"
       }
     ],
-    "flogoVersion": "2.26.6"
+    "flogoVersion": "2.26.7"
   }
 }

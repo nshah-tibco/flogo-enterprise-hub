@@ -389,6 +389,7 @@
                 "authorizationType": "Basic",
                 "Username": "=$property[\"Email.SMTP.Username\"]",
                 "Password": "=$property[\"Email.SMTP.Password\"]",
+                "authorizationConn": "",
                 "Connection Security": "TLS",
                 "serverCertificate": "",
                 "message_content_type": "text/html",
@@ -437,7 +438,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"[WeeklySalesAnalyzer] Report generated, saved, and emailed. File: \", coerce.toString($activity[SaveReport].output.fileMetadata.fullPath))",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           }
         ],
@@ -711,6 +722,7 @@
                 "authorizationType": "Basic",
                 "Username": "=$property[\"Email.SMTP.Username\"]",
                 "Password": "=$property[\"Email.SMTP.Password\"]",
+                "authorizationConn": "",
                 "Connection Security": "TLS",
                 "serverCertificate": "",
                 "message_content_type": "text/html",
@@ -836,12 +848,12 @@
     {
       "name": "LLMClient.openai.LLM_Model",
       "type": "string",
-      "value": "gpt-4o"
+      "value": "gpt-5.5"
     },
     {
       "name": "LLMClient.APIKey",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "sk-REPLACE-WITH-YOUR-OPENAI-KEY"
     },
     {
       "name": "LLMClient.htmlFormatPrompt",
@@ -866,22 +878,22 @@
     {
       "name": "Email.SMTP.Username",
       "type": "string",
-      "value": "your-email@gmail.com"
+      "value": "sender@example.com"
     },
     {
       "name": "Email.sender",
       "type": "string",
-      "value": "your-email@gmail.com"
+      "value": "sender@example.com"
     },
     {
       "name": "Email.recipients",
       "type": "string",
-      "value": "your-email@gmail.com"
+      "value": "recipient@example.com"
     },
     {
       "name": "Email.SMTP.Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     }
   ],
   "connections": {
@@ -902,7 +914,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTUiLCJ0YWciOiIxLjYuMTUtYjA0IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS40IiwidGFnIjoiMC45LjQtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWZpbGVzL3NyYy9hcHAvRmlsZSIsImlkIjoiRmlsZSIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wLWIxNCIsIm5hbWUiOiJGaWxlIiwiczNsb2NhdGlvbiI6IlRpYmNvL0ZpbGUiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTYiLCJ0YWciOiIxLjYuMTYtYjA1IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS40IiwidGFnIjoiMC45LjQtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWZpbGVzL3NyYy9hcHAvRmlsZSIsImlkIjoiRmlsZSIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wLWIxNCIsIm5hbWUiOiJGaWxlIiwiczNsb2NhdGlvbiI6IlRpYmNvL0ZpbGUiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
   "metadata": {
     "endpoints": [
       {
@@ -977,6 +989,6 @@
         }
       }
     ],
-    "flogoVersion": "2.26.6"
+    "flogoVersion": "2.26.7"
   }
 }

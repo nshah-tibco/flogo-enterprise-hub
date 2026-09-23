@@ -424,7 +424,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation started: \",$flowctx[\"FlowName\"], \" Reporting outage \", $flow.toolParams.ticket_id, \" for account \", $flow.toolParams.account_id)",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -480,7 +490,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "f45888fb-d287-4e1d-a7df-9ef25ec9c0d4INSERT INTO outage_tickets (ticket_id, account_id, premise_address, description, status, reported_at, eta) VALUES (?ticket_id1, ?account_id1, ?premise_address1, ?description1, 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '4 hours');",
+                "State": "fcb4169c-40e3-4d9d-8948-7781aa3e122dINSERT INTO outage_tickets (ticket_id, account_id, premise_address, description, status, reported_at, eta) VALUES (?ticket_id1, ?account_id1, ?premise_address1, ?description1, 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '4 hours');",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -522,7 +532,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation completed: \",$flowctx[\"FlowName\"], \" Outage ticket \", $flow.toolParams.ticket_id, \" created\")",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -627,7 +647,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation started: \",$flowctx[\"FlowName\"], \" Scheduling appointment \", $flow.toolParams.appointment_id, \" for account \", $flow.toolParams.account_id)",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -699,7 +729,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "496d6e1d-450f-4184-be20-c5a9af77b785INSERT INTO service_appointments (appointment_id, account_id, appt_type, scheduled_date, time_window, status, notes, created_at) VALUES (?appointment_id1, ?account_id1, ?appt_type1, ?scheduled_date1, ?time_window1, 'SCHEDULED', ?notes1, CURRENT_TIMESTAMP);",
+                "State": "35da3371-09d1-45f1-a93d-306bd6446a35INSERT INTO service_appointments (appointment_id, account_id, appt_type, scheduled_date, time_window, status, notes, created_at) VALUES (?appointment_id1, ?account_id1, ?appt_type1, ?scheduled_date1, ?time_window1, 'SCHEDULED', ?notes1, CURRENT_TIMESTAMP);",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -743,7 +773,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation completed: \",$flowctx[\"FlowName\"], \" Appointment \", $flow.toolParams.appointment_id, \" scheduled\")",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -848,7 +888,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation started: \",$flowctx[\"FlowName\"], \" Submitting service request \", $flow.toolParams.request_id, \" for account \", $flow.toolParams.account_id)",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -912,7 +962,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "268c633b-51c0-45ac-a7fa-bad8eafeb3b6INSERT INTO service_requests (request_id, account_id, request_type, effective_date, status, reason, created_at) VALUES (?request_id1, ?account_id1, ?request_type1, ?effective_date1, 'SUBMITTED', ?reason1, CURRENT_TIMESTAMP);",
+                "State": "f7e2a1f0-8c66-45ef-817e-3f7e9d885309INSERT INTO service_requests (request_id, account_id, request_type, effective_date, status, reason, created_at) VALUES (?request_id1, ?account_id1, ?request_type1, ?effective_date1, 'SUBMITTED', ?reason1, CURRENT_TIMESTAMP);",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -955,7 +1005,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation completed: \",$flowctx[\"FlowName\"], \" Service request \", $flow.toolParams.request_id, \" submitted\")",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -1100,7 +1160,17 @@
                 "flowInfo": false,
                 "message": "****Confirmation Email sent successfully to the configured service mailbox",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -1160,7 +1230,7 @@
     {
       "name": "AgenticAI.OpenAIConn.API_Key",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "sk-REPLACE-WITH-YOUR-OPENAI-KEY"
     },
     {
       "name": "AgenticAI.OpenAIConn.LLM_Base_URL",
@@ -1190,7 +1260,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",
@@ -1225,7 +1295,7 @@
     {
       "name": "LLM_Model",
       "type": "string",
-      "value": "gpt-5.6"
+      "value": "gpt-5.5"
     },
     {
       "name": "To_Email",
@@ -1235,12 +1305,12 @@
     {
       "name": "Email_Username",
       "type": "string",
-      "value": "your-email@gmail.com"
+      "value": "sender@example.com"
     },
     {
       "name": "Email_App_Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "OutageDispatch_A2AServer_PORT",
@@ -1331,7 +1401,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS4zIiwidGFnIjoiMC45LjMtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWdlbmVyYWwvc3JjL2FwcC9HZW5lcmFsIiwiaWQiOiJHZW5lcmFsIiwidmVyc2lvbiI6IjEuNi4xNCIsInRhZyI6IjEuNi4xNC1iMDQiLCJuYW1lIjoiR2VuZXJhbCIsInMzbG9jYXRpb24iOiJUaWJjby9HZW5lcmFsIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL3dpLXBvc3RncmVzL3NyYy9hcHAvUG9zdGdyZVNRTCIsImlkIjoiUG9zdGdyZVNRTCIsInZlcnNpb24iOiIyLjcuMSIsInRhZyI6IjIuNy4xLWIwMSIsIm5hbWUiOiJQb3N0Z3JlU1FMIiwiczNsb2NhdGlvbiI6IlRpYmNvL1Bvc3RncmVTUUwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS40IiwidGFnIjoiMC45LjQtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWdlbmVyYWwvc3JjL2FwcC9HZW5lcmFsIiwiaWQiOiJHZW5lcmFsIiwidmVyc2lvbiI6IjEuNi4xNiIsInRhZyI6IjEuNi4xNi1iMDUiLCJuYW1lIjoiR2VuZXJhbCIsInMzbG9jYXRpb24iOiJUaWJjby9HZW5lcmFsIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL3dpLXBvc3RncmVzL3NyYy9hcHAvUG9zdGdyZVNRTCIsImlkIjoiUG9zdGdyZVNRTCIsInZlcnNpb24iOiIyLjcuMiIsInRhZyI6IjIuNy4yLWIwMSIsIm5hbWUiOiJQb3N0Z3JlU1FMIiwiczNsb2NhdGlvbiI6IlRpYmNvL1Bvc3RncmVTUUwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
   "metadata": {
     "endpoints": [
       {
@@ -1359,6 +1429,6 @@
         "name": "SendEmailAgent"
       }
     ],
-    "flogoVersion": "2.26.5"
+    "flogoVersion": "2.26.7"
   }
 }

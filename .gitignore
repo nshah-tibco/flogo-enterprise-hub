@@ -28,6 +28,9 @@ Flogo_Apps/
 builds/
 # Extension-less Flogo engine binaries wherever they land.
 flogo-engine
+# Running a locally-built Flogo .exe drops a copy of the real licence file next
+# to it (TIB_ACTIVATION). It is licence material, never repo content.
+FlogoLicense.bin
 *_linux
 *_darwin
 # Runtime / build logs.

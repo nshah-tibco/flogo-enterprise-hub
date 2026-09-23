@@ -2,9 +2,9 @@
   "imports": [
     "github.com/project-flogo/flow",
     "github.com/project-flogo/contrib/activity/noop",
+    "github.com/tibco/flogo-general/src/app/General/activity/log",
     "github.com/project-flogo/contrib/activity/actreturn",
-    "github.com/tibco/flogo-general/src/app/General/trigger/rest",
-    "github.com/tibco/flogo-general/src/app/General/activity/log"
+    "github.com/tibco/flogo-general/src/app/General/trigger/rest"
   ],
   "name": "mortgage-mock-apis",
   "description": "Mock REST API server for the Autonomous Mortgage AI Processor demo — provides hardcoded realistic responses for credit bureau, employment verification, property valuation, and DTI calculation endpoints",
@@ -31,7 +31,7 @@
       "id": "MortgageMockAPIServer",
       "handlers": [
         {
-          "description": "Returns mock credit score and history for an applicant",
+          "description": "Returns mock credit bureau data — credit score 742, grade A, 0 defaults",
           "settings": {
             "APISpecPath": "/credit",
             "Method": "GET",
@@ -81,7 +81,7 @@
           "name": "GetCreditScoreFlow"
         },
         {
-          "description": "Returns mock employment verification data for an applicant",
+          "description": "Returns mock employment verification data — employed at Meridian Technologies, income $125k",
           "settings": {
             "APISpecPath": "/employment",
             "Method": "GET",
@@ -131,7 +131,7 @@
           "name": "GetEmploymentFlow"
         },
         {
-          "description": "Returns mock property valuation data for a given address",
+          "description": "Returns mock property valuation — 47 Maple Grove valued at $485,000, LTV 72%",
           "settings": {
             "APISpecPath": "/valuation",
             "Method": "POST",
@@ -181,7 +181,7 @@
           "name": "GetPropertyValuationFlow"
         },
         {
-          "description": "Calculates Debt-To-Income ratio and affordability flag from income and debt figures",
+          "description": "Returns DTI calculation — monthly obligations $3,100 on income $10,417 = 29.8% DTI (AFFORDABLE)",
           "settings": {
             "APISpecPath": "/calculate-dti",
             "Method": "GET",
@@ -240,15 +240,29 @@
         "name": "GetCreditScoreFlow",
         "description": "Returns mock credit bureau data — credit score 742, grade A, 0 defaults",
         "links": [
-          {"id": 1, "from": "StartActivity", "to": "LogRequest", "type": "label", "label": "start"},
-          {"id": 2, "from": "LogRequest", "to": "Return", "type": "label", "label": "return mock data"}
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogRequest",
+            "type": "label",
+            "label": "start"
+          },
+          {
+            "id": 2,
+            "from": "LogRequest",
+            "to": "Return",
+            "type": "label",
+            "label": "return mock data"
+          }
         ],
         "tasks": [
           {
             "id": "StartActivity",
             "name": "StartActivity",
             "description": "Flow entry point",
-            "activity": {"ref": "#noop"}
+            "activity": {
+              "ref": "#noop"
+            }
           },
           {
             "id": "LogRequest",
@@ -261,7 +275,17 @@
                 "flowInfo": false,
                 "message": "Mock Credit Bureau API called — returning score 742 for APP-001",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -274,15 +298,17 @@
                 "mappings": {
                   "code": 200,
                   "responseBody": {
-                    "applicantId": "APP-001",
-                    "creditScore": 742,
-                    "creditGrade": "A",
-                    "defaults": 0,
-                    "paymentHistoryMonths": 84,
-                    "utilizationRate": 0.28,
-                    "openAccounts": 4,
-                    "oldestAccountYears": 8,
-                    "bureau": "Equifax"
+                    "mapping": {
+                      "applicantId": "APP-001",
+                      "creditScore": 742,
+                      "creditGrade": "A",
+                      "defaults": 0,
+                      "paymentHistoryMonths": 84,
+                      "utilizationRate": 0.28,
+                      "openAccounts": 4,
+                      "oldestAccountYears": 8,
+                      "bureau": "Equifax"
+                    }
                   }
                 }
               }
@@ -291,13 +317,28 @@
         ],
         "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MjAwfSwiTG9nUmVxdWVzdCI6eyJ4IjozNTAsInkiOjIwMH0sIlJldHVybiI6eyJ4Ijo2MDAsInkiOjIwMH19",
         "metadata": {
-          "input": [{"name": "body", "type": "object"}],
-          "output": [
-            {"name": "code", "type": "integer"},
-            {"name": "responseBody", "type": "object"}
+          "input": [
+            {
+              "name": "body",
+              "type": "object"
+            }
           ],
-          "fe_metadata": {}
-        }
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "responseBody",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        },
+        "explicitReply": true
       }
     },
     {
@@ -306,15 +347,29 @@
         "name": "GetEmploymentFlow",
         "description": "Returns mock employment verification data — employed at Meridian Technologies, income $125k",
         "links": [
-          {"id": 1, "from": "StartActivity", "to": "LogRequest", "type": "label", "label": "start"},
-          {"id": 2, "from": "LogRequest", "to": "Return", "type": "label", "label": "return mock data"}
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogRequest",
+            "type": "label",
+            "label": "start"
+          },
+          {
+            "id": 2,
+            "from": "LogRequest",
+            "to": "Return",
+            "type": "label",
+            "label": "return mock data"
+          }
         ],
         "tasks": [
           {
             "id": "StartActivity",
             "name": "StartActivity",
             "description": "Flow entry point",
-            "activity": {"ref": "#noop"}
+            "activity": {
+              "ref": "#noop"
+            }
           },
           {
             "id": "LogRequest",
@@ -327,7 +382,17 @@
                 "flowInfo": false,
                 "message": "Mock Employment Verification API called — returning EMPLOYED status for APP-001",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -340,15 +405,17 @@
                 "mappings": {
                   "code": 200,
                   "responseBody": {
-                    "applicantId": "APP-001",
-                    "employmentStatus": "EMPLOYED",
-                    "employerName": "Meridian Technologies Ltd",
-                    "jobTitle": "Senior Software Engineer",
-                    "yearsEmployed": 5.5,
-                    "annualIncome": 125000,
-                    "monthlyIncome": 10416.67,
-                    "incomeVerified": true,
-                    "employmentType": "PERMANENT"
+                    "mapping": {
+                      "applicantId": "APP-001",
+                      "employmentStatus": "EMPLOYED",
+                      "employerName": "Meridian Technologies Ltd",
+                      "jobTitle": "Senior Software Engineer",
+                      "yearsEmployed": 5.5,
+                      "annualIncome": 125000,
+                      "monthlyIncome": 10416.67,
+                      "incomeVerified": true,
+                      "employmentType": "PERMANENT"
+                    }
                   }
                 }
               }
@@ -357,13 +424,28 @@
         ],
         "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MjAwfSwiTG9nUmVxdWVzdCI6eyJ4IjozNTAsInkiOjIwMH0sIlJldHVybiI6eyJ4Ijo2MDAsInkiOjIwMH19",
         "metadata": {
-          "input": [{"name": "body", "type": "object"}],
-          "output": [
-            {"name": "code", "type": "integer"},
-            {"name": "responseBody", "type": "object"}
+          "input": [
+            {
+              "name": "body",
+              "type": "object"
+            }
           ],
-          "fe_metadata": {}
-        }
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "responseBody",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        },
+        "explicitReply": true
       }
     },
     {
@@ -372,15 +454,29 @@
         "name": "GetPropertyValuationFlow",
         "description": "Returns mock property valuation — 47 Maple Grove valued at $485,000, LTV 72%",
         "links": [
-          {"id": 1, "from": "StartActivity", "to": "LogRequest", "type": "label", "label": "start"},
-          {"id": 2, "from": "LogRequest", "to": "Return", "type": "label", "label": "return mock data"}
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogRequest",
+            "type": "label",
+            "label": "start"
+          },
+          {
+            "id": 2,
+            "from": "LogRequest",
+            "to": "Return",
+            "type": "label",
+            "label": "return mock data"
+          }
         ],
         "tasks": [
           {
             "id": "StartActivity",
             "name": "StartActivity",
             "description": "Flow entry point",
-            "activity": {"ref": "#noop"}
+            "activity": {
+              "ref": "#noop"
+            }
           },
           {
             "id": "LogRequest",
@@ -393,7 +489,17 @@
                 "flowInfo": false,
                 "message": "Mock Property Valuation API called — returning $485,000 estimate for 47 Maple Grove",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -406,16 +512,18 @@
                 "mappings": {
                   "code": 200,
                   "responseBody": {
-                    "propertyAddress": "47 Maple Grove, Austin TX 78701",
-                    "estimatedValue": 485000,
-                    "confidenceScore": 0.92,
-                    "lastSoldPrice": 420000,
-                    "lastSoldDate": "2021-03-15",
-                    "propertyType": "Single Family",
-                    "bedrooms": 3,
-                    "bathrooms": 2,
-                    "squareFeet": 1850,
-                    "ltvRatio": 0.72
+                    "mapping": {
+                      "propertyAddress": "47 Maple Grove, Austin TX 78701",
+                      "estimatedValue": 485000,
+                      "confidenceScore": 0.92,
+                      "lastSoldPrice": 420000,
+                      "lastSoldDate": "2021-03-15",
+                      "propertyType": "Single Family",
+                      "bedrooms": 3,
+                      "bathrooms": 2,
+                      "squareFeet": 1850,
+                      "ltvRatio": 0.72
+                    }
                   }
                 }
               }
@@ -424,13 +532,28 @@
         ],
         "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MjAwfSwiTG9nUmVxdWVzdCI6eyJ4IjozNTAsInkiOjIwMH0sIlJldHVybiI6eyJ4Ijo2MDAsInkiOjIwMH19",
         "metadata": {
-          "input": [{"name": "body", "type": "object"}],
-          "output": [
-            {"name": "code", "type": "integer"},
-            {"name": "responseBody", "type": "object"}
+          "input": [
+            {
+              "name": "body",
+              "type": "object"
+            }
           ],
-          "fe_metadata": {}
-        }
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "responseBody",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        },
+        "explicitReply": true
       }
     },
     {
@@ -439,15 +562,29 @@
         "name": "CalculateDTIFlow",
         "description": "Returns DTI calculation — monthly obligations $3,100 on income $10,417 = 29.8% DTI (AFFORDABLE)",
         "links": [
-          {"id": 1, "from": "StartActivity", "to": "LogRequest", "type": "label", "label": "start"},
-          {"id": 2, "from": "LogRequest", "to": "Return", "type": "label", "label": "return calculation"}
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "LogRequest",
+            "type": "label",
+            "label": "start"
+          },
+          {
+            "id": 2,
+            "from": "LogRequest",
+            "to": "Return",
+            "type": "label",
+            "label": "return calculation"
+          }
         ],
         "tasks": [
           {
             "id": "StartActivity",
             "name": "StartActivity",
             "description": "Flow entry point",
-            "activity": {"ref": "#noop"}
+            "activity": {
+              "ref": "#noop"
+            }
           },
           {
             "id": "LogRequest",
@@ -460,7 +597,17 @@
                 "flowInfo": false,
                 "message": "Mock DTI Calculation API called — DTI 29.8% (AFFORDABLE, under 43% threshold)",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -473,15 +620,17 @@
                 "mappings": {
                   "code": 200,
                   "responseBody": {
-                    "monthlyIncome": 10416.67,
-                    "existingMonthlyDebts": 1250,
-                    "proposedMortgagePayment": 1850,
-                    "totalMonthlyObligations": 3100,
-                    "dtiRatio": 0.298,
-                    "dtiPercent": "29.8%",
-                    "affordabilityFlag": "AFFORDABLE",
-                    "maxAllowedDTI": 0.43,
-                    "headroom": 1381.67
+                    "mapping": {
+                      "monthlyIncome": 10416.67,
+                      "existingMonthlyDebts": 1250,
+                      "proposedMortgagePayment": 1850,
+                      "totalMonthlyObligations": 3100,
+                      "dtiRatio": 0.298,
+                      "dtiPercent": "29.8%",
+                      "affordabilityFlag": "AFFORDABLE",
+                      "maxAllowedDTI": 0.43,
+                      "headroom": 1381.67
+                    }
                   }
                 }
               }
@@ -490,13 +639,28 @@
         ],
         "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MjAwfSwiTG9nUmVxdWVzdCI6eyJ4IjozNTAsInkiOjIwMH0sIlJldHVybiI6eyJ4Ijo2MDAsInkiOjIwMH19",
         "metadata": {
-          "input": [{"name": "body", "type": "object"}],
-          "output": [
-            {"name": "code", "type": "integer"},
-            {"name": "responseBody", "type": "object"}
+          "input": [
+            {
+              "name": "body",
+              "type": "object"
+            }
           ],
-          "fe_metadata": {}
-        }
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "responseBody",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        },
+        "explicitReply": true
       }
     }
   ],
@@ -508,16 +672,150 @@
     }
   ],
   "connections": {},
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTIiLCJ0YWciOiIxLjYuMTItYjA2IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9XQ==",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTYiLCJ0YWciOiIxLjYuMTYtYjA1IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9XQ==",
   "metadata": {
     "endpoints": [
       {
         "protocol": "http",
         "port": "9091",
+        "spec": {
+          "name": "mortgage-mock-apis",
+          "version": "1.0.0"
+        },
         "title": "MortgageMockAPIServer",
-        "type": "public"
+        "swagger": {
+          "swagger": "2.0",
+          "info": {
+            "title": "mortgage-mock-apis",
+            "version": "1.0.0",
+            "description": "Mock REST API server — 4 endpoints for mortgage processing demo"
+          },
+          "paths": {
+            "/credit": {
+              "get": {
+                "summary": "GetCreditScoreFlow",
+                "operationId": "get_credit",
+                "parameters": [
+                  {
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "Request parameter",
+                    "required": false,
+                    "type": "string"
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "description": "Returns mock credit bureau data — credit score 742, grade A, 0 defaults"
+              }
+            },
+            "/employment": {
+              "get": {
+                "summary": "GetEmploymentFlow",
+                "operationId": "get_employment",
+                "parameters": [
+                  {
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "Request parameter",
+                    "required": false,
+                    "type": "string"
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "description": "Returns mock employment verification data — employed at Meridian Technologies, income $125k"
+              }
+            },
+            "/valuation": {
+              "post": {
+                "summary": "GetPropertyValuationFlow",
+                "operationId": "post_valuation",
+                "parameters": [
+                  {
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "Request parameter",
+                    "required": false,
+                    "type": "string"
+                  },
+                  {
+                    "name": "body",
+                    "in": "body",
+                    "description": "request body parameter",
+                    "required": true,
+                    "schema": {
+                      "$ref": "#/definitions/schema1"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "description": "Returns mock property valuation — 47 Maple Grove valued at $485,000, LTV 72%",
+                "consumes": [
+                  "application/json"
+                ]
+              }
+            },
+            "/calculate-dti": {
+              "get": {
+                "summary": "CalculateDTIFlow",
+                "operationId": "get_calculate-dti",
+                "parameters": [
+                  {
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "Request parameter",
+                    "required": false,
+                    "type": "string"
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Rest Response",
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "description": "Returns DTI calculation — monthly obligations $3,100 on income $10,417 = 29.8% DTI (AFFORDABLE)"
+              }
+            }
+          },
+          "definitions": {
+            "schema1": {
+              "type": "object",
+              "properties": {
+                "propertyAddress": {
+                  "type": "string"
+                },
+                "estimatedValue": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
       }
     ],
-    "flogoVersion": "2.26.2"
+    "flogoVersion": "2.26.7"
   }
 }

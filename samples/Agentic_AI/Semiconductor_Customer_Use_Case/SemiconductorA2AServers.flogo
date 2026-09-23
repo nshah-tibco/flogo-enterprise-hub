@@ -604,7 +604,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation started: \",$flowctx[\"FlowName\"], \" Placing order \", $flow.toolParams.order_id, \" for customer \", $flow.toolParams.customer_id)",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -660,7 +670,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "e42a04cf-6ee0-44bc-94d6-8bb894ceb955INSERT INTO orders (order_id, customer_id, po_number, order_date, status, currency, total_amount) VALUES (?order_id1, ?customer_id1, NULLIF(?po_number1,''), CURRENT_DATE, 'Open', 'USD', ?total_amount1);",
+                "State": "e99eddc5-1d21-438a-b8e4-b9c48271a697INSERT INTO orders (order_id, customer_id, po_number, order_date, status, currency, total_amount) VALUES (?order_id1, ?customer_id1, NULLIF(?po_number1,''), CURRENT_DATE, 'Open', 'USD', ?total_amount1);",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -760,7 +770,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "366f342d-1f8d-466c-acaa-ce3522b536ccINSERT INTO order_lines (order_id, part_number, quantity, unit_price, requested_date, promised_date, line_status) VALUES (?order_id1, ?part_number1, ?quantity1, ?unit_price1, NULLIF(?requested_date1,'')::date, NULLIF(?promised_date1,'')::date, 'Open');",
+                "State": "03bd25fc-f857-4e92-8292-3b1e2fb2eb0dINSERT INTO order_lines (order_id, part_number, quantity, unit_price, requested_date, promised_date, line_status) VALUES (?order_id1, ?part_number1, ?quantity1, ?unit_price1, NULLIF(?requested_date1,'')::date, NULLIF(?promised_date1,'')::date, 'Open');",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -804,7 +814,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation completed: \",$flowctx[\"FlowName\"], \" Order \", $flow.toolParams.order_id, \" created\")",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -909,7 +929,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation started: \",$flowctx[\"FlowName\"], \" Expediting \", $flow.toolParams.part_number, \" on order \", $flow.toolParams.order_id)",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -965,7 +995,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "7d0e68e4-139e-44d6-b38b-a79fa9c60a3bUPDATE order_lines SET requested_date = NULLIF(?new_requested_date1,'')::date, promised_date = NULLIF(?new_requested_date2,'')::date WHERE order_id = ?order_id1 AND part_number = ?part_number1;",
+                "State": "5656cc08-23e7-4259-b931-81b2c960f8a0UPDATE order_lines SET requested_date = NULLIF(?new_requested_date1,'')::date, promised_date = NULLIF(?new_requested_date2,'')::date WHERE order_id = ?order_id1 AND part_number = ?part_number1;",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -1007,7 +1037,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation completed: \",$flowctx[\"FlowName\"], \" Order line expedited\")",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -1112,7 +1152,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation started: \",$flowctx[\"FlowName\"], \" Opening RMA \", $flow.toolParams.rma_id, \" for customer \", $flow.toolParams.customer_id)",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -1192,7 +1242,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "97f29466-9a93-4eee-b49a-cde0124e719eINSERT INTO rma_cases (rma_id, customer_id, order_id, part_number, quantity, defect_type, description, status, opened_date, est_resolution_date) VALUES (?rma_id1, ?customer_id1, NULLIF(?order_id1,''), ?part_number1, ?quantity1, ?defect_type1, NULLIF(?description1,''), 'Open', CURRENT_DATE, CURRENT_DATE + INTERVAL '10 days');",
+                "State": "1bf4e6a5-d877-4e73-848d-3b624958f4dcINSERT INTO rma_cases (rma_id, customer_id, order_id, part_number, quantity, defect_type, description, status, opened_date, est_resolution_date) VALUES (?rma_id1, ?customer_id1, NULLIF(?order_id1,''), ?part_number1, ?quantity1, ?defect_type1, NULLIF(?description1,''), 'Open', CURRENT_DATE, CURRENT_DATE + INTERVAL '10 days');",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -1237,7 +1287,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation completed: \",$flowctx[\"FlowName\"], \" RMA \", $flow.toolParams.rma_id, \" created\")",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -1342,7 +1402,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation started: \",$flowctx[\"FlowName\"], \" Creating sample request \", $flow.toolParams.sample_id, \" for customer \", $flow.toolParams.customer_id)",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -1414,7 +1484,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "7382ca30-0447-441a-ab9f-34e7280c52b9INSERT INTO sample_requests (sample_id, customer_id, part_number, quantity, purpose, status, requested_date, ship_to) VALUES (?sample_id1, ?customer_id1, ?part_number1, ?quantity1, NULLIF(?purpose1,''), 'Requested', CURRENT_DATE, NULLIF(?ship_to1,''));",
+                "State": "9172ed4d-d006-4622-9e5e-3b555cd5ecbaINSERT INTO sample_requests (sample_id, customer_id, part_number, quantity, purpose, status, requested_date, ship_to) VALUES (?sample_id1, ?customer_id1, ?part_number1, ?quantity1, NULLIF(?purpose1,''), 'Requested', CURRENT_DATE, NULLIF(?ship_to1,''));",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -1458,7 +1528,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation completed: \",$flowctx[\"FlowName\"], \" Sample request \", $flow.toolParams.sample_id, \" created\")",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -1563,7 +1643,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation started: \",$flowctx[\"FlowName\"], \" Subscribing customer \", $flow.toolParams.customer_id, \" to \", $flow.toolParams.alert_type, \" alerts for \", $flow.toolParams.part_number)",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -1611,7 +1701,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "061a58e1-4cb4-4a8d-8543-dbce84cc71d7INSERT INTO alert_subscriptions (customer_id, part_number, alert_type, email, status, created_date) SELECT c.customer_id, ?part_number1, ?alert_type1, c.email, 'Active', CURRENT_DATE FROM customers c WHERE c.customer_id = ?customer_id1;",
+                "State": "217b25ff-a083-45e3-9560-cc06cfafe271INSERT INTO alert_subscriptions (customer_id, part_number, alert_type, email, status, created_date) SELECT c.customer_id, ?part_number1, ?alert_type1, c.email, 'Active', CURRENT_DATE FROM customers c WHERE c.customer_id = ?customer_id1;",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -1652,7 +1742,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation completed: \",$flowctx[\"FlowName\"], \" Subscription created\")",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -1797,7 +1897,17 @@
                 "flowInfo": false,
                 "message": "****Confirmation Email sent successfully to the configured service mailbox",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -1857,7 +1967,7 @@
     {
       "name": "AgenticAI.OpenAIConn.API_Key",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "sk-REPLACE-WITH-YOUR-OPENAI-KEY"
     },
     {
       "name": "AgenticAI.OpenAIConn.LLM_Base_URL",
@@ -1887,7 +1997,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",
@@ -1922,7 +2032,7 @@
     {
       "name": "LLM_Model",
       "type": "string",
-      "value": "gpt-5.6"
+      "value": "gpt-5.5"
     },
     {
       "name": "To_Email",
@@ -1932,12 +2042,12 @@
     {
       "name": "Email_Username",
       "type": "string",
-      "value": "your-email@gmail.com"
+      "value": "sender@example.com"
     },
     {
       "name": "Email_App_Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "PlaceOrder_A2AServer_PORT",
@@ -2048,7 +2158,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS40IiwidGFnIjoiMC45LjQtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWdlbmVyYWwvc3JjL2FwcC9HZW5lcmFsIiwiaWQiOiJHZW5lcmFsIiwidmVyc2lvbiI6IjEuNi4xNSIsInRhZyI6IjEuNi4xNS1iMDQiLCJuYW1lIjoiR2VuZXJhbCIsInMzbG9jYXRpb24iOiJUaWJjby9HZW5lcmFsIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL3dpLXBvc3RncmVzL3NyYy9hcHAvUG9zdGdyZVNRTCIsImlkIjoiUG9zdGdyZVNRTCIsInZlcnNpb24iOiIyLjcuMSIsInRhZyI6IjIuNy4xLWIwMSIsIm5hbWUiOiJQb3N0Z3JlU1FMIiwiczNsb2NhdGlvbiI6IlRpYmNvL1Bvc3RncmVTUUwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS40IiwidGFnIjoiMC45LjQtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWdlbmVyYWwvc3JjL2FwcC9HZW5lcmFsIiwiaWQiOiJHZW5lcmFsIiwidmVyc2lvbiI6IjEuNi4xNiIsInRhZyI6IjEuNi4xNi1iMDUiLCJuYW1lIjoiR2VuZXJhbCIsInMzbG9jYXRpb24iOiJUaWJjby9HZW5lcmFsIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL3dpLXBvc3RncmVzL3NyYy9hcHAvUG9zdGdyZVNRTCIsImlkIjoiUG9zdGdyZVNRTCIsInZlcnNpb24iOiIyLjcuMiIsInRhZyI6IjIuNy4yLWIwMSIsIm5hbWUiOiJQb3N0Z3JlU1FMIiwiczNsb2NhdGlvbiI6IlRpYmNvL1Bvc3RncmVTUUwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
   "metadata": {
     "endpoints": [
       {
@@ -2088,6 +2198,6 @@
         "name": "send_confirmation_email_trigger"
       }
     ],
-    "flogoVersion": "2.26.6"
+    "flogoVersion": "2.26.7"
   }
 }

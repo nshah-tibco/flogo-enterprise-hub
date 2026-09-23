@@ -430,7 +430,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "0c3c04a9-45cb-408f-9df7-a08682bf6c0bSELECT description, merchant, amount, txn_type, category, status FROM public.transactions WHERE transaction_id = ?transaction_id ORDER BY description ASC;",
+                "State": "e762ed69-1474-4289-99c8-a15d87408280SELECT description, merchant, amount, txn_type, category, status FROM public.transactions WHERE transaction_id = ?transaction_id ORDER BY description ASC;",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -511,7 +511,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "633b5745-adcc-4760-9a9d-203fe80819c5INSERT INTO disputes (dispute_id, customer_id, transaction_id, reason, status, estimated_resolution, last_update) VALUES (?dispute_id1, ?customer_id1, ?transaction_id1, ?reason1, 'OPEN', TO_CHAR(CURRENT_DATE + INTERVAL '7 days', 'YYYY-MM-DD'), TO_CHAR(CURRENT_TIMESTAMP, 'YYYY-MM-DD HH24:MI'));",
+                "State": "507bdda3-dcd6-4026-aead-1f378d172ad8INSERT INTO disputes (dispute_id, customer_id, transaction_id, reason, status, estimated_resolution, last_update) VALUES (?dispute_id1, ?customer_id1, ?transaction_id1, ?reason1, 'OPEN', TO_CHAR(CURRENT_DATE + INTERVAL '7 days', 'YYYY-MM-DD'), TO_CHAR(CURRENT_TIMESTAMP, 'YYYY-MM-DD HH24:MI'));",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -710,7 +710,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "a92c1255-d5b4-4180-a9a6-fedc67424e87UPDATE public.cards SET status = 'BLOCKED' WHERE card_id = ?card_id1;",
+                "State": "07cd379d-0214-459b-bb2b-e4e10163b185UPDATE public.cards SET status = 'BLOCKED' WHERE card_id = ?card_id1;",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -864,6 +864,7 @@
                 "authorizationType": "Basic",
                 "Username": "=$property[\"Email_Username\"]",
                 "Password": "=$property[\"Email_App_Password\"]",
+                "authorizationConn": "",
                 "Connection Security": "SSL",
                 "serverCertificate": "",
                 "message_content_type": "text/plain",
@@ -973,7 +974,7 @@
     {
       "name": "AgenticAI.OpenAIConn.API_Key",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "sk-REPLACE-WITH-YOUR-OPENAI-KEY"
     },
     {
       "name": "AgenticAI.OpenAIConn.LLM_Base_URL",
@@ -1003,7 +1004,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",
@@ -1038,7 +1039,7 @@
     {
       "name": "LLM_Model",
       "type": "string",
-      "value": "gpt-5.6"
+      "value": "gpt-5.5"
     },
     {
       "name": "To_Email",
@@ -1048,12 +1049,12 @@
     {
       "name": "Email_Username",
       "type": "string",
-      "value": "your-email@gmail.com"
+      "value": "sender@example.com"
     },
     {
       "name": "Email_App_Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "DisputeTransaction_A2AServer_PORT",

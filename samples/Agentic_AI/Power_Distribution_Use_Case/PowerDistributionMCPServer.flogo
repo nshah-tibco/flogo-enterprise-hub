@@ -30,7 +30,13 @@
         "serverCertificate": "",
         "serverPrivateKey": "",
         "authType": "None",
-        "authToken": ""
+        "authToken": "",
+        "oauthIssuer": "",
+        "oauthJWKSURL": "",
+        "oauthAudience": "",
+        "oauthAuthorizationServers": "",
+        "oauthRequiredScopes": "",
+        "oauthResourceURL": ""
       },
       "id": "PowerDistributionMCPServer",
       "handlers": [
@@ -654,7 +660,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "58e9514f-de5a-408d-a493-bedf5fb33ba1SELECT * FROM public.customers ORDER BY account_id ASC;"
+                "State": "31c965a7-c64d-4517-8a0b-6390fa29f0b4SELECT * FROM public.customers ORDER BY account_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -871,7 +877,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "047a93eb-0185-4783-a2c6-b36671023134SELECT i.invoice_id, i.account_id, i.billing_month, i.period_start, i.period_end, i.subtotal, i.taxes_fees, i.total_amount, i.currency, i.due_date, i.status, li.category, li.description, li.amount AS line_amount FROM public.invoices i JOIN public.bill_line_items li ON i.invoice_id = li.invoice_id ORDER BY i.invoice_id ASC, li.id ASC;"
+                "State": "b8ef9cd1-b582-4b77-9581-6ca65cebfa03SELECT i.invoice_id, i.account_id, i.billing_month, i.period_start, i.period_end, i.subtotal, i.taxes_fees, i.total_amount, i.currency, i.due_date, i.status, li.category, li.description, li.amount AS line_amount FROM public.invoices i JOIN public.bill_line_items li ON i.invoice_id = li.invoice_id ORDER BY i.invoice_id ASC, li.id ASC;"
               },
               "schemas": {
                 "input": {
@@ -1074,7 +1080,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "bcdee81e-d7d8-47b3-8779-b2e13cf70c10SELECT * FROM public.usage_records ORDER BY account_id ASC;"
+                "State": "3a377cd8-eb7f-48a5-9a8a-5c8ed099f66aSELECT * FROM public.usage_records ORDER BY account_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -1256,7 +1262,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "c3bfd022-c83d-4791-9270-a1c7f687c109SELECT * FROM public.payments ORDER BY account_id ASC, payment_date DESC;"
+                "State": "6a685c32-a15b-46e3-88d9-38d537b184dbSELECT * FROM public.payments ORDER BY account_id ASC, payment_date DESC;"
               },
               "schemas": {
                 "input": {
@@ -1438,7 +1444,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "b98e133f-656a-44c4-bfbe-c0879a8f2453SELECT * FROM public.rate_plans ORDER BY plan_id ASC;"
+                "State": "f22567a0-5a15-418d-940e-505675ceed18SELECT * FROM public.rate_plans ORDER BY plan_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -1627,7 +1633,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "c66cccd2-4b20-4789-bb52-d614f59757c2SELECT * FROM public.outages ORDER BY outage_id ASC;"
+                "State": "64089d54-8858-4baa-81e7-a5e686179828SELECT * FROM public.outages ORDER BY outage_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -1809,7 +1815,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "0bf0b6c0-aa61-4781-8f2a-e1dc8ff5ac9cSELECT * FROM public.outage_tickets ORDER BY account_id ASC, reported_at DESC;"
+                "State": "d34898f5-b2a9-4835-a008-0ebd32eedd78SELECT * FROM public.outage_tickets ORDER BY account_id ASC, reported_at DESC;"
               },
               "schemas": {
                 "input": {
@@ -1991,7 +1997,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "f4c9923f-0ec7-4ce6-8263-a7f325e1a44cSELECT * FROM public.service_appointments ORDER BY account_id ASC, created_at DESC;"
+                "State": "93e7bc70-c80a-4836-b726-e96a91f59a4aSELECT * FROM public.service_appointments ORDER BY account_id ASC, created_at DESC;"
               },
               "schemas": {
                 "input": {
@@ -2166,7 +2172,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "fa7a7194-0510-4125-b414-bef209760935SELECT * FROM public.service_requests ORDER BY account_id ASC, created_at DESC;"
+                "State": "6684dd75-a4ff-4567-9f7c-8df003bc6b73SELECT * FROM public.service_requests ORDER BY account_id ASC, created_at DESC;"
               },
               "schemas": {
                 "input": {
@@ -2259,7 +2265,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",
@@ -2327,7 +2333,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuMyIsInRhZyI6IjEuMC4zLWIwMiIsIm5hbWUiOiJNb2RlbCBDb250ZXh0IFByb3RvY29sIChNQ1ApIiwiczNsb2NhdGlvbiI6IlRpYmNvL01DUCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjEiLCJ0YWciOiIyLjcuMS1iMDEiLCJuYW1lIjoiUG9zdGdyZVNRTCIsInMzbG9jYXRpb24iOiJUaWJjby9Qb3N0Z3JlU1FMIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuNCIsInRhZyI6IjEuMC40LWIwMiIsIm5hbWUiOiJNb2RlbCBDb250ZXh0IFByb3RvY29sIChNQ1ApIiwiczNsb2NhdGlvbiI6IlRpYmNvL01DUCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjIiLCJ0YWciOiIyLjcuMi1iMDEiLCJuYW1lIjoiUG9zdGdyZVNRTCIsInMzbG9jYXRpb24iOiJUaWJjby9Qb3N0Z3JlU1FMIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
   "metadata": {
     "endpoints": [
       {
@@ -2337,6 +2343,6 @@
         "type": "public"
       }
     ],
-    "flogoVersion": "2.26.5"
+    "flogoVersion": "2.26.7"
   }
 }

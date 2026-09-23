@@ -879,7 +879,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SET_YOUR_DB_PASSWORD"
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",

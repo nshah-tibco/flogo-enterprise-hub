@@ -334,7 +334,7 @@
     {
       "name": "AgenticAI.openai.API_Key",
       "type": "string",
-      "value": "SECRET:pP3IQOJhSXzvPF8yBJiiOSW+CqaCIoEvyKnrjZ3C6O0hYbzQ9tyiAMlXWf4HvD0Q9sg6r9idCy6mJak1v64N2vS1c9cXER/HqSQ1L2A+U/xxWMwgd9EzLfSzWpfeal6sBqogjeqzh2P+JUMyMabGN5sFc92mJZQWhLQ7U4CqTQWzJh+fyylV6+8N9FuuIZrkFTKcV2+Sun7YlyfS2hlDavFWkbVm4UXV0nbLhWWWkX7NLSI9"
+      "value": "sk-REPLACE-WITH-YOUR-OPENAI-KEY"
     },
     {
       "name": "AgenticAI.openai.LLM_Base_URL",
@@ -354,7 +354,7 @@
     {
       "name": "Trigger_Settings.LLM_Model",
       "type": "string",
-      "value": "gpt-4o"
+      "value": "gpt-5.5"
     },
     {
       "name": "Trigger_Settings.Token_Limit",
@@ -447,6 +447,6 @@
         "type": "public"
       }
     ],
-    "flogoVersion": "2.26.6"
+    "flogoVersion": "2.26.7"
   }
 }

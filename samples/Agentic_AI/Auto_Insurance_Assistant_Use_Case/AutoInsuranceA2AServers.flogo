@@ -514,7 +514,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "8e4c0b55-21b0-4456-a552-a88ab8ce3fd6INSERT INTO public.claims (claim_number, policy_number, policyholder_id, claim_type, incident_date, description, status, estimated_amount, filed_date) SELECT ?claim_number1, ?policy_number1, p.policyholder_id, ?claim_type1, ?incident_date1, ?description1, 'Submitted', CAST(NULLIF(?estimated_amount1,'') AS NUMERIC), TO_CHAR(CURRENT_DATE,'YYYY-MM-DD') FROM public.policies p WHERE p.policy_number = ?policy_number2;",
+                "State": "4972b1e9-9c92-415d-a62f-debbfe192128INSERT INTO public.claims (claim_number, policy_number, policyholder_id, claim_type, incident_date, description, status, estimated_amount, filed_date) SELECT ?claim_number1, ?policy_number1, p.policyholder_id, ?claim_type1, ?incident_date1, ?description1, 'Submitted', CAST(NULLIF(?estimated_amount1,'') AS NUMERIC), TO_CHAR(CURRENT_DATE,'YYYY-MM-DD') FROM public.policies p WHERE p.policy_number = ?policy_number2;",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -748,7 +748,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "e9e39a42-b49d-45db-8a2b-028c8d1ac2bbINSERT INTO public.callbacks (callback_id, policyholder_id, policy_number, topic, preferred_time, status, created_at) SELECT ?callback_id1, p.policyholder_id, ?policy_number1, ?topic1, ?preferred_time1, 'Requested', TO_CHAR(CURRENT_TIMESTAMP,'YYYY-MM-DD HH24:MI') FROM public.policies p WHERE p.policy_number = ?policy_number2;",
+                "State": "ec8dd778-ba22-4d85-8171-f18c0b904724INSERT INTO public.callbacks (callback_id, policyholder_id, policy_number, topic, preferred_time, status, created_at) SELECT ?callback_id1, p.policyholder_id, ?policy_number1, ?topic1, ?preferred_time1, 'Requested', TO_CHAR(CURRENT_TIMESTAMP,'YYYY-MM-DD HH24:MI') FROM public.policies p WHERE p.policy_number = ?policy_number2;",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -1035,7 +1035,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "bad41763-4951-4798-b71a-f4cf5f07944eINSERT INTO public.contact_change_log (change_id, policyholder_id, field_changed, old_value, new_value, changed_at) SELECT ?change_id1, ph.policyholder_id, CASE WHEN NULLIF(?email1,'') IS NOT NULL THEN 'email' WHEN NULLIF(?phone1,'') IS NOT NULL THEN 'phone_number' WHEN NULLIF(?address1,'') IS NOT NULL THEN 'address_line1' ELSE 'unknown' END, CASE WHEN NULLIF(?email2,'') IS NOT NULL THEN ph.email WHEN NULLIF(?phone2,'') IS NOT NULL THEN ph.phone_number WHEN NULLIF(?address2,'') IS NOT NULL THEN ph.address_line1 ELSE '' END, COALESCE(NULLIF(?email3,''), NULLIF(?phone3,''), NULLIF(?address3,'')), TO_CHAR(CURRENT_TIMESTAMP,'YYYY-MM-DD HH24:MI') FROM public.policyholders ph JOIN public.policies po ON po.policyholder_id = ph.policyholder_id WHERE po.policy_number = ?policy_number1;",
+                "State": "47eae986-5b5d-4845-9a87-1059ded0f0c8INSERT INTO public.contact_change_log (change_id, policyholder_id, field_changed, old_value, new_value, changed_at) SELECT ?change_id1, ph.policyholder_id, CASE WHEN NULLIF(?email1,'') IS NOT NULL THEN 'email' WHEN NULLIF(?phone1,'') IS NOT NULL THEN 'phone_number' WHEN NULLIF(?address1,'') IS NOT NULL THEN 'address_line1' ELSE 'unknown' END, CASE WHEN NULLIF(?email2,'') IS NOT NULL THEN ph.email WHEN NULLIF(?phone2,'') IS NOT NULL THEN ph.phone_number WHEN NULLIF(?address2,'') IS NOT NULL THEN ph.address_line1 ELSE '' END, COALESCE(NULLIF(?email3,''), NULLIF(?phone3,''), NULLIF(?address3,'')), TO_CHAR(CURRENT_TIMESTAMP,'YYYY-MM-DD HH24:MI') FROM public.policyholders ph JOIN public.policies po ON po.policyholder_id = ph.policyholder_id WHERE po.policy_number = ?policy_number1;",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -1126,7 +1126,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "5dea61bb-24a5-4282-a871-65cd9f0f250eUPDATE public.policyholders SET email = COALESCE(NULLIF(?email1,''), email), phone_number = COALESCE(NULLIF(?phone1,''), phone_number), address_line1 = COALESCE(NULLIF(?address1,''), address_line1) WHERE policyholder_id = (SELECT policyholder_id FROM public.policies WHERE policy_number = ?policy_number1);",
+                "State": "70127a43-a2ed-4d68-9c43-1a5b083aa51cUPDATE public.policyholders SET email = COALESCE(NULLIF(?email1,''), email), phone_number = COALESCE(NULLIF(?phone1,''), phone_number), address_line1 = COALESCE(NULLIF(?address1,''), address_line1) WHERE policyholder_id = (SELECT policyholder_id FROM public.policies WHERE policy_number = ?policy_number1);",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -1393,7 +1393,7 @@
     {
       "name": "AgenticAI.OpenAIConn.API_Key",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "sk-REPLACE-WITH-YOUR-OPENAI-KEY"
     },
     {
       "name": "AgenticAI.OpenAIConn.LLM_Base_URL",
@@ -1423,7 +1423,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",
@@ -1458,22 +1458,22 @@
     {
       "name": "LLM_Model",
       "type": "string",
-      "value": "gpt-5.6"
+      "value": "gpt-5.5"
     },
     {
       "name": "To_Email",
       "type": "string",
-      "value": "nikhil.shah.84@gmail.com"
+      "value": "recipient@example.com"
     },
     {
       "name": "Email_Username",
       "type": "string",
-      "value": "nikhil.shah.84@gmail.com"
+      "value": "sender@example.com"
     },
     {
       "name": "Email_App_Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "FileClaim_A2AServer_PORT",

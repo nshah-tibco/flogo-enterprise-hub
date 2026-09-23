@@ -724,7 +724,7 @@
     {
       "name": "FlogoMcpServer.JWT_TOKEN_SECRET",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SET_YOUR_JWT_SECRET"
     }
   ],
   "connections": {},

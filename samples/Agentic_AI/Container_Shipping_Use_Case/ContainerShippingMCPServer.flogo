@@ -30,7 +30,13 @@
         "serverCertificate": "",
         "serverPrivateKey": "",
         "authType": "None",
-        "authToken": ""
+        "authToken": "",
+        "oauthIssuer": "",
+        "oauthJWKSURL": "",
+        "oauthAudience": "",
+        "oauthAuthorizationServers": "",
+        "oauthRequiredScopes": "",
+        "oauthResourceURL": ""
       },
       "id": "ContainerShippingMCPServer",
       "handlers": [
@@ -543,7 +549,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "c0000001-9720-4a10-b001-000000000001SELECT * FROM public.customers ORDER BY customer_code ASC;"
+                "State": "f0d179bd-61b2-4c34-b462-05c481fee5d6SELECT * FROM public.customers ORDER BY customer_code ASC;"
               },
               "schemas": {
                 "input": {
@@ -746,7 +752,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "c0000002-9720-4a10-b002-000000000002SELECT * FROM public.bookings ORDER BY customer_code ASC, booking_ref ASC;"
+                "State": "d6c2e34b-0e7d-4521-ab81-73892997b307SELECT * FROM public.bookings ORDER BY customer_code ASC, booking_ref ASC;"
               },
               "schemas": {
                 "input": {
@@ -914,7 +920,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "c0000003-9720-4a10-b003-000000000003SELECT * FROM public.containers ORDER BY booking_ref ASC, container_no ASC;"
+                "State": "5a4e30bb-1492-4563-883c-750b68214f7eSELECT * FROM public.containers ORDER BY booking_ref ASC, container_no ASC;"
               },
               "schemas": {
                 "input": {
@@ -1075,7 +1081,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "c0000004-9720-4a10-b004-000000000004SELECT * FROM public.tracking_events ORDER BY container_no ASC, event_time ASC;"
+                "State": "891598b9-3800-4859-948b-8bf8b83ddf57SELECT * FROM public.tracking_events ORDER BY container_no ASC, event_time ASC;"
               },
               "schemas": {
                 "input": {
@@ -1088,8 +1094,8 @@
                 "output": {
                   "Output": {
                     "type": "json",
-                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"event_id\":{\"type\":\"integer\"},\"container_no\":{\"type\":\"string\"},\"event_time\":{\"type\":\"string\",\"format\":\"date-time\"},\"location_port\":{\"type\":\"string\"},\"event_type\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"}}}}}}",
-                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"event_id\":{\"type\":\"integer\"},\"container_no\":{\"type\":\"string\"},\"event_time\":{\"type\":\"string\",\"format\":\"date-time\"},\"location_port\":{\"type\":\"string\"},\"event_type\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"}}}}}}"
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"event_id\":{\"type\":\"integer\"},\"container_no\":{\"type\":\"string\"},\"event_time\":{\"type\":\"string\",\"format\":\"time\"},\"location_port\":{\"type\":\"string\"},\"event_type\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"event_id\":{\"type\":\"integer\"},\"container_no\":{\"type\":\"string\"},\"event_time\":{\"type\":\"string\",\"format\":\"time\"},\"location_port\":{\"type\":\"string\"},\"event_type\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"}}}}}}"
                   }
                 }
               },
@@ -1278,7 +1284,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "c0000005-9720-4a10-b005-000000000005SELECT v.voyage_id, v.service_name, v.vessel_id, ve.vessel_name, v.origin_port, po.port_name AS origin_port_name, v.destination_port, pd.port_name AS destination_port_name, v.etd, v.eta, v.transit_days, v.status FROM public.voyages v JOIN public.vessels ve ON v.vessel_id = ve.vessel_id JOIN public.ports po ON v.origin_port = po.port_code JOIN public.ports pd ON v.destination_port = pd.port_code ORDER BY v.etd ASC;"
+                "State": "b7d33f64-edfb-4118-aa43-7ba34a2b83a1SELECT v.voyage_id, v.service_name, v.vessel_id, ve.vessel_name, v.origin_port, po.port_name AS origin_port_name, v.destination_port, pd.port_name AS destination_port_name, v.etd, v.eta, v.transit_days, v.status FROM public.voyages v JOIN public.vessels ve ON v.vessel_id = ve.vessel_id JOIN public.ports po ON v.origin_port = po.port_code JOIN public.ports pd ON v.destination_port = pd.port_code ORDER BY v.etd ASC;"
               },
               "schemas": {
                 "input": {
@@ -1481,7 +1487,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "c0000006-9720-4a10-b006-000000000006SELECT r.rate_id, r.origin_port, po.port_name AS origin_port_name, r.destination_port, pd.port_name AS destination_port_name, r.container_type, ct.description AS container_description, r.base_rate_usd, r.currency, r.transit_days, r.valid_from, r.valid_to FROM public.rates r JOIN public.container_types ct ON r.container_type = ct.type_code JOIN public.ports po ON r.origin_port = po.port_code JOIN public.ports pd ON r.destination_port = pd.port_code ORDER BY r.origin_port ASC, r.destination_port ASC, r.container_type ASC;"
+                "State": "464761aa-e335-4361-aef0-613e82457673SELECT r.rate_id, r.origin_port, po.port_name AS origin_port_name, r.destination_port, pd.port_name AS destination_port_name, r.container_type, ct.description AS container_description, r.base_rate_usd, r.currency, r.transit_days, r.valid_from, r.valid_to FROM public.rates r JOIN public.container_types ct ON r.container_type = ct.type_code JOIN public.ports po ON r.origin_port = po.port_code JOIN public.ports pd ON r.destination_port = pd.port_code ORDER BY r.origin_port ASC, r.destination_port ASC, r.container_type ASC;"
               },
               "schemas": {
                 "input": {
@@ -1663,7 +1669,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "c0000007-9720-4a10-b007-000000000007SELECT * FROM public.charges ORDER BY booking_ref ASC, charge_id ASC;"
+                "State": "d70d6c10-2bbd-4242-9782-e741743b59a4SELECT * FROM public.charges ORDER BY booking_ref ASC, charge_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -1845,7 +1851,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "c0000008-9720-4a10-b008-000000000008SELECT * FROM public.claims ORDER BY customer_code ASC, filed_date DESC;"
+                "State": "1e8fef7e-e399-49f8-bcc0-5e2455339992SELECT * FROM public.claims ORDER BY customer_code ASC, filed_date DESC;"
               },
               "schemas": {
                 "input": {
@@ -1938,7 +1944,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",
@@ -2006,7 +2012,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuMyIsInRhZyI6IjEuMC4zLWIwMiIsIm5hbWUiOiJNb2RlbCBDb250ZXh0IFByb3RvY29sIChNQ1ApIiwiczNsb2NhdGlvbiI6IlRpYmNvL01DUCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjEiLCJ0YWciOiIyLjcuMS1iMDEiLCJuYW1lIjoiUG9zdGdyZVNRTCIsInMzbG9jYXRpb24iOiJUaWJjby9Qb3N0Z3JlU1FMIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuNCIsInRhZyI6IjEuMC40LWIwMiIsIm5hbWUiOiJNb2RlbCBDb250ZXh0IFByb3RvY29sIChNQ1ApIiwiczNsb2NhdGlvbiI6IlRpYmNvL01DUCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjIiLCJ0YWciOiIyLjcuMi1iMDEiLCJuYW1lIjoiUG9zdGdyZVNRTCIsInMzbG9jYXRpb24iOiJUaWJjby9Qb3N0Z3JlU1FMIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
   "metadata": {
     "endpoints": [
       {
@@ -2016,6 +2022,6 @@
         "type": "public"
       }
     ],
-    "flogoVersion": "2.26.5"
+    "flogoVersion": "2.26.7"
   }
 }

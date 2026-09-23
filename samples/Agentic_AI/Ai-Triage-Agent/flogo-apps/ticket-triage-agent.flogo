@@ -152,7 +152,17 @@
                 "flowInfo": false,
                 "message": "=string.concat('Triage event: ', coerce.toString($flow.body))",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -172,9 +182,8 @@
                 "redactSensitiveData": true,
                 "responseType": "JSON",
                 "agentHandoffs": "",
-                "mcpServers": [
-                  "9ad67e43-f78e-4837-9f01-881d9036bcf0"
-                ],
+                "remoteAgents": [],
+                "mcpServers": [],
                 "conversationStoreType": "None",
                 "memoryMaxSize": 10,
                 "systemPrompt": "You are a BW6→ServiceNow triage agent. Execute exactly:\n\nS1 VALIDATE: if appName|errorCode|timestamp missing → reject_bad_data(correlationId, reason=\"Missing required fields\", timestamp, appName, appNode, processName, activityName, errorCode, errorMsg) → BAD_DATA, STOP.\n\nS2 SEARCH: search_incidents(errorCode, appName, window_min=60) → matches[], N=len.\n\nS3 TRIAGE:\nN=0 → NEW(conf=1.0): create_incident(short_description=errorCode+\" in \"+appName, description=errorMsg, u_stack_trace, u_error_code, u_app_name, u_app_node, u_process_name, u_activity_name, u_correlation_id, urgency=\"2\", impact=\"2\", u_decision_source=\"agent-new\", u_agent_confidence=1.0, u_triage_reason=\"No open match\") → ticketId=result.sys_id → S4.\nN≥1, c=matches[0], score conf:\n  ≥0.85: same processName+activityName+downstream URL\n  0.75-0.84: same processName xor downstream URL\n  <0.75: both differ, or intermittent, or severity escalated 2+\nconf≥0.75 → DUPLICATE_OF: append_occurrence(c.sys_id, \"Seen again at \"+timestamp+\" on \"+appNode) → ticketId=c.sys_id → FINAL (skip S4).\nconf<0.75 → NEW(low-conf): create_incident(...urgency=\"2\", impact=\"1\", u_decision_source=\"agent-low-confidence\", u_agent_confidence=score, u_triage_reason=\"Low conf vs \"+c.sys_id) → ticketId=result.sys_id; append_occurrence(c.sys_id, \"Possible dup(conf=\"+score+\"): \"+ticketId+\" opened\") → S4.\n\nS4 RESOLUTION (NEW only):\na. search_past_resolutions(errorCode) → pastFixes[].\nb. Build: {\"likely_cause\":\"<1-2 sentences, BW6-specific>\",\"recommended_steps\":[\"<up to 5 BW6/TIBCO-specific steps>\"],\"runbook_ref\":\"<from pastFixes or null>\",\"estimated_effort\":\"<e.g. 15 min>\",\"based_on_past_fix\":<true if pastFixes influenced steps>,\"disclaimer\":\"AI-suggested — verify before applying in production.\"}. Steps must be BW6/TIBCO-specific; reference pastFixes in ≥1 step if non-empty.\nc. update_incident_resolution(sys_id=ticketId, resolution=JSON.stringify(object)) → wait.\n\nCONSTRAINTS:\n- One create_incident per event max.\n- Never emit final JSON until all tool calls return.\n- ticketId=raw sys_id; null only for BAD_DATA.\n- NEW: call update_incident_resolution before final JSON.\n- DUPLICATE_OF: skip update_incident_resolution.\n\nTOOLS:\nsearch_incidents(errorCode,appName,window_min)→{response:{result:[{sys_id,u_error_code,u_app_name,u_app_node,u_process_name,opened_at,active,u_occurrence_count}]}}\ncreate_incident(short_description,description,u_stack_trace?,u_error_code,u_app_name,u_app_node?,u_process_name?,u_activity_name?,u_correlation_id?,urgency?,impact?,u_decision_source?,u_agent_confidence?,u_triage_reason?)→{response:{result:{sys_id,number,...}}}\nappend_occurrence(sys_id,occurrence_note?)→{response:{result:{sys_id,number,u_occurrence_count,...}}}\nreject_bad_data(correlationId,reason,timestamp?,appName?,appNode?,processName?,activityName?,errorCode?,errorMsg?)→{response:{result:{status,count}}}\nsearch_past_resolutions(errorCode)→{response:{result:[{sys_id,number,u_error_code,u_app_name,u_resolution_recommendation,sys_updated_on}]}}\nupdate_incident_resolution(sys_id,resolution[JSON string])→{response:{result:{sys_id,number,...}}}\nfetch_incident(sys_id)→{response:{result:<incident>}}\n\nOUTPUT: strict JSON only, no prose/markdown/fences.\n{\"decision\":\"NEW|DUPLICATE_OF|BAD_DATA\",\"ticketId\":\"<sys_id or null>\",\"confidence\":<0.0-1.0>,\"reason\":\"<one sentence>\",\"resolution\":{\"likely_cause\":\"<string>\",\"recommended_steps\":[\"<step1>\",\"<step2>\",\"...\"],\"runbook_ref\":\"<string or null>\",\"estimated_effort\":\"<string>\",\"based_on_past_fix\":<true|false>,\"disclaimer\":\"AI-suggested — verify before applying in production.\"}}"
@@ -182,7 +191,17 @@
               "input": {
                 "userPrompt": "=string.concat('Triage this BW6 error event and act via MCP tools. Event: ', coerce.toString($flow.body))",
                 "conversationId": "=coerce.toString($flow.body.correlationId)"
-              }
+              },
+              "schemas": {
+                "input": {
+                  "filteredToolNames": {
+                    "type": "json",
+                    "value": "{\r\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\r\n  \"type\": \"array\",\r\n  \"items\": {\r\n    \"type\": \"string\"\r\n  }\r\n}\r\n",
+                    "fe_metadata": "{\r\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\r\n  \"type\": \"array\",\r\n  \"items\": {\r\n    \"type\": \"string\"\r\n  }\r\n}\r\n"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -196,7 +215,17 @@
                 "flowInfo": false,
                 "message": "=string.concat('AUDIT triage outcome: ', coerce.toString($activity[TriageAgent]))",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -274,12 +303,12 @@
     {
       "name": "AgenticAI.LLMConn.API_Key",
       "type": "string",
-      "value": "SECRET:SpodQjd1iQAt/r+qb5Wi31cLIwjyegwA8Noud4xG1cP9dcCYaxhnZH6ofqJbN4leHHRcXygX5AOe5OCNKYv2paAG3D40wFH/Qw=="
+      "value": "sk-REPLACE-WITH-YOUR-OPENAI-KEY"
     },
     {
       "name": "AgenticAI.LLMConn.LLM_Base_URL",
       "type": "string",
-      "value": "https://ollama.com/v1"
+      "value": ""
     },
     {
       "name": "CONFIDENCE_FLOOR",
@@ -289,7 +318,7 @@
     {
       "name": "LLM_MODEL",
       "type": "string",
-      "value": "deepseek-v3.1:671b-cloud"
+      "value": "gpt-5.5"
     },
     {
       "name": "SN_SEARCH_WINDOW_MIN",
@@ -309,7 +338,11 @@
         "llmProvider": "=$property[\"AgenticAI.LLMConn.LLM_Provider\"]",
         "anthropicProvider": "Default",
         "apiKey": "=$property[\"AgenticAI.LLMConn.API_Key\"]",
-        "llmProviderUrl": "=$property[\"AgenticAI.LLMConn.LLM_Base_URL\"]"
+        "llmProviderUrl": "=$property[\"AgenticAI.LLMConn.LLM_Base_URL\"]",
+        "azureDeployment": "",
+        "azureRegion": "",
+        "azureResourceName": "",
+        "azureApiVersion": ""
       }
     },
     "9ad67e43-f78e-4837-9f01-881d9036bcf0": {
@@ -337,7 +370,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTMiLCJ0YWciOiIxLjYuMTMtYjAzIiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS4xIiwidGFnIjoiMC45LjEtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTYiLCJ0YWciOiIxLjYuMTYtYjA1IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS40IiwidGFnIjoiMC45LjQtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
   "metadata": {
     "endpoints": [
       {
@@ -457,6 +490,6 @@
         }
       }
     ],
-    "flogoVersion": "2.26.3"
+    "flogoVersion": "2.26.7"
   }
 }

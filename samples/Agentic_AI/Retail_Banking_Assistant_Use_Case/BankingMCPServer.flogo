@@ -466,7 +466,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "54f9cf99-438d-4895-be07-9f6a5c19cb05SELECT * FROM public.customers ORDER BY customer_id ASC;"
+                "State": "1673172e-a550-4e9d-8a17-77f3eae37b1dSELECT * FROM public.customers ORDER BY customer_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -641,7 +641,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "7e145467-4860-466d-b394-2833dfe5cbbdSELECT * FROM public.accounts ORDER BY account_id ASC;"
+                "State": "aeba12dd-402a-43bf-bab2-a56feac0f18eSELECT * FROM public.accounts ORDER BY account_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -830,7 +830,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "474de88c-7ee2-4773-a451-00db2f348273SELECT * FROM public.transactions ORDER BY txn_date DESC;"
+                "State": "9e3275a5-8cbe-4880-a591-ef7470d6e559SELECT * FROM public.transactions ORDER BY txn_date DESC;"
               },
               "schemas": {
                 "input": {
@@ -1012,7 +1012,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "5c631db5-629e-4d30-9bbf-a429d310f2b0SELECT * FROM public.cards ORDER BY card_id ASC;"
+                "State": "5ed1706c-ff8a-4282-9a2f-7ac77bf17ba1SELECT * FROM public.cards ORDER BY card_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -1194,7 +1194,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "49db6214-4d32-4002-8b7b-bd4cc9ed568bSELECT * FROM public.loans ORDER BY loan_id ASC;"
+                "State": "8ca97b31-6c92-44b4-8b79-8ca56c7ca29fSELECT * FROM public.loans ORDER BY loan_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -1362,7 +1362,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "e239c23e-4637-431a-8dd9-f73e3df6621bSELECT * FROM public.disputes ORDER BY dispute_id ASC;"
+                "State": "64e2774c-ab45-49ec-82ad-4dcb72a475d5SELECT * FROM public.disputes ORDER BY dispute_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -1537,7 +1537,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "486005f7-a351-4791-a388-aa521050e812SELECT * FROM public.branches ORDER BY branch_id ASC;"
+                "State": "815b8bdf-8539-4a52-86ae-cfdc4653385dSELECT * FROM public.branches ORDER BY branch_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -1630,7 +1630,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",

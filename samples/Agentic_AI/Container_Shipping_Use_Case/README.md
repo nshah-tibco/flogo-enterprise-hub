@@ -29,7 +29,7 @@ container-shipping domain:
 | `ContainerShippingMCPServer.flogo` | ✅ **Container shipping** (app `ContainerShippingMCPServer`, 8 tools, DB `container_shipping`) |
 | `database.sql` / `reset_data.sql` | ✅ **Container shipping** schema + seed data |
 | `ContainerShippingA2AServers.flogo` | ❌ **Stale copy** — the app inside is still `LifePensionsA2AServers` (beneficiary / contribution / fund-switch / claim / adviser-callback / email agents). It does **not** yet implement the container-shipping write agents. |
-| `ContainerShippingAIOrchestrator.flogo` | ❌ **Stale copy** — the app inside is still `LifePensionsAIOrchestrator` (Life & Pensions system prompt, WS path `/lifepensions`, and MCP `serverUrl` pointing at `:9982/life-pensions` instead of the real MCP at `:9720/shipping-bss`). |
+| `ContainerShippingAIOrchestrator.flogo` | ❌ **Stale copy** — the app inside is still `LifePensionsAIOrchestrator` (Life & Pensions system prompt and WS path `/lifepensions`). Its MCP `serverUrl` has been corrected to the real MCP at `:9720/shipping-bss`; the prompt and path still need converting. |
 
 The MCP read side and the database run end-to-end today. The **A2A Servers / Agents app and the
 Orchestrator must be rebuilt for this domain** (new system prompt, new write flows, matching
@@ -60,8 +60,8 @@ Chatbot UI --WebSocket--> AI Orchestrator --MCP (HTTP streamable)--> MCP Server 
 | App | File | Trigger | Port (property) + path |
 |-----|------|---------|------------------------|
 | MCP Server | `ContainerShippingMCPServer.flogo` | `#mcpserver` | `MCP_SERVER_PORT` = **9720**, path `/shipping-bss` |
-| A2A Servers / Agents | `ContainerShippingA2AServers.flogo` | `#agent` ×N | see agent table (⚠️ currently stale ports **9983–9988**) |
-| AI Orchestrator | `ContainerShippingAIOrchestrator.flogo` | `#wsserver` | **9600** (⚠️ shipped path `/lifepensions`; should be a container-shipping path) |
+| A2A Servers / Agents | `ContainerShippingA2AServers.flogo` | `#agent` ×N | see agent table (⚠️ currently stale ports **9301–9306**) |
+| AI Orchestrator | `ContainerShippingAIOrchestrator.flogo` | `#wsserver` | **9300** (⚠️ shipped path `/lifepensions`; should be a container-shipping path) |
 
 ---
 
@@ -90,7 +90,7 @@ container.
 > agent names declared in `database.sql`. The shipped `ContainerShippingA2AServers.flogo` does **not**
 > implement them yet — it still contains the Life & Pensions agents (see Build status above). Ports
 > below are **to be assigned** when the app is rebuilt; the file currently ships placeholder ports
-> **9983–9988** bound to the old Life & Pensions agents.
+> **9301–9306** bound to the old Life & Pensions agents.
 
 | Agent (intended) | Action | Writes to |
 |------------------|--------|-----------|
@@ -99,9 +99,9 @@ container.
 | `amend_booking` | Request a booking amendment (field change, reason; status `Requested`) | INSERT `booking_amendments` |
 | `dispute_charge` | Dispute a charge (e.g. demurrage/detention) with a reason and amount (status `Open`) | INSERT `charge_disputes` |
 
-**Currently shipped (stale, Life & Pensions):** `update_beneficiary_agent` (9983), `change_contribution_agent`
-(9984), `fund_switch_agent` (9985), `submit_claim_agent` (9986), `adviser_callback_agent` (9987),
-`send_confirmation_email` (9988, SMTP via `Email_App_Password`). Replace these when rebuilding for
+**Currently shipped (stale, Life & Pensions):** `update_beneficiary_agent` (9301), `change_contribution_agent`
+(9302), `fund_switch_agent` (9303), `submit_claim_agent` (9304), `adviser_callback_agent` (9305),
+`send_confirmation_email` (9306, SMTP via `Email_App_Password`). Replace these when rebuilding for
 this domain.
 
 ---
@@ -191,22 +191,27 @@ today against the MCP server; write scenarios require the rebuilt A2A Servers / 
    email agent. See the manual-config section below.
 4. **Start order:** **MCP Server → A2A Servers / Agents → Orchestrator.**
 5. **Connect a WebSocket client** to `ws://<host>:<wsPort>/<path>` (as shipped that is
-   `ws://<host>:9600/lifepensions` — rename the path when you rebuild the Orchestrator) and start chatting.
+   `ws://<host>:9300/lifepensions` — rename the path when you rebuild the Orchestrator) and start chatting.
 
 ---
 
 ## Ports
 
+> **Note:** this use case was cloned from Life & Pensions and originally shipped on that sample's
+> ports (orchestrator `9600`, agents `9983–9988`), which collided when both use cases ran on the
+> same host. They have been remapped to **9300** (orchestrator) and **9301–9306** (agents). The
+> orchestrator's A2A `serverUrl` connections were updated to match.
+
 | Component | Property | Value (as shipped) | Notes |
 |-----------|----------|--------------------|-------|
 | MCP Server | `MCP_SERVER_PORT` | **9720** (path `/shipping-bss`) | ✅ container shipping |
-| Orchestrator (WebSocket) | `#wsserver` trigger port | **9600** (path `/lifepensions`) | ⚠️ stale path; MCP `serverUrl` points at `:9982/life-pensions` (wrong — should be `:9720/shipping-bss`) |
-| A2A agent 1 | `UpdateBeneficiary_A2AServer_PORT` | 9983 | ⚠️ stale (Life & Pensions) — reassign for `book_shipment` |
-| A2A agent 2 | `ChangeContribution_A2AServer_PORT` | 9984 | ⚠️ stale — reassign for `file_claim` |
-| A2A agent 3 | `FundSwitch_A2AServer_PORT` | 9985 | ⚠️ stale — reassign for `amend_booking` |
-| A2A agent 4 | `SubmitClaim_A2AServer_PORT` | 9986 | ⚠️ stale — reassign for `dispute_charge` |
-| A2A agent 5 | `AdviserCallback_A2AServer_PORT` | 9987 | ⚠️ stale (no equivalent unless you add one) |
-| A2A agent 6 | `SendEmail_A2AServer_PORT` | 9988 | ⚠️ stale (optional email agent) |
+| Orchestrator (WebSocket) | `#wsserver` trigger port | **9300** (path `/lifepensions`) | ⚠️ stale path; MCP `serverUrl` now correctly points at `:9720/shipping-bss` |
+| A2A agent 1 | `UpdateBeneficiary_A2AServer_PORT` | 9301 | ⚠️ stale (Life & Pensions) — reassign for `book_shipment` |
+| A2A agent 2 | `ChangeContribution_A2AServer_PORT` | 9302 | ⚠️ stale — reassign for `file_claim` |
+| A2A agent 3 | `FundSwitch_A2AServer_PORT` | 9303 | ⚠️ stale — reassign for `amend_booking` |
+| A2A agent 4 | `SubmitClaim_A2AServer_PORT` | 9304 | ⚠️ stale — reassign for `dispute_charge` |
+| A2A agent 5 | `AdviserCallback_A2AServer_PORT` | 9305 | ⚠️ stale (no equivalent unless you add one) |
+| A2A agent 6 | `SendEmail_A2AServer_PORT` | 9306 | ⚠️ stale (optional email agent) |
 
 ---
 
@@ -255,7 +260,7 @@ with your own before an end-to-end run. Never commit real secrets.
    - Verify connectivity: run each MCP tool's `SELECT` and each A2A write's SQL against the DB.
 
 4. **Ports must be free & consistent.**
-   - MCP **9720** and the orchestrator WebSocket **9600** must be free on the host, plus a port per
+   - MCP **9720** and the orchestrator WebSocket **9300** must be free on the host, plus a port per
      A2A agent. The orchestrator's MCP `serverUrl` and each A2A `serverUrl` must match those ports.
    - If you change a port, change it in the app property **and** in the corresponding orchestrator connection URL.
 

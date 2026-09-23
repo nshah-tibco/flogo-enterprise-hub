@@ -208,7 +208,7 @@
     {
       "name": "AgenticAI.OpenAIConn.API_Key",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "sk-REPLACE-WITH-YOUR-OPENAI-KEY"
     },
     {
       "name": "AgenticAI.OpenAIConn.LLM_Base_URL",
@@ -218,12 +218,12 @@
     {
       "name": "LLM_Model",
       "type": "string",
-      "value": "gpt-5.6"
+      "value": "gpt-5.5"
     },
     {
       "name": "Websocket_PORT",
       "type": "float64",
-      "value": 8088
+      "value": 9310
     }
   ],
   "connections": {
@@ -345,11 +345,11 @@
     "endpoints": [
       {
         "protocol": "http",
-        "port": "8088",
+        "port": "9310",
         "title": "WebsocketServer",
         "type": "public"
       }
     ],
-    "flogoVersion": "2.26.6"
+    "flogoVersion": "2.26.7"
   }
 }

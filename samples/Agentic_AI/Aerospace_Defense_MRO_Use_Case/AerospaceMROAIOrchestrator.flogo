@@ -6,6 +6,7 @@
     "github.com/project-flogo/websocket/activity/wswritedata",
     "github.com/project-flogo/websocket/trigger/wsserver",
     "github.com/project-flogo/contrib/function/coerce",
+    "github.com/project-flogo/contrib/function/array",
     "github.com/tibco/flogo-ai-agent/src/app/AgenticAI/connector/llmprovider",
     "github.com/tibco/flogo-ai-agent/src/app/AgenticAI/connector/mcpserverconfig",
     "github.com/tibco/flogo-ai-agent/src/app/AgenticAI/connector/a2aserverconnection"
@@ -201,17 +202,17 @@
     {
       "name": "AgenticAI.OpenAIConn.API_Key",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "sk-REPLACE-WITH-YOUR-OPENAI-KEY"
     },
     {
       "name": "AgenticAI.OpenAIConn.LLM_Base_URL",
       "type": "string",
-      "value": "https://api.openai.com/v1"
+      "value": ""
     },
     {
       "name": "LLM_Model",
       "type": "string",
-      "value": "gpt-5.6"
+      "value": "gpt-5.5"
     },
     {
       "name": "WebSocket_PORT",

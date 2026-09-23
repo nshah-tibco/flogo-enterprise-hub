@@ -378,7 +378,7 @@
     {
       "name": "AgenticAI.openai.API_Key",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "sk-REPLACE-WITH-YOUR-OPENAI-KEY"
     },
     {
       "name": "AgenticAI.openai.LLM_Base_URL",
@@ -398,7 +398,7 @@
     {
       "name": "Trigger_Settings.LLM_Model",
       "type": "string",
-      "value": "gpt-4o"
+      "value": "gpt-5.5"
     },
     {
       "name": "Trigger_Settings.LLM_temperature",
@@ -423,7 +423,7 @@
     {
       "name": "A2A.AuthToken",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SET_YOUR_AUTH_TOKEN"
     },
     {
       "name": "A2A.ServerPort",
@@ -451,7 +451,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS4zIiwidGFnIjoiMC45LjMtYjA3LTAuOS4zIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS40IiwidGFnIjoiMC45LjQtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
   "metadata": {
     "endpoints": [
       {
@@ -461,6 +461,6 @@
         "type": "public"
       }
     ],
-    "flogoVersion": "2.26.5"
+    "flogoVersion": "2.26.7"
   }
 }

@@ -406,7 +406,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "25c8c96d-87d6-4747-a50c-b7d806ee9829SELECT * FROM public.aircraft ORDER BY tail_number ASC;",
+                "State": "20298fdd-a3b1-49fa-b685-bc47a5465e4eSELECT * FROM public.aircraft ORDER BY tail_number ASC;",
                 "input": {
                   "mapping": {}
                 }
@@ -605,7 +605,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "33d293a7-f5fa-4e76-9e26-ea801b9df6d0SELECT * FROM public.work_orders ORDER BY wo_number ASC;",
+                "State": "fe0924d2-da37-4fb0-83c7-624e8fe36901SELECT * FROM public.work_orders ORDER BY wo_number ASC;",
                 "input": {
                   "mapping": {}
                 }
@@ -797,7 +797,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "a80af9de-26a4-4cbf-b9f4-ba07c93d351bSELECT * FROM public.parts_inventory ORDER BY part_number ASC;",
+                "State": "6ece126d-08f8-4ed9-9abd-042f04898965SELECT * FROM public.parts_inventory ORDER BY part_number ASC;",
                 "input": {
                   "mapping": {}
                 }
@@ -989,7 +989,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "97fb1482-734d-430f-9385-7bd3ef7966fcSELECT * FROM public.part_orders ORDER BY order_id ASC;",
+                "State": "77393394-8fa4-4bd9-9c42-4f8888aac0f8SELECT * FROM public.part_orders ORDER BY order_id ASC;",
                 "input": {
                   "mapping": {}
                 }
@@ -1174,7 +1174,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "01a8596e-44ee-42b4-a7b5-aaafad579b54SELECT * FROM public.technicians ORDER BY tech_id ASC;",
+                "State": "6dffd4c0-a559-4176-becb-92d56132ff0cSELECT * FROM public.technicians ORDER BY tech_id ASC;",
                 "input": {
                   "mapping": {}
                 }
@@ -1359,7 +1359,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "8d07a30b-3199-47ca-b26e-25f4561e07baSELECT * FROM public.aog_incidents ORDER BY aog_id ASC;",
+                "State": "307ed812-2b25-4809-b735-2a8a58eb81c7SELECT * FROM public.aog_incidents ORDER BY aog_id ASC;",
                 "input": {
                   "mapping": {}
                 }
@@ -1447,12 +1447,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
-    },
-    {
-      "name": "MCP_SERVER_PORT",
-      "type": "string",
-      "value": "9095"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",
@@ -1483,6 +1478,11 @@
       "name": "PostgreSQL.PostgresConn.Connection_Timeout",
       "type": "float64",
       "value": 20
+    },
+    {
+      "name": "MCP_SERVER_PORT",
+      "type": "string",
+      "value": "9095"
     }
   ],
   "schemas": {

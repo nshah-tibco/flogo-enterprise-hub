@@ -44,7 +44,7 @@ Chatbot UI --WebSocket--> AI Orchestrator --MCP (HTTP streamable)--> MCP Server 
 |-----|------|---------|-----------------|
 | MCP Server | `SemiconductorMCPServer.flogo` | `#mcpserver` | `MCP_SERVER_PORT` = **9098**, path `/semiconductor-parts` |
 | A2A Servers / Agents | `SemiconductorA2AServers.flogo` | `#agent` ×6 | see agent table below (**8730–8735**) |
-| AI Orchestrator | `SemiconductorAIOrchestrator.flogo` | `#wsserver` | **8088**, path `/semiconductor` |
+| AI Orchestrator | `SemiconductorAIOrchestrator.flogo` | `#wsserver` | **9310**, path `/semiconductor` |
 
 ---
 
@@ -152,9 +152,12 @@ See `prompts.md` for the full, copy-pasteable prompt list.
 3. **Set app properties** (DB creds, LLM key/base URL/model, SMTP creds, ports, recipient email) —
    see the manual-config section below.
 4. **Start order:** MCP Server → A2A Servers / Agents → Orchestrator.
-5. **Connect a WebSocket client** to `ws://<host>:8088/semiconductor` and start chatting.
+5. **Connect a WebSocket client** to `ws://<host>:9310/semiconductor` and start chatting.
 
 ## Ports
+
+> **Note:** the orchestrator WebSocket port was moved from `8088` to **9310** because `8088` collided
+> with the Retail Banking Assistant use case when both ran on the same host.
 
 | Component | Property | Default |
 |-----------|----------|---------|
@@ -165,7 +168,7 @@ See `prompts.md` for the full, copy-pasteable prompt list.
 | Request-sample agent | `RequestSample_A2AServer_PORT` | 8733 |
 | Subscribe-alert agent | `SubscribeAlert_A2AServer_PORT` | 8734 |
 | Email agent | `SendEmail_A2AServer_PORT` | 8735 |
-| Orchestrator (WebSocket) | `#wsserver` | 8088 (path `/semiconductor`) |
+| Orchestrator (WebSocket) | `#wsserver` | 9310 (path `/semiconductor`) |
 
 ## Troubleshooting
 
@@ -202,7 +205,7 @@ with your own before an end-to-end run. Never commit real secrets.
 
 3. **Ports must be free & consistent.**
    - MCP **9098**, place **8730**, expedite **8731**, RMA **8732**, sample **8733**, subscribe **8734**,
-     email **8735**, and the orchestrator WebSocket **8088** must all be free on the host.
+     email **8735**, and the orchestrator WebSocket **9310** must all be free on the host.
    - The orchestrator's MCP `serverUrl` and each A2A `serverUrl` must match those ports. If you change a
      port, change it in the app property **and** in the corresponding orchestrator connection URL.
 
@@ -214,7 +217,7 @@ with your own before an end-to-end run. Never commit real secrets.
      property type as `string` — there is no `password` app-property type).
 
 5. **Chatbot / WebSocket client.**
-   - The orchestrator exposes `ws://<host>:8088/semiconductor`. Point your chat UI (or a WS test client)
+   - The orchestrator exposes `ws://<host>:9310/semiconductor`. Point your chat UI (or a WS test client)
      at it — there is no bundled UI. See `prompts.md` for ready-to-paste demo prompts.
 
 6. **Flogo designer manual steps** (clear design-time validation).
@@ -233,4 +236,4 @@ with your own before an end-to-end run. Never commit real secrets.
 - [ ] `Email_App_Password` re-entered as a `SECRET:` (type stays `string`); SMTP reachable
 - [ ] Every trigger Synced; every connection validated in the designer
 - [ ] Start order: MCP → A2A → Orchestrator; each logs a clean start
-- [ ] WebSocket client connects to `ws://<host>:8088/semiconductor` and gets a reply
+- [ ] WebSocket client connects to `ws://<host>:9310/semiconductor` and gets a reply

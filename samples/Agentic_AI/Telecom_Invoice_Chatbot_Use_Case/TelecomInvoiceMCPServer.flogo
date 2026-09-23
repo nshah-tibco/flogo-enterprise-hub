@@ -508,7 +508,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "420efa21-9612-41ab-ba48-1b1a164d2ae7SELECT * FROM public.customers ORDER BY customer_id ASC;"
+                "State": "06ada9bd-d7ee-4dd4-badd-22896a08765cSELECT * FROM public.customers ORDER BY customer_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -725,7 +725,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "8ee17a80-351d-44ef-a92a-0d5a4e21f9b9SELECT i.invoice_id, i.customer_id, i.billing_month, i.period_start, i.period_end, i.subtotal, i.tax, i.total_amount, i.currency, i.due_date, i.status, li.category, li.description, li.amount AS line_amount FROM public.invoices i JOIN public.invoice_line_items li ON i.invoice_id = li.invoice_id ORDER BY i.invoice_id ASC, li.id ASC;"
+                "State": "0d5163b2-7bbb-45ce-9e56-467cab7cf06fSELECT i.invoice_id, i.customer_id, i.billing_month, i.period_start, i.period_end, i.subtotal, i.tax, i.total_amount, i.currency, i.due_date, i.status, li.category, li.description, li.amount AS line_amount FROM public.invoices i JOIN public.invoice_line_items li ON i.invoice_id = li.invoice_id ORDER BY i.invoice_id ASC, li.id ASC;"
               },
               "schemas": {
                 "input": {
@@ -914,7 +914,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "11978d6b-ed66-4615-9dbf-103c883d03d1SELECT * FROM public.usage_records ORDER BY customer_id ASC;"
+                "State": "e9afbece-177b-4b29-a39e-aff9f8f9c741SELECT * FROM public.usage_records ORDER BY customer_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -1103,7 +1103,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "a70cec5f-9e17-42b9-be62-0e251ab39d4bSELECT * FROM public.plans ORDER BY customer_id ASC, plan_type ASC;"
+                "State": "e2eb50bd-e8c0-45b1-921f-1de689106c12SELECT * FROM public.plans ORDER BY customer_id ASC, plan_type ASC;"
               },
               "schemas": {
                 "input": {
@@ -1285,7 +1285,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "3e21f96d-2b9e-4165-9a90-bfdd9d5201e8SELECT * FROM public.payments ORDER BY customer_id ASC, payment_date DESC;"
+                "State": "df46bf10-497d-4947-845d-88a19557abc7SELECT * FROM public.payments ORDER BY customer_id ASC, payment_date DESC;"
               },
               "schemas": {
                 "input": {
@@ -1467,7 +1467,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "499d7bf3-65c3-4fc0-a62a-45c11e599da2SELECT * FROM public.recharge_offers ORDER BY offer_type ASC, price ASC;"
+                "State": "864fff82-8ea1-4742-8ce7-e2f09418b09dSELECT * FROM public.recharge_offers ORDER BY offer_type ASC, price ASC;"
               },
               "schemas": {
                 "input": {
@@ -1656,7 +1656,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "86dcc01a-eee2-414a-8b58-75f1ff6c8d9aSELECT * FROM public.disputes ORDER BY customer_id ASC, created_at DESC;"
+                "State": "8adcd28c-63c1-4fa5-b901-7c80a01a232bSELECT * FROM public.disputes ORDER BY customer_id ASC, created_at DESC;"
               },
               "schemas": {
                 "input": {
@@ -1749,7 +1749,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",
@@ -1817,7 +1817,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuNCIsInRhZyI6IjEuMC40LWIwMiIsIm5hbWUiOiJNb2RlbCBDb250ZXh0IFByb3RvY29sIChNQ1ApIiwiczNsb2NhdGlvbiI6IlRpYmNvL01DUCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjEiLCJ0YWciOiIyLjcuMS1iMDEiLCJuYW1lIjoiUG9zdGdyZVNRTCIsInMzbG9jYXRpb24iOiJUaWJjby9Qb3N0Z3JlU1FMIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuNCIsInRhZyI6IjEuMC40LWIwMiIsIm5hbWUiOiJNb2RlbCBDb250ZXh0IFByb3RvY29sIChNQ1ApIiwiczNsb2NhdGlvbiI6IlRpYmNvL01DUCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjIiLCJ0YWciOiIyLjcuMi1iMDEiLCJuYW1lIjoiUG9zdGdyZVNRTCIsInMzbG9jYXRpb24iOiJUaWJjby9Qb3N0Z3JlU1FMIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
   "metadata": {
     "endpoints": [
       {
@@ -1827,6 +1827,6 @@
         "type": "public"
       }
     ],
-    "flogoVersion": "2.26.6"
+    "flogoVersion": "2.26.7"
   }
 }

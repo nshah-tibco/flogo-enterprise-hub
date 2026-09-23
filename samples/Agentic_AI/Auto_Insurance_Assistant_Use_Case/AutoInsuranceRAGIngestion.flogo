@@ -269,6 +269,7 @@
               "settings": {
                 "endPointURL": "=$property[\"OPENAI_API_ENDPOINT_URL\"]",
                 "apiKey": "=$property[\"OPENAI_API_KEY\"]",
+                "operation": "Upload new file",
                 "purpose": "assistants",
                 "maxChunkSizeTokens": 800,
                 "chunkOverlapTokens": 400,
@@ -295,6 +296,7 @@
               "settings": {
                 "endPointURL": "=$property[\"OPENAI_API_ENDPOINT_URL\"]",
                 "apiKey": "=$property[\"OPENAI_API_KEY\"]",
+                "operation": "Upload new file",
                 "purpose": "assistants",
                 "maxChunkSizeTokens": 800,
                 "chunkOverlapTokens": 400,
@@ -321,6 +323,7 @@
               "settings": {
                 "endPointURL": "=$property[\"OPENAI_API_ENDPOINT_URL\"]",
                 "apiKey": "=$property[\"OPENAI_API_KEY\"]",
+                "operation": "Upload new file",
                 "purpose": "assistants",
                 "maxChunkSizeTokens": 800,
                 "chunkOverlapTokens": 400,
@@ -347,6 +350,7 @@
               "settings": {
                 "endPointURL": "=$property[\"OPENAI_API_ENDPOINT_URL\"]",
                 "apiKey": "=$property[\"OPENAI_API_KEY\"]",
+                "operation": "Upload new file",
                 "purpose": "assistants",
                 "maxChunkSizeTokens": 800,
                 "chunkOverlapTokens": 400,
@@ -411,12 +415,9 @@
                 "apiKey": "=$property[\"OPENAI_API_KEY\"]"
               },
               "input": {
-                "vectorStoreID": "=$activity[CreateVectorStore].id",
                 "limit": 10,
-                "filter": "",
                 "order": "",
-                "after": "",
-                "before": ""
+                "after": ""
               },
               "schemas": {
                 "output": {
@@ -483,7 +484,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "8326e157-f9da-4041-bb70-a9d3cbc5a04fINSERT INTO public.document_index (vector_store_id, store_name, files_ingested, ingested_at) VALUES (?vs_id1, 'AutoPolicyKnowledgeBase', 4, TO_CHAR(CURRENT_TIMESTAMP,'YYYY-MM-DD HH24:MI'));",
+                "State": "3dd28d61-55d8-45fa-8b67-3763933c282bINSERT INTO public.document_index (vector_store_id, store_name, files_ingested, ingested_at) VALUES (?vs_id1, 'AutoPolicyKnowledgeBase', 4, TO_CHAR(CURRENT_TIMESTAMP,'YYYY-MM-DD HH24:MI'));",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -607,7 +608,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",

@@ -476,7 +476,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Request has been received for discharge summary for patient\",$flow.pathParams.patient_id)",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -549,7 +559,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "bf80b873-92b8-4b48-89b1-742afd60951dSELECT \n    p.patient_id,\n    pd.follow_up_required,\n    pd.specialty_code AS specialty,\n    pd.discharge_date,\n    pd.ward_id,\n    pd.bed_id,\n    COALESCE(\n        json_agg(\n            json_build_object(\n                'medication_code', dm.medication_code,\n                'days_supply', dm.days_supply\n            )\n        ) FILTER (WHERE dm.medication_code IS NOT NULL),\n        '[]'::json\n    ) AS medications\nFROM patients p\nJOIN patient_discharges pd ON p.patient_id = pd.patient_id\nLEFT JOIN discharge_medications dm ON pd.discharge_id = dm.discharge_id\nWHERE p.patient_id = $1\n  AND pd.discharge_date = (\n      SELECT MAX(discharge_date) \n      FROM patient_discharges \n      WHERE patient_id = ?patient_id\n  )\nGROUP BY p.patient_id, pd.follow_up_required, pd.specialty_code, pd.discharge_date, pd.ward_id, pd.bed_id;",
+                "State": "f3d77f09-fc84-412a-85de-67946f688a9bSELECT \n    p.patient_id,\n    pd.follow_up_required,\n    pd.specialty_code AS specialty,\n    pd.discharge_date,\n    pd.ward_id,\n    pd.bed_id,\n    COALESCE(\n        json_agg(\n            json_build_object(\n                'medication_code', dm.medication_code,\n                'days_supply', dm.days_supply\n            )\n        ) FILTER (WHERE dm.medication_code IS NOT NULL),\n        '[]'::json\n    ) AS medications\nFROM patients p\nJOIN patient_discharges pd ON p.patient_id = pd.patient_id\nLEFT JOIN discharge_medications dm ON pd.discharge_id = dm.discharge_id\nWHERE p.patient_id = $1\n  AND pd.discharge_date = (\n      SELECT MAX(discharge_date) \n      FROM patient_discharges \n      WHERE patient_id = ?patient_id\n  )\nGROUP BY p.patient_id, pd.follow_up_required, pd.specialty_code, pd.discharge_date, pd.ward_id, pd.bed_id;",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -588,7 +598,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Discharge summary Records found for patient id\" ,$flow.pathParams.patient_id)",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -777,7 +797,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Request received for appointments for patiend\",$flow.body.patient_id)",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -849,7 +879,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "4eaad678-a15e-4dfa-a56f-bceac371166eINSERT INTO appointments (patient_id, specialty, scheduled_date, scheduled_time)\nVALUES (?patient_id, ?specialty, ?scheduled_date, ?scheduled_time) \nRETURNING appointment_id, patient_id, scheduled_date, scheduled_time, status;;",
+                "State": "a89cc59a-51f8-4bef-81ef-a451a28e0d06INSERT INTO appointments (patient_id, specialty, scheduled_date, scheduled_time)\nVALUES (?patient_id, ?specialty, ?scheduled_date, ?scheduled_time) \nRETURNING appointment_id, patient_id, scheduled_date, scheduled_time, status;;",
                 "input": {
                   "mapping": {
                     "values": [
@@ -893,7 +923,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Appointment confirmed for patiet \",$flow.body.patient_id , \" on \", $activity[PostgreSQLInsert].Output.records[0].scheduled_date )",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -1031,7 +1071,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Request received for pharmacy order for patient\",$flow.body.patient_id)",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -1076,7 +1126,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "06a18dc2-8727-4d30-98bd-c6ef2e0d2121SELECT medication_name, ready_hours \nFROM medication_catalog \nWHERE medication_code = ?medication_code;",
+                "State": "aa6fd89c-72f2-4d31-8126-164aa09c3996SELECT medication_name, ready_hours \nFROM medication_catalog \nWHERE medication_code = ?medication_code;",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -1189,7 +1239,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "ec74b631-0501-4a74-82e3-16a49882229dINSERT INTO pharmacy_orders (patient_id, medication_code, medication_name, days_supply, pickup_location, ready_by)\nVALUES (?patient_id, ?medication_code, ?medication_name, ?days_supply, ?pickup_location, ?ready_by)\nRETURNING order_id, patient_id, medication_name, ready_by, status;",
+                "State": "b88f2ea9-a15e-41b7-942a-749c41c2d5f0INSERT INTO pharmacy_orders (patient_id, medication_code, medication_name, days_supply, pickup_location, ready_by)\nVALUES (?patient_id, ?medication_code, ?medication_name, ?days_supply, ?pickup_location, ?ready_by)\nRETURNING order_id, patient_id, medication_name, ready_by, status;",
                 "input": {
                   "mapping": {
                     "values": [
@@ -1235,7 +1285,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Pharmacy order for patient \",$flow.body.patient_id,\" is created\")",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -1366,7 +1426,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Cleaning request is raised for Bed\", $flow.body.bed_id,\" In Ward \", $flow.body.ward_id)",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -1438,7 +1508,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "f066870a-a01b-4fae-be02-fa6a7ee3144aUPDATE beds \nSET status = 'CLEANING_REQUESTED', \n    patient_id = NULL, \n    updated_at = TO_CHAR(NOW(), 'YYYY-MM-DD HH24:MI'), \n    estimated_ready = TO_CHAR(NOW() + INTERVAL '20 minutes', 'YYYY-MM-DD HH24:MI')\nWHERE bed_id = ?bed_id\nRETURNING bed_id, ward_id, patient_id, status, updated_at, estimated_ready;",
+                "State": "ce61862d-3c66-4dfc-aede-616ba687e88eUPDATE beds \nSET status = 'CLEANING_REQUESTED', \n    patient_id = NULL, \n    updated_at = TO_CHAR(NOW(), 'YYYY-MM-DD HH24:MI'), \n    estimated_ready = TO_CHAR(NOW() + INTERVAL '20 minutes', 'YYYY-MM-DD HH24:MI')\nWHERE bed_id = ?bed_id\nRETURNING bed_id, ward_id, patient_id, status, updated_at, estimated_ready;",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -1477,7 +1547,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Cleaning requested for Bed\", $flow.body.bed_id,\" In Ward \", $flow.body.ward_id)",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -1652,7 +1732,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "261357be-9817-4839-b626-4eae2a3c3b6bUPDATE beds \nSET status = 'AVAILABLE', \n    updated_at = TO_CHAR(NOW(), 'YYYY-MM-DD HH24:MI'), \n    estimated_ready = NULL\nWHERE bed_id = ?bed_id\nRETURNING bed_id, ward_id, patient_id, status, updated_at, estimated_ready;",
+                "State": "8096fc49-5c9e-42a1-909d-812ec2a76721UPDATE beds \nSET status = 'AVAILABLE', \n    updated_at = TO_CHAR(NOW(), 'YYYY-MM-DD HH24:MI'), \n    estimated_ready = NULL\nWHERE bed_id = ?bed_id\nRETURNING bed_id, ward_id, patient_id, status, updated_at, estimated_ready;",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -1808,7 +1888,17 @@
                 "flowInfo": false,
                 "message": "Request has been received for patient details",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -1867,7 +1957,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "4dede8e6-397b-4524-b737-f4e7c03078c3SELECT * FROM patients p;"
+                "State": "755ff356-dcc7-4471-b453-5a0d97b6ef4dSELECT * FROM patients p;"
               },
               "schemas": {
                 "input": {
@@ -2044,7 +2134,17 @@
                 "flowInfo": false,
                 "message": "Request has been received for patient details",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -2110,7 +2210,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "36bca625-ff62-4408-bc72-a9ceadd4ebdfSELECT * FROM patients p where patient_id = ?patientId;",
+                "State": "77a75ae1-853a-416d-bee2-5a74bd9a3ca6SELECT * FROM patients p where patient_id = ?patientId;",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -2272,7 +2372,7 @@
     {
       "name": "PostgreSQL.postgreslocal.Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "PostgreSQL.postgreslocal.Maximum_Open_Connections",
@@ -2352,7 +2452,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTUiLCJ0YWciOiIxLjYuMTUtYjA0IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjEiLCJ0YWciOiIyLjcuMS1iMDEiLCJuYW1lIjoiUG9zdGdyZVNRTCIsInMzbG9jYXRpb24iOiJUaWJjby9Qb3N0Z3JlU1FMIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTYiLCJ0YWciOiIxLjYuMTYtYjA1IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjIiLCJ0YWciOiIyLjcuMi1iMDEiLCJuYW1lIjoiUG9zdGdyZVNRTCIsInMzbG9jYXRpb24iOiJUaWJjby9Qb3N0Z3JlU1FMIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
   "metadata": {
     "endpoints": [
       {
@@ -2767,6 +2867,6 @@
         }
       }
     ],
-    "flogoVersion": "2.26.6"
+    "flogoVersion": "2.26.7"
   }
 }

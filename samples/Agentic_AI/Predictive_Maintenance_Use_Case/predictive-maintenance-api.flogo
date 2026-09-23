@@ -383,7 +383,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "4dab2090-8a1e-48b5-85a0-92cf824ac67c",
+                "State": "3bab9045-c40b-4893-9efb-e0d4cf22a6dc",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -604,7 +604,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "3b59dc8d-f0a4-4133-b7ab-57ad0d97884a",
+                "State": "da9075ff-dece-4d95-ba43-fe13a067cb36",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -796,7 +796,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "cb70b4c1-4c57-430b-8bbf-24623840f182",
+                "State": "0312ae33-cadc-4fbf-ac2e-7c70e2c0a4f8",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -979,7 +979,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "f6388bba-37bd-437d-a306-8120f675b477",
+                "State": "bde9ca6c-3668-4e16-ac5f-42d1e25d6cac",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -1091,7 +1091,7 @@
     {
       "name": "PostgreSQL.PredMaintConn.Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "PostgreSQL.PredMaintConn.Maximum_Open_Connections",
@@ -1159,9 +1159,9 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTUiLCJ0YWciOiIxLjYuMTUtYjA0IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjEiLCJ0YWciOiIyLjcuMS1iMDEiLCJuYW1lIjoiUG9zdGdyZVNRTCIsInMzbG9jYXRpb24iOiJUaWJjby9Qb3N0Z3JlU1FMIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTYiLCJ0YWciOiIxLjYuMTYtYjA1IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjIiLCJ0YWciOiIyLjcuMi1iMDEiLCJuYW1lIjoiUG9zdGdyZVNRTCIsInMzbG9jYXRpb24iOiJUaWJjby9Qb3N0Z3JlU1FMIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
   "metadata": {
     "endpoints": [],
-    "flogoVersion": "2.26.6"
+    "flogoVersion": "2.26.7"
   }
 }

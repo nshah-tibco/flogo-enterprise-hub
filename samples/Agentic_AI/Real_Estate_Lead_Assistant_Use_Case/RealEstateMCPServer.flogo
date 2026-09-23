@@ -1,12 +1,11 @@
 {
   "imports": [
-    "con_postgresql github.com/tibco/wi-postgres/src/app/PostgreSQL/connector/connection",
-    "tr_mcpserver github.com/tibco/flogo-mcp/src/app/MCP/trigger/mcpserver",
     "github.com/project-flogo/flow",
-    "act_default_noop github.com/project-flogo/contrib/activity/noop",
-    "act_postgresql_query github.com/tibco/wi-postgres/src/app/PostgreSQL/activity/query",
-    "act_default_actreturn github.com/project-flogo/contrib/activity/actreturn",
-    "github.com/project-flogo/contrib/function/coerce"
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/tibco/wi-postgres/src/app/PostgreSQL/activity/query",
+    "github.com/project-flogo/contrib/activity/actreturn",
+    "github.com/tibco/flogo-mcp/src/app/MCP/trigger/mcpserver",
+    "github.com/tibco/wi-postgres/src/app/PostgreSQL/connector/connection"
   ],
   "name": "RealEstateMCPServer",
   "description": "Real Estate MCP Server",
@@ -16,6 +15,9 @@
   "tags": [],
   "triggers": [
     {
+      "ref": "#mcpserver",
+      "name": "flogo-mcp-mcpsever",
+      "description": "Real Estate MCP server",
       "settings": {
         "serverName": "RealEstateMCPServer",
         "serverVersion": "1.0.0",
@@ -36,11 +38,9 @@
         "oauthResourceURL": ""
       },
       "id": "RealEstateMCPServer",
-      "name": "RealEstateMCPServer",
-      "description": "Real Estate MCP server",
-      "ref": "#tr_mcpserver",
       "handlers": [
         {
+          "description": "Look up a real estate lead&#39;s full CRM profile by lead id (LEAD-2026-NNNNN), email, or phone: name, contact, lead type (Buyer/Seller/Both), funnel stage, budget range, preferred city/zip/beds/baths, property type, timeline, source, and assigned agent id. Use this to recognize the prospect and recall their saved home-search criteria.",
           "settings": {
             "handlerType": "Tool",
             "resourceUri": "",
@@ -54,38 +54,32 @@
             "scope": ""
           },
           "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getLeads"
+            },
             "input": {
               "arguments": "=$.arguments"
             },
             "output": {
               "response": "=$.response"
-            },
-            "ref": "github.com/project-flogo/flow",
-            "settings": {
-              "flowURI": "res://flow:getLeads"
             }
           },
           "reply": {
-            "response": {
-              "type": "json",
-              "value": "{}",
-              "fe_metadata": "{}"
-            },
-            "outputSchema": "",
-            "structuredContent": {}
+            "outputSchema": ""
           },
-          "name": "getLeads",
-          "description": "Look up a real estate lead's full CRM profile by lead id (LEAD-2026-NNNNN), email, or phone: name, contact, lead type (Buyer/Seller/Both), funnel stage, budget range, preferred city/zip/beds/baths, property type, timeline, source, and assigned agent id. Use this to recognize the prospect and recall their saved home-search criteria.",
           "schemas": {
-            "output": {
-              "arguments": "schema://EmptyArgs"
-            },
             "reply": {
               "response": "schema://ToolResponse"
+            },
+            "output": {
+              "arguments": "schema://EmptyArgs"
             }
-          }
+          },
+          "name": "getLeads"
         },
         {
+          "description": "Return a lead&#39;s engagement history: searches run, listings viewed and saved, emails opened, recommendations sent, and funnel stage changes. Use to understand what a prospect has been looking at.",
           "settings": {
             "handlerType": "Tool",
             "resourceUri": "",
@@ -99,38 +93,32 @@
             "scope": ""
           },
           "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getLeadActivity"
+            },
             "input": {
               "arguments": "=$.arguments"
             },
             "output": {
               "response": "=$.response"
-            },
-            "ref": "github.com/project-flogo/flow",
-            "settings": {
-              "flowURI": "res://flow:getLeadActivity"
             }
           },
           "reply": {
-            "response": {
-              "type": "json",
-              "value": "{}",
-              "fe_metadata": "{}"
-            },
-            "outputSchema": "",
-            "structuredContent": {}
+            "outputSchema": ""
           },
-          "name": "getLeadActivity",
-          "description": "Return a lead's engagement history: searches run, listings viewed and saved, emails opened, recommendations sent, and funnel stage changes. Use to understand what a prospect has been looking at.",
           "schemas": {
-            "output": {
-              "arguments": "schema://EmptyArgs"
-            },
             "reply": {
               "response": "schema://ToolResponse"
+            },
+            "output": {
+              "arguments": "schema://EmptyArgs"
             }
-          }
+          },
+          "name": "getLeadActivity"
         },
         {
+          "description": "Search the property catalog (MLS). Returns listings with address, city, state, zip, price, bedrooms, bathrooms, square footage, property type, status (Active/Pending/Sold), days on market, MLS id, and description. Filter results to the user&#39;s city, price range, and bed/bath needs.",
           "settings": {
             "handlerType": "Tool",
             "resourceUri": "",
@@ -144,38 +132,32 @@
             "scope": ""
           },
           "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getListings"
+            },
             "input": {
               "arguments": "=$.arguments"
             },
             "output": {
               "response": "=$.response"
-            },
-            "ref": "github.com/project-flogo/flow",
-            "settings": {
-              "flowURI": "res://flow:getListings"
             }
           },
           "reply": {
-            "response": {
-              "type": "json",
-              "value": "{}",
-              "fe_metadata": "{}"
-            },
-            "outputSchema": "",
-            "structuredContent": {}
+            "outputSchema": ""
           },
-          "name": "getListings",
-          "description": "Search the property catalog (MLS). Returns listings with address, city, state, zip, price, bedrooms, bathrooms, square footage, property type, status (Active/Pending/Sold), days on market, MLS id, and description. Filter results to the user's city, price range, and bed/bath needs.",
           "schemas": {
-            "output": {
-              "arguments": "schema://EmptyArgs"
-            },
             "reply": {
               "response": "schema://ToolResponse"
+            },
+            "output": {
+              "arguments": "schema://EmptyArgs"
             }
-          }
+          },
+          "name": "getListings"
         },
         {
+          "description": "Return real estate agent details (name, email, phone, brokerage, service area, specialization). Use with a lead&#39;s assigned agent id to tell the prospect who their agent is or to route a follow-up.",
           "settings": {
             "handlerType": "Tool",
             "resourceUri": "",
@@ -189,38 +171,32 @@
             "scope": ""
           },
           "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getAgents"
+            },
             "input": {
               "arguments": "=$.arguments"
             },
             "output": {
               "response": "=$.response"
-            },
-            "ref": "github.com/project-flogo/flow",
-            "settings": {
-              "flowURI": "res://flow:getAgents"
             }
           },
           "reply": {
-            "response": {
-              "type": "json",
-              "value": "{}",
-              "fe_metadata": "{}"
-            },
-            "outputSchema": "",
-            "structuredContent": {}
+            "outputSchema": ""
           },
-          "name": "getAgents",
-          "description": "Return real estate agent details (name, email, phone, brokerage, service area, specialization). Use with a lead's assigned agent id to tell the prospect who their agent is or to route a follow-up.",
           "schemas": {
-            "output": {
-              "arguments": "schema://EmptyArgs"
-            },
             "reply": {
               "response": "schema://ToolResponse"
+            },
+            "output": {
+              "arguments": "schema://EmptyArgs"
             }
-          }
+          },
+          "name": "getAgents"
         },
         {
+          "description": "Return a lead&#39;s property showings (appointments): the listing, scheduled date/time, and status (Requested/Confirmed/Completed/Cancelled). Use to tell a prospect what tours they have scheduled.",
           "settings": {
             "handlerType": "Tool",
             "resourceUri": "",
@@ -234,38 +210,32 @@
             "scope": ""
           },
           "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getAppointments"
+            },
             "input": {
               "arguments": "=$.arguments"
             },
             "output": {
               "response": "=$.response"
-            },
-            "ref": "github.com/project-flogo/flow",
-            "settings": {
-              "flowURI": "res://flow:getAppointments"
             }
           },
           "reply": {
-            "response": {
-              "type": "json",
-              "value": "{}",
-              "fe_metadata": "{}"
-            },
-            "outputSchema": "",
-            "structuredContent": {}
+            "outputSchema": ""
           },
-          "name": "getAppointments",
-          "description": "Return a lead's property showings (appointments): the listing, scheduled date/time, and status (Requested/Confirmed/Completed/Cancelled). Use to tell a prospect what tours they have scheduled.",
           "schemas": {
-            "output": {
-              "arguments": "schema://EmptyArgs"
-            },
             "reply": {
               "response": "schema://ToolResponse"
+            },
+            "output": {
+              "arguments": "schema://EmptyArgs"
             }
-          }
+          },
+          "name": "getAppointments"
         },
         {
+          "description": "Return residential real-estate market statistics by city and zip: median price, average days on market, active inventory, median price per square foot, and year-over-year price change. Use to answer &#39;how&#39;s the market&#39; questions.",
           "settings": {
             "handlerType": "Tool",
             "resourceUri": "",
@@ -279,36 +249,29 @@
             "scope": ""
           },
           "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getMarketStats"
+            },
             "input": {
               "arguments": "=$.arguments"
             },
             "output": {
               "response": "=$.response"
-            },
-            "ref": "github.com/project-flogo/flow",
-            "settings": {
-              "flowURI": "res://flow:getMarketStats"
             }
           },
           "reply": {
-            "response": {
-              "type": "json",
-              "value": "{}",
-              "fe_metadata": "{}"
-            },
-            "outputSchema": "",
-            "structuredContent": {}
+            "outputSchema": ""
           },
-          "name": "getMarketStats",
-          "description": "Return residential real-estate market statistics by city and zip: median price, average days on market, active inventory, median price per square foot, and year-over-year price change. Use to answer 'how's the market' questions.",
           "schemas": {
-            "output": {
-              "arguments": "schema://EmptyArgs"
-            },
             "reply": {
               "response": "schema://ToolResponse"
+            },
+            "output": {
+              "arguments": "schema://EmptyArgs"
             }
-          }
+          },
+          "name": "getMarketStats"
         }
       ]
     }
@@ -341,11 +304,21 @@
             "name": "StartActivity",
             "description": "NoOp Activity",
             "activity": {
-              "ref": "#act_default_noop"
+              "ref": "#noop"
             }
           },
           {
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "PostgreSQL Query",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
             "activity": {
+              "ref": "#query",
               "input": {
                 "Connection": "conn://9cb829f4-e20f-4e15-95e3-fcc3a57da6d8",
                 "QueryName": "",
@@ -353,30 +326,179 @@
                 "Query": "SELECT * FROM public.leads ORDER BY lead_id ASC;",
                 "manualmode": false,
                 "fetchMetadata": "",
-                "input": {},
-                "Fields": [],
+                "Fields": [
+                  {
+                    "FieldName": "lead_id",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "first_name",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "last_name",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "email",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "phone",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "lead_type",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "stage",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "budget_min",
+                    "Type": "NUMERIC",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "budget_max",
+                    "Type": "NUMERIC",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "preferred_city",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "preferred_zip",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "min_bedrooms",
+                    "Type": "INTEGER",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "min_bathrooms",
+                    "Type": "NUMERIC",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "property_type_pref",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "timeline",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "source",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "assigned_agent_id",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "created_at",
+                    "Type": "TIMESTAMP",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "last_activity_at",
+                    "Type": "TIMESTAMP",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "notes",
+                    "Type": "LONGVARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  }
+                ],
                 "RuntimeQuery": "",
-                "State": ""
+                "State": "687b92e2-5259-4d37-afc7-34c0226c01a8SELECT * FROM public.leads ORDER BY lead_id ASC;",
+                "input": {
+                  "mapping": {}
+                }
               },
-              "ref": "#act_postgresql_query",
-              "settings": {}
-            },
-            "settings": {
-              "retryOnError": {
-                "count": 0,
-                "interval": 0
-              }
-            },
-            "id": "PostgreSQLQuery",
-            "name": "PostgreSQLQuery",
-            "description": "PostgreSQL Query"
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"lead_id\":{\"type\":\"string\"},\"first_name\":{\"type\":\"string\"},\"last_name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"},\"phone\":{\"type\":\"string\"},\"lead_type\":{\"type\":\"string\"},\"stage\":{\"type\":\"string\"},\"budget_min\":{\"type\":\"number\"},\"budget_max\":{\"type\":\"number\"},\"preferred_city\":{\"type\":\"string\"},\"preferred_zip\":{\"type\":\"string\"},\"min_bedrooms\":{\"type\":\"integer\"},\"min_bathrooms\":{\"type\":\"number\"},\"property_type_pref\":{\"type\":\"string\"},\"timeline\":{\"type\":\"string\"},\"source\":{\"type\":\"string\"},\"assigned_agent_id\":{\"type\":\"string\"},\"created_at\":{\"type\":\"string\",\"format\":\"time\"},\"last_activity_at\":{\"type\":\"string\",\"format\":\"time\"},\"notes\":{\"type\":\"string\"}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"lead_id\":{\"type\":\"string\"},\"first_name\":{\"type\":\"string\"},\"last_name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"},\"phone\":{\"type\":\"string\"},\"lead_type\":{\"type\":\"string\"},\"stage\":{\"type\":\"string\"},\"budget_min\":{\"type\":\"number\"},\"budget_max\":{\"type\":\"number\"},\"preferred_city\":{\"type\":\"string\"},\"preferred_zip\":{\"type\":\"string\"},\"min_bedrooms\":{\"type\":\"integer\"},\"min_bathrooms\":{\"type\":\"number\"},\"property_type_pref\":{\"type\":\"string\"},\"timeline\":{\"type\":\"string\"},\"source\":{\"type\":\"string\"},\"assigned_agent_id\":{\"type\":\"string\"},\"created_at\":{\"type\":\"string\",\"format\":\"time\"},\"last_activity_at\":{\"type\":\"string\",\"format\":\"time\"},\"notes\":{\"type\":\"string\"}}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
           },
           {
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return",
             "activity": {
-              "input": {
-                "mappings": []
-              },
-              "ref": "#act_default_actreturn",
+              "ref": "#actreturn",
               "settings": {
                 "mappings": {
                   "response": {
@@ -386,13 +508,10 @@
                   }
                 }
               }
-            },
-            "id": "Return",
-            "name": "Return",
-            "description": "Simple Return"
+            }
           }
         ],
-        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfX0=",
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlBvc3RncmVTUUxRdWVyeSI6eyJ4IjoyNTAsInkiOjE1MH0sIlJldHVybiI6eyJ4Ijo0NTAsInkiOjI1MH19",
         "metadata": {
           "input": [
             {
@@ -440,11 +559,21 @@
             "name": "StartActivity",
             "description": "NoOp Activity",
             "activity": {
-              "ref": "#act_default_noop"
+              "ref": "#noop"
             }
           },
           {
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "PostgreSQL Query",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
             "activity": {
+              "ref": "#query",
               "input": {
                 "Connection": "conn://9cb829f4-e20f-4e15-95e3-fcc3a57da6d8",
                 "QueryName": "",
@@ -452,30 +581,81 @@
                 "Query": "SELECT * FROM public.lead_activity ORDER BY activity_id ASC;",
                 "manualmode": false,
                 "fetchMetadata": "",
-                "input": {},
-                "Fields": [],
+                "Fields": [
+                  {
+                    "FieldName": "activity_id",
+                    "Type": "INTEGER",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "lead_id",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "listing_id",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "activity_type",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "detail",
+                    "Type": "LONGVARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "created_at",
+                    "Type": "TIMESTAMP",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  }
+                ],
                 "RuntimeQuery": "",
-                "State": ""
+                "State": "5852fe33-3641-4cbb-8668-65b3bd171e01SELECT * FROM public.lead_activity ORDER BY activity_id ASC;",
+                "input": {
+                  "mapping": {}
+                }
               },
-              "ref": "#act_postgresql_query",
-              "settings": {}
-            },
-            "settings": {
-              "retryOnError": {
-                "count": 0,
-                "interval": 0
-              }
-            },
-            "id": "PostgreSQLQuery",
-            "name": "PostgreSQLQuery",
-            "description": "PostgreSQL Query"
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"activity_id\":{\"type\":\"integer\"},\"lead_id\":{\"type\":\"string\"},\"listing_id\":{\"type\":\"string\"},\"activity_type\":{\"type\":\"string\"},\"detail\":{\"type\":\"string\"},\"created_at\":{\"type\":\"string\",\"format\":\"time\"}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"activity_id\":{\"type\":\"integer\"},\"lead_id\":{\"type\":\"string\"},\"listing_id\":{\"type\":\"string\"},\"activity_type\":{\"type\":\"string\"},\"detail\":{\"type\":\"string\"},\"created_at\":{\"type\":\"string\",\"format\":\"time\"}}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
           },
           {
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return",
             "activity": {
-              "input": {
-                "mappings": []
-              },
-              "ref": "#act_default_actreturn",
+              "ref": "#actreturn",
               "settings": {
                 "mappings": {
                   "response": {
@@ -485,13 +665,10 @@
                   }
                 }
               }
-            },
-            "id": "Return",
-            "name": "Return",
-            "description": "Simple Return"
+            }
           }
         ],
-        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfX0=",
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlBvc3RncmVTUUxRdWVyeSI6eyJ4IjoyNTAsInkiOjE1MH0sIlJldHVybiI6eyJ4Ijo0NTAsInkiOjI1MH19",
         "metadata": {
           "input": [
             {
@@ -539,11 +716,21 @@
             "name": "StartActivity",
             "description": "NoOp Activity",
             "activity": {
-              "ref": "#act_default_noop"
+              "ref": "#noop"
             }
           },
           {
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "PostgreSQL Query",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
             "activity": {
+              "ref": "#query",
               "input": {
                 "Connection": "conn://9cb829f4-e20f-4e15-95e3-fcc3a57da6d8",
                 "QueryName": "",
@@ -551,30 +738,165 @@
                 "Query": "SELECT * FROM public.listings ORDER BY listing_id ASC;",
                 "manualmode": false,
                 "fetchMetadata": "",
-                "input": {},
-                "Fields": [],
+                "Fields": [
+                  {
+                    "FieldName": "listing_id",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "mls_id",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "address",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "city",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "state",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "zip",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "price",
+                    "Type": "NUMERIC",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "bedrooms",
+                    "Type": "INTEGER",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "bathrooms",
+                    "Type": "NUMERIC",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "sqft",
+                    "Type": "INTEGER",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "lot_size_sqft",
+                    "Type": "INTEGER",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "property_type",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "year_built",
+                    "Type": "INTEGER",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "status",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "days_on_market",
+                    "Type": "INTEGER",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "listing_agent_id",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "description",
+                    "Type": "LONGVARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "url",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  }
+                ],
                 "RuntimeQuery": "",
-                "State": ""
+                "State": "db658a83-a908-4702-86aa-311e84e99e4cSELECT * FROM public.listings ORDER BY listing_id ASC;",
+                "input": {
+                  "mapping": {}
+                }
               },
-              "ref": "#act_postgresql_query",
-              "settings": {}
-            },
-            "settings": {
-              "retryOnError": {
-                "count": 0,
-                "interval": 0
-              }
-            },
-            "id": "PostgreSQLQuery",
-            "name": "PostgreSQLQuery",
-            "description": "PostgreSQL Query"
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"listing_id\":{\"type\":\"string\"},\"mls_id\":{\"type\":\"string\"},\"address\":{\"type\":\"string\"},\"city\":{\"type\":\"string\"},\"state\":{\"type\":\"string\"},\"zip\":{\"type\":\"string\"},\"price\":{\"type\":\"number\"},\"bedrooms\":{\"type\":\"integer\"},\"bathrooms\":{\"type\":\"number\"},\"sqft\":{\"type\":\"integer\"},\"lot_size_sqft\":{\"type\":\"integer\"},\"property_type\":{\"type\":\"string\"},\"year_built\":{\"type\":\"integer\"},\"status\":{\"type\":\"string\"},\"days_on_market\":{\"type\":\"integer\"},\"listing_agent_id\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"url\":{\"type\":\"string\"}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"listing_id\":{\"type\":\"string\"},\"mls_id\":{\"type\":\"string\"},\"address\":{\"type\":\"string\"},\"city\":{\"type\":\"string\"},\"state\":{\"type\":\"string\"},\"zip\":{\"type\":\"string\"},\"price\":{\"type\":\"number\"},\"bedrooms\":{\"type\":\"integer\"},\"bathrooms\":{\"type\":\"number\"},\"sqft\":{\"type\":\"integer\"},\"lot_size_sqft\":{\"type\":\"integer\"},\"property_type\":{\"type\":\"string\"},\"year_built\":{\"type\":\"integer\"},\"status\":{\"type\":\"string\"},\"days_on_market\":{\"type\":\"integer\"},\"listing_agent_id\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"url\":{\"type\":\"string\"}}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
           },
           {
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return",
             "activity": {
-              "input": {
-                "mappings": []
-              },
-              "ref": "#act_default_actreturn",
+              "ref": "#actreturn",
               "settings": {
                 "mappings": {
                   "response": {
@@ -584,13 +906,10 @@
                   }
                 }
               }
-            },
-            "id": "Return",
-            "name": "Return",
-            "description": "Simple Return"
+            }
           }
         ],
-        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfX0=",
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlBvc3RncmVTUUxRdWVyeSI6eyJ4IjoyNTAsInkiOjE1MH0sIlJldHVybiI6eyJ4Ijo0NTAsInkiOjI1MH19",
         "metadata": {
           "input": [
             {
@@ -638,11 +957,21 @@
             "name": "StartActivity",
             "description": "NoOp Activity",
             "activity": {
-              "ref": "#act_default_noop"
+              "ref": "#noop"
             }
           },
           {
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "PostgreSQL Query",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
             "activity": {
+              "ref": "#query",
               "input": {
                 "Connection": "conn://9cb829f4-e20f-4e15-95e3-fcc3a57da6d8",
                 "QueryName": "",
@@ -650,30 +979,95 @@
                 "Query": "SELECT * FROM public.agents ORDER BY agent_id ASC;",
                 "manualmode": false,
                 "fetchMetadata": "",
-                "input": {},
-                "Fields": [],
+                "Fields": [
+                  {
+                    "FieldName": "agent_id",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "full_name",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "email",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "phone",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "brokerage",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "license_no",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "service_area",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "specialization",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  }
+                ],
                 "RuntimeQuery": "",
-                "State": ""
+                "State": "9eeceba9-8d2f-4548-b06e-44f03bc28187SELECT * FROM public.agents ORDER BY agent_id ASC;",
+                "input": {
+                  "mapping": {}
+                }
               },
-              "ref": "#act_postgresql_query",
-              "settings": {}
-            },
-            "settings": {
-              "retryOnError": {
-                "count": 0,
-                "interval": 0
-              }
-            },
-            "id": "PostgreSQLQuery",
-            "name": "PostgreSQLQuery",
-            "description": "PostgreSQL Query"
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"agent_id\":{\"type\":\"string\"},\"full_name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"},\"phone\":{\"type\":\"string\"},\"brokerage\":{\"type\":\"string\"},\"license_no\":{\"type\":\"string\"},\"service_area\":{\"type\":\"string\"},\"specialization\":{\"type\":\"string\"}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"agent_id\":{\"type\":\"string\"},\"full_name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"},\"phone\":{\"type\":\"string\"},\"brokerage\":{\"type\":\"string\"},\"license_no\":{\"type\":\"string\"},\"service_area\":{\"type\":\"string\"},\"specialization\":{\"type\":\"string\"}}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
           },
           {
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return",
             "activity": {
-              "input": {
-                "mappings": []
-              },
-              "ref": "#act_default_actreturn",
+              "ref": "#actreturn",
               "settings": {
                 "mappings": {
                   "response": {
@@ -683,13 +1077,10 @@
                   }
                 }
               }
-            },
-            "id": "Return",
-            "name": "Return",
-            "description": "Simple Return"
+            }
           }
         ],
-        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfX0=",
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlBvc3RncmVTUUxRdWVyeSI6eyJ4IjoyNTAsInkiOjE1MH0sIlJldHVybiI6eyJ4Ijo0NTAsInkiOjI1MH19",
         "metadata": {
           "input": [
             {
@@ -737,11 +1128,21 @@
             "name": "StartActivity",
             "description": "NoOp Activity",
             "activity": {
-              "ref": "#act_default_noop"
+              "ref": "#noop"
             }
           },
           {
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "PostgreSQL Query",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
             "activity": {
+              "ref": "#query",
               "input": {
                 "Connection": "conn://9cb829f4-e20f-4e15-95e3-fcc3a57da6d8",
                 "QueryName": "",
@@ -749,30 +1150,95 @@
                 "Query": "SELECT * FROM public.appointments ORDER BY appointment_id ASC;",
                 "manualmode": false,
                 "fetchMetadata": "",
-                "input": {},
-                "Fields": [],
+                "Fields": [
+                  {
+                    "FieldName": "appointment_id",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "lead_id",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "listing_id",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "agent_id",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "scheduled_for",
+                    "Type": "TIMESTAMP",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "status",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "notes",
+                    "Type": "LONGVARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "created_at",
+                    "Type": "TIMESTAMP",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  }
+                ],
                 "RuntimeQuery": "",
-                "State": ""
+                "State": "3da34df8-6c08-458b-a12d-7f70c72ba1ecSELECT * FROM public.appointments ORDER BY appointment_id ASC;",
+                "input": {
+                  "mapping": {}
+                }
               },
-              "ref": "#act_postgresql_query",
-              "settings": {}
-            },
-            "settings": {
-              "retryOnError": {
-                "count": 0,
-                "interval": 0
-              }
-            },
-            "id": "PostgreSQLQuery",
-            "name": "PostgreSQLQuery",
-            "description": "PostgreSQL Query"
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"appointment_id\":{\"type\":\"string\"},\"lead_id\":{\"type\":\"string\"},\"listing_id\":{\"type\":\"string\"},\"agent_id\":{\"type\":\"string\"},\"scheduled_for\":{\"type\":\"string\",\"format\":\"time\"},\"status\":{\"type\":\"string\"},\"notes\":{\"type\":\"string\"},\"created_at\":{\"type\":\"string\",\"format\":\"time\"}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"appointment_id\":{\"type\":\"string\"},\"lead_id\":{\"type\":\"string\"},\"listing_id\":{\"type\":\"string\"},\"agent_id\":{\"type\":\"string\"},\"scheduled_for\":{\"type\":\"string\",\"format\":\"time\"},\"status\":{\"type\":\"string\"},\"notes\":{\"type\":\"string\"},\"created_at\":{\"type\":\"string\",\"format\":\"time\"}}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
           },
           {
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return",
             "activity": {
-              "input": {
-                "mappings": []
-              },
-              "ref": "#act_default_actreturn",
+              "ref": "#actreturn",
               "settings": {
                 "mappings": {
                   "response": {
@@ -782,13 +1248,10 @@
                   }
                 }
               }
-            },
-            "id": "Return",
-            "name": "Return",
-            "description": "Simple Return"
+            }
           }
         ],
-        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfX0=",
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlBvc3RncmVTUUxRdWVyeSI6eyJ4IjoyNTAsInkiOjE1MH0sIlJldHVybiI6eyJ4Ijo0NTAsInkiOjI1MH19",
         "metadata": {
           "input": [
             {
@@ -836,11 +1299,21 @@
             "name": "StartActivity",
             "description": "NoOp Activity",
             "activity": {
-              "ref": "#act_default_noop"
+              "ref": "#noop"
             }
           },
           {
+            "id": "PostgreSQLQuery",
+            "name": "PostgreSQLQuery",
+            "description": "PostgreSQL Query",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
             "activity": {
+              "ref": "#query",
               "input": {
                 "Connection": "conn://9cb829f4-e20f-4e15-95e3-fcc3a57da6d8",
                 "QueryName": "",
@@ -848,30 +1321,102 @@
                 "Query": "SELECT * FROM public.area_market_stats ORDER BY stat_id ASC;",
                 "manualmode": false,
                 "fetchMetadata": "",
-                "input": {},
-                "Fields": [],
+                "Fields": [
+                  {
+                    "FieldName": "stat_id",
+                    "Type": "INTEGER",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "city",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "zip",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "median_price",
+                    "Type": "NUMERIC",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "avg_days_on_market",
+                    "Type": "INTEGER",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "active_listings",
+                    "Type": "INTEGER",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "median_price_per_sqft",
+                    "Type": "NUMERIC",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "yoy_price_change_pct",
+                    "Type": "NUMERIC",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "as_of_month",
+                    "Type": "VARCHAR",
+                    "Selected": true,
+                    "Parameter": false,
+                    "isEditable": false
+                  }
+                ],
                 "RuntimeQuery": "",
-                "State": ""
+                "State": "143a6b79-8336-4633-b4bb-3d6191d7f4b4SELECT * FROM public.area_market_stats ORDER BY stat_id ASC;",
+                "input": {
+                  "mapping": {}
+                }
               },
-              "ref": "#act_postgresql_query",
-              "settings": {}
-            },
-            "settings": {
-              "retryOnError": {
-                "count": 0,
-                "interval": 0
-              }
-            },
-            "id": "PostgreSQLQuery",
-            "name": "PostgreSQLQuery",
-            "description": "PostgreSQL Query"
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{}}}}"
+                  }
+                },
+                "output": {
+                  "Output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"stat_id\":{\"type\":\"integer\"},\"city\":{\"type\":\"string\"},\"zip\":{\"type\":\"string\"},\"median_price\":{\"type\":\"number\"},\"avg_days_on_market\":{\"type\":\"integer\"},\"active_listings\":{\"type\":\"integer\"},\"median_price_per_sqft\":{\"type\":\"number\"},\"yoy_price_change_pct\":{\"type\":\"number\"},\"as_of_month\":{\"type\":\"string\"}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"records\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"stat_id\":{\"type\":\"integer\"},\"city\":{\"type\":\"string\"},\"zip\":{\"type\":\"string\"},\"median_price\":{\"type\":\"number\"},\"avg_days_on_market\":{\"type\":\"integer\"},\"active_listings\":{\"type\":\"integer\"},\"median_price_per_sqft\":{\"type\":\"number\"},\"yoy_price_change_pct\":{\"type\":\"number\"},\"as_of_month\":{\"type\":\"string\"}}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
           },
           {
+            "id": "Return",
+            "name": "Return",
+            "description": "Simple Return",
             "activity": {
-              "input": {
-                "mappings": []
-              },
-              "ref": "#act_default_actreturn",
+              "ref": "#actreturn",
               "settings": {
                 "mappings": {
                   "response": {
@@ -881,13 +1426,10 @@
                   }
                 }
               }
-            },
-            "id": "Return",
-            "name": "Return",
-            "description": "Simple Return"
+            }
           }
         ],
-        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfX0=",
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIlBvc3RncmVTUUxRdWVyeSI6eyJ4IjoyNTAsInkiOjE1MH0sIlJldHVybiI6eyJ4Ijo0NTAsInkiOjI1MH19",
         "metadata": {
           "input": [
             {
@@ -933,49 +1475,44 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SET_YOUR_DB_PASSWORD"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "MCP_SERVER_PORT",
       "type": "string",
       "value": "9592"
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",
+      "type": "float64",
+      "value": 0
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Maximum_Idle_Connections",
+      "type": "float64",
+      "value": 2
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Maximum_Connection_Lifetime",
+      "type": "string",
+      "value": 0
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Maximum_Connection_Retry_Attempts",
+      "type": "float64",
+      "value": 3
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Connection_Retry_Delay",
+      "type": "float64",
+      "value": 5
+    },
+    {
+      "name": "PostgreSQL.PostgresConn.Connection_Timeout",
+      "type": "float64",
+      "value": 20
     }
   ],
-  "connections": {
-    "9cb829f4-e20f-4e15-95e3-fcc3a57da6d8": {
-      "settings": {
-        "databaseType": "PostgreSQL",
-        "name": "PostgresConn",
-        "description": "Your PostgreSQL Connector",
-        "host": "=$property[\"PostgreSQL.PostgresConn.Host\"]",
-        "port": "=$property[\"PostgreSQL.PostgresConn.Port\"]",
-        "databaseName": "=$property[\"PostgreSQL.PostgresConn.Database_Name\"]",
-        "user": "=$property[\"PostgreSQL.PostgresConn.User\"]",
-        "password": "=$property[\"PostgreSQL.PostgresConn.Password\"]",
-        "maxopenconnection": 0,
-        "maxidleconnection": 2,
-        "connmaxlifetime": 0,
-        "maxconnectattempts": 3,
-        "connectionretrydelay": 5,
-        "connectiontimeout": 20,
-        "onprem": false,
-        "tlsconfig": false,
-        "tlsparam": "VerifyCA",
-        "cacert": "",
-        "clientcert": "",
-        "clientkey": ""
-      },
-      "id": "9cb829f4-e20f-4e15-95e3-fcc3a57da6d8",
-      "name": "PostgresConn",
-      "ref": "#con_postgresql",
-      "isGlobal": false
-    }
-  },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjEiLCJ0YWciOiIyLjcuMS1iMDEiLCJuYW1lIjoiVElCQ08gRmxvZ28gY29ubmVjdG9yIGZvciBQb3N0Z3JlU1FMIiwiczNsb2NhdGlvbiI6IlRpYmNvL1Bvc3RncmVTUUwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfSx7InJlZiI6ImdpdGh1Yi5jb20vdGliY28vZmxvZ28tbWNwL3NyYy9hcHAvTUNQIiwiaWQiOiJNQ1AiLCJ2ZXJzaW9uIjoiMS4wLjQiLCJ0YWciOiIxLjAuNC1iMDIiLCJuYW1lIjoiVElCQ08gRmxvZ2/CriBDb25uZWN0b3IgZm9yIE1vZGVsIENvbnRleHQgUHJvdG9jb2wgKE1DUCkiLCJzM2xvY2F0aW9uIjoiVGliY28vTUNQIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWRlZmF1bHQtY29udHJpYnMvc3JjL2FwcC9EZWZhdWx0IiwiaWQiOiJEZWZhdWx0IiwidmVyc2lvbiI6IjEuMC4wIiwidGFnIjoiMS4wLjAtYjEwLXYzLW1haW4iLCJuYW1lIjoiVElCQ08gRmxvZ28gQ29ubmVjdG9yIGZvciBEZWZhdWx0IiwiczNsb2NhdGlvbiI6IlRpYmNvL0RlZmF1bHQiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfSx7InJlZiI6ImdpdGh1Yi5jb20vdGliY28vZmxvZ28tZ2VuZXJhbC9zcmMvYXBwL0dlbmVyYWwiLCJpZCI6IkdlbmVyYWwiLCJ2ZXJzaW9uIjoiMS42LjE1IiwidGFnIjoiMS42LjE1LWIwNCIsIm5hbWUiOiJUSUJDTyBGbG9nbyBDb25uZWN0b3IgZm9yIEdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9XQ==",
-  "metadata": {
-    "endpoints": [],
-    "flogoVersion": "2.26.6"
-  },
   "schemas": {
     "EmptyArgs": {
       "type": "json",
@@ -987,5 +1524,47 @@
       "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"data\": {\n      \"type\": \"string\"\n    },\n    \"error\": {\n      \"type\": \"string\"\n    }\n  }\n}",
       "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"data\": {\n      \"type\": \"string\"\n    },\n    \"error\": {\n      \"type\": \"string\"\n    }\n  }\n}"
     }
+  },
+  "connections": {
+    "9cb829f4-e20f-4e15-95e3-fcc3a57da6d8": {
+      "id": "9cb829f4-e20f-4e15-95e3-fcc3a57da6d8",
+      "name": "PostgresConn",
+      "ref": "#connection",
+      "isGlobal": false,
+      "settings": {
+        "databaseType": "PostgreSQL",
+        "name": "PostgresConn",
+        "description": "Your PostgreSQL Connector",
+        "host": "=$property[\"PostgreSQL.PostgresConn.Host\"]",
+        "port": "=$property[\"PostgreSQL.PostgresConn.Port\"]",
+        "databaseName": "=$property[\"PostgreSQL.PostgresConn.Database_Name\"]",
+        "user": "=$property[\"PostgreSQL.PostgresConn.User\"]",
+        "password": "=$property[\"PostgreSQL.PostgresConn.Password\"]",
+        "maxopenconnection": "=$property[\"PostgreSQL.PostgresConn.Maximum_Open_Connections\"]",
+        "maxidleconnection": "=$property[\"PostgreSQL.PostgresConn.Maximum_Idle_Connections\"]",
+        "connmaxlifetime": "=$property[\"PostgreSQL.PostgresConn.Maximum_Connection_Lifetime\"]",
+        "maxconnectattempts": "=$property[\"PostgreSQL.PostgresConn.Maximum_Connection_Retry_Attempts\"]",
+        "connectionretrydelay": "=$property[\"PostgreSQL.PostgresConn.Connection_Retry_Delay\"]",
+        "connectiontimeout": "=$property[\"PostgreSQL.PostgresConn.Connection_Timeout\"]",
+        "onprem": false,
+        "tlsconfig": false,
+        "tlsparam": "VerifyCA",
+        "cacert": "",
+        "clientcert": "",
+        "clientkey": ""
+      }
+    }
+  },
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuNCIsInRhZyI6IjEuMC40LWIwMiIsIm5hbWUiOiJNb2RlbCBDb250ZXh0IFByb3RvY29sIChNQ1ApIiwiczNsb2NhdGlvbiI6IlRpYmNvL01DUCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjIiLCJ0YWciOiIyLjcuMi1iMDEiLCJuYW1lIjoiUG9zdGdyZVNRTCIsInMzbG9jYXRpb24iOiJUaWJjby9Qb3N0Z3JlU1FMIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
+  "metadata": {
+    "endpoints": [
+      {
+        "protocol": "http",
+        "port": "9592",
+        "title": "RealEstateMCPServer",
+        "type": "public"
+      }
+    ],
+    "flogoVersion": "2.26.7"
   }
 }

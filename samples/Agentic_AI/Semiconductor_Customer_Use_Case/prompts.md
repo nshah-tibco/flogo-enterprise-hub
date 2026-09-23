@@ -1,6 +1,6 @@
 # Demo prompts — Semiconductor Customer & Order Assistant
 
-Connect a WebSocket client to `ws://<host>:8088/semiconductor` and paste these.
+Connect a WebSocket client to `ws://<host>:9310/semiconductor` and paste these.
 Grouped by scenario. All prices are **USD**. Flagship customer:
 **Aurora Automotive Systems** (`CUST-10001`).
 Run `reset_data.sql` between runs to clear agent-written rows.

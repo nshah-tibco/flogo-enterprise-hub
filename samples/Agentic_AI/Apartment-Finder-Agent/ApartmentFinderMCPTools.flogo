@@ -25,12 +25,19 @@
         "serverVersion": "1.0.0",
         "serverType": "HTTP",
         "serverPort": "=$property[\"FlogoMcpServer.PORT\"]",
+        "statelessServer": false,
         "serverEndpointPath": "/mcp",
         "enableTLS": false,
         "serverCertificate": "",
         "serverPrivateKey": "",
         "authType": "None",
-        "authToken": ""
+        "authToken": "",
+        "oauthIssuer": "",
+        "oauthJWKSURL": "",
+        "oauthAudience": "",
+        "oauthAuthorizationServers": "",
+        "oauthRequiredScopes": "",
+        "oauthResourceURL": ""
       },
       "id": "ApartmentFinderMCPTools",
       "handlers": [
@@ -40,7 +47,13 @@
             "handlerType": "Tool",
             "resourceUri": "",
             "handlerName": "search_locations",
-            "handlerDescription": "Resolve a city name to the zip codes served by the apartment finder: county, metro area, cost-of-living index, major highways, and per-zip neighborhood, median one-bedroom rent, community count and community IDs. Call this first when the user names a place rather than a zip code. Passing 'Houston' returns the whole serviced Houston metro (Katy, Stafford, Sugar Land) in one call. Read-only."
+            "handlerDescription": "Resolve a city name to the zip codes served by the apartment finder: county, metro area, cost-of-living index, major highways, and per-zip neighborhood, median one-bedroom rent, community count and community IDs. Call this first when the user names a place rather than a zip code. Passing 'Houston' returns the whole serviced Houston metro (Katy, Stafford, Sugar Land) in one call. Read-only.",
+            "toolTitle": "",
+            "readOnlyToolHint": false,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
           },
           "action": {
             "ref": "github.com/project-flogo/flow",
@@ -55,6 +68,9 @@
             "output": {
               "response": "=$.response"
             }
+          },
+          "reply": {
+            "outputSchema": ""
           },
           "schemas": {
             "reply": {
@@ -90,7 +106,13 @@
             "handlerType": "Tool",
             "resourceUri": "",
             "handlerName": "find_communities",
-            "handlerDescription": "List every apartment community in a zip code with address, property type, price tier, year built, total units, management company, phone, website, pet/senior/student/income-restricted flags, resident rating, and a rentSummary (median 1BR rent, overall rent range, available units, availability status, unit types offered). Use the returned communityId with the pricing, amenity, proximity and safety tools. Read-only."
+            "handlerDescription": "List every apartment community in a zip code with address, property type, price tier, year built, total units, management company, phone, website, pet/senior/student/income-restricted flags, resident rating, and a rentSummary (median 1BR rent, overall rent range, available units, availability status, unit types offered). Use the returned communityId with the pricing, amenity, proximity and safety tools. Read-only.",
+            "toolTitle": "",
+            "readOnlyToolHint": false,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
           },
           "action": {
             "ref": "github.com/project-flogo/flow",
@@ -105,6 +127,9 @@
             "output": {
               "response": "=$.response"
             }
+          },
+          "reply": {
+            "outputSchema": ""
           },
           "schemas": {
             "reply": {
@@ -140,7 +165,13 @@
             "handlerType": "Tool",
             "resourceUri": "",
             "handlerName": "get_rent_pricing",
-            "handlerDescription": "Retrieve rent and availability for one community: overall rent range, median one-bedroom rent, current specials, utilities included, pet rent, parking fee, and per-unit-type detail (studio/1BR/2BR/3BR/4BR) with square footage, rentRange [low, median, high], availability status, available units, next available date, lease terms, security deposit, application fee and admin fee. Read-only."
+            "handlerDescription": "Retrieve rent and availability for one community: overall rent range, median one-bedroom rent, current specials, utilities included, pet rent, parking fee, and per-unit-type detail (studio/1BR/2BR/3BR/4BR) with square footage, rentRange [low, median, high], availability status, available units, next available date, lease terms, security deposit, application fee and admin fee. Read-only.",
+            "toolTitle": "",
+            "readOnlyToolHint": false,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
           },
           "action": {
             "ref": "github.com/project-flogo/flow",
@@ -155,6 +186,9 @@
             "output": {
               "response": "=$.response"
             }
+          },
+          "reply": {
+            "outputSchema": ""
           },
           "schemas": {
             "reply": {
@@ -190,7 +224,13 @@
             "handlerType": "Tool",
             "resourceUri": "",
             "handlerName": "get_amenities",
-            "handlerDescription": "Retrieve the amenity profile for one community: amenity count and score, pet policy (max pets, weight limit, breed restrictions, one-time fee), parking types and guest parking, the full community amenity list with category and whether an extra fee applies, in-unit features, and green certifications. Read-only."
+            "handlerDescription": "Retrieve the amenity profile for one community: amenity count and score, pet policy (max pets, weight limit, breed restrictions, one-time fee), parking types and guest parking, the full community amenity list with category and whether an extra fee applies, in-unit features, and green certifications. Read-only.",
+            "toolTitle": "",
+            "readOnlyToolHint": false,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
           },
           "action": {
             "ref": "github.com/project-flogo/flow",
@@ -205,6 +245,9 @@
             "output": {
               "response": "=$.response"
             }
+          },
+          "reply": {
+            "outputSchema": ""
           },
           "schemas": {
             "reply": {
@@ -240,7 +283,13 @@
             "handlerType": "Tool",
             "resourceUri": "",
             "handlerName": "get_proximity",
-            "handlerDescription": "Retrieve location and commute context for one community: location/walk/transit/bike scores, a valueException flag for communities that are cheap yet unusually well located, distance summary (nearest highway, public school, grocery, shopping mall, hospital and the within-X-miles booleans), and the nearby places list with type, distance in miles, drive time, and GreatSchools rating and district for schools. Read-only."
+            "handlerDescription": "Retrieve location and commute context for one community: location/walk/transit/bike scores, a valueException flag for communities that are cheap yet unusually well located, distance summary (nearest highway, public school, grocery, shopping mall, hospital and the within-X-miles booleans), and the nearby places list with type, distance in miles, drive time, and GreatSchools rating and district for schools. Read-only.",
+            "toolTitle": "",
+            "readOnlyToolHint": false,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
           },
           "action": {
             "ref": "github.com/project-flogo/flow",
@@ -255,6 +304,9 @@
             "output": {
               "response": "=$.response"
             }
+          },
+          "reply": {
+            "outputSchema": ""
           },
           "schemas": {
             "reply": {
@@ -290,7 +342,13 @@
             "handlerType": "Tool",
             "resourceUri": "",
             "handlerName": "get_safety_record",
-            "handlerDescription": "Retrieve the trailing-12-month safety record for one community: reporting period, police jurisdiction, nearest police station and average response time, total / violent / property incidents, incidents per 1000 units, safety score and rating, year-over-year trend, on-site security features, and the incident breakdown by type with reported count, last reported date and how many were cleared. Read-only."
+            "handlerDescription": "Retrieve the trailing-12-month safety record for one community: reporting period, police jurisdiction, nearest police station and average response time, total / violent / property incidents, incidents per 1000 units, safety score and rating, year-over-year trend, on-site security features, and the incident breakdown by type with reported count, last reported date and how many were cleared. Read-only.",
+            "toolTitle": "",
+            "readOnlyToolHint": false,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
           },
           "action": {
             "ref": "github.com/project-flogo/flow",
@@ -305,6 +363,9 @@
             "output": {
               "response": "=$.response"
             }
+          },
+          "reply": {
+            "outputSchema": ""
           },
           "schemas": {
             "reply": {
@@ -340,7 +401,13 @@
             "handlerType": "Tool",
             "resourceUri": "",
             "handlerName": "get_community_contact",
-            "handlerDescription": "Retrieve the leasing office contact card for one community: office name, leasing agent name and title, email address, phone, direct and after-hours lines, full mailing address, office hours and time zone, tour types offered, how much advance notice a tour needs, how early to arrive, whether walk-ins are accepted, preferred contact method and languages spoken. Call this before schedule_visit so you can quote the office hours and lead time. Read-only."
+            "handlerDescription": "Retrieve the leasing office contact card for one community: office name, leasing agent name and title, email address, phone, direct and after-hours lines, full mailing address, office hours and time zone, tour types offered, how much advance notice a tour needs, how early to arrive, whether walk-ins are accepted, preferred contact method and languages spoken. Call this before schedule_visit so you can quote the office hours and lead time. Read-only.",
+            "toolTitle": "",
+            "readOnlyToolHint": false,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
           },
           "action": {
             "ref": "github.com/project-flogo/flow",
@@ -355,6 +422,9 @@
             "output": {
               "response": "=$.response"
             }
+          },
+          "reply": {
+            "outputSchema": ""
           },
           "schemas": {
             "reply": {
@@ -390,7 +460,13 @@
             "handlerType": "Tool",
             "resourceUri": "",
             "handlerName": "schedule_visit",
-            "handlerDescription": "Schedule an apartment tour and email the confirmation to BOTH the renter and the community's leasing office. Confirm the date, time and unit type with the renter, and collect their name and email address, before calling this. Returns the confirmation details that were emailed as key=value lines (status, communityName, visitDate, visitTime, unitLabel, address, officeHours, communityPhone, arriveMinutesEarly, emailSentTo), including the community phone number the renter should call ahead on."
+            "handlerDescription": "Schedule an apartment tour and email the confirmation to BOTH the renter and the community's leasing office. Confirm the date, time and unit type with the renter, and collect their name and email address, before calling this. Returns the confirmation details that were emailed as key=value lines (status, communityName, visitDate, visitTime, unitLabel, address, officeHours, communityPhone, arriveMinutesEarly, emailSentTo), including the community phone number the renter should call ahead on.",
+            "toolTitle": "",
+            "readOnlyToolHint": false,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
           },
           "action": {
             "ref": "github.com/project-flogo/flow",
@@ -405,6 +481,9 @@
             "output": {
               "response": "=$.response"
             }
+          },
+          "reply": {
+            "outputSchema": ""
           },
           "schemas": {
             "reply": {
@@ -1624,7 +1703,6 @@
                 "authorizationType": "Basic",
                 "Username": "=$property[\"SendMail.username\"]",
                 "Password": "=$property[\"SendMail.Password\"]",
-                "authorizationConn": "",
                 "Connection Security": "SSL",
                 "serverCertificate": "",
                 "message_content_type": "text/plain",
@@ -1728,16 +1806,16 @@
     {
       "name": "SendMail.username",
       "type": "string",
-      "value": "teamflogo@gmail.com"
+      "value": "sender@example.com"
     },
     {
       "name": "SendMail.Password",
       "type": "string",
-      "value": ""
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     }
   ],
   "connections": {},
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuMSIsInRhZyI6IjEuMC4xLWIwMiIsIm5hbWUiOiJNb2RlbCBDb250ZXh0IFByb3RvY29sIChNQ1ApIiwiczNsb2NhdGlvbiI6IlRpYmNvL01DUCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTIiLCJ0YWciOiIxLjYuMTItYjA2IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9XQ==",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuNCIsInRhZyI6IjEuMC40LWIwMiIsIm5hbWUiOiJNb2RlbCBDb250ZXh0IFByb3RvY29sIChNQ1ApIiwiczNsb2NhdGlvbiI6IlRpYmNvL01DUCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTYiLCJ0YWciOiIxLjYuMTYtYjA1IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9XQ==",
   "metadata": {
     "endpoints": [
       {
@@ -1747,6 +1825,6 @@
         "type": "public"
       }
     ],
-    "flogoVersion": "2.26.2"
+    "flogoVersion": "2.26.7"
   }
 }

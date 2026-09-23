@@ -10,6 +10,7 @@
     "github.com/tibco/flogo-ai-agent/src/app/AgenticAI/trigger/agent",
     "github.com/project-flogo/contrib/function/string",
     "github.com/project-flogo/contrib/function/coerce",
+    "github.com/project-flogo/contrib/function/array",
     "github.com/tibco/flogo-ai-agent/src/app/AgenticAI/connector/llmprovider",
     "github.com/tibco/wi-postgres/src/app/PostgreSQL/connector/connection"
   ],
@@ -535,7 +536,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "98e549c7-ac51-4800-a7bb-0fcbb6af153aSELECT bs.id, bs.booking_id, bs.segment_order, bs.flight_number, bs.origin, bs.destination, bs.departure_time, bs.arrival_time, bs.seat_number, bs.cabin, bs.segment_status, f.status as flight_status, f.delay_minutes, f.estimated_departure, f.estimated_arrival, f.scheduled_departure, f.scheduled_arrival, f.gate, f.origin_city, f.destination_city, f.delay_reason FROM booking_segments bs JOIN flights f ON bs.flight_number = f.flight_number JOIN bookings b ON bs.booking_id = b.id WHERE b.pnr = ?pnr ORDER BY bs.segment_order ASC;",
+                "State": "9d1ba9cc-77e7-4594-b541-97d19054d1f3SELECT bs.id, bs.booking_id, bs.segment_order, bs.flight_number, bs.origin, bs.destination, bs.departure_time, bs.arrival_time, bs.seat_number, bs.cabin, bs.segment_status, f.status as flight_status, f.delay_minutes, f.estimated_departure, f.estimated_arrival, f.scheduled_departure, f.scheduled_arrival, f.gate, f.origin_city, f.destination_city, f.delay_reason FROM booking_segments bs JOIN flights f ON bs.flight_number = f.flight_number JOIN bookings b ON bs.booking_id = b.id WHERE b.pnr = ?pnr ORDER BY bs.segment_order ASC;",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -696,7 +697,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "888924f9-0b29-4b5b-a27b-94ce9777a306SELECT * FROM public.flights WHERE status != 'CANCELLED' ORDER BY flight_number ASC;"
+                "State": "67571de9-1e9d-4eca-99b9-d2eed796963eSELECT * FROM public.flights WHERE status != 'CANCELLED' ORDER BY flight_number ASC;"
               },
               "schemas": {
                 "input": {
@@ -916,7 +917,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "908a9407-30bb-4ae2-8b49-02e643264e97UPDATE booking_segments SET flight_number = ?new_flight, seat_number = ?new_seat, segment_status = 'REBOOKED' FROM bookings WHERE booking_segments.booking_id = bookings.id AND bookings.pnr = ?pnr AND booking_segments.flight_number = ?original_flight;",
+                "State": "02e24d16-86ec-4c9d-a298-2515c653ef62UPDATE booking_segments SET flight_number = ?new_flight, seat_number = ?new_seat, segment_status = 'REBOOKED' FROM bookings WHERE booking_segments.booking_id = bookings.id AND bookings.pnr = ?pnr AND booking_segments.flight_number = ?original_flight;",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -1008,16 +1009,18 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "2a34347f-7c90-4ae9-9170-59964926fecaINSERT INTO rebooking_log (pnr, original_flight, new_flight, new_seat, reason) VALUES (?pnr, ?original_flight, ?new_flight, ?new_seat, ?reason);",
+                "State": "d9fcf579-8be0-425a-891c-fd4fe509f756INSERT INTO rebooking_log (pnr, original_flight, new_flight, new_seat, reason) VALUES (?pnr, ?original_flight, ?new_flight, ?new_seat, ?reason);",
                 "input": {
                   "mapping": {
-                    "parameters": {
-                      "pnr": "=$flow.toolParams.pnr",
-                      "original_flight": "=$flow.toolParams.original_flight",
-                      "new_flight": "=$flow.toolParams.new_flight",
-                      "new_seat": "=$flow.toolParams.new_seat",
-                      "reason": "Flight disruption rebooking"
-                    }
+                    "values": [
+                      {
+                        "pnr": "=$flow.toolParams.pnr",
+                        "original_flight": "=$flow.toolParams.original_flight",
+                        "new_flight": "=$flow.toolParams.new_flight",
+                        "new_seat": "=$flow.toolParams.new_seat",
+                        "reason": "Flight disruption rebooking"
+                      }
+                    ]
                   }
                 }
               },
@@ -1276,7 +1279,7 @@
     {
       "name": "AgenticAI.OpenAIConn.API_Key",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "sk-REPLACE-WITH-YOUR-OPENAI-KEY"
     },
     {
       "name": "AgenticAI.OpenAIConn.LLM_Base_URL",
@@ -1306,7 +1309,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",
@@ -1341,22 +1344,22 @@
     {
       "name": "LLM_Model",
       "type": "string",
-      "value": "gpt-5.6"
+      "value": "gpt-5.5"
     },
     {
       "name": "To_Email",
       "type": "string",
-      "value": "nikhil.shah.84@gmail.com"
+      "value": "recipient@example.com"
     },
     {
       "name": "Email_Username",
       "type": "string",
-      "value": "nikhil.shah.84@gmail.com"
+      "value": "sender@example.com"
     },
     {
       "name": "Email_App_Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "Connection_Risk_A2AServer_PORT",

@@ -235,7 +235,7 @@ Grouped by **industry vertical**. Click a use case to open its folder and full R
 
 | Use Case | What it does | Endpoints | Database | Status |
 |---|---|---|---|---|
-| [Semiconductor Customer & Order Assistant](./Semiconductor_Customer_Use_Case/) | Parts catalog, orders, RMAs & lead times for a semiconductor supplier. | WS `:8088` `/semiconductor` · MCP `:9098` · A2A `8730–8735` | `semiconductor` | ✅ Complete |
+| [Semiconductor Customer & Order Assistant](./Semiconductor_Customer_Use_Case/) | Parts catalog, orders, RMAs & lead times for a semiconductor supplier. | WS `:9310` `/semiconductor` · MCP `:9098` · A2A `8730–8735` | `semiconductor` | ✅ Complete |
 | [Predictive Maintenance & Asset Monitoring](./Predictive_Maintenance_Use_Case/) | Asset health, sensor readings & failure prediction with a REST backend and a single chat agent. | WS `:8083` `/ws/chat` · MCP `:9093` · REST api `:9095` | `predictive_maintenance` | 🔌 REST-tier |
 
 ### Transportation, Travel & Logistics
@@ -244,7 +244,7 @@ Grouped by **industry vertical**. Click a use case to open its folder and full R
 |---|---|---|---|---|
 | [Airline Passenger Services](./Airline_Passenger_Services_Use_Case/) | Flights, bookings, seats & baggage passenger assistant. | WS `:8083` `/airline` · MCP `:9093` · A2A `8074–8076` | `airline` | 🔌 REST-tier |
 | [Logistics / Transport Shipper Assistant](./Logistics_Transport_Use_Case/) | Shipment tracking, quotes & bookings; ships runnable binaries + FDA build script. | WS `:9690` `/logistics` · MCP `:9790` · A2A `9791–9794` | `logistics` | 📦 Prebuilt binaries |
-| [Maritime Container Shipping](./Container_Shipping_Use_Case/) | Container-shipping customer self-service. **MCP + DB done; A2A/Orchestrator still being converted.** | MCP `:9720` `/shipping-bss` (real) · WS/A2A *stale* | `container_shipping` | 🚧 WIP |
+| [Maritime Container Shipping](./Container_Shipping_Use_Case/) | Container-shipping customer self-service. **MCP + DB done; A2A/Orchestrator still being converted.** | MCP `:9720` `/shipping-bss` (real) · WS `:9300` · A2A `9301–9306` (still the Life & Pensions agents) | `container_shipping` | 🚧 WIP |
 
 ### Retail & Consumer
 
@@ -272,7 +272,20 @@ Grouped by **industry vertical**. Click a use case to open its folder and full R
 | 🖼️ **deck** | Includes an architecture slide deck. |
 
 > **Port collisions — don't run these pairs at once (defaults overlap):**
-> Retail Banking & Semiconductor both use WS `:8088`; Airline & Predictive Maintenance both use WS `:8083` (and MCP `:9093`); Life & Pensions and Container Shipping both use WS `:9600` + A2A `9983–9988`. Port `:9095` recurs across Aerospace (MCP), Predictive Maintenance (REST), and Hospital. Change a port in the app properties to run overlapping demos simultaneously.
+> The twelve MCP + A2A + Orchestrator use cases listed above are now mutually conflict-free and can all
+> run at the same time. Two former clashes were resolved by remapping: Semiconductor's orchestrator moved
+> `:8088` → **`:9310`** (Retail Banking keeps `:8088`), and Container Shipping moved `:9600` → **`:9300`**
+> with A2A `9983–9988` → **`9301–9306`** (Life & Pensions keeps the originals).
+>
+> Overlaps that remain involve the standalone/secondary samples — bring these up one at a time, or change
+> the port in the app properties: `:8083` (Airline orchestrator · Predictive Maintenance · Mobile Customer
+> Care) · `:9095` (Hospital `endevour-api` · Predictive Maintenance REST API · Morning Briefing) · `:8080`
+> (Hospital · Predictive Maintenance · AI Triage · Smart Supply Chain) · `:8091` (Aerospace A2A · Travel
+> Itinerary Planner · Beauty Intelligence) · `:8081`/`:8082` (Mobile Customer Care vs Healthcare Compliance
+> and Hospital) · `:9998` (Healthcare Compliance · Smart Supply Chain).
+>
+> **If you change a port, change it in three places:** the app property / trigger setting, the matching
+> `serverUrl` in the orchestrator's MCP and A2A connections, and this table plus the use case's README.
 
 ---
 

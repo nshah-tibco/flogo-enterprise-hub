@@ -30,7 +30,13 @@
         "serverCertificate": "",
         "serverPrivateKey": "",
         "authType": "None",
-        "authToken": ""
+        "authToken": "",
+        "oauthIssuer": "",
+        "oauthJWKSURL": "",
+        "oauthAudience": "",
+        "oauthAuthorizationServers": "",
+        "oauthRequiredScopes": "",
+        "oauthResourceURL": ""
       },
       "id": "LifePensionsMCPServer",
       "handlers": [
@@ -564,7 +570,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "3201dd5a-485d-4e6d-b295-0ca42caa9be2SELECT * FROM public.members ORDER BY member_id ASC;"
+                "State": "369f89ae-587a-4d15-a36d-b9e63e58586eSELECT * FROM public.members ORDER BY member_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -753,7 +759,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "66c6503f-0755-4ec1-a81a-526c33e1cd94SELECT * FROM public.policies ORDER BY member_id ASC, policy_id ASC;"
+                "State": "5fa33491-1abb-4ce8-a136-1ab80599cde2SELECT * FROM public.policies ORDER BY member_id ASC, policy_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -942,7 +948,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "effbf61a-affb-49fe-beb5-260eaa87733bSELECT * FROM public.retirement_accounts ORDER BY member_id ASC, account_id ASC;"
+                "State": "ac7735ee-2acf-4d41-a605-d18b874e48c1SELECT * FROM public.retirement_accounts ORDER BY member_id ASC, account_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -1124,7 +1130,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "363a4f59-5d95-4afa-af59-22a2e204097cSELECT * FROM public.funds ORDER BY fund_id ASC;"
+                "State": "d8b8c29b-3d6e-46c6-b01a-6084c3499d67SELECT * FROM public.funds ORDER BY fund_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -1306,7 +1312,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "201457e1-a297-419d-bb96-75bfad78d7baSELECT h.holding_id, h.account_id, h.fund_id, f.fund_name, f.category, f.risk_level, h.units, h.value, h.allocation_pct FROM public.holdings h JOIN public.funds f ON h.fund_id = f.fund_id ORDER BY h.account_id ASC, h.allocation_pct DESC;"
+                "State": "3cb4b5f6-3294-4ace-8a44-c842bedfffc1SELECT h.holding_id, h.account_id, h.fund_id, f.fund_name, f.category, f.risk_level, h.units, h.value, h.allocation_pct FROM public.holdings h JOIN public.funds f ON h.fund_id = f.fund_id ORDER BY h.account_id ASC, h.allocation_pct DESC;"
               },
               "schemas": {
                 "input": {
@@ -1481,7 +1487,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "c73ecd80-24ef-46ed-9e1c-9046216a89d1SELECT * FROM public.contributions ORDER BY member_id ASC, contribution_date DESC;"
+                "State": "91daa278-0ef0-42cf-b0a1-ac421d0ea726SELECT * FROM public.contributions ORDER BY member_id ASC, contribution_date DESC;"
               },
               "schemas": {
                 "input": {
@@ -1663,7 +1669,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "91fd58b0-0db1-4700-afa5-60becb52dcd7SELECT b.beneficiary_id, b.policy_id, p.member_id, p.product_name, b.beneficiary_name, b.relationship, b.share_pct, b.is_primary, b.date_added FROM public.beneficiaries b JOIN public.policies p ON b.policy_id = p.policy_id ORDER BY p.member_id ASC, b.policy_id ASC;"
+                "State": "e5038d21-a818-4ec9-a532-a6435ab1f2ffSELECT b.beneficiary_id, b.policy_id, p.member_id, p.product_name, b.beneficiary_name, b.relationship, b.share_pct, b.is_primary, b.date_added FROM public.beneficiaries b JOIN public.policies p ON b.policy_id = p.policy_id ORDER BY p.member_id ASC, b.policy_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -1845,7 +1851,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "1c7c671b-4bfd-4d82-a373-14d21f4dfc51SELECT * FROM public.claims ORDER BY member_id ASC, submitted_date DESC;"
+                "State": "64eca03d-9785-4e3e-b09f-2f6045275e2cSELECT * FROM public.claims ORDER BY member_id ASC, submitted_date DESC;"
               },
               "schemas": {
                 "input": {
@@ -1938,7 +1944,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",
@@ -2006,7 +2012,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuMyIsInRhZyI6IjEuMC4zLWIwMiIsIm5hbWUiOiJNb2RlbCBDb250ZXh0IFByb3RvY29sIChNQ1ApIiwiczNsb2NhdGlvbiI6IlRpYmNvL01DUCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjEiLCJ0YWciOiIyLjcuMS1iMDEiLCJuYW1lIjoiUG9zdGdyZVNRTCIsInMzbG9jYXRpb24iOiJUaWJjby9Qb3N0Z3JlU1FMIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuNCIsInRhZyI6IjEuMC40LWIwMiIsIm5hbWUiOiJNb2RlbCBDb250ZXh0IFByb3RvY29sIChNQ1ApIiwiczNsb2NhdGlvbiI6IlRpYmNvL01DUCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjIiLCJ0YWciOiIyLjcuMi1iMDEiLCJuYW1lIjoiUG9zdGdyZVNRTCIsInMzbG9jYXRpb24iOiJUaWJjby9Qb3N0Z3JlU1FMIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
   "metadata": {
     "endpoints": [
       {
@@ -2016,6 +2022,6 @@
         "type": "public"
       }
     ],
-    "flogoVersion": "2.26.5"
+    "flogoVersion": "2.26.7"
   }
 }

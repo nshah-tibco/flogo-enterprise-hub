@@ -30,7 +30,13 @@
         "serverCertificate": "",
         "serverPrivateKey": "",
         "authType": "None",
-        "authToken": ""
+        "authToken": "",
+        "oauthIssuer": "",
+        "oauthJWKSURL": "",
+        "oauthAudience": "",
+        "oauthAuthorizationServers": "",
+        "oauthRequiredScopes": "",
+        "oauthResourceURL": ""
       },
       "id": "PredictiveMaintenanceMCPServer",
       "handlers": [
@@ -41,10 +47,12 @@
             "resourceUri": "",
             "handlerName": "GetAssets",
             "handlerDescription": "Get all assets including pumps, compressors, and valves with their type, well site assignment, and operational status",
+            "toolTitle": "",
             "readOnlyToolHint": false,
             "destructiveToolHint": false,
             "idempotentToolHint": false,
-            "openWorldToolHint": true
+            "openWorldToolHint": true,
+            "scope": ""
           },
           "action": {
             "ref": "github.com/project-flogo/flow",
@@ -59,12 +67,15 @@
               "response": "=$.response"
             }
           },
+          "reply": {
+            "outputSchema": ""
+          },
           "schemas": {
             "reply": {
               "response": {
                 "type": "json",
-                "value": "{\r\n    \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n }\r\n}",
-                "fe_metadata": "{\r\n    \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n }\r\n}"
+                "value": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}",
+                "fe_metadata": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}"
               }
             },
             "output": {
@@ -84,10 +95,12 @@
             "resourceUri": "",
             "handlerName": "GetSensorReadings",
             "handlerDescription": "Get all sensor readings including vibration, temperature, pressure, flow rate and power consumption for all assets",
+            "toolTitle": "",
             "readOnlyToolHint": false,
             "destructiveToolHint": false,
             "idempotentToolHint": false,
-            "openWorldToolHint": true
+            "openWorldToolHint": true,
+            "scope": ""
           },
           "action": {
             "ref": "github.com/project-flogo/flow",
@@ -102,12 +115,15 @@
               "response": "=$.response"
             }
           },
+          "reply": {
+            "outputSchema": ""
+          },
           "schemas": {
             "reply": {
               "response": {
                 "type": "json",
-                "value": "{\r\n    \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n }\r\n}",
-                "fe_metadata": "{\r\n    \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n }\r\n}"
+                "value": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}",
+                "fe_metadata": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}"
               }
             },
             "output": {
@@ -127,10 +143,12 @@
             "resourceUri": "",
             "handlerName": "GetPredictions",
             "handlerDescription": "Get all AI health predictions with status classification, confidence score, days to failure estimate, failure mode, and recommended actions",
+            "toolTitle": "",
             "readOnlyToolHint": false,
             "destructiveToolHint": false,
             "idempotentToolHint": false,
-            "openWorldToolHint": true
+            "openWorldToolHint": true,
+            "scope": ""
           },
           "action": {
             "ref": "github.com/project-flogo/flow",
@@ -145,12 +163,15 @@
               "response": "=$.response"
             }
           },
+          "reply": {
+            "outputSchema": ""
+          },
           "schemas": {
             "reply": {
               "response": {
                 "type": "json",
-                "value": "{\r\n    \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n }\r\n}",
-                "fe_metadata": "{\r\n    \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n }\r\n}"
+                "value": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}",
+                "fe_metadata": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}"
               }
             },
             "output": {
@@ -170,10 +191,12 @@
             "resourceUri": "",
             "handlerName": "GetWorkOrders",
             "handlerDescription": "Get all maintenance work orders with priority, assigned technician, schedule, and completion status",
+            "toolTitle": "",
             "readOnlyToolHint": false,
             "destructiveToolHint": false,
             "idempotentToolHint": false,
-            "openWorldToolHint": true
+            "openWorldToolHint": true,
+            "scope": ""
           },
           "action": {
             "ref": "github.com/project-flogo/flow",
@@ -188,12 +211,15 @@
               "response": "=$.response"
             }
           },
+          "reply": {
+            "outputSchema": ""
+          },
           "schemas": {
             "reply": {
               "response": {
                 "type": "json",
-                "value": "{\r\n    \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n }\r\n}",
-                "fe_metadata": "{\r\n    \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n }\r\n}"
+                "value": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}",
+                "fe_metadata": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}"
               }
             },
             "output": {
@@ -213,10 +239,12 @@
             "resourceUri": "",
             "handlerName": "GetAlertHistory",
             "handlerDescription": "Get all alert notifications with severity level, message content, and acknowledgment status",
+            "toolTitle": "",
             "readOnlyToolHint": false,
             "destructiveToolHint": false,
             "idempotentToolHint": false,
-            "openWorldToolHint": true
+            "openWorldToolHint": true,
+            "scope": ""
           },
           "action": {
             "ref": "github.com/project-flogo/flow",
@@ -231,12 +259,15 @@
               "response": "=$.response"
             }
           },
+          "reply": {
+            "outputSchema": ""
+          },
           "schemas": {
             "reply": {
               "response": {
                 "type": "json",
-                "value": "{\r\n    \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n }\r\n}",
-                "fe_metadata": "{\r\n    \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n }\r\n}"
+                "value": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}",
+                "fe_metadata": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}"
               }
             },
             "output": {
@@ -256,10 +287,12 @@
             "resourceUri": "",
             "handlerName": "GetWellSites",
             "handlerDescription": "Get all well site locations with site name, physical location, and operating region",
+            "toolTitle": "",
             "readOnlyToolHint": false,
             "destructiveToolHint": false,
             "idempotentToolHint": false,
-            "openWorldToolHint": true
+            "openWorldToolHint": true,
+            "scope": ""
           },
           "action": {
             "ref": "github.com/project-flogo/flow",
@@ -274,12 +307,15 @@
               "response": "=$.response"
             }
           },
+          "reply": {
+            "outputSchema": ""
+          },
           "schemas": {
             "reply": {
               "response": {
                 "type": "json",
-                "value": "{\r\n    \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n }\r\n}",
-                "fe_metadata": "{\r\n    \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n }\r\n}"
+                "value": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}",
+                "fe_metadata": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}"
               }
             },
             "output": {
@@ -389,7 +425,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "651752c1-b89f-4436-9ac1-07942f610a5dSELECT * FROM public.assets ORDER BY asset_id ASC;"
+                "State": "2062b2d7-83c0-4429-9757-684de4dce13aSELECT * FROM public.assets ORDER BY asset_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -564,7 +600,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "cf7cc07f-9100-4158-bb11-1e46c9341928SELECT * FROM public.sensor_readings ORDER BY id DESC;"
+                "State": "54516b0a-7162-409a-a9b0-475cfae325d0SELECT * FROM public.sensor_readings ORDER BY id DESC;"
               },
               "schemas": {
                 "input": {
@@ -746,7 +782,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "10832c14-b715-431c-9169-f5d3d28be4d5SELECT * FROM public.predictions ORDER BY prediction_id DESC;"
+                "State": "1ec33369-a0dd-4674-8aaa-52b8ccfe7ac1SELECT * FROM public.predictions ORDER BY prediction_id DESC;"
               },
               "schemas": {
                 "input": {
@@ -928,7 +964,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "8fda71f1-d18c-47fc-aad0-5d625dd4e652SELECT * FROM public.work_orders ORDER BY work_order_id DESC;"
+                "State": "5605dc6a-9612-4dd2-9972-db4dd4ca0b6dSELECT * FROM public.work_orders ORDER BY work_order_id DESC;"
               },
               "schemas": {
                 "input": {
@@ -1096,7 +1132,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "9937ea5c-d558-4297-82d1-78a6bf03133aSELECT * FROM public.alert_history ORDER BY alert_id DESC;"
+                "State": "b29b4862-6883-428f-af49-7f0115b19e74SELECT * FROM public.alert_history ORDER BY alert_id DESC;"
               },
               "schemas": {
                 "input": {
@@ -1243,7 +1279,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "f12510c0-ed9a-440d-a820-b24a32948adbSELECT * FROM public.well_sites ORDER BY well_site_id ASC;"
+                "State": "e4e96592-aadd-405b-90d8-feb78c26f619SELECT * FROM public.well_sites ORDER BY well_site_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -1336,7 +1372,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",
@@ -1404,7 +1440,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuMiIsInRhZyI6IjEuMC4yLWIwMSIsIm5hbWUiOiJNb2RlbCBDb250ZXh0IFByb3RvY29sIChNQ1ApIiwiczNsb2NhdGlvbiI6IlRpYmNvL01DUCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjEiLCJ0YWciOiIyLjcuMS1iMDEiLCJuYW1lIjoiUG9zdGdyZVNRTCIsInMzbG9jYXRpb24iOiJUaWJjby9Qb3N0Z3JlU1FMIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuNCIsInRhZyI6IjEuMC40LWIwMiIsIm5hbWUiOiJNb2RlbCBDb250ZXh0IFByb3RvY29sIChNQ1ApIiwiczNsb2NhdGlvbiI6IlRpYmNvL01DUCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby93aS1wb3N0Z3Jlcy9zcmMvYXBwL1Bvc3RncmVTUUwiLCJpZCI6IlBvc3RncmVTUUwiLCJ2ZXJzaW9uIjoiMi43LjIiLCJ0YWciOiIyLjcuMi1iMDEiLCJuYW1lIjoiUG9zdGdyZVNRTCIsInMzbG9jYXRpb24iOiJUaWJjby9Qb3N0Z3JlU1FMIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
   "metadata": {
     "endpoints": [
       {
@@ -1414,6 +1450,6 @@
         "type": "public"
       }
     ],
-    "flogoVersion": "2.26.3"
+    "flogoVersion": "2.26.7"
   }
 }

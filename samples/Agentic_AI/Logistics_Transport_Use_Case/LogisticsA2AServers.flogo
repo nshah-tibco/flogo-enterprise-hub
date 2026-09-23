@@ -396,7 +396,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation started:\",$flowctx[\"FlowName\"])",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -442,7 +452,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "acdbac49-9434-4b1b-b3bc-b6c53250b481SELECT tracking_number, status FROM public.shipments WHERE tracking_number = ?tn;",
+                "State": "5d8efc31-4381-4348-a61d-f0279a78d016SELECT tracking_number, status FROM public.shipments WHERE tracking_number = ?tn;",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -490,16 +500,8 @@
                 "manualmode": false,
                 "Fields": [
                   {
-                    "FieldName": "p1",
-                    "Type": "VARCHAR",
-                    "Selected": false,
-                    "Parameter": true,
-                    "isEditable": false,
-                    "Value": false
-                  },
-                  {
                     "FieldName": "p2",
-                    "Type": "VARCHAR",
+                    "Type": "LONGVARCHAR",
                     "Selected": false,
                     "Parameter": true,
                     "isEditable": false,
@@ -536,10 +538,18 @@
                     "Parameter": true,
                     "isEditable": false,
                     "Value": false
+                  },
+                  {
+                    "FieldName": "p1",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": false
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "36852e6a-a37a-4db8-bdaa-c2531203b860INSERT INTO public.delivery_changes (tracking_number, customer_id, change_type, new_delivery_date, new_address, reason, status) SELECT s.tracking_number, COALESCE(NULLIF(?p2,''), s.customer_id), ?p3, NULLIF(?p4,'')::date, NULLIF(?p5,''), ?p6, 'Requested' FROM public.shipments s WHERE s.tracking_number = ?p1;",
+                "State": "99c20c87-04fe-4e55-b898-9c6b0a552b41INSERT INTO public.delivery_changes (tracking_number, customer_id, change_type, new_delivery_date, new_address, reason, status) SELECT s.tracking_number, COALESCE(NULLIF(?p2,''), s.customer_id), ?p3, NULLIF(?p4,'')::date, NULLIF(?p5,''), ?p6, 'Requested' FROM public.shipments s WHERE s.tracking_number = ?p1;",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -557,8 +567,8 @@
                 "input": {
                   "input": {
                     "type": "json",
-                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"values\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{}}},\"parameters\":{\"type\":\"object\",\"properties\":{\"p1\":{\"type\":\"string\"},\"p2\":{\"type\":\"string\"},\"p3\":{\"type\":\"string\"},\"p4\":{\"type\":\"string\"},\"p5\":{\"type\":\"string\"},\"p6\":{\"type\":\"string\"}}}}}",
-                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"values\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{}}},\"parameters\":{\"type\":\"object\",\"properties\":{\"p1\":{\"type\":\"string\"},\"p2\":{\"type\":\"string\"},\"p3\":{\"type\":\"string\"},\"p4\":{\"type\":\"string\"},\"p5\":{\"type\":\"string\"},\"p6\":{\"type\":\"string\"}}}}}"
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"values\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{}}},\"parameters\":{\"type\":\"object\",\"properties\":{\"p2\":{\"type\":\"string\"},\"p3\":{\"type\":\"string\"},\"p4\":{\"type\":\"string\"},\"p5\":{\"type\":\"string\"},\"p6\":{\"type\":\"string\"},\"p1\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"values\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{}}},\"parameters\":{\"type\":\"object\",\"properties\":{\"p2\":{\"type\":\"string\"},\"p3\":{\"type\":\"string\"},\"p4\":{\"type\":\"string\"},\"p5\":{\"type\":\"string\"},\"p6\":{\"type\":\"string\"},\"p1\":{\"type\":\"string\"}}}}}"
                   }
                 },
                 "output": {
@@ -617,7 +627,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "caebe837-e222-4da7-bee5-d9ec377bafccUPDATE public.shipments SET estimated_delivery = COALESCE(NULLIF(?d,'')::date, estimated_delivery), destination_address = COALESCE(NULLIF(?a,''), destination_address) WHERE tracking_number = ?tn;",
+                "State": "0f0665ff-626b-4f0c-b1b6-94f462dbf2bbUPDATE public.shipments SET estimated_delivery = COALESCE(NULLIF(?d,'')::date, estimated_delivery), destination_address = COALESCE(NULLIF(?a,''), destination_address) WHERE tracking_number = ?tn;",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -742,7 +752,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation started:\",$flowctx[\"FlowName\"])",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -814,7 +834,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "a3072c15-a7b5-4d33-baa0-31004abc4b55INSERT INTO public.pickup_requests (customer_id, address, pickup_date, time_window, package_count, notes, status) VALUES (?p1, ?p2, NULLIF(?p3,'')::date, ?p4, COALESCE(NULLIF(?p5,'')::int,1), ?p6, 'Scheduled');",
+                "State": "f5fd3063-cb0c-49ed-8c9a-083b5e6bc1c5INSERT INTO public.pickup_requests (customer_id, address, pickup_date, time_window, package_count, notes, status) VALUES (?p1, ?p2, NULLIF(?p3,'')::date, ?p4, COALESCE(NULLIF(?p5,'')::int,1), ?p6, 'Scheduled');",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -949,7 +969,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation started:\",$flowctx[\"FlowName\"])",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -1002,7 +1032,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "9dda7174-6746-42e3-bbbc-45246c33c3d1SELECT tracking_number, status, declared_value FROM public.shipments WHERE tracking_number = ?tn;",
+                "State": "ce5161da-fd45-4d3f-afb6-8fe0b30b3cd7SELECT tracking_number, status, declared_value FROM public.shipments WHERE tracking_number = ?tn;",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -1050,16 +1080,8 @@
                 "manualmode": false,
                 "Fields": [
                   {
-                    "FieldName": "p1",
-                    "Type": "VARCHAR",
-                    "Selected": false,
-                    "Parameter": true,
-                    "isEditable": false,
-                    "Value": false
-                  },
-                  {
                     "FieldName": "p2",
-                    "Type": "VARCHAR",
+                    "Type": "LONGVARCHAR",
                     "Selected": false,
                     "Parameter": true,
                     "isEditable": false,
@@ -1088,10 +1110,18 @@
                     "Parameter": true,
                     "isEditable": false,
                     "Value": false
+                  },
+                  {
+                    "FieldName": "p1",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false,
+                    "Value": false
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "d38c6ac8-f6c1-4e44-94ed-646b549429c7INSERT INTO public.claims (tracking_number, customer_id, claim_type, description, claim_amount, status) SELECT s.tracking_number, COALESCE(NULLIF(?p2,''), s.customer_id), ?p3, ?p4, COALESCE(NULLIF(?p5,'')::numeric,0), 'Submitted' FROM public.shipments s WHERE s.tracking_number = ?p1;",
+                "State": "b7ed9858-49a5-4989-8756-d345017ddb8bINSERT INTO public.claims (tracking_number, customer_id, claim_type, description, claim_amount, status) SELECT s.tracking_number, COALESCE(NULLIF(?p2,''), s.customer_id), ?p3, ?p4, COALESCE(NULLIF(?p5,'')::numeric,0), 'Submitted' FROM public.shipments s WHERE s.tracking_number = ?p1;",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -1108,8 +1138,8 @@
                 "input": {
                   "input": {
                     "type": "json",
-                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"values\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{}}},\"parameters\":{\"type\":\"object\",\"properties\":{\"p1\":{\"type\":\"string\"},\"p2\":{\"type\":\"string\"},\"p3\":{\"type\":\"string\"},\"p4\":{\"type\":\"string\"},\"p5\":{\"type\":\"string\"}}}}}",
-                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"values\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{}}},\"parameters\":{\"type\":\"object\",\"properties\":{\"p1\":{\"type\":\"string\"},\"p2\":{\"type\":\"string\"},\"p3\":{\"type\":\"string\"},\"p4\":{\"type\":\"string\"},\"p5\":{\"type\":\"string\"}}}}}"
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"values\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{}}},\"parameters\":{\"type\":\"object\",\"properties\":{\"p2\":{\"type\":\"string\"},\"p3\":{\"type\":\"string\"},\"p4\":{\"type\":\"string\"},\"p5\":{\"type\":\"string\"},\"p1\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"values\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{}}},\"parameters\":{\"type\":\"object\",\"properties\":{\"p2\":{\"type\":\"string\"},\"p3\":{\"type\":\"string\"},\"p4\":{\"type\":\"string\"},\"p5\":{\"type\":\"string\"},\"p1\":{\"type\":\"string\"}}}}}"
                   }
                 },
                 "output": {
@@ -1218,7 +1248,17 @@
                 "flowInfo": false,
                 "message": "=string.concat(\"Agent Invocation started:\",$flowctx[\"FlowName\"])",
                 "logLevel": ""
-              }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
             }
           },
           {
@@ -1331,7 +1371,7 @@
     {
       "name": "AgenticAI.OpenAIConn.API_Key",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "sk-REPLACE-WITH-YOUR-OPENAI-KEY"
     },
     {
       "name": "AgenticAI.OpenAIConn.LLM_Base_URL",
@@ -1361,7 +1401,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",
@@ -1396,7 +1436,7 @@
     {
       "name": "LLM_Model",
       "type": "string",
-      "value": "gpt-4o"
+      "value": "gpt-5.5"
     },
     {
       "name": "RESCHEDULE_AGENT_PORT",
@@ -1441,12 +1481,12 @@
     {
       "name": "Email_Username",
       "type": "string",
-      "value": "your-email@gmail.com"
+      "value": "sender@example.com"
     },
     {
       "name": "Email_App_Password",
       "type": "string",
-      "value": "SECRET:YOURKEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "To_Email",
@@ -1544,7 +1584,7 @@
       }
     }
   },
-  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS40IiwidGFnIjoiMC45LjQtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWdlbmVyYWwvc3JjL2FwcC9HZW5lcmFsIiwiaWQiOiJHZW5lcmFsIiwidmVyc2lvbiI6IjEuNi4xNSIsInRhZyI6IjEuNi4xNS1iMDQiLCJuYW1lIjoiR2VuZXJhbCIsInMzbG9jYXRpb24iOiJUaWJjby9HZW5lcmFsIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL3dpLXBvc3RncmVzL3NyYy9hcHAvUG9zdGdyZVNRTCIsImlkIjoiUG9zdGdyZVNRTCIsInZlcnNpb24iOiIyLjcuMSIsInRhZyI6IjIuNy4xLWIwMSIsIm5hbWUiOiJQb3N0Z3JlU1FMIiwiczNsb2NhdGlvbiI6IlRpYmNvL1Bvc3RncmVTUUwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS40IiwidGFnIjoiMC45LjQtYjAyIiwibmFtZSI6IkFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWdlbmVyYWwvc3JjL2FwcC9HZW5lcmFsIiwiaWQiOiJHZW5lcmFsIiwidmVyc2lvbiI6IjEuNi4xNiIsInRhZyI6IjEuNi4xNi1iMDUiLCJuYW1lIjoiR2VuZXJhbCIsInMzbG9jYXRpb24iOiJUaWJjby9HZW5lcmFsIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL3dpLXBvc3RncmVzL3NyYy9hcHAvUG9zdGdyZVNRTCIsImlkIjoiUG9zdGdyZVNRTCIsInZlcnNpb24iOiIyLjcuMiIsInRhZyI6IjIuNy4yLWIwMSIsIm5hbWUiOiJQb3N0Z3JlU1FMIiwiczNsb2NhdGlvbiI6IlRpYmNvL1Bvc3RncmVTUUwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
   "metadata": {
     "endpoints": [
       {
@@ -1572,6 +1612,6 @@
         "name": "send_confirmation_email"
       }
     ],
-    "flogoVersion": "2.26.6"
+    "flogoVersion": "2.26.7"
   }
 }
