@@ -1442,7 +1442,7 @@
     {
       "name": "AgenticAI.OpenAI_LLMProvider.API_Key",
       "type": "string",
-      "value": "sk-REPLACE-WITH-YOUR-OPENAI-KEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "AgenticAI.OpenAI_LLMProvider.LLM_Base_URL",

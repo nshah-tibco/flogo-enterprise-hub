@@ -228,7 +228,7 @@
     {
       "name": "AgenticAI.OpenAI.API_Key",
       "type": "string",
-      "value": "sk-REPLACE-WITH-YOUR-OPENAI-KEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "AgenticAI.OpenAI.LLM_Base_URL",
@@ -261,7 +261,7 @@
         "description": "Claude Connection",
         "llmProvider": "Anthropic",
         "anthropicProvider": "Default",
-        "apiKey": "sk-ant-REPLACE-WITH-YOUR-ANTHROPIC-KEY",
+        "apiKey": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE=",
         "llmProviderUrl": "https://api.anthropic.com"
       }
     },

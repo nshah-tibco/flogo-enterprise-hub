@@ -446,7 +446,7 @@
     {
       "name": "OPENAI_API_KEY",
       "type": "string",
-      "value": "REPLACE_ME"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "OPENAI_API_ENDPOINT_URL",

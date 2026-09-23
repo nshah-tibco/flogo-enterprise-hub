@@ -317,7 +317,7 @@
     {
       "name": "AgenticAI.OpenAI.API_Key",
       "type": "string",
-      "value": "sk-REPLACE-WITH-YOUR-OPENAI-KEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "AgenticAI.OpenAI.LLM_Base_URL",
@@ -342,7 +342,7 @@
     {
       "name": "LLMClient.openai.LLM_APIKey",
       "type": "string",
-      "value": "sk-REPLACE-WITH-YOUR-OPENAI-KEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "AgenticAI.systemPrompt",
