@@ -502,7 +502,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "8c69ebf5-dcd2-4ead-9c0a-a2708a2f3142SELECT * FROM public.policyholders ORDER BY policyholder_id ASC;"
+                "State": "1d6d0a1a-8b65-40af-b48c-fb89f497a37aSELECT * FROM public.policyholders ORDER BY policyholder_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -695,7 +695,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "4ecd3c97-e8d6-4773-8bec-926fad6c80b3SELECT * FROM public.policies ORDER BY policy_number ASC;"
+                "State": "643fa655-3691-41f3-838d-3ea404bcca5eSELECT * FROM public.policies ORDER BY policy_number ASC;"
               },
               "schemas": {
                 "input": {
@@ -895,7 +895,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "5ade171c-6e43-40e4-a803-37410d28a010SELECT * FROM public.vehicles ORDER BY vehicle_id ASC;"
+                "State": "c1480b1c-73bb-479e-89ef-902cd2c28ab7SELECT * FROM public.vehicles ORDER BY vehicle_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -1060,7 +1060,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "ddeafbe5-f8ec-4c74-999a-91896e73f2b9SELECT * FROM public.coverages ORDER BY coverage_id ASC;"
+                "State": "c4c1d47d-8019-4ec7-8d0b-ccd26139c75eSELECT * FROM public.coverages ORDER BY coverage_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -1246,7 +1246,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "92f5f3ff-ac8d-47e0-b4c4-6bc3aa4d3a26SELECT * FROM public.claims ORDER BY claim_number ASC;"
+                "State": "dff4a3e8-8c45-4397-852d-c6e72a3ce752SELECT * FROM public.claims ORDER BY claim_number ASC;"
               },
               "schemas": {
                 "input": {
@@ -1432,7 +1432,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "369dbee7-9d35-4883-8ebc-10f1a87b51fdSELECT * FROM public.payments ORDER BY payment_id ASC;"
+                "State": "48821ec7-e127-4e3e-8ce3-37f3abe6b4ebSELECT * FROM public.payments ORDER BY payment_id ASC;"
               },
               "schemas": {
                 "input": {
@@ -1569,7 +1569,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "f17809d9-0608-425a-b0ce-4ca0240d41f2SELECT vector_store_id FROM public.document_index ORDER BY index_id DESC LIMIT 1;"
+                "State": "c547beb4-ac65-4b06-a4c3-539ffd599d9fSELECT vector_store_id FROM public.document_index ORDER BY index_id DESC LIMIT 1;"
               },
               "schemas": {
                 "input": {
@@ -1705,7 +1705,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
+      "value": "SECRET:6EG0G0V6GV2ChBQAd1pIRjNKs4D5"
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",
@@ -1745,7 +1745,7 @@
     {
       "name": "OPENAI_API_KEY",
       "type": "string",
-      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
+      "value": "sk-REPLACE-WITH-YOUR-OPENAI-KEY"
     },
     {
       "name": "OPENAI_API_ENDPOINT_URL",

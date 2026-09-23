@@ -249,7 +249,7 @@
     {
       "name": "OPEN_AI_API_KEY",
       "type": "string",
-      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
+      "value": "REPLACE ME"
     }
   ],
   "connections": {},

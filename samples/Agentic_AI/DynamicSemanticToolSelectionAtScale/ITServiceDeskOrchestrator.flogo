@@ -342,7 +342,7 @@
     {
       "name": "LLMClient.openai.LLM_APIKey",
       "type": "string",
-      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
+      "value": "sk-REPLACE-WITH-YOUR-OPENAI-KEY"
     },
     {
       "name": "AgenticAI.systemPrompt",
