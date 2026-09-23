@@ -484,7 +484,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "fe263639-d99a-4dbf-8ff9-73c75ee908d5INSERT INTO public.document_index (vector_store_id, store_name, files_ingested, ingested_at) VALUES (?vs_id1, 'AutoPolicyKnowledgeBase', 4, TO_CHAR(CURRENT_TIMESTAMP,'YYYY-MM-DD HH24:MI'));",
+                "State": "eeeed5b4-7610-40d1-934e-1f0902b115f8INSERT INTO public.document_index (vector_store_id, store_name, files_ingested, ingested_at) VALUES (?vs_id1, 'AutoPolicyKnowledgeBase', 4, TO_CHAR(CURRENT_TIMESTAMP,'YYYY-MM-DD HH24:MI'));",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -608,7 +608,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SECRET:9OsH42FfqrcRcIdvWj6uW0SNOb1g"
+      "value": "SECRET:Mtlts4Sr906lg7Q3Jxnhjt/IQkON"
     },
     {
       "name": "PostgreSQL.PostgresConn.Maximum_Open_Connections",
@@ -643,7 +643,7 @@
     {
       "name": "OPENAI_API_KEY",
       "type": "string",
-      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
+      "value": "type_your_key"
     },
     {
       "name": "OPENAI_API_ENDPOINT_URL",
