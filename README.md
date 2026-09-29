@@ -95,8 +95,7 @@ A library of **skills for AI coding agents** (such as **Claude Code**) to design
 | `flogo-unit-testing` | Recipe to create and run unit tests for Flogo apps (test cases, assertions, execution). |
 | `mapping-from-excel` | Recipe to build a Flogo flow from an Excel mapping spec (input fields → output fields with rules). |
 | `rest-to-database-app` | Recipe to scaffold a REST API Flogo app that queries a database. |
-| `agentic-ai-use-case` | Scaffold a complete, runnable Agentic AI demo for any vertical — MCP Server + A2A Agents + WebSocket orchestrator, backed by PostgreSQL. |
-| `agentic-ai-use-case-fda` | The same 3-app Agentic AI demo, built entirely via the `fda` CLI (command-by-command). |
+| `agentic-ai-use-case` | Scaffold a complete, runnable Agentic AI demo for any vertical — MCP Server + A2A Agents + WebSocket orchestrator, backed by PostgreSQL. Asks whether to build from scratch with the `fda` CLI (default) or clone an existing reference app. |
 
 For full details, see the [Flogo Skill Library README](./skills-library/README.md).
 

@@ -11,9 +11,10 @@ Keep the heading verbatim so it's unmistakable.
 The apps were generated with the Flogo Design CLI and build to `.exe`, but the following are intentionally **not** set (environment-, secret-, or backend-specific). Configure each before an end-to-end run:
 
 1. **LLM credentials & endpoint.**
-   - `API_Key` — set to your real provider key (kept out of the repo; inject as an app property / env at deploy).
-   - `LLM_Base_URL` — must be a **real endpoint** (e.g. `https://api.openai.com/v1`). It is **not** blank on purpose: an empty value becomes the literal `New_value` and the LLM call fails with `unsupported protocol scheme`.
-   - `LLM_Model` — confirm the model name is one your key can access.
+   - `API_Key` — **the only required LLM value.** Set your real provider key (kept out of the repo; inject as an app property / env at deploy).
+   - `LLM_Model` — confirm the model (default `gpt-5-nano`) is available to your key.
+   - `LLM_Base_URL` — **leave it empty for OpenAI** (the connector uses the OpenAI default). Set it only for Azure OpenAI, a gateway/proxy, or another provider. (It must never contain the text `New_value` — that makes the LLM call fail with `unsupported protocol scheme`.)
+   - *(RAG apps only)* `OPENAI_API_ENDPOINT_URL` (OpenAI vector extension) must stay `https://api.openai.com/v1` — it rejects an empty value.
 
 2. **PostgreSQL database & credentials.**
    - Create the database and load `database.sql` (then `reset_data.sql` to reset between demos).
@@ -35,6 +36,7 @@ The apps were generated with the Flogo Design CLI and build to `.exe`, but the f
 
 6. **Chatbot / WebSocket client.**
    - The orchestrator exposes `ws://<host>:<wsPort>/<usecase>`. Point your chat UI (or a WS test client) at it. There is no bundled UI.
+   - **All chat clients share ONE conversation memory.** The orchestrator's `conversationId` is empty, which the connector turns into a constant, so every client shares one history (up to `memoryMaxSize` messages) until the app restarts: simultaneous users see each other's context, and the growing history is the main runtime-token driver. **Restart the orchestrator between demos.** (Cost figures, on request: `build-cost-and-time.md`.)
 
 7. **Deploy-time secret injection** *(if deploying to TIBCO Platform / Control Plane rather than running the local `.exe`).*
    - Provide `API_Key`, DB `Password`, and `Email_App_Password` as platform secrets / app properties at deploy time; do not ship them inside the app.
@@ -46,18 +48,25 @@ The apps were generated with the Flogo Design CLI and build to `.exe`, but the f
    - **Set the email password as a secret.** Re-enter `Email_App_Password` in **App Properties** so it is stored as `SECRET:` (see item 5). FDA app properties support only string/boolean/number — **never set the type to `password`** (it's invalid and gets dropped → *"property … does not exist"*).
    - **Certificates (if any).** FDA cannot add certificates. If a connection/trigger/activity needs one (secure DB/TLS, HTTPS or SMTP **Server Certificate**), add it manually.
    - **Branches / activity loops / error handlers (only if the use case uses them).** FDA cannot create or modify branches (success↔error, conditional links — these need direct `.flogo` edits), configure activity loops, or add activities to an error handler. Configure these manually in the designer.
+   - **Don't corrupt the apps.** Never regenerate a `.flogo` (re-run the `_rebuild/` driver) once it has been opened in the designer — that wipes secrets and orphans connection refs; patch only the broken field. Don't patch a `.flogo` that is open in the designer — Discard + close it first.
+
+9. **Install connector prerequisites** *(before opening the apps in the designer).*
+   - This use case uses: **<PostgreSQL, …detected connectors>**.
+   - VS Code **Flogo** sidebar → **Help And Feedback** → **Install Prerequisites for Flogo Connectors…**, select the connectors above, finish the install, then **reload VS Code**.
+   - Why: The designer needs them to fetch connector metadata at design time (schemas, tables and columns for the activities) and to validate the connections.
 
 **Quick pre-flight checklist**
 
+- [ ] Connector prerequisites installed (Flogo sidebar → Help And Feedback) and VS Code reloaded
 - [ ] DB created, `database.sql` loaded, row counts sane
-- [ ] LLM `API_Key`, `LLM_Base_URL` (real endpoint), `LLM_Model` set
+- [ ] LLM `API_Key` set; `LLM_Model` available to the key; `LLM_Base_URL` empty for OpenAI (set only for Azure/gateway/other)
 - [ ] All ports free; orchestrator MCP/A2A URLs match the MCP/A2A ports
 - [ ] REST backends running (if any REST agent) / SMTP reachable (if email agent)
 - [ ] Start order: MCP → A2A → Orchestrator; each logs a clean start
-- [ ] WebSocket client connects to `ws://<host>:<wsPort>/<usecase>` and gets a reply
+- [ ] WebSocket client connects to `ws://<host>:<wsPort>/<usecase>` and gets a reply; orchestrator restarted between demos (shared memory)
 
 ---
 
 ### Note for the skill author (not for the README)
 
-Everything else — including the `mcpServers` / `remoteAgents` `conn://` arrays, tool/handler schemas, the wsserver headers schema, and the `wsconnection:any` typing — **is** configured automatically by the `fda` recipes. Do **not** list those as manual steps; they were common failure points precisely because people set them by hand, and the recipes now handle them. List the environment/secret/backend items 1–7 (trimmed to the ones this use case actually uses), **plus item 8 (the FDA Tech-Preview limitations)** — item 8 is *not* a recipe gap; those steps (Sync triggers, validate connections, password-as-secret, and any certs/branches/loops/error-handlers) are manual because the product documents them as unsupported. See `fda-limitations.md`.
+Everything else — including the `mcpServers` / `remoteAgents` `conn://` arrays, tool/handler schemas, the wsserver headers schema, and the `wsconnection:any` typing — **is** configured automatically by the `fda` recipes. Do **not** list those as manual steps; they were common failure points precisely because people set them by hand, and the recipes now handle them. List the environment/secret/backend items 1–7 (trimmed to the ones this use case actually uses), **item 9 (connector prerequisites — list exactly the connectors the [detection grep](connector-prereqs.md) found)**, **plus item 8 (the FDA Tech-Preview limitations)** — item 8 is *not* a recipe gap; those steps (Sync triggers, validate connections, password-as-secret, and any certs/branches/loops/error-handlers) are manual because the product documents them as unsupported. See `fda-limitations.md`.

@@ -61,13 +61,30 @@ Sections, in order:
 2. **Architecture** — the ASCII diagram (Chatbot UI → WebSocket → Orchestrator → MCP/A2A → PostgreSQL).
 3. **Flogo Apps** — three subsections (MCP tools table; A2A agents table with ports; orchestrator settings).
 4. **Database** — table summary (table → purpose → row count).
-5. **Prerequisites** — Flogo Enterprise version, PostgreSQL, OpenAI (or on-prem LLM) key, Gmail App
-   Password (if email), chatbot UI location.
+5. **Prerequisites** — Flogo Enterprise version, PostgreSQL, OpenAI key (model default `gpt-5-nano`;
+   base URL empty for OpenAI), Gmail App Password (if email), chatbot UI location, and **install the
+   connector prerequisites** for every connector detected per [connector-prereqs.md](connector-prereqs.md):
+   VS Code **Flogo** sidebar → **Help And Feedback** → **Install Prerequisites for Flogo Connectors…**,
+   then reload VS Code — required for design-time metadata fetching (schemas/tables/columns and
+   connection validation in the designer).
 6. **Setup & Run (manual steps folded in)** — create DB + load SQL; import the 3 apps; the app-property
    table per app (DB creds, LLM key/model, ports, email); **start order MCP → A2A → Orchestrator**;
    connect the chatbot UI to `ws://<host>:<wsPort>/<path>`; run the demo; reset with `reset_data.sql`.
-7. **Demo scenarios** — the headline chat walkthroughs.
-8. **Ports table** and **Troubleshooting** table.
-9. Optional **security/production notes** (TLS, bearer auth, on-prem LLM, swap DB for real backend APIs).
+7. **Configure before running end to end** — a compact checklist, tailored to the use case:
+   (1) OpenAI API key — the only required LLM value; confirm the model (default `gpt-5-nano`) is
+   available to the key; base URL stays empty unless Azure OpenAI / a gateway / another provider;
+   (2) connector prerequisites installed (item 5); (3) PostgreSQL DB created, `database.sql` loaded,
+   credentials set; (4) SMTP username/app password + recipient (if email agent); (5) ports free and the
+   orchestrator's MCP/A2A URLs match; (6) in the designer, open each connection and click **Connect**,
+   and re-enter secrets (the repo holds dummy `SECRET:` blobs / placeholders); (7) start MCP → A2A →
+   Orchestrator, then point a WebSocket client at `ws://<host>:<port>/<path>`; (8) at deploy, inject
+   secrets as platform app properties; (9) if RAG, keep `OPENAI_API_ENDPOINT_URL` =
+   `https://api.openai.com/v1` and run ingestion first. Add the runtime note: all chat clients share
+   **one** conversation memory (the orchestrator's `conversationId` is empty → a constant), up to
+   `memoryMaxSize` messages until restart — restart the orchestrator between demos; simultaneous users
+   see each other's context.
+8. **Demo scenarios** — the headline chat walkthroughs.
+9. **Ports table** and **Troubleshooting** table.
+10. Optional **security/production notes** (TLS, bearer auth, on-prem LLM, swap DB for real backend APIs).
 
 Keep names, ports, currency, and the WebSocket path consistent with the actual `.flogo` files.

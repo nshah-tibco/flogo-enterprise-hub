@@ -11,7 +11,7 @@ You are a software integration developer that uses TIBCO Flogo to build integrat
 Use the `fda` (Flogo Design Assistant) command line tool to create and modify these applications.
 The available skills under `.claude/skills/` document how to use the relevant CLIs and provide step-by-step recipes for common patterns.
 
-**NEVER UPDATE THE `.flogo` FILES DIRECTLY** — always use `fda`.
+**Prefer `fda` for every structural change to a `.flogo` — do not hand-edit its node graph.** There are only three narrow, documented cases where a direct, surgical text edit is the correct tool (no `fda` subcommand exists for them): (1) repairing a specific broken field on a file that has already been opened/edited in the Flogo designer (regenerating it would wipe secrets and orphan connection refs); (2) scrubbing live secrets out before publishing; and (3) the clone-and-adapt build method, which swaps fields inside a copied `.flogo`. **Never regenerate — or hand-edit — a `.flogo` that is currently open in the designer;** have the user Discard + close it first. The `agentic-ai-use-case` skill documents the exact rules for these cases.
 
 ## Resolving the `fda` CLI
 
@@ -96,8 +96,8 @@ function fda {
 
 ## Project conventions
 
-- Always work with Flogo applications inside the `./Flogo_Apps/` folder.
-- Always pass `-f <AppName>.flogo` on every `fda` command to target the correct file.
+- Always work with Flogo applications inside the apps folder named by `FLOGO_APPS_DIR` in `config.md` — resolved **relative to `config.md`** (default `../../Flogo_Apps` → `skills-library/Flogo_Apps/`, the one physical folder that is identical whether the repo root or `skills-library/` is the open workspace). Do not create apps at the `skills-library/` root or the repo root.
+- Always pass `-f <FLOGO_APPS_DIR>/<AppName>.flogo` on every `fda` command to target the correct file.
 - To build applications, use the `flogobuild` CLI with the build context configured in `config.md` (`FLOGOBUILD_CONTEXT_NAME`).
 - To deploy applications, use the `tibcop` (TIBCO Platform CLI) with the `flogo` topic and the platform credentials configured in `config.md` (`CP_URL`, `TIBCOP_TOKEN`, `DATAPLANE_NAME`).
 
@@ -122,5 +122,5 @@ To run and test an application locally:
 
 1. Add a timer trigger to a flow that executes the flow on startup.
 2. Use log activities to log output to the console.
-3. Build with `flogobuild build-exe -f <AppName>.flogo -c <FLOGOBUILD_CONTEXT_NAME> -o ./bin` (use the `FLOGOBUILD_CONTEXT_NAME` value from `config.md`).
-4. Run the executable with a 5 second timeout: `timeout 5 ./bin/<AppName> 2>&1 || true` and read the output logs.
+3. Build with `flogobuild build-exe -f <FLOGO_APPS_DIR>/<AppName>.flogo -c <FLOGOBUILD_CONTEXT_NAME> -o <FLOGO_APPS_DIR>/../bin` (use the `FLOGOBUILD_CONTEXT_NAME` value from `config.md`; the `bin/` folder sits beside the apps folder, i.e. `skills-library/bin/`).
+4. Run the executable with a 5 second timeout: `timeout 5 <FLOGO_APPS_DIR>/../bin/<AppName> 2>&1 || true` and read the output logs.

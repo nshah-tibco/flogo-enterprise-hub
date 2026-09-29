@@ -26,7 +26,7 @@ user-invocable: true
 
 ## What's in this Library
 
-The library contains **10 skills** that cover the full Flogo development lifecycle — from designing a flow, to mapping and testing it, to building an executable, to deploying it on the TIBCO Platform, and up to scaffolding complete Agentic AI use cases.
+The library contains **9 skills** that cover the full Flogo development lifecycle — from designing a flow, to mapping and testing it, to building an executable, to deploying it on the TIBCO Platform, and up to scaffolding complete Agentic AI use cases.
 
 | Skill | Type | Purpose |
 |---|---|---|
@@ -38,8 +38,133 @@ The library contains **10 skills** that cover the full Flogo development lifecyc
 | **flogo-unit-testing** | Recipe | Recipe to **create and run unit tests for Flogo apps** — test files, test cases with flow inputs, assertions on flow outputs, and test execution with result verification. |
 | **mapping-from-excel** | Recipe | Recipe to **build a Flogo flow from an Excel mapping spec** — input fields, output fields, and per-field mapping rules. |
 | **rest-to-database-app** | Recipe | Recipe to **scaffold a REST API Flogo app that queries a database** (REST trigger → log → DB query → reply). |
-| **agentic-ai-use-case** | Use-case builder | Scaffold a complete, runnable **Agentic AI demo for any vertical** — an MCP Server (read-only DB tools) + A2A Agents app (write-workflow agents) + WebSocket AI Orchestrator, backed by PostgreSQL, modeled on the reference use cases under `samples/Agentic_AI/`. |
-| **agentic-ai-use-case-fda** | Use-case builder | The same 3-app Agentic AI demo, but constructed **entirely via the `fda` CLI** (command-by-command) rather than cloned/adapted JSON. |
+| **agentic-ai-use-case** | Use-case builder | Scaffold a complete, runnable **Agentic AI demo for any vertical** — an MCP Server (read-only DB tools) + A2A Agents app (write-workflow agents) + WebSocket AI Orchestrator, backed by PostgreSQL, modeled on the reference use cases under `samples/Agentic_AI/`. Asks which build method to use: **from scratch via the `fda` CLI** (recommended default) or **cloning an existing reference app**. |
+
+---
+
+## The Skills in Detail
+
+Each skill below lists **what it does**, **how to invoke it**, a **template prompt** (fill in the `<placeholders>`), and a couple of **example prompts** you can paste as-is. You rarely have to name a skill — describing the task in plain language is enough for the agent to pick the right one (see [Do the skills load automatically?](#do-the-skills-load-automatically)).
+
+### CLI references
+
+These are the command references the agent leans on. You'll usually trigger them indirectly (a recipe skill defers to them), but you can also ask for a single CLI action directly.
+
+#### `fda` — Flogo Design Assistant CLI &nbsp;<sub>(skill identifier: `flogo-design-assistant`)</sub>
+
+- **What it does:** The full command reference for creating and modifying `.flogo` files — projects, flows, triggers, activities, connections, schemas, app properties, and mappings. Almost every other skill defers to this one for the underlying `fda` commands.
+- **How to invoke it:** Describe a `.flogo` structural change in natural language and the agent pulls this reference in automatically. You rarely call it on its own.
+- **Template prompt:**
+  > *"Using `fda`, add a `<activity type>` activity to the `<FlowName>` flow in `<app>.flogo` and wire `<source>` into `<target field>`."*
+- **Example prompts:**
+  > *"Add a PostgreSQL query activity to the `getOrders` flow in `orders-api.flogo` and connect it to the `OrdersDB` connection."*
+  >
+  > *"Add an app property `LLM.ApiKey` of type password to `assistant.flogo`."*
+
+#### `fda-mapping` — Flogo mapping reference
+
+- **What it does:** Focused reference for building, inspecting, and validating Flogo mappings — the `input.mapping` shape, the four source kinds (`$flowctx` / `$property` / `$activity` / `$loop`), qualified function calls, and `@foreach` loops — plus the `mm` / `sms` / `cm` commands and the "check before build" gate.
+- **How to invoke it:** Ask to map, fix, or validate fields in an app.
+- **Template prompt:**
+  > *"Map `<source field>` to `<target field>` in the `<MapperName>` mapper of `<app>.flogo`, then validate all mappings."*
+- **Example prompts:**
+  > *"Validate the mappings in `customer-api.flogo` and fix any unresolved mapper fields."*
+  >
+  > *"In `orders.flogo`, map each item of `$activity[Query].output.records` into the response array with a `@foreach` loop."*
+
+#### `flogobuild` — Flogo build CLI reference
+
+- **What it does:** Reference for building runnable executables (and TIBCO Platform deployment artifacts) from `.flogo` files, plus running a built app locally to inspect its logs.
+- **How to invoke it:** Ask to build an app or run it locally.
+- **Template prompt:**
+  > *"Build `<app>.flogo` with the configured build context and run it locally for 5 seconds, then show me the logs."*
+- **Example prompts:**
+  > *"Build `customer-api.flogo` and run it locally for 5 seconds."*
+  >
+  > *"Compile `orders-api.flogo` to an executable in the `bin/` folder."*
+
+#### `tibcop` — TIBCO Platform CLI reference &nbsp;<sub>(skill identifier: `tibco-platform-cli`)</sub>
+
+- **What it does:** Reference for the TIBCO Platform CLI — list dataplanes and apps, create builds, deploy, scale, and inspect Flogo applications on a dataplane. The `flogo-deploy` recipe builds on it.
+- **How to invoke it:** Ask about platform state or a platform action.
+- **Template prompt:**
+  > *"Using `tibcop`, list the apps on dataplane `<DATAPLANE_NAME>` and show their status."*
+- **Example prompts:**
+  > *"List my TIBCO Platform dataplanes."*
+  >
+  > *"Scale the `customer-api` app on `<DATAPLANE_NAME>` to 2 replicas."*
+
+### Recipes
+
+Step-by-step workflows that chain several CLI steps into one outcome.
+
+#### `flogo-deploy` — deploy to the TIBCO Platform
+
+- **What it does:** End-to-end recipe to deploy a `.flogo` app to a dataplane — pick a Flogo version, create a build, generate values, deploy the release (`flogo:deploy-app-release`), and scale it up.
+- **How to invoke it:** Ask to deploy an app to a dataplane (provide the app file and the target dataplane).
+- **Template prompt:**
+  > *"Deploy `<app>.flogo` to dataplane `<DATAPLANE_NAME>` and start it."*
+- **Example prompts:**
+  > *"Deploy `Flogo_Apps/customer-api.flogo` to dataplane `MyDataPlane` and start it."*
+  >
+  > *"Push `orders-api.flogo` to the `prod-dp` dataplane and scale it to 2 instances."*
+
+#### `flogo-unit-testing` — create & run unit tests
+
+- **What it does:** Creates unit test files, test cases with flow inputs, and assertions on flow outputs, then runs them with `flogobuild test-app` and verifies every assertion passes.
+- **How to invoke it:** Ask to test the flows in an app (name the flows and the expected outputs, or let it derive them).
+- **Template prompt:**
+  > *"Create and run unit tests for `<app>.flogo` covering `<flow(s)>`, with assertions on `<expected outputs>`."*
+- **Example prompts:**
+  > *"Create and run unit tests for `books-api.flogo` — one case per flow, asserting the response code and body."*
+  >
+  > *"Add a unit test to `customer-api.flogo` that sends `id=42` and asserts the returned name is `Ada`."*
+
+#### `mapping-from-excel` — build a flow from an Excel mapping spec
+
+- **What it does:** Reads an Excel workbook that describes field mappings (one sheet per mapper) and builds a Flogo app that performs them — one mapper activity per sheet, chained in order, feeding a log activity behind a timer trigger.
+- **How to invoke it:** Point it at an `.xlsx` mapping file.
+- **Template prompt:**
+  > *"Read `<file>.xlsx` and create a Flogo flow that performs the mapping defined in the spreadsheet."*
+- **Example prompts:**
+  > *"Read `ExcelWithMapping.xlsx`, create the Flogo flow, then build and run it locally for 5 seconds and show me the logs."*
+  >
+  > *"Turn the mappings in `order-transform.xlsx` into a multi-mapper Flogo flow called `order-mapper`."*
+
+#### `rest-to-database-app` — REST API over a database
+
+- **What it does:** Scaffolds a REST API Flogo app that queries a database and returns the result — a `tr_rest` trigger → log → DB query (MySQL / PostgreSQL / SQL Server / Oracle) → reply, with the DB connection wired to app properties.
+- **How to invoke it:** Describe the endpoint and the target database.
+- **Template prompt:**
+  > *"Create a Flogo app named `<name>` that exposes `<METHOD /path>` and queries a `<database>` database, returning the result."*
+- **Example prompts:**
+  > *"Create a Flogo app `customer-api` that exposes `GET /customers/{id}` and queries a MySQL database."*
+  >
+  > *"Scaffold a PostgreSQL-backed REST app with `GET /orders` and `GET /orders/{id}`."*
+
+### Use-case builder
+
+#### `agentic-ai-use-case` — a full Agentic AI demo for any vertical
+
+- **What it does:** Scaffolds a complete, runnable Agentic AI demo — an **MCP Server** (read-only DB tools) + an **A2A Agents** app (write-workflow agents) + a **WebSocket AI Orchestrator**, backed by PostgreSQL — modeled on the reference use cases under `samples/Agentic_AI/`. It also produces `database.sql`, `reset_data.sql`, `prompts.md`, and a README. Up front it asks which build method to use: **from scratch via the `fda` CLI** (recommended default) or **cloning an existing reference app**.
+- **How to invoke it:** Describe the vertical, the persona, and the read + action capabilities you want. Explicit: `/agentic-ai-use-case`.
+- **Template prompt:**
+  > *"Build a `<vertical>` Agentic AI demo (MCP Server + A2A Agents + WebSocket orchestrator) backed by PostgreSQL. Persona: `<who the assistant helps>`. Read tools: `<lookups>`. Action agents: `<write workflows>`. Ask me whether to use the FDA CLI or the clone method first."*
+- **Example prompts:**
+  > *"Build a telecom invoice-support Agentic AI demo — read tools for invoices and usage, action agents to open a dispute and apply a credit."*
+  >
+  > *"Scaffold a retail order-assistant use case by cloning the Airline Passenger Services reference app."*
+
+---
+
+## Do the skills load automatically?
+
+**Yes.** Every skill in this library is marked `user-invocable: true`, and the coding agent discovers them on its own:
+
+- **Auto-discovery.** The agent always keeps each skill's `name` and `description` in context. When your request matches a skill's description, the agent opens and follows that skill automatically — you don't have to name it. (Ask *"deploy this app to my dataplane"* and it reaches for `flogo-deploy`.)
+- **When they apply.** The skills live under `.claude/skills/` and apply whenever that folder is on the path from your open workspace. In a Marketplace-seeded project the skills sit at the repo root, so they apply everywhere. In **this hub repo** they live under `skills-library/.claude/skills/`, so they apply when you're working on files under `skills-library/` — open `skills-library/` as your workspace to have them apply repo-wide. The project conventions in `AGENT.md` / `CLAUDE.md` load the same way.
+- **Explicit invocation.** Because they're all user-invocable, you can also trigger one deliberately: type `/` in Claude Code to see the list and select a skill, or just name it in your prompt (*"use the fda-mapping skill to …"*). The identifier shown is the skill's `name` from its frontmatter — which matches the folder name for every skill **except two**: the `fda/` folder's skill is named **`flogo-design-assistant`**, and the `tibcop/` folder's skill is named **`tibco-platform-cli`**.
+- **What they need.** A skill only runs its CLI steps once the tools and `config.md` are set up (see [Required Tools](#required-tools) and [Configurable Defaults](#configurable-defaults)). Without `config.md`, the agent will ask you to create it from the template first.
 
 ---
 
@@ -203,7 +328,7 @@ Key values the skills rely on:
 | `DATAPLANE_NAME` | Default dataplane to deploy to | `tibcop tplatform:list-data-planes` |
 | `CP_URL` / `TIBCOP_TOKEN` | TIBCO Platform control-plane URL and API token | TIBCO Platform console |
 | PostgreSQL / LLM / email | Connection settings for the database, LLM provider, and SMTP | your environment |
-| `AGENTIC_USE_CASES_DIR` | *(optional)* folder of reference Agentic AI use-case apps the two `agentic-ai-use-case*` skills clone/study | leave unset to default to `samples/Agentic_AI/`; set only if the skills are installed standalone away from that folder |
+| `AGENTIC_USE_CASES_DIR` | *(optional)* folder of reference Agentic AI use-case apps the `agentic-ai-use-case` skill clones/studies | leave unset to default to `samples/Agentic_AI/`; set only if the skill is installed standalone away from that folder |
 
 ---
 
@@ -221,8 +346,7 @@ Key values the skills rely on:
 │       ├── flogo-unit-testing/       # Create and run Flogo unit tests
 │       ├── mapping-from-excel/       # Build a Flogo flow from an Excel mapping spec
 │       ├── rest-to-database-app/     # Scaffold a REST -> DB Flogo app
-│       ├── agentic-ai-use-case/      # Scaffold an Agentic AI use case (MCP + A2A + orchestrator)
-│       ├── agentic-ai-use-case-fda/  # Same, built entirely via the fda CLI
+│       ├── agentic-ai-use-case/      # Scaffold an Agentic AI use case (MCP + A2A + orchestrator); fda-CLI or clone method
 │       ├── config.example.md         # Template for environment-specific values (copy to config.md)
 │       └── config.md                 # Your environment values (git-ignored; not committed)
 ├── AGENT.md                          # Project-level instructions for the agent
@@ -238,7 +362,7 @@ Key values the skills rely on:
 - *"Create and run unit tests for `Flogo_Apps/customer-api.flogo` with assertions on the response."* (`flogo-unit-testing`)
 - *"List my TIBCO Platform dataplanes and show the status of the apps running on `MyDataPlane`."* (`tibcop`)
 - *"Deploy the `Flogo_Apps/customer-api.flogo` app to dataplane `MyDataPlane`."* (`flogo-deploy`)
-- *"Build a telecom invoice-support Agentic AI demo (MCP Server + A2A Agents + WebSocket orchestrator) backed by PostgreSQL — ask me whether to use the FDA CLI or the clone method first."* (`agentic-ai-use-case` / `agentic-ai-use-case-fda`)
+- *"Build a telecom invoice-support Agentic AI demo (MCP Server + A2A Agents + WebSocket orchestrator) backed by PostgreSQL — ask me whether to use the FDA CLI or the clone method first."* (`agentic-ai-use-case`)
 
 > **Note:** For more sample prompts, see [skills-library/SamplePrompts/README.md](SamplePrompts/README.md).
 

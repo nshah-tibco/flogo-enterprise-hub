@@ -7,6 +7,8 @@ and what must stay. Always carry `contrib` and `SECRET:` values verbatim from th
 
 Common to every app: `"appModel": "1.1.1"`, and `"metadata": { "flogoVersion": "2.26.5", "endpoints": [...] }`.
 
+LLM settings (A2A + orchestrator): `config.md` wins; otherwise `LLM_Model` = `gpt-5-nano`, `AgenticAI.OpenAIConn.LLM_Base_URL` = `""`, and `"temperature": 0` (a JSON number) on every `#agent` trigger and the `#agentactivity` — gpt-5 reasoning models ignore temperature (the connector sends 1.0); 0 makes non-reasoning models deterministic. Cloned reference apps often carry `0.7` — reset it.
+
 ---
 
 ## 1. MCP Server — `<Prefix>MCPServer.flogo`
@@ -81,7 +83,7 @@ Design rule: **one tool per table or per meaningful join.** Rich `handlerDescrip
     "agentUrl": "=$property[\"<Agent>_A2AServer_URL\"]",
     "agentAuthMode": "None",
     "model": "=$property[\"LLM_Model\"]",
-    "temperature": 0.7, "enableGuardrails": true, "conversationStoreType": "Memory", "memoryMaxSize": 100,
+    "temperature": 0, "enableGuardrails": true, "conversationStoreType": "Memory", "memoryMaxSize": 100,
     "systemPrompt": "<role, the exact tool params to pass, the workflow steps, what to return, 'do not hand off to other agents', 3-attempt termination>"
   },
   "id": "<some_action_agent>_trigger",
@@ -124,7 +126,8 @@ The handler also carries `schemas.output.toolParams` (the JSON Schema of params 
 **Email agent (optional):** flow `#noop → #sendmail → #log → #actreturn`. `#sendmail`: `Server smtp.gmail.com`, `Port 465`, `Connection Security SSL`, `Username/Password/sender/recipients` from `Email_*` / `To_Email` properties, `subject/message` from `$flow.toolParams.subject/body`. Set the agent's `enableGuardrails:false`, `conversationStoreType:"None"`. System prompt: "recipient is preconfigured; email address optional; send exactly once."
 
 **Connections:** OpenAI `#llmprovider` (`OpenAIConn`) + PostgreSQL `#connection` (`PostgresConn`).
-**Properties:** `AgenticAI.OpenAIConn.*` (incl. `API_Key` SECRET), `PostgreSQL.PostgresConn.*`, `LLM_Model`, `To_Email`/`Email_Username`/`Email_App_Password`(SECRET) if email, and a `<Agent>_A2AServer_PORT` + `<Agent>_A2AServer_URL` per agent.
+**Properties:** `AgenticAI.OpenAIConn.*` (incl. `API_Key` SECRET and `LLM_Base_URL`), `PostgreSQL.PostgresConn.*`, `LLM_Model`, `To_Email`/`Email_Username`/`Email_App_Password`(SECRET) if email, and a `<Agent>_A2AServer_PORT` + `<Agent>_A2AServer_URL` per agent.
+**Base URL:** the `#llmprovider`'s `llmProviderUrl` = `=$property["AgenticAI.OpenAIConn.LLM_Base_URL"]`; leave that property **empty** (`""`) for OpenAI — the connector uses the OpenAI default (verified end to end). Set a real URL only for Azure OpenAI, a gateway/proxy, or a non-OpenAI provider. Write a real `""` when editing the cloned JSON — never the text `New_value` (that literal is what FDA's `cap … ""` writes, the origin of the old "must be a real URL" rule).
 **endpoints:** one entry per agent (port + `name` = `<agent>_trigger`).
 
 Design rule: **one agent per write workflow** (create/update/side-effecting). Keep reads in the MCP server.
@@ -163,7 +166,7 @@ Design rule: **one agent per write workflow** (create/update/side-effecting). Ke
     "settings": {
       "llmProviderConnection": "conn://<openai-uuid>",
       "model": "=$property[\"LLM_Model\"]",
-      "temperature": 0.7, "enableGuardrails": true, "responseType": "Text",
+      "temperature": 0, "enableGuardrails": true, "responseType": "Text",
       "remoteAgents": [ "conn://<a2a-uuid-1>", "conn://<a2a-uuid-2>", "..." ],
       "mcpServers": [ "conn://<mcp-uuid>" ],
       "conversationStoreType": "Memory", "memoryMaxSize": 100,
@@ -197,7 +200,9 @@ Design rule: **one agent per write workflow** (create/update/side-effecting). Ke
   out-of-scope requests, and stay warm and professional.
 
 **Connections:** OpenAI `#llmprovider`; one `#mcpserverconfig` (`serverType:"http"`, `serverUrl:"http://<host>:<mcpPort>/<usecase-bss>"`, `httpTransportType:"streamable"`); one `#a2aserverconnection` per A2A agent (`serverUrl:"http://<host>:<a2aPort>"`).
-**Properties:** `AgenticAI.OpenAIConn.*` (API_Key SECRET) + `LLM_Model`.
+**Properties:** `AgenticAI.OpenAIConn.*` (API_Key SECRET; `LLM_Base_URL` empty for OpenAI — same rule as §2) + `LLM_Model`.
+**Conversation memory:** `input.conversationId` is `""`, which the connector turns into a constant — every WebSocket client shares one history (up to `memoryMaxSize` messages) until the app restarts. Fine for a single-presenter demo; say so in the README.
+**RAG apps:** the OpenAI vector extension's `OPENAI_API_ENDPOINT_URL` must stay `https://api.openai.com/v1` — its code rejects empty (unlike `LLM_Base_URL`).
 **endpoints:** one entry `{ "protocol":"http","port":"<wsPort>","title":"WebsocketServer","type":"public" }`.
 
 The `mcpServers`/`remoteAgents` `conn://` UUIDs must match the connection keys, and each connection's `serverUrl` must match the corresponding MCP/A2A app's port + endpoint path.

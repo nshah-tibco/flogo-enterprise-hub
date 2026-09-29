@@ -12,7 +12,7 @@ For mapping mechanics — `mm`, `sms`, source syntax (`$activity` / `$property` 
 
 1. **Read `config.md` first** (the one next to this skill under `.claude/skills/`) for `FLOGOBUILD_CONTEXT_NAME`, the Flogo apps folder, and CLI paths. Never hardcode a context name or a secret.
 2. **Print the CLI tool path and version before running any commands** — e.g. `fda --version` and `flogobuild --version` from their configured paths.
-3. **Working directory:** run all `fda` / `flogobuild` commands from the Flogo apps directory — `./Flogo_Apps/` (create apps there, never in `skills-library/`). The `.flogo` files are created here; executables go to `../bin/` (workspace-root `bin/`).
+3. **Working directory:** run all `fda` / `flogobuild` commands from the Flogo apps directory named by `FLOGO_APPS_DIR` in `config.md` — resolved relative to `config.md` (which lives at `skills-library/.claude/skills/config.md`); the default `../../Flogo_Apps` points at `skills-library/Flogo_Apps/`, the same folder whether you opened the hub root or `skills-library` (create apps there, never in `skills-library/`). The `.flogo` files are created here; executables go to `<FLOGO_APPS_DIR>/../bin` (i.e. `skills-library/bin/`).
 4. **Windows / Git Bash:** prefix any `fda` call whose value starts with `/` (or contains a URL) with `MSYS_NO_PATHCONV=1` so paths aren't mangled. Harmless on Linux/Mac. See the `fda` skill for details.
 
 ## Key facts
@@ -77,14 +77,14 @@ When you regenerate `mm` calls from the Excel, every function you emit must be *
 
 ## Step 1: Read the Excel file
 
-The Excel file is typically in the workspace root, not in `Flogo_Apps`. Use the full path or `../<excel-file>` when running from `Flogo_Apps`.
+The Excel file is typically in the workspace root, not in `<FLOGO_APPS_DIR>`. Use the full path or `../<excel-file>` when running from `<FLOGO_APPS_DIR>`.
 
 Ensure `openpyxl` is available (`pip install openpyxl` if you get `ModuleNotFoundError: No module named 'openpyxl'`).
 
 ```bash
 python -c "
 import openpyxl
-wb = openpyxl.load_workbook('<excel-file>')  # full path or ../ExcelFile.xlsx if in Flogo_Apps
+wb = openpyxl.load_workbook('<excel-file>')  # full path or ../ExcelFile.xlsx if in <FLOGO_APPS_DIR>
 print('Sheets:', wb.sheetnames)
 for sh in wb.sheetnames:
     ws = wb[sh]
@@ -108,7 +108,7 @@ For each sheet, extract three columns (read what's actually there — column let
 **FIRST: Check whether the `.flogo` file already exists** — if it does, skip `fda cp` (re-running it would overwrite the existing project). If the file exists, also run `fda dp` to see exactly what's already been built so you know what still needs to be done.
 
 ```bash
-ls ./Flogo_Apps/<AppName>.flogo 2>/dev/null \
+ls <FLOGO_APPS_DIR>/<AppName>.flogo 2>/dev/null \
   && echo "EXISTS — skip fda cp" \
   || echo "NOT FOUND — run fda cp"
 
@@ -226,24 +226,24 @@ fda mm MainFlow.LogIt.input.message '=coerce.toString($activity[<LastSheetName>]
 **Always validate** with `fda cm` — it's read-only and catches bad refs, missing imports, and unqualified functions:
 
 ```bash
-fda cm -f ./Flogo_Apps/<AppName>.flogo
+fda cm -f <FLOGO_APPS_DIR>/<AppName>.flogo
 ```
 
 **Building the executable and running it is opt-in — do it ONLY if the user explicitly asks.** `fda cm` passing is the default "done" signal. When the user does ask for a build, run it in the foreground (real-time output), never in the background, and use the `FLOGOBUILD_CONTEXT_NAME` from `config.md`:
 
 ```bash
-# From the Flogo apps directory. -o ../bin places the exe in the workspace-root bin/.
+# From the Flogo apps directory. -o <FLOGO_APPS_DIR>/../bin places the exe in skills-library/bin/.
 # If the configured context is rejected, list valid ones with `flogobuild list-context`.
-mkdir -p ../bin
-flogobuild build-exe -f <AppName>.flogo -c <FLOGOBUILD_CONTEXT_NAME> -o ../bin
+mkdir -p <FLOGO_APPS_DIR>/../bin
+flogobuild build-exe -f <AppName>.flogo -c <FLOGOBUILD_CONTEXT_NAME> -o <FLOGO_APPS_DIR>/../bin
 
 # Run for ~5 seconds and read the log output (timer fires once)
-timeout 5 ../bin/<AppName>.exe 2>&1 || true
+timeout 5 <FLOGO_APPS_DIR>/../bin/<AppName>.exe 2>&1 || true
 ```
 
 Outputs:
-- The `.flogo` file: `./Flogo_Apps/<AppName>.flogo`
-- The executable: `./bin/<AppName>.exe` (workspace root)
+- The `.flogo` file: `<FLOGO_APPS_DIR>/<AppName>.flogo`
+- The executable: `<FLOGO_APPS_DIR>/../bin/<AppName>.exe` (i.e. `skills-library/bin/`)
 
 The `flogo.general.activity.log` line in the output is a JSON object with the mapped output fields.
 

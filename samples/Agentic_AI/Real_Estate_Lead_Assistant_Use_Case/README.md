@@ -9,7 +9,7 @@ orchestrator agent classifies intent and routes each request to read-only **MCP 
 write-workflow **A2A agents**, all backed by PostgreSQL. As the prospect takes real steps (books a
 tour), the assistant automatically **advances their funnel stage** so the pipeline stays current.
 
-> Built with the `agentic-ai-use-case-fda` skill (Flogo Design CLI method). Demo data is fictional.
+> Built with the `agentic-ai-use-case` skill (Flogo Design CLI method). Demo data is fictional.
 
 ---
 

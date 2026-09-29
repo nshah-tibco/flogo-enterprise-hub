@@ -37,7 +37,16 @@ LLM Provider: OpenAI
 
 API Key: <your-openai-api-key>
 
-LLM Model: gpt-5.6
+LLM_Base_URL:
+
+LLM_Model: gpt-5-nano
+
+LLM_Temperature: 0
+
+> Leave `LLM_Base_URL` **empty** for OpenAI (the connector uses the OpenAI default endpoint).
+> Set it only for Azure OpenAI, a gateway/proxy, or a non-OpenAI provider. `gpt-5-nano` is the
+> cheapest option for demos/testing; if this file is missing, the agentic skills default to
+> `gpt-5-nano`, an empty base URL, and temperature `0`.
 ---
 
 ## Email Server, Username and app password
@@ -49,15 +58,15 @@ Password: <your-app-password>
 
 ---
 
-## Agentic AI Use Cases (skills: `agentic-ai-use-case` / `agentic-ai-use-case-fda`)
+## Agentic AI Use Cases (skill: `agentic-ai-use-case`)
 
 | Key | Value |
 |---|---|
 | AGENTIC_USE_CASES_DIR | *(optional — leave unset)* |
 
 Optional override — a path **relative to the repo root** (or an absolute path) to the
-folder holding the reference Agentic AI use-case apps that the two agentic skills
-clone/study. **Leave this unset** to use the built-in default `samples/Agentic_AI/`,
+folder holding the reference Agentic AI use-case apps that the agentic skill
+clones/studies. **Leave this unset** to use the built-in default `samples/Agentic_AI/`,
 which is correct when the skills ship inside `flogo-enterprise-hub`. Set it only if
 your reference apps live elsewhere — e.g. `skills-library/` is installed standalone in
 another project. If the folder can't be found, the skills will ask you to point to it.
@@ -120,8 +129,11 @@ another project. If the folder can't be found, the skills will ask you to point 
 
 | Key | Value |
 |---|---|
-| FLOGO_APPS_DIR | `../../../Flogo_Apps` |
+| FLOGO_APPS_DIR | `../../Flogo_Apps` |
 
 > Path is **relative to this `config.md`** (which lives at
-> `skills-library/.claude/skills/`), so `../../../Flogo_Apps` resolves to
-> `Flogo_Apps/` at the repo root. Use an absolute path if you prefer.
+> `skills-library/.claude/skills/`), so `../../Flogo_Apps` resolves to
+> `skills-library/Flogo_Apps/` — the one physical folder that is the same
+> whether you open the repo root or `skills-library/` as your workspace. Use an
+> absolute path if you prefer. *(The old `../../../Flogo_Apps` pointed at a
+> `Flogo_Apps/` at the repo root, which only exists in the hub layout.)*

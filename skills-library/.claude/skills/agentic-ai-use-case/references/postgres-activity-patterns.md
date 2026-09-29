@@ -37,6 +37,16 @@ must equal the mapping keys; and `input.State` must stay a verbatim copy of `inp
 `RuntimeQuery` for parameters. Verify by running the real SQL against a loaded DB **and** by running the
 validator at the bottom of this file before you declare the app done.
 
+> ⚠️ **A `?placeholder` must be followed by a space or one of `; ) , < > + - * % /` — otherwise the
+> connector never substitutes it.** The connector's own rewrite (`EvaluateQuery` in the wi-postgres
+> `queryHandler.go`) turns `?name` into `$N` only when the next character is in that set, and it runs both
+> for the designer's metadata fetch **and** at runtime. `?p5::date` (next char `:`) and `?a||?b` (next char
+> `|`) stay in the SQL verbatim: the designer fails with **`syntax error at or near "$5p5"`** (42601 — the
+> ODBC driver renumbers the stray `?`) and the flow fails at runtime too, because the literal `?p5` is
+> never bound. Write **`CAST(?p5 AS date)`**, or cast an enclosing expression (`NULLIF(?p5,'')::date` is
+> fine — there `?p5` is followed by `,`), and space out concatenations (`?a || ?b`). A local SQL client
+> will NOT show this (it never sees `?name`); the validator does.
+
 **Two levels of wiring.** The golden rule above is the *activity-level* alignment. Inside an **A2A agent
 flow** there is a second, *flow-level* piece: the flow must declare `toolParams` as a flow input (with a
 schema) so `=$flow.toolParams.<field>` resolves in the designer. Miss it and the mapper shows a red ✗
@@ -242,7 +252,8 @@ Rules:
 - Reference the lookup key `?p1` **once**, in the `WHERE`; take every derived column from the
   `SELECT … FROM <parent>` row. Referencing the same placeholder twice invites duplicate-param ambiguity.
 - Use `NULLIF(?p,'')` to treat the LLM's empty string as "not supplied", then apply `::date` / `::numeric`
-  casts *after* the `NULLIF`.
+  casts *after* the `NULLIF`. Never cast the placeholder itself with `::` — `?p::date` is not substituted
+  (see the ⚠️ placeholder rule at the top); use `CAST(?p AS date)` when there is no enclosing expression.
 - **Validate before shipping** with a rolled-back transaction:
   `BEGIN; INSERT … RETURNING *; ROLLBACK;`.
 - Applies whenever the child has a NOT-NULL FK derivable from a parent the prompt DOES name. It does
@@ -292,13 +303,17 @@ python references/validate_flogo_apps.py <path/to/App1.flogo> [App2.flogo ...]
 python /full/path/to/validate_flogo_apps.py            # globs **/*.flogo under cwd
 ```
 
-It verifies, for every `#query`/`#insert`/`#update` activity, walking any app (no app/column/property
-names baked in):
+It verifies, for every wi-postgres activity (found through the app's `imports`, whatever its alias —
+`#query`, `#insert`, `#update`, `#delete`, `#query_1`, …), walking any app (no app/column/property names
+baked in):
 
 1. **Mapping-mode integrity** — reads the authoritative `Fields[].Value` flag, then confirms the mapping
    container (`values[0]` vs `parameters`) and the populated schema container agree with it. Flags the
    **hybrid** (flag says one mode, mapping/schema in the other) — the single most common defect.
-2. **Every `?placeholder` is mapped** (else runtime `missing substitution for: <name>`).
+2. **Every `?placeholder` is mapped** (else runtime `missing substitution for: <name>`) **and is actually
+   substituted by the connector** — it replays the connector's own `?name` → `$N` rewrite and flags any
+   placeholder left behind (`?p5::date`, `?a||?b`), the cause of the designer's `syntax error at or near
+   "$5p5"`.
 3. **`Fields[]` non-empty on writes**, and **`State` carries a verbatim copy of `Query`**.
 4. **Schema names == mapping keys** in the populated container.
 5. **`toolParams` flow-input schema present** on any flow that reads `$flow.toolParams` (3-part

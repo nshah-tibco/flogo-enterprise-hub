@@ -186,17 +186,17 @@ This prints the test suites, test cases, flow inputs, and assertions for verific
 - `-a` — The Flogo application file
 - `-f` — The test file (.flogotest)
 - `-t` — Comma-separated list of test suites to run
-- `-d` — Output directory for test results (**must be an absolute path** on Windows, e.g. `c:/Work/VsCode/FDA/test-results`)
+- `-d` — Output directory for test results (**must be an absolute path** on Windows, e.g. `<absolute-path-to>/test-results` — for example resolve `<FLOGO_APPS_DIR>/../test-results` to its absolute path)
 - `-o` — Output filename for the test result (flogobuild appends `.testresult` extension automatically)
 
 Example:
 ```bash
 "<FLOGOBUILD_PATH>" test-app \
-  -c flogo-vscode-2262236 \
+  -c <FLOGOBUILD_CONTEXT_NAME> \
   -a flogorestservice4.flogo \
   -f flogorestservice4.flogotest \
   -t BookstoreTestSuite \
-  -d ../test-results \
+  -d <absolute-path-to>/test-results \
   -o flogorestservice4.testresult
 ```
 

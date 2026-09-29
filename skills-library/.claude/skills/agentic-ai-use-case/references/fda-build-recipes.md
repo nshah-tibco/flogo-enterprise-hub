@@ -22,12 +22,17 @@ Replace every `<…>` with the user's domain values. **Nothing here is domain-sp
 - Every `fda` call takes `-f <app>.flogo`. Detect failure by scanning combined stdout/stderr for `(ERROR)`.
 - Secrets: load into variables from `config.md`; pass as `cap` values; never echo them. Prefer `SECRET:`-encoded values where the field supports it.
 
-A tiny Python driver keeps long builds repeatable:
+A tiny Python driver keeps long builds repeatable. **Keep it** (never delete): save one per app in `<UseCaseDir>/_rebuild/` (`build_mcp.py`, `build_a2a.py`, `build_orchestrator.py`) — secrets read at run time from env vars / config.md (never hardcoded), and it refuses to overwrite an existing `.flogo` (replay into a new/empty folder; never "fix" a designer-opened app with it — SKILL Hard rule #2):
 
 ```python
-import subprocess, os, sys
+# Rebuilds <Prefix>MCPServer.flogo for this use case only (e.g. after an FDA upgrade / demo reset).
+# Run:  FDA=<path-to-fda> OPENAI_API_KEY=... PG_PASSWORD=... python build_mcp.py <empty-target-dir>
+# Secrets come from env vars / config.md at run time; refuses to overwrite an existing .flogo.
+import subprocess, os, sys, json
 FDA = os.environ["FDA"]                 # resolved from config.md
-FILE = "<Prefix>MCPServer.flogo"
+FILE = os.path.join(sys.argv[1] if len(sys.argv) > 1 else ".", "<Prefix>MCPServer.flogo")
+if os.path.exists(FILE):
+    sys.exit(f"REFUSING: {FILE} exists — replay into a new/empty folder (Hard rule #2)")
 def fda(*args, allow_fail=False):
     r = subprocess.run([FDA, *map(str, args), "-f", FILE],
                        capture_output=True, text=True)
@@ -36,11 +41,23 @@ def fda(*args, allow_fail=False):
         print("FAILED:", " ".join(map(str, args))); print(out[-1000:]); sys.exit(1)
     return out
 
-def conn_uuid(name):                 # gotcha 7: resolve a connection's conn:// ref
-    import json                       #   (PostgreSQL activities need the LITERAL ref)
-    conns = json.load(open(FILE))["connections"]
+def conn_uuid(name):                 # a connection's conn:// ref (orchestrator arrays, readback checks)
+    conns = json.load(open(FILE, encoding="utf-8"))["connections"]
     items = list(conns.values()) if isinstance(conns, dict) else conns
     return "conn://" + next(c["id"] for c in items if c["name"] == name)
+
+def assert_conn(flow, task, name):   # SKILL gotcha 10: `ca -C <name>` binds; PROVE it by reading it back
+    d = json.load(open(FILE, encoding="utf-8"))
+    t = next(t for r in d["resources"] if r["id"] == "flow:" + flow
+             for t in r["data"]["tasks"] if t["id"] == task)
+    got = (t["activity"].get("input") or {}).get("Connection")
+    if got != conn_uuid(name):
+        print(f"FAILED: {flow}.{task} input.Connection={got!r}, expected {name} = {conn_uuid(name)}"); sys.exit(1)
+
+def cap_empty(name):                 # gotcha 4c: TRULY empty string property (FDA-only, verified 0.9.3)
+    fda("cap", name, "string", "placeholder")   # `cap … ""` would write the literal "New_value"
+    idx = [p["name"] for p in json.load(open(FILE, encoding="utf-8"))["properties"]].index(name)
+    fda("sa", "any", f"properties.{idx}.value", "--jsonValue", '""')   # NOT `sa property <dotted.name>.value` (ambiguous)
 ```
 
 ---
@@ -64,8 +81,7 @@ $FDA cap MCP_SERVER_PORT                        string <mcpPort> -f "$FILE"  # t
 
 # PostgreSQL connection, settings bound to the properties above
 $FDA cc PostgresConn con_postgresql -f "$FILE"
-# gotcha 7: read the connection's conn:// ref back NOW (needed by every query/insert below):
-#   PG_REF = conn_uuid("PostgresConn")   (see driver above)
+# Every PostgreSQL activity below is bound by `ca … -C PostgresConn` alone (SKILL gotcha 10).
 $FDA sa connection PostgresConn.settings.databaseType PostgreSQL -f "$FILE"
 $FDA sa connection PostgresConn.settings.host         PostgreSQL.PostgresConn.Host          -C app-property -f "$FILE"
 $FDA sa connection PostgresConn.settings.port         PostgreSQL.PostgresConn.Port          -C app-property -f "$FILE"
@@ -101,11 +117,11 @@ $FDA cf <flow> "<toolDesc>" -f "$FILE"
 $FDA ca <flow> PostgreSQLQuery act_postgresql_query "PostgreSQL Query" -C PostgresConn -f "$FILE"
 $FDA ca <flow> Return          act_default_actreturn "Simple Return"    -f "$FILE"   # ca auto-links in creation order
 
-# gotcha 7: input.Connection must be the LITERAL conn:// ref. Name-resolution
-#   (`... input.Connection PostgresConn -C connection`) silently writes "" → the designer
-#   dropdown is EMPTY and runtime fails with "Connection is required". Use PG_REF (read back
-#   after `cc PostgresConn`); this is the SAME conn:// pattern as the orchestrator's arrays.
-$FDA sa activity <flow>.PostgreSQLQuery.input.Connection "$PG_REF" -f "$FILE"
+# SKILL gotcha 10: the `ca … -C PostgresConn` above IS the connection binding. NEVER set
+#   input.Connection again with `sa activity` — fda 0.9.3 rebinds it to the FIRST connection in the
+#   file (literal conn://, name + `-C connection`, `--force` and `--jsonValue` all do it). Harmless
+#   here only because PostgresConn is this app's sole connection; in the A2A app OpenAIConn is first.
+#   Driver: assert_conn("<flow>", "PostgreSQLQuery", "PostgresConn") right after the `ca`.
 $FDA sa activity <flow>.PostgreSQLQuery.input.Query  "SELECT * FROM public.<table> ORDER BY <pk> ASC;" -f "$FILE"
 $FDA sa activity <flow>.PostgreSQLQuery.input.Schema public -f "$FILE"
 
@@ -124,6 +140,8 @@ $FDA mm <flow>.Return.input.mappings.response.mapping.data '=coerce.toString($ac
 
 > **Parameterized reads:** for a `WHERE <col> = ?p` query, set `input.Query` with a `?`-placeholder whose name does NOT equal a column name, then map values under **`input.input.mapping.parameters`** (e.g. `$FDA mm <flow>.PostgreSQLQuery.input.input.mapping.parameters.<p> '=$flow.<field>'`). See the sibling `postgres-activity-patterns.md`. Simple demos use `SELECT *` and let the LLM filter.
 >
+> ⚠️ **A placeholder must be followed by a space or one of `; ) , < > + - * % /`** — the connector only substitutes `?name` then, at design time *and* at runtime. **Never `?p::date`** (designer: `syntax error at or near "$5p5"`; runtime: the param is never bound) — write `CAST(?p AS date)`, or cast an enclosing expression (`NULLIF(?p,'')::date` is fine). Same for `?a||?b` → `?a || ?b`. `validate_flogo_apps.py` (Phase 5) flags it.
+>
 > ⚠️ **`mm` selector is DOUBLE-input — `input.input.mapping.parameters`, NOT `input.mapping.parameters`.** The `mm` selector path is `<activity>.input` + the field path inside the input object, and the postgres param object is itself named `input`. The single-input form `input.mapping.parameters` is design-time valid (`fda cm` passes) but lands the params in the WRONG slot `activity.input.mapping` — which the runtime does **not** read, so the query runs with unbound `?p` placeholders and silently returns nothing / errors. Empirically verified: `mm --help` and the reference JSON both use the double-input path, and a built file with the correct selector has params at `activity.input.input.mapping.parameters` (confirmed with the Aerospace MRO A2A build). Applies to every parameterized `act_postgresql_query` **and** `act_postgresql_insert` (INSERT/UPDATE) mapping below.
 
 Rich `handlerDescription`s matter — the orchestrator LLM chooses tools from them.
@@ -141,8 +159,14 @@ $FDA cp <Prefix>Agents "<UseCase> A2A Agents"
 # LLM properties (from config.md)
 $FDA cap AgenticAI.OpenAIConn.LLM_Provider string <provider>            # e.g. OpenAI
 $FDA cap AgenticAI.OpenAIConn.API_Key      string <apiKey>              # SECRET where supported
-$FDA cap AgenticAI.OpenAIConn.LLM_Base_URL string <baseUrl>            # explicit endpoint — gotcha 4c
-$FDA cap LLM_Model                         string <model>
+# gotcha 4c — base URL: EMPTY for OpenAI (connector default). `cap … string ""` writes the literal
+#   "New_value" → posts to /New_value/chat/completions. Truly empty via FDA only (= driver's cap_empty()):
+$FDA cap AgenticAI.OpenAIConn.LLM_Base_URL string placeholder
+#   idx = [p['name'] for p in json.load(open(FILE,encoding='utf-8'))['properties']].index('AgenticAI.OpenAIConn.LLM_Base_URL')
+$FDA sa any properties.<idx>.value --jsonValue '""'    # `sa property <dotted.name>.value` does NOT work (ambiguous)
+#   config.md gives a non-empty URL (Azure OpenAI / gateway / non-OpenAI provider only)? just:
+#   $FDA cap AgenticAI.OpenAIConn.LLM_Base_URL string <baseUrl>
+$FDA cap LLM_Model                         string <model>             # config.md; fallback gpt-5-nano
 # One PORT + URL property per agent, plus SMTP/recipient properties:
 $FDA cap <Agent>_PORT string <port>          # tr_agent "A2A Server Port" field is STRING — keep string (gotcha 8)
 $FDA cap <Agent>_URL  string http://localhost:<port>
@@ -153,8 +177,9 @@ $FDA cc OpenAIConn con_llmprovider
 $FDA sa connection OpenAIConn.settings.llmProvider    AgenticAI.OpenAIConn.LLM_Provider -C app-property
 $FDA sa connection OpenAIConn.settings.apiKey         AgenticAI.OpenAIConn.API_Key      -C app-property
 $FDA sa connection OpenAIConn.settings.llmProviderUrl AgenticAI.OpenAIConn.LLM_Base_URL -C app-property
-# DEFAULT: action agents write to the DB, so create a PostgresConn here (same as MCP § 1),
-#   then read its ref back: PG_REF = conn_uuid("PostgresConn")  — used by every query/insert (gotcha 7).
+# DEFAULT: action agents write to the DB, so create a PostgresConn here (same as MCP § 1).
+#   OpenAIConn is FIRST in this file, so an `sa activity …input.Connection` re-set would silently rebind
+#   every PostgreSQL activity to OpenAIConn — bind with `ca … -C PostgresConn` only (SKILL gotcha 10).
 ```
 
 ### 2. Per agent (repeat)
@@ -168,7 +193,7 @@ $FDA sa trigger <Agent>.settings.agentType           "A2A Server"
 $FDA sa trigger <Agent>.settings.agentPort           <Agent>_PORT -C app-property
 $FDA sa trigger <Agent>.settings.agentUrl            <Agent>_URL  -C app-property
 $FDA sa trigger <Agent>.settings.model               LLM_Model    -C app-property
-$FDA sa trigger <Agent>.settings.temperature         0.7  --type number
+$FDA sa trigger <Agent>.settings.temperature         0    --type number   # gpt-5 reasoning models ignore it (connector sends 1.0); 0 = deterministic otherwise
 $FDA sa trigger <Agent>.settings.enableGuardrails    true --type boolean
 $FDA sa trigger <Agent>.settings.redactSensitiveData true --type boolean
 $FDA sa trigger <Agent>.settings.conversationStoreType Memory
@@ -185,14 +210,15 @@ $FDA mm <Agent>_flow.LogMessage.input.message '=string.concat("Agent Invocation 
 #   (a) DEFAULT — DB write (direct to PostgreSQL). Optionally validate with a SELECT first,
 #       then INSERT/UPDATE. This is the canonical pattern for all customer-facing use cases.
 $FDA ca <Agent>_flow ValidateQuery act_postgresql_query  "PostgreSQL Query"  -C PostgresConn   # optional pre-check
-$FDA sa activity <Agent>_flow.ValidateQuery.input.Connection "$PG_REF"   # gotcha 7: literal conn:// (see § MCP step 4)
+#       driver: assert_conn("<Agent>_flow", "ValidateQuery", "PostgresConn") — NO `sa …input.Connection` (SKILL gotcha 10)
 $FDA sa activity <Agent>_flow.ValidateQuery.input.Query  "SELECT ... FROM public.<table> WHERE <col> = ?id;"
 $FDA sa activity <Agent>_flow.ValidateQuery.input.Schema public
 $FDA mm <Agent>_flow.ValidateQuery.input.input.mapping.parameters.id '=$flow.toolParams.<field>'   # DOUBLE-input: input.input.mapping (see ⚠️ note in § MCP parameterized reads)
 $FDA ca <Agent>_flow WriteRow act_postgresql_insert  "PostgreSQL Insert"  -C PostgresConn
-$FDA sa activity <Agent>_flow.WriteRow.input.Connection "$PG_REF"   # gotcha 7: literal conn:// (see § MCP step 4)
+#       driver: assert_conn("<Agent>_flow", "WriteRow", "PostgresConn") — NO `sa …input.Connection` (SKILL gotcha 10)
 $FDA sa activity <Agent>_flow.WriteRow.input.Query  "INSERT INTO public.<table> (<cols>) VALUES (?p1, ?p2);"
 #       (act_postgresql_insert runs UPDATE too — e.g. "UPDATE public.cards SET status='BLOCKED' WHERE card_id=?p1;")
+#       typed column? VALUES (?p1, CAST(?p2 AS date)) — NEVER ?p2::date (not substituted; see ⚠️ in § MCP parameterized reads)
 $FDA sa activity <Agent>_flow.WriteRow.input.Schema public
 $FDA mm <Agent>_flow.WriteRow.input.input.mapping.parameters.p1 '=$flow.toolParams.<field1>'   # DOUBLE-input (see ⚠️ note in § MCP parameterized reads)
 $FDA mm <Agent>_flow.WriteRow.input.input.mapping.parameters.p2 '=$flow.toolParams.<field2>'
@@ -298,8 +324,9 @@ WebSocket trigger `tr_wsserver` → `act_agenticai_agentactivity` → `act_webso
 $FDA cp <Prefix>AIOrchestrator "<UseCase> AI Orchestrator"
 $FDA cap AgenticAI.OpenAIConn.LLM_Provider string <provider>
 $FDA cap AgenticAI.OpenAIConn.API_Key      string <apiKey>
-$FDA cap AgenticAI.OpenAIConn.LLM_Base_URL string <baseUrl>   # gotcha 4c: MUST be a real endpoint, never empty
-$FDA cap LLM_Model                         string <model>
+$FDA cap AgenticAI.OpenAIConn.LLM_Base_URL string placeholder # gotcha 4c: then make it truly empty exactly as
+#   in § A2A step 1 (sa any properties.<idx>.value --jsonValue '""'); cap a real URL only for Azure/gateway/other
+$FDA cap LLM_Model                         string <model>             # config.md; fallback gpt-5-nano
 $FDA cap WebSocket_PORT                     number <wsPort>   # tr_wsserver "port" field is NUMERIC (unlike mcp/agent ports) — gotcha 8
 
 $FDA cc OpenAIConn con_llmprovider
@@ -342,7 +369,7 @@ $FDA ca Orchestrator_Flow WebsocketWriteData act_websocket_wswritedata   "Write 
 # AIAgent settings
 $FDA sa activity Orchestrator_Flow.AIAgent.settings.llmProviderConnection OpenAIConn -C connection
 $FDA sa activity Orchestrator_Flow.AIAgent.settings.model                LLM_Model  -C app-property
-$FDA sa activity Orchestrator_Flow.AIAgent.settings.temperature          0.7  --type number
+$FDA sa activity Orchestrator_Flow.AIAgent.settings.temperature          0    --type number
 $FDA sa activity Orchestrator_Flow.AIAgent.settings.enableGuardrails     true --type boolean
 $FDA sa activity Orchestrator_Flow.AIAgent.settings.redactSensitiveData  true --type boolean
 $FDA sa activity Orchestrator_Flow.AIAgent.settings.responseType         Text
@@ -392,6 +419,20 @@ $FLB build-exe -f "<app>.flogo" -c <context>   # per app; <context> from config.
 # Note: build-exe exits 1 with a cosmetic path error ("…\engine\C:\…\X.exe: syntax is incorrect")
 #       but the .exe IS produced next to the .flogo — verify by `ls -la --time-style=full-iso <app>.exe`.
 $FDA cm -f "<app>.flogo"                        # check-mappings: refs, imports, scopes
+grep -l New_value <UseCaseDir>/*.flogo          # must print NOTHING (gotcha 4c)
+grep -o '"temperature": *"\?[0-9.]*"\?' <UseCaseDir>/*.flogo   # every hit 0 or "0" (FDA writes the string "0")
+python validate_flogo_apps.py <UseCaseDir>/*.flogo   # PG mapping + ?placeholder gate (co-located in this references/ folder)
+# Every PostgreSQL activity's input.Connection must resolve to the connection NAMED PostgresConn —
+#   not just to *some* id in the file (SKILL gotcha 10: a stray `sa` re-set points it at the first one):
+python -c "import json,sys
+for f in sys.argv[1:]:
+    d=json.load(open(f,encoding='utf-8')); c=d['connections']; c=c.values() if isinstance(c,dict) else c
+    names={'conn://'+x['id']:x['name'] for x in c}
+    for r in d['resources']:
+        for t in r['data'].get('tasks',[]):
+            i=t['activity'].get('input') or {}
+            if 'Query' in i and 'Connection' in i and names.get(i['Connection'])!='PostgresConn':
+                print('WRONG CONNECTION', f, r['id'], t['id'], '->', names.get(i['Connection'], 'dangling'))" <UseCaseDir>/*.flogo
 ```
 
 ### Live run (order matters: MCP → A2A → Orchestrator)
@@ -411,4 +452,4 @@ ws = websocket.create_connection(f"ws://localhost:{sys.argv[1]}/{sys.argv[2]}", 
 ws.send(sys.argv[3]); print(ws.recv()); ws.close()
 ```
 
-If the LLM call fails with `unsupported protocol scheme ""` or a `/New_value/...` URL → the base URL is empty/placeholder (gotcha 4c). If `Configured connection is not a WebSocket Connection` → `wsconnection` isn't typed `any` (gotcha 4b). If the trigger nil-panics on connect → the handler is missing `schemas.output` (gotcha 4a). If the MCP server panics on start with `missing input schema` → a tool handler lacks its schemas (gotcha 1).
+If the LLM call fails with `unsupported protocol scheme` or a `/New_value/...` URL → the base URL holds the literal `New_value` from `cap … ""` (gotcha 4c) — make it truly empty (OpenAI) or a real URL (Azure/gateway/other); a truly empty value is correct for OpenAI. In a RAG app, the vector extension's `OPENAI_API_ENDPOINT_URL` must stay `https://api.openai.com/v1` (it rejects empty). If `Configured connection is not a WebSocket Connection` → `wsconnection` isn't typed `any` (gotcha 4b). If the trigger nil-panics on connect → the handler is missing `schemas.output` (gotcha 4a). If the MCP server panics on start with `missing input schema` → a tool handler lacks its schemas (gotcha 1).

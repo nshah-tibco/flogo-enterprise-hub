@@ -10,9 +10,14 @@ Catches the two defect classes that recur when hand-authoring/cloning these apps
      Fields flag points at one container but the mapping/schema live in the other — the designer then
      reads the empty container and shows no mappings. See postgres-activity-patterns.md.
        - every ?placeholder in the Query is mapped exactly once (else runtime 'missing substitution')
+       - every ?placeholder is one the connector actually SUBSTITUTES (see _evaluate_query): it only
+         rewrites ?name when the next character is one of ' ;),<>+-*%/'. '?p5::date' or '?a||?b' stay
+         literal -> designer "syntax error at or near $5p5" AND a runtime failure. Use CAST(?p5 AS date).
        - Fields[] is non-empty on any write
        - the populated schema container's names == the mapping keys
        - input.State is a verbatim copy of input.Query
+     PostgreSQL activities are found through the app's `imports` (any alias of a wi-postgres activity:
+     #query, #insert, #update, #delete, #query_1, ...), not by a fixed ref list.
   2. Password-typed connector fields (e.g. #sendmail 'Password'). The designer DERIVES dataType=password
      from a leading 'SECRET:' on the value; a plain string makes it infer dataType=string and the field
      errors with wrongTypeProp. So a password-bound app property must resolve to a SECRET: value (a
@@ -29,7 +34,86 @@ Exit code 0 = clean, 1 = one or more problems (printed). No hardcoded app/column
 """
 import json, re, sys, glob, os
 
-PG_REFS = ("#query", "#insert", "#update")
+PG_REFS = ("#query", "#insert", "#update")   # fallback only, for an app with no `imports` list
+PG_IMPORT = "wi-postgres/src/app/PostgreSQL/activity/"
+
+
+def _pg_refs(app):
+    """'#<alias>' of every wi-postgres activity import ('path' or 'alias path'; default alias = last segment)."""
+    imports = app.get("imports")
+    if not imports:
+        return set(PG_REFS)
+    refs = set()
+    for imp in imports:
+        parts = str(imp).split()
+        path = parts[-1]
+        if PG_IMPORT in path:
+            refs.add("#" + (parts[0] if len(parts) > 1 else path.rstrip("/").rsplit("/", 1)[-1]))
+    return refs
+
+
+# Port of the connector's own ?name -> $N rewrite (wi-postgres connector/connection/queryHandler.go,
+# EvaluateQuery). It runs at design time (ODBC prepare) AND at runtime, so what it leaves behind is broken
+# in both places.
+_PARAM_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789_."
+_PARAM_END = " ;),<>+-*%/"
+_PARAM_START = " =,(<>+-*%/"
+
+
+def _evaluate_query(query):
+    """(prepared SQL, substituted param names) exactly as the connector computes them."""
+    query = query.replace("\n", " ").replace("\t", " ").strip()
+    if not query.endswith(";"):
+        query += ";"
+    dqm = sqm = btm = marker = False
+    param, index, reduced, prepared, names = "", 1, 0, query, []
+    for i, ch in enumerate(query):
+        prev = query[i - 1]
+        if ch == '"' and prev != "\\" and not sqm and not btm:
+            dqm = not dqm
+            continue
+        if ch == "'" and prev != "\\" and not dqm and not btm:
+            sqm = not sqm
+            continue
+        if ch == "`" and prev != "\\" and not dqm and not sqm:
+            btm = not btm
+            continue
+        if dqm or sqm or btm:
+            continue
+        if ch == "?" and prev in _PARAM_START:
+            marker, param = (False, "") if marker else (True, "")
+            continue
+        if marker:
+            if ch.lower() not in _PARAM_CHARS:
+                marker = False
+                if param == "" and prev == "?":
+                    if ch in _PARAM_END:
+                        raise ValueError("unnamed parameter '?' (use ?paramname)")
+                    continue
+                if ch in _PARAM_END:
+                    names.append(param)
+                    start = i - len(param) - 1 - reduced
+                    sub = "$%d" % index
+                    prepared = prepared[:start] + sub + prepared[i - reduced:]
+                    index += 1
+                    reduced += len(param) - len(sub) + 1
+                    param = ""
+                    continue
+            param += ch
+    return prepared, names
+
+
+def _unsubstituted(query):
+    """?name tokens (outside quotes) the connector leaves verbatim -> [(name, next char)]."""
+    prepared, _ = _evaluate_query(query)
+    out, quote = [], None
+    for m in re.finditer(r"""['"`]|\?([A-Za-z_][\w.]*)(.?)""", prepared):
+        tok = m.group(0)
+        if tok in "'\"`":
+            quote = None if quote == tok else (quote or tok)
+        elif quote is None:
+            out.append((m.group(1), m.group(2)))
+    return out
 
 
 def _flag(v):
@@ -83,6 +167,7 @@ def check_app(path):
                 problems.append(f"{res.get('id')}: reads $flow.toolParams but has no toolParams "
                                 f"flow-input schema (click the trigger Sync)")
 
+    pg_refs = _pg_refs(app)
     for res, t in tasks:
         a = t.get("activity", {}) or {}
         ref = a.get("ref", "")
@@ -92,12 +177,23 @@ def check_app(path):
             continue
 
         # ---- PostgreSQL activities -------------------------------------------------------------
-        if ref in PG_REFS and "Query" in inp:
+        if ref in pg_refs and "Query" in inp:
             q = inp.get("Query", "") or ""
             placeholders = sorted(set(re.findall(r"\?(\w+)", q)))
             fields = inp.get("Fields", []) or []
             is_write = ref in ("#insert", "#update") or \
                 q.strip().upper().startswith(("INSERT", "UPDATE", "DELETE"))
+
+            # every ?placeholder must survive the connector's own ?name -> $N rewrite
+            try:
+                for name, nxt in _unsubstituted(q):
+                    problems.append(f"{tid}: ?{name} is NOT substituted by the PostgreSQL connector (next char "
+                                    f"{nxt!r}; must be one of {_PARAM_END!r}) -> designer 'syntax error at or "
+                                    f"near \"$<n>{name}\"' and a runtime failure. "
+                                    f"Write CAST(?{name} AS <type>) instead of ?{name}::<type>, and never put two "
+                                    f"params side by side (?a||?b -> ?a || ?b)")
+            except ValueError as e:
+                problems.append(f"{tid}: {e}")
 
             mapping = inp.get("input", {}).get("mapping", {}) if isinstance(inp.get("input"), dict) else {}
             val_map = mapping.get("values")
