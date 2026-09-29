@@ -489,7 +489,7 @@
                 "Connection": "conn://5fbe245b-2a5b-4b77-b095-0d8abc4ca669",
                 "QueryName": "",
                 "Schema": "public",
-                "Query": "INSERT INTO public.work_orders (wo_number, tail_number, wo_type, description, priority, status, opened_date, due_date) VALUES ('WO-' || to_char(CURRENT_DATE,'YYYY') || '-' || LPAD(nextval('wo_seq')::text,5,'0'), ?p1, ?p2, ?p3, ?p4, 'OPEN', CURRENT_DATE, ?p5::date);",
+                "Query": "INSERT INTO public.work_orders (wo_number, tail_number, wo_type, description, priority, status, opened_date, due_date) VALUES ('WO-' || to_char(CURRENT_DATE,'YYYY') || '-' || LPAD(nextval('wo_seq')::text,5,'0'), ?p1, ?p2, ?p3, ?p4, 'OPEN', CURRENT_DATE, CAST(?p5 AS date));",
                 "manualmode": false,
                 "Fields": [
                   {
@@ -534,7 +534,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "06770d9b-dd42-4802-9874-9c8b4ae560b9INSERT INTO public.work_orders (wo_number, tail_number, wo_type, description, priority, status, opened_date, due_date) VALUES ('WO-' || to_char(CURRENT_DATE,'YYYY') || '-' || LPAD(nextval('wo_seq')::text,5,'0'), ?p1, ?p2, ?p3, ?p4, 'OPEN', CURRENT_DATE, ?p5::date);",
+                "State": "06770d9b-dd42-4802-9874-9c8b4ae560b9INSERT INTO public.work_orders (wo_number, tail_number, wo_type, description, priority, status, opened_date, due_date) VALUES ('WO-' || to_char(CURRENT_DATE,'YYYY') || '-' || LPAD(nextval('wo_seq')::text,5,'0'), ?p1, ?p2, ?p3, ?p4, 'OPEN', CURRENT_DATE, CAST(?p5 AS date));",
                 "input": {
                   "mapping": {
                     "parameters": {
@@ -782,7 +782,7 @@
                 "Connection": "conn://5fbe245b-2a5b-4b77-b095-0d8abc4ca669",
                 "QueryName": "",
                 "Schema": "public",
-                "Query": "INSERT INTO public.part_orders (order_id, part_number, quantity, tail_number, wo_number, priority, status, ordered_date, expected_delivery) VALUES ('PO-' || to_char(CURRENT_DATE,'YYYY') || '-' || LPAD(nextval('po_seq')::text,4,'0'), ?p1, ?p2::int, ?p3, ?p4, ?p5, 'ORDERED', CURRENT_DATE, (CURRENT_DATE + INTERVAL '7 days')::date);",
+                "Query": "INSERT INTO public.part_orders (order_id, part_number, quantity, tail_number, wo_number, priority, status, ordered_date, expected_delivery) VALUES ('PO-' || to_char(CURRENT_DATE,'YYYY') || '-' || LPAD(nextval('po_seq')::text,4,'0'), ?p1, CAST(?p2 AS int), ?p3, ?p4, ?p5, 'ORDERED', CURRENT_DATE, (CURRENT_DATE + INTERVAL '7 days')::date);",
                 "manualmode": false,
                 "Fields": [
                   {
@@ -827,7 +827,7 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "e90cec60-70ad-473f-bcf4-51fbcfbbcda9INSERT INTO public.part_orders (order_id, part_number, quantity, tail_number, wo_number, priority, status, ordered_date, expected_delivery) VALUES ('PO-' || to_char(CURRENT_DATE,'YYYY') || '-' || LPAD(nextval('po_seq')::text,4,'0'), ?p1, ?p2::int, ?p3, ?p4, ?p5, 'ORDERED', CURRENT_DATE, (CURRENT_DATE + INTERVAL '7 days')::date);",
+                "State": "e90cec60-70ad-473f-bcf4-51fbcfbbcda9INSERT INTO public.part_orders (order_id, part_number, quantity, tail_number, wo_number, priority, status, ordered_date, expected_delivery) VALUES ('PO-' || to_char(CURRENT_DATE,'YYYY') || '-' || LPAD(nextval('po_seq')::text,4,'0'), ?p1, CAST(?p2 AS int), ?p3, ?p4, ?p5, 'ORDERED', CURRENT_DATE, (CURRENT_DATE + INTERVAL '7 days')::date);",
                 "input": {
                   "mapping": {
                     "parameters": {
