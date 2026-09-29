@@ -42,6 +42,11 @@ FlogoLicense.bin
 *.ppt
 # Test run output.
 test-results/
+# TIBCO Platform deploy scratch: local artifacts from tibcop deploy runs
+# (auth tokens, endpoint/publish JSONs, generated values.yaml with SECRET: blobs).
+tp_build/
+# Platform build variant of a .flogo (generated for deployment; not source content).
+*.platform.flogo
 
 # --- Python ---
 # Byte-compiled / cache files from the demo build/helper scripts.
