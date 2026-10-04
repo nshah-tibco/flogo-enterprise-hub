@@ -45,14 +45,13 @@ End-to-end, PostgreSQL-backed demos that apply the same **three-app pattern** �
 | [Hospital Post-Discharge Assistant](./Agentic_AI/Hospital_AI-Agent_Use_Case/) | Healthcare |
 | [Telecom Invoice Chatbot](./Agentic_AI/Telecom_Invoice_Chatbot_Use_Case/) | Telecommunications |
 | [Electric Power Distribution](./Agentic_AI/Power_Distribution_Use_Case/) | Utilities & Energy |
-| [Residential Water Utility](./Agentic_AI/Water_Utility_Use_Case/) *(stub)* | Utilities & Energy |
 | [Semiconductor Customer & Order Assistant](./Agentic_AI/Semiconductor_Customer_Use_Case/) | Manufacturing & Industrial |
 | [Predictive Maintenance & Asset Monitoring](./Agentic_AI/Predictive_Maintenance_Use_Case/) | Manufacturing & Industrial |
 | [Airline Passenger Services](./Agentic_AI/Airline_Passenger_Services_Use_Case/) | Transportation, Travel & Logistics |
 | [Logistics / Transport Shipper Assistant](./Agentic_AI/Logistics_Transport_Use_Case/) | Transportation, Travel & Logistics |
-| [Maritime Container Shipping](./Agentic_AI/Container_Shipping_Use_Case/) *(WIP)* | Transportation, Travel & Logistics |
 | [Retail — BW & Flogo, Better Together](./Agentic_AI/Retail_AI_BW_Flogo/) *(BW6)* | Retail & Consumer |
 | [Real Estate Lead Engagement Assistant](./Agentic_AI/Real_Estate_Lead_Assistant_Use_Case/) | Real Estate |
+| [Scholarly Publishing — Author Services](./Agentic_AI/Scholarly_Publishing_Author_Services_Use_Case/) *(governed)* | Publishing & Education |
 
 ---
 

@@ -111,7 +111,7 @@ another project. If the folder can't be found, the skills will ask you to point 
 |---|---|
 | TIBCOP_PATH | `C:\tibco\tibco-platform-cli_1.8.0-win-amd64\tibcop.exe` |
 | TIBCOP_VERSION | `v1.8.0` |
-| CP_URL | `https://tibcopm.us-west.my.tibco.com` |
+| CP_URL | `https://<your-subscription>.<region>.my.tibco.com` |
 | DATAPLANE_NAME | `<your-dataplane-name>` |
 | TIBCOP_TOKEN | `<your-platform-token>` |
 

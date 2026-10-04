@@ -229,7 +229,6 @@ Grouped by **industry vertical**. Click a use case to open its folder and full R
 | Use Case | What it does | Endpoints | Database | Status |
 |---|---|---|---|---|
 | [Electric Power Distribution](./Power_Distribution_Use_Case/) | Residential self-service — bills, usage, outages; report outage, schedule visit, reconnect (past-due guardrail). | WS `:9680` `/grid` · MCP `:9682` · A2A `9683–9686` | `power_distribution` | ✅ Complete · 🖼️ deck |
-| [Residential Water Utility](./Water_Utility_Use_Case/) | Water customer self-service (bills, usage, service requests). | WS `:9780` `/water` · MCP `:9782` · A2A `9783–9786` *(intended)* | `water_utility` *(intended)* | 📄 Stub |
 
 ### Manufacturing & Industrial
 
@@ -244,7 +243,6 @@ Grouped by **industry vertical**. Click a use case to open its folder and full R
 |---|---|---|---|---|
 | [Airline Passenger Services](./Airline_Passenger_Services_Use_Case/) | Flights, bookings, seats & baggage passenger assistant. | WS `:8083` `/airline` · MCP `:9093` · A2A `8074–8076` | `airline` | 🔌 REST-tier |
 | [Logistics / Transport Shipper Assistant](./Logistics_Transport_Use_Case/) | Shipment tracking, quotes & bookings; ships runnable binaries + FDA build script. | WS `:9690` `/logistics` · MCP `:9790` · A2A `9791–9794` | `logistics` | 📦 Prebuilt binaries |
-| [Maritime Container Shipping](./Container_Shipping_Use_Case/) | Container-shipping customer self-service. **MCP + DB done; A2A/Orchestrator still being converted.** | MCP `:9720` `/shipping-bss` (real) · WS `:9300` · A2A `9301–9306` (still the Life & Pensions agents) | `container_shipping` | 🚧 WIP |
 
 ### Retail & Consumer
 
@@ -258,6 +256,12 @@ Grouped by **industry vertical**. Click a use case to open its folder and full R
 |---|---|---|---|---|
 | [Real Estate Lead Engagement Assistant](./Real_Estate_Lead_Assistant_Use_Case/) | MLS search & lead engagement; trio generated via `fda` CLI build scripts. | WS `:9590` `/realestate` · MCP `:9592` · A2A `9593–9597` | `realestate` | ✅ Complete |
 
+### Publishing & Education
+
+| Use Case | What it does | Endpoints | Database | Status |
+|---|---|---|---|---|
+| [Scholarly Publishing — Author Services](./Scholarly_Publishing_Author_Services_Use_Case/) | Verified authors check manuscript status, get journal suggestions from an agent, see APC coverage, transfer in two confirmed steps; waivers & appeals routed to people. **Governed:** rules in SQL, tested end to end incl. prompt injection. | WS `:9840` `/authorservices` · MCP `:9842` · A2A `:9843` | `author_services` | ✅ Complete · 🛡️ Governed |
+
 ### Status Legend
 
 | Badge | Meaning |
@@ -270,12 +274,12 @@ Grouped by **industry vertical**. Click a use case to open its folder and full R
 | 🚧 **WIP** | Work in progress — some apps are unconverted copies; read the in-folder "Build status" note first. |
 | 📄 **Stub** | README documents the intended design, but the runnable apps are not present yet. |
 | 🖼️ **deck** | Includes an architecture slide deck. |
+| 🛡️ **Governed** | Built with the `agentic-ai-governed-use-case` skill: passes the decision framework (agent vs. deterministic vs. human-owned); identity, scoping, prices and state changes enforced in PostgreSQL; ships a 4-rung test ladder. |
 
 > **Port collisions — don't run these pairs at once (defaults overlap):**
-> The twelve MCP + A2A + Orchestrator use cases listed above are now mutually conflict-free and can all
-> run at the same time. Two former clashes were resolved by remapping: Semiconductor's orchestrator moved
-> `:8088` → **`:9310`** (Retail Banking keeps `:8088`), and Container Shipping moved `:9600` → **`:9300`**
-> with A2A `9983–9988` → **`9301–9306`** (Life & Pensions keeps the originals).
+> The thirteen MCP + A2A + Orchestrator use cases listed above are now mutually conflict-free and can all
+> run at the same time. A former clash was resolved by remapping: Semiconductor's orchestrator moved
+> `:8088` → **`:9310`** (Retail Banking keeps `:8088`).
 >
 > Overlaps that remain involve the standalone/secondary samples — bring these up one at a time, or change
 > the port in the app properties: `:8083` (Airline orchestrator · Predictive Maintenance · Mobile Customer
@@ -381,6 +385,6 @@ See each folder's individual `README.md` for detailed configuration and usage in
 
 Please contact us at [integration-pm@tibco.com](mailto:integration-pm@tibco.com) with any queries, feedback, or comments.
 
-<!-- SEO Keywords: TIBCO Flogo, Agentic AI, AI Agents, MCP, MCP Server, Model Context Protocol, A2A, Agent-to-Agent, LLM Orchestration, WebSocket, PostgreSQL, RAG, Retrieval Augmented Generation, BusinessWorks, Industry Use Cases, Banking, Insurance, Healthcare, Telecom, Utilities, Aerospace, Manufacturing, Retail, Real Estate, Low-Code, iPaaS, Enterprise AI -->
+<!-- SEO Keywords: TIBCO Flogo, Agentic AI, AI Agents, MCP, MCP Server, Model Context Protocol, A2A, Agent-to-Agent, LLM Orchestration, WebSocket, PostgreSQL, RAG, Retrieval Augmented Generation, BusinessWorks, Industry Use Cases, Banking, Insurance, Healthcare, Telecom, Utilities, Aerospace, Manufacturing, Retail, Real Estate, Scholarly Publishing, Low-Code, iPaaS, Enterprise AI -->
 
 **Topics:** `Agentic AI` · `MCP Server` · `A2A` · `LLM Orchestration` · `Industry Demos` · `Low-Code`

@@ -39,6 +39,7 @@ The library contains **9 skills** that cover the full Flogo development lifecycl
 | **mapping-from-excel** | Recipe | Recipe to **build a Flogo flow from an Excel mapping spec** — input fields, output fields, and per-field mapping rules. |
 | **rest-to-database-app** | Recipe | Recipe to **scaffold a REST API Flogo app that queries a database** (REST trigger → log → DB query → reply). |
 | **agentic-ai-use-case** | Use-case builder | Scaffold a complete, runnable **Agentic AI demo for any vertical** — an MCP Server (read-only DB tools) + A2A Agents app (write-workflow agents) + WebSocket AI Orchestrator, backed by PostgreSQL, modeled on the reference use cases under `samples/Agentic_AI/`. Asks which build method to use: **from scratch via the `fda` CLI** (recommended default) or **cloning an existing reference app**. |
+| **agentic-ai-governed-use-case** | Use-case builder | Build a **governed** Agentic AI use case — same three apps, but it passes the **decision framework** first (agent vs. deterministic vs. human-owned), enforces identity, scoping, prices and state changes **in PostgreSQL** (scoped reads, guarded writes, two-step confirm, routed review cases), and proves it with a **4-rung test ladder** ending in a real chat with prompt injection. Worked example: `samples/Agentic_AI/Scholarly_Publishing_Author_Services_Use_Case/`. |
 
 ---
 
@@ -154,6 +155,15 @@ Step-by-step workflows that chain several CLI steps into one outcome.
   > *"Build a telecom invoice-support Agentic AI demo — read tools for invoices and usage, action agents to open a dispute and apply a credit."*
   >
   > *"Scaffold a retail order-assistant use case by cloning the Airline Passenger Services reference app."*
+
+#### `agentic-ai-governed-use-case` — a governed Agentic AI use case (decision framework + rules in SQL)
+
+- **What it does:** Builds the same three apps as `agentic-ai-use-case`, but first classifies every operation with the Agentic AI decision framework: **human-owned** (routed review case), **agent** (semantic reasoning, minimised read-only input) or **deterministic** (a SQL rule function). Reads are scoped by a session token, writes are `INSERT … SELECT rule_fn()` (0 rows when blocked), state changes are two-step propose → confirm, and each WebSocket connection gets its own conversation. It ships `validate_governed_apps.py` (G1–G9 governance checks) and a test ladder: SQL rules → static → MCP edge → chat end to end, asserting on DB state.
+- **How to invoke it:** Describe the vertical and the persona. Explicit: `/agentic-ai-governed-use-case`. It shows the classification table and plan and builds nothing until you approve.
+- **Template prompt:**
+  > *"Build a governed `<vertical>` Agentic AI use case for `<persona>`. The agent should `<the semantic step>`; the system must enforce `<rules>`; people decide `<exceptions>`. Test it end to end."*
+- **Example prompt:**
+  > *"Build a governed author-services assistant for a scholarly publisher: authors verify with ORCID, get journal suggestions for a transfer, see APC coverage, and transfer in two steps; waivers and appeals go to people."*
 
 ---
 
@@ -347,6 +357,7 @@ Key values the skills rely on:
 │       ├── mapping-from-excel/       # Build a Flogo flow from an Excel mapping spec
 │       ├── rest-to-database-app/     # Scaffold a REST -> DB Flogo app
 │       ├── agentic-ai-use-case/      # Scaffold an Agentic AI use case (MCP + A2A + orchestrator); fda-CLI or clone method
+│       ├── agentic-ai-governed-use-case/  # Governed variant: decision-framework gate, rules in SQL, 4-rung test ladder
 │       ├── config.example.md         # Template for environment-specific values (copy to config.md)
 │       └── config.md                 # Your environment values (git-ignored; not committed)
 ├── AGENT.md                          # Project-level instructions for the agent
@@ -363,6 +374,7 @@ Key values the skills rely on:
 - *"List my TIBCO Platform dataplanes and show the status of the apps running on `MyDataPlane`."* (`tibcop`)
 - *"Deploy the `Flogo_Apps/customer-api.flogo` app to dataplane `MyDataPlane`."* (`flogo-deploy`)
 - *"Build a telecom invoice-support Agentic AI demo (MCP Server + A2A Agents + WebSocket orchestrator) backed by PostgreSQL — ask me whether to use the FDA CLI or the clone method first."* (`agentic-ai-use-case`)
+- *"Build a governed Agentic AI use case for a transit agency's rider-refund desk — rules in SQL, refunds over the limit go to a person — and test it end to end."* (`agentic-ai-governed-use-case`)
 
 > **Note:** For more sample prompts, see [skills-library/SamplePrompts/README.md](SamplePrompts/README.md).
 
