@@ -369,15 +369,19 @@ Start the chat UI and point it at the orchestrator:
 
 ```bash
 cd samples/Agentic_AI/Chatbot
-npm install
-npm start   # open http://localhost:3000
+npm install    # first time only
+npm start
 ```
 
-Enter the WebSocket URL and connect:
+Open **http://localhost:3000**, then:
 
-```
-ws://<host>:8083/airline
-```
+1. In the URL box at the top right, enter **`ws://localhost:8083/airline`**.
+2. **Click the ↻ (refresh) icon next to the URL box.** Typing the URL alone does nothing: ↻ applies it,
+   and an alert confirms *"WebSocket URL updated. Click Connect to use the new URL."*
+3. Click **Connect**. The status turns green: **● Connected**.
+
+**Won't connect?** Click **Disconnect**, click **↻** again, then **Connect**. The chatbot remembers the
+last URL you applied, so a URL from another demo is a common cause.
 
 Then run the prompts from `prompts.md`. After a demo (especially after rebooking), run
 `reset_data.sql` to restore the dataset.
@@ -417,7 +421,7 @@ Then run the prompts from `prompts.md`. After a demo (especially after rebooking
   orchestrator connection URL.
 - **Agent returns stale / wrong data** — re-run `reset_data.sql`.
 - **WebSocket won't connect** — confirm the Orchestrator is running on 8083 and you used path
-  `/airline` (not `/ws/chat`).
+  `/airline` (not `/ws/chat`), and that you clicked the ↻ icon next to the URL box before **Connect**.
 
 ---
 

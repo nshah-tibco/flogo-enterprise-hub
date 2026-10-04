@@ -339,15 +339,19 @@ If apps run on different hosts, update the orchestrator's connection URLs
 
 ```bash
 cd samples/Agentic_AI/Chatbot
-npm install
+npm install    # first time only
 npm start
 ```
 
-Open http://localhost:3000, enter the WebSocket URL, and click **Connect**:
+Open **http://localhost:3000**, then:
 
-```
-ws://localhost:9680/grid
-```
+1. In the URL box at the top right, enter **`ws://localhost:9680/grid`**.
+2. **Click the ↻ (refresh) icon next to the URL box.** Typing the URL alone does nothing: ↻ applies it,
+   and an alert confirms *"WebSocket URL updated. Click Connect to use the new URL."*
+3. Click **Connect**. The status turns green: **● Connected**.
+
+**Won't connect?** Click **Disconnect**, click **↻** again, then **Connect**. The chatbot remembers the
+last URL you applied, so a URL from another demo is a common cause.
 
 ### Step 6 — Run the demo & reset
 
@@ -387,7 +391,7 @@ psql -U postgres -d power_distribution -f reset_data.sql
 | Reconnect refused | Expected guardrail: the account still shows a past-due balance. Henry (ACCT-50010007) is reconnect-eligible only because his recent payment cleared the balance |
 | Email not sending | Verify the Gmail **App Password** (not the account password) and that SMTP host/port (`smtp.gmail.com:465`) are set; enable 2FA on the Google account first |
 | Agent gives stale data after writes | Run `reset_data.sql` to clear agent-written tickets/appointments/requests |
-| WebSocket disconnects | Ensure the Orchestrator is running on port 9680 and the client uses `ws://localhost:9680/grid` |
+| WebSocket disconnects | Ensure the Orchestrator is running on port 9680 and the client uses `ws://localhost:9680/grid` (enter it, click ↻ next to the URL box, then **Connect**) |
 
 ---
 

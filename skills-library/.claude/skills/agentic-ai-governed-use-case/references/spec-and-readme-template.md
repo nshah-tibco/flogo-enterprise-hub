@@ -83,8 +83,12 @@ click Sync"; then a note on which port property AND connection URL to change tog
 ### 3. Start the apps in this order
 **MCP Server (<port>) → Agents (<port>) → Orchestrator (<port>).**
 
-### 4. Start the chat client
-`cd ../Chatbot && npm install && npm start`, open http://localhost:3000, connect to `ws://localhost:<port><path>`
+### 4. Open the chat client and connect
+<the filled-in steps from ../../agentic-ai-use-case/references/chatbot-test.md: where the client lives
+(samples/Agentic_AI/Chatbot = ../Chatbot), npm install / npm start, http://localhost:3000, enter
+ws://localhost:<port><path>, **click ↻ next to the URL box**, Connect → "● Connected", and the
+"won't connect?" line>
+
 
 ### 5. Run the demo
 <demo-login table: identifier, code, what each one shows; one sentence on how a real portal would sign

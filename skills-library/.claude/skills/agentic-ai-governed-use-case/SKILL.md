@@ -120,7 +120,10 @@ request to build binaries. Otherwise, stop at rung 2 and say so.
    Keep test results, negative tests, limitations and file lists **out** of the README; they go in the
    report (step 7). Add a sanitized `chat_e2e_transcript.md`.
 6. Add a catalogue row in `samples/Agentic_AI/README.md` and `samples/README.md`.
-7. Report: what passed (with counts), retries, the limitations, and anything skipped. Don't commit
+7. Report: what passed (with counts), retries, the limitations, and anything skipped. **End the report
+   with "Test it in the chatbot"** from
+   [chatbot-test.md](../agentic-ai-use-case/references/chatbot-test.md), filled in with this use case's
+   `ws://localhost:<port><path>`. Include the ↻ click next to the URL box, which people miss. Don't commit
    unless asked.
 
 ## Top gotchas (full list in runtime-gotchas.md)

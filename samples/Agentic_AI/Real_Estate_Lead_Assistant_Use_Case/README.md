@@ -179,13 +179,19 @@ Import each `.flogo` into Flogo Enterprise and set its app properties:
 ### 4. Chatbot UI
 ```bash
 cd samples/Agentic_AI/Chatbot
-npm install
+npm install    # first time only
 npm start
 ```
-Open http://localhost:3000, paste the orchestrator WebSocket URL, and click **Connect**:
-```
-ws://localhost:9590/realestate
-```
+
+Open **http://localhost:3000**, then:
+
+1. In the URL box at the top right, enter **`ws://localhost:9590/realestate`**.
+2. **Click the ↻ (refresh) icon next to the URL box.** Typing the URL alone does nothing: ↻ applies it,
+   and an alert confirms *"WebSocket URL updated. Click Connect to use the new URL."*
+3. Click **Connect**. The status turns green: **● Connected**.
+
+**Won't connect?** Click **Disconnect**, click **↻** again, then **Connect**. The chatbot remembers the
+last URL you applied, so a URL from another demo is a common cause.
 
 ### 5. Run the demo
 Use the prompts in [prompts.md](prompts.md). Reset between runs with `reset_data.sql`.
@@ -259,7 +265,7 @@ environment-, secret-, or host-specific. Configure each before an end-to-end run
    - **Re-enter `Email_App_Password` in the designer's App Properties panel so it is stored as a `SECRET:` value — leave the property type as `string`.** FDA `cap` writes it as plaintext `string`; the `#sendmail` `Password` field binds cleanly only to a secret-valued property (otherwise: *"Type of field 'Password' differs from bound app property (string)"*). Re-typing the value once in App Properties encrypts it to `SECRET:…` and clears the ✗. ⚠️ There is **no** `password` app-property type — setting one makes the designer silently drop the property on save (*"'Password' is bound to app property … which does not exist"*). It builds/runs as a string either way; this only clears designer validation.
 
 5. **Chatbot / WebSocket client.**
-   - The orchestrator exposes `ws://localhost:9590/realestate`. Point the chat UI in `samples/Agentic_AI/Chatbot` (or any WS test client) at it. There is no bundled UI in this folder.
+   - The orchestrator exposes `ws://localhost:9590/realestate`. Use the shared chat UI in `samples/Agentic_AI/Chatbot`: enter the URL, **click the ↻ icon next to the URL box**, then **Connect**.
 
 6. **Deploy-time secret injection** (if deploying to TIBCO Platform rather than running the local `.exe`).
    - Provide `API_Key`, DB `Password`, and `Email_App_Password` as platform secrets / app properties at deploy time; do not ship them inside the app.

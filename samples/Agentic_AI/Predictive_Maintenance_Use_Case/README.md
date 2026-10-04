@@ -193,11 +193,19 @@ See `prompts.md` for the full, copy-pasteable prompt list and a suggested demo f
 5. **Invoke it** — start the chatbot UI and connect to the orchestrator:
    ```bash
    cd samples/Agentic_AI/Chatbot
-   npm install
+   npm install    # first time only
    npm start
    ```
-   Open the UI, paste `ws://localhost:8083/ws/chat` into the WebSocket URL field, click **Connect**,
-   and start chatting. (No UI? Point any WebSocket client at the same URL.)
+
+   Open **http://localhost:3000**, then:
+
+   1. In the URL box at the top right, enter **`ws://localhost:8083/ws/chat`**.
+   2. **Click the ↻ (refresh) icon next to the URL box.** Typing the URL alone does nothing: ↻ applies it,
+      and an alert confirms *"WebSocket URL updated. Click Connect to use the new URL."*
+   3. Click **Connect**. The status turns green: **● Connected**.
+
+   **Won't connect?** Click **Disconnect**, click **↻** again, then **Connect**. The chatbot remembers the
+   last URL you applied, so a URL from another demo is a common cause.
 
 ---
 

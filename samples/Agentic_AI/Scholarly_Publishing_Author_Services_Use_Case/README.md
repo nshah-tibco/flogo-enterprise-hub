@@ -95,15 +95,26 @@ connections. If a trigger shows a red ✗ after import, open it and click **Sync
 
 **MCP Server (9842) → Agents (9843) → Orchestrator (9840).** Wait for each one to log a clean start.
 
-### 4. Start the chat client
+### 4. Open the chat client and connect
+
+The chat client is the shared web app in [`samples/Agentic_AI/Chatbot`](../Chatbot/) (one folder up from
+this one). It needs Node.js 16+.
 
 ```bash
 cd ../Chatbot
-npm install
+npm install    # first time only
 npm start
 ```
 
-Open http://localhost:3000, enter `ws://localhost:9840/authorservices` and click **Connect**.
+1. Open **http://localhost:3000**.
+2. In the URL box at the top right, replace the default with **`ws://localhost:9840/authorservices`**.
+3. **Click the ↻ (refresh) icon next to the URL box.** Typing the URL alone does nothing: ↻ applies it, and
+   an alert confirms *"WebSocket URL updated. Click Connect to use the new URL."*
+4. Click **Connect**. The status turns green: **● Connected**.
+
+**Won't connect?** Click **Disconnect** (↻ is refused while connected), check the URL, click **↻** again,
+then **Connect**. Make sure the orchestrator is running on port 9840. The chatbot remembers the last URL
+you applied, so a URL left over from another demo is a common cause.
 
 ### 5. Run the demo
 

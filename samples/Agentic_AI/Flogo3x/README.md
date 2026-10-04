@@ -141,7 +141,9 @@ A ready-to-use chat UI is included in the 2.x sample directory at [`../Chatbot/`
 cd samples/Agentic_AI/Chatbot
 npm install
 npm start
-# Open http://localhost:3000, update the WebSocket URL if needed, and click Connect
 ```
+
+Open http://localhost:3000, enter the sample's WebSocket URL, **click the ↻ icon next to the URL box** to
+apply it, then click **Connect**.
 
 See each sample's individual `README.md` for detailed configuration and usage instructions.

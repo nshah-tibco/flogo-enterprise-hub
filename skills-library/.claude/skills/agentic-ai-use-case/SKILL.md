@@ -67,6 +67,7 @@ Shared, domain-agnostic guidance (both methods):
 - [references/postgres-activity-patterns.md](references/postgres-activity-patterns.md) — **the critical gotchas**: how to parameterize `#query` and (especially) `#insert`/UPDATE so the Flogo mapper doesn't break. Read this every time — it is the #1 source of errors.
 - [references/data-and-docs.md](references/data-and-docs.md) — conventions for `database.sql`, `reset_data.sql`, `prompts.md`, and the combined `README.md`.
 - [references/connector-prereqs.md](references/connector-prereqs.md) — connectors that need a designtime prerequisite, the read-only grep that detects them, and the exact install instruction for the hand-off (Phase 5).
+- [references/chatbot-test.md](references/chatbot-test.md) — how the user brings up the shared chatbot (`samples/Agentic_AI/Chatbot`) and connects it to the orchestrator, including the **↻ icon** step people miss. Fill it in and put it at the end of the hand-off and in the README (Phase 5).
 - [references/build-cost-and-time.md](references/build-cost-and-time.md) — build/runtime cost, time and token estimates + a lean prompt template. **Show it ONLY when the user asks** about tokens, cost, time, or cheaper builds — never upfront.
 
 FDA-specific method (used only in FDA mode):
@@ -193,8 +194,10 @@ Shared step 1–2 (both methods):
   4. **SMTP** (if an email agent exists) — `Email_Username`, app password, and the `To_Email` recipient. **Re-enter `Email_App_Password` in the designer's App Properties so it's stored as a `SECRET:` value; leave its type `string`** (there is no `password` app-property type — see gotcha S6).
   5. **Ports** free; the orchestrator's MCP/A2A URLs match the MCP/A2A ports.
   6. **In the designer** — open each connection and click **Connect/Test**; re-enter secrets (the repo holds dummy `SECRET:` blobs / placeholders). **FDA mode:** also **Sync every trigger** (`tr_mcpserver`/`tr_agent`/`tr_wsserver` are non-OpenAPI — see [references/fda-limitations.md](references/fda-limitations.md)).
-  7. **Start order MCP → A2A → Orchestrator**, then point a WebSocket client at `ws://<host>:<port>/<path>`.
+  7. **Start order MCP → A2A → Orchestrator**, then test in the chatbot (step list below).
   8. **At deploy** — inject secrets as platform app properties.
+
+  **Finish the hand-off with "Test it in the chatbot"** from [references/chatbot-test.md](references/chatbot-test.md), filled in with this use case's real `ws://localhost:<port>/<path>`. It covers where the client lives (`samples/Agentic_AI/Chatbot`), `npm install` / `npm start`, http://localhost:3000, and the step people miss: **click the ↻ icon next to the URL box before Connect**. Put the same steps in the generated README.
 
   Also tell them: all chat clients share **one** conversation memory (the orchestrator's `conversationId` is empty → a constant) — up to `memoryMaxSize` messages until the app restarts, so restart the orchestrator between demos, and simultaneous users see each other's context. And repeat the shared Hard rules: never regenerate/re-clone a `.flogo` once it's been opened/edited in the designer (patch surgically), and never patch one that's open (Discard + close first).
 

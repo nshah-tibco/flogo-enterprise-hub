@@ -225,7 +225,24 @@ Full prompt list ships in [`prompts.md`](prompts.md).
    ports; email username/app-password/recipient). See the manual-config section below.
 4. **Start order: MCP → A2A → Orchestrator.** Each should log a clean start; the orchestrator log
    should show it discovered the MCP tool list and connected to all four A2A agent cards.
-5. **Connect** your WebSocket client to `ws://<host>:8085/mro` and run the prompts in `prompts.md`.
+5. **Open the chatbot and connect** — the shared web client in `samples/Agentic_AI/Chatbot`:
+   ```bash
+   cd samples/Agentic_AI/Chatbot
+   npm install    # first time only
+   npm start
+   ```
+
+   Open **http://localhost:3000**, then:
+
+   1. In the URL box at the top right, enter **`ws://localhost:8085/mro`**.
+   2. **Click the ↻ (refresh) icon next to the URL box.** Typing the URL alone does nothing: ↻ applies it,
+      and an alert confirms *"WebSocket URL updated. Click Connect to use the new URL."*
+   3. Click **Connect**. The status turns green: **● Connected**.
+
+   **Won't connect?** Click **Disconnect**, click **↻** again, then **Connect**. The chatbot remembers the
+   last URL you applied, so a URL from another demo is a common cause.
+
+   Then run the prompts in `prompts.md`.
 
 ---
 

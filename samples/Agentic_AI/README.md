@@ -357,9 +357,10 @@ psql -U postgres -d life_pensions -f reset_data.sql   # optional: refresh demo d
 cd samples/Agentic_AI/Chatbot
 npm install
 npm start                 # http://localhost:3000
-# In the UI, set the WebSocket URL for your use case and click Connect, e.g.:
-#   ws://localhost:9600/lifepensions
 ```
+
+In the UI, enter your use case's WebSocket URL (for example `ws://localhost:9600/lifepensions`), **click the ↻
+(refresh) icon next to the URL box** to apply it, then click **Connect**. Typing the URL alone does nothing.
 
 **6. Run the demo** using the prompts in that use case's `prompts.md`. After a run that performed writes, re-run `reset_data.sql` to restore the seeded data.
 
@@ -373,9 +374,10 @@ A ready-to-use, domain-agnostic chat UI in [`Chatbot/`](./Chatbot/) drives any s
 cd samples/Agentic_AI/Chatbot
 npm install
 npm start
-# Open http://localhost:3000, set the WebSocket URL for your sample/use case
-# (ws://localhost:<port><path>), and click Connect.
 ```
+
+Open http://localhost:3000, enter the sample's WebSocket URL (`ws://localhost:<port><path>`), **click the ↻
+icon next to the URL box** to apply it, then click **Connect**.
 
 See each folder's individual `README.md` for detailed configuration and usage instructions.
 

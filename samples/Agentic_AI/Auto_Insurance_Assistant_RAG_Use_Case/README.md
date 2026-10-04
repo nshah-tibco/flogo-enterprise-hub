@@ -140,7 +140,25 @@ Click **Sync** on each non-OpenAPI trigger after import, then start in this orde
 3. **`AutoInsuranceA2AServers`** (`:9711`–`:9714`).
 4. **`AutoInsuranceAIOrchestrator`** (`:9700`).
 
-Connect a WebSocket client to `ws://localhost:9700/auto-insurance` and use `prompts.md`.
+Then open the shared chatbot in `samples/Agentic_AI/Chatbot` and connect:
+
+```bash
+cd samples/Agentic_AI/Chatbot
+npm install    # first time only
+npm start
+```
+
+Open **http://localhost:3000**, then:
+
+1. In the URL box at the top right, enter **`ws://localhost:9700/auto-insurance`**.
+2. **Click the ↻ (refresh) icon next to the URL box.** Typing the URL alone does nothing: ↻ applies it,
+   and an alert confirms *"WebSocket URL updated. Click Connect to use the new URL."*
+3. Click **Connect**. The status turns green: **● Connected**.
+
+**Won't connect?** Click **Disconnect**, click **↻** again, then **Connect**. The chatbot remembers the
+last URL you applied, so a URL from another demo is a common cause.
+
+Use the prompts in `prompts.md`.
 
 ---
 
@@ -194,8 +212,9 @@ never commit real secrets.
    http://localhost:9720/ingest` to build the vector store **before** starting the other apps (see Setup
    step 5). Re-running creates a new store; the MCP tool always uses the most recent id.
 
-9. **Chatbot / WebSocket client.** Point a client at `ws://localhost:9700/auto-insurance` — the shared
-   `samples/Agentic_AI/Chatbot/` UI works. See `prompts.md` for ready-to-paste demo prompts.
+9. **Chatbot / WebSocket client.** Use the shared `samples/Agentic_AI/Chatbot/` UI: enter
+   `ws://localhost:9700/auto-insurance`, **click the ↻ icon next to the URL box**, then **Connect**.
+   See `prompts.md` for ready-to-paste demo prompts.
 
 > **No binary is built here.** Live OpenAI ingestion/search and the end-to-end chat require a running
 > Flogo Enterprise engine with the openAI extension registered and a valid API key.

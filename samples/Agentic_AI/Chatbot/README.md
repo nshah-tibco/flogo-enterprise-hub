@@ -5,11 +5,21 @@ A minimalist, domain-agnostic chatbot web application with WebSocket support, mu
 > **Shared UI for all Agentic AI use cases.** This is the common front-end web chat client used by
 > every demo under `samples/Agentic_AI/` (Power Distribution, Retail Banking, Semiconductor, Telecom,
 > and others). It has **no backend or apps of its own** — it simply connects to a use case's **AI
-> Orchestrator WebSocket endpoint**. To use it with any use case, set the WebSocket URL — in the UI's
-> URL field, or via `WS_URL` in `.env` — to that use case's orchestrator, in the form
-> `ws://<host>:<wsPort>/<path>`, then click **Connect**. Examples:
-> Power Distribution `ws://localhost:9680/grid` · Retail Banking `ws://localhost:8088/banking` ·
-> Semiconductor `ws://localhost:9310/semiconductor`. Each use case's README lists its exact URL.
+> Orchestrator WebSocket endpoint**. Examples: Power Distribution `ws://localhost:9680/grid` ·
+> Retail Banking `ws://localhost:8088/banking` · Semiconductor `ws://localhost:9310/semiconductor`.
+> Each use case's README lists its exact URL.
+
+### 🔌 Connecting to a use case (the step people miss)
+
+1. `npm install` (first time only), then `npm start`, and open **http://localhost:3000**.
+2. In the URL box at the top right, enter the use case's orchestrator URL, e.g. `ws://localhost:9840/authorservices`.
+3. **Click the ↻ (refresh) icon next to the URL box.** Typing the URL alone does nothing: ↻ applies it, and
+   an alert confirms *"WebSocket URL updated. Click Connect to use the new URL."*
+4. Click **Connect**. The status turns green: **● Connected**.
+
+Won't connect? Click **Disconnect** first (↻ is refused while connected), click **↻** again, then
+**Connect**. The browser remembers the last URL you applied, so a URL from a previous demo is a common
+cause. `WS_URL` in `.env` does **not** set the browser's URL; the server only prints it at startup.
 
 ## ✨ Features
 
@@ -55,7 +65,7 @@ npm --version
    
    Edit the `.env` file if you want to customize:
    - `PORT`: Server port (default: 3000)
-   - `WS_URL`: WebSocket backend URL (default: ws://localhost:9600/lifepensions)
+   - `WS_URL`: printed by the server at startup only; it does not set the browser's URL (use the URL box + ↻)
 
 ## 🏃 Running the Application
 

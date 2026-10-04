@@ -147,7 +147,7 @@ Several Agentic AI use cases live under the reference folder (default `samples/A
 
 ### Prompts to *try the running system* (also generated into `prompts.md`)
 
-Once the three apps are imported, configured, and running, connect a chat/WebSocket client to `ws://<host>:<wsPort>/<usecase>`:
+Once the three apps are imported, configured, and running, open the shared chatbot (`samples/Agentic_AI/Chatbot`: `npm install`, `npm start`, http://localhost:3000), enter `ws://<host>:<wsPort>/<usecase>`, **click ↻ next to the URL box**, then **Connect**. See [Test a use case in the chatbot](references/chatbot-test.md).
 
 - *"What's the status of order 10432?"* → orchestrator calls an MCP lookup tool.
 - *"Reschedule that delivery to Friday and email me the confirmation."* → orchestrator hands off to an A2A action agent (DB write + email).
@@ -166,7 +166,7 @@ The skill builds the entire app graph, but a few things depend on **your** envir
 4. **REST backends** *(only if a REST agent was requested)* — the target API must be running and reachable. By default no REST backend exists (agents write directly to PostgreSQL).
 5. **Email / SMTP** *(only if an email agent is included)* — set `Email_Username`, the recipient, and **re-enter `Email_App_Password` in the designer's App Properties so it's stored as a `SECRET:` value. Leave its type as `string` — there is no `password` app-property type, and setting one makes the designer drop the property on save.**
 6. **Import & run in Flogo Enterprise** — open each connection and click **Connect / Test** to validate it; re-enter secrets if importing to a different environment. **FDA method:** also click **Sync** once on each trigger (`tr_mcpserver`, `tr_agent`, `tr_wsserver` are non-OpenAPI) to clear any red ✗ on input/tool-param mappings.
-7. **Chatbot / WebSocket client** — point your UI (or a WS test client) at `ws://<host>:<wsPort>/<usecase>`. No UI is bundled. All clients share **one** conversation memory (the orchestrator's `conversationId` is empty → a constant) until it restarts — restart the orchestrator between demos; simultaneous users see each other's context.
+7. **Chatbot / WebSocket client** — use the shared web client in `samples/Agentic_AI/Chatbot` (`npm install`, `npm start`, http://localhost:3000). Enter `ws://<host>:<wsPort>/<usecase>`, **click the ↻ icon next to the URL box**, then **Connect** ([steps](references/chatbot-test.md)). All clients share **one** conversation memory (the orchestrator's `conversationId` is empty → a constant) until it restarts — restart the orchestrator between demos; simultaneous users see each other's context.
 8. **Deploy-time secrets** *(if deploying to TIBCO Platform)* — provide `API_Key`, DB `Password`, and `Email_App_Password` as platform secrets at deploy time; don't ship them in the app.
 
 ### Pre-flight checklist
