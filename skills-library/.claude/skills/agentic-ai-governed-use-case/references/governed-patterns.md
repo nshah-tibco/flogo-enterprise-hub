@@ -1,7 +1,7 @@
 # Governed patterns: SQL shapes and the fda recipes that build them
 
 The worked example for everything here is
-`samples/Agentic_AI/Scholarly_Publishing_Author_Services_Use_Case/`: `database.sql` (the rules),
+`samples/Agentic_AI/Governed_Use_Cases/Scholarly_Publishing_Author_Services_Use_Case/`: `database.sql` (the rules),
 `_rebuild/tool_spec.py` (the tool/SQL contract), `_rebuild/build_*.py` (the fda drivers).
 
 The base PostgreSQL activity contract comes from the original skill:

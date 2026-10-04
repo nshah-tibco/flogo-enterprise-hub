@@ -327,7 +327,7 @@ Each MCP tool already carries a `scope` value, so scope enforcement is one prope
 | `search_case_history` | `cases:read` |
 | `check_label_expectedness` | `labeling:read` |
 
-In `API Key` mode these `scope` values are **ignored** — any caller with the right token reaches every tool. Set `FlogoMcpServer.AUTH_TYPE` to `JWT Token`, put the HMAC signing secret in `FlogoMcpServer.AUTH_TOKEN`, and put a signed JWT carrying the required scopes in `LLMClient.MCP.Safety.Auth_Token`; the server then rejects per tool and populates `tokenInfo` for the flows. See [Patient Records with Scoped Access (JWT)](../../Model_Context_Protocol\(MCP\)/MCP_JWT_Scope_Access_Control/) for a worked example, and the [MCP Server Security Guide](../../Model_Context_Protocol\(MCP\)/MCP_Server_Authentication/) for all four auth types.
+In `API Key` mode these `scope` values are **ignored** — any caller with the right token reaches every tool. Set `FlogoMcpServer.AUTH_TYPE` to `JWT Token`, put the HMAC signing secret in `FlogoMcpServer.AUTH_TOKEN`, and put a signed JWT carrying the required scopes in `LLMClient.MCP.Safety.Auth_Token`; the server then rejects per tool and populates `tokenInfo` for the flows. See [Patient Records with Scoped Access (JWT)](../../../Model_Context_Protocol\(MCP\)/MCP_JWT_Scope_Access_Control/) for a worked example, and the [MCP Server Security Guide](../../../Model_Context_Protocol\(MCP\)/MCP_Server_Authentication/) for all four auth types.
 
 > **Every token and API key in this sample is stored as an encrypted `SECRET:...` app property.** Flogo encrypts them with its built-in default key, so the apps still run as shipped — the plaintext values are printed below only so you can reproduce the `curl` calls. What the `SECRET:` prefix buys you is that the value is masked in the editor and that the App Properties block holds ciphertext instead of a token. It is obfuscation against a casual reader, not protection: the key is built into the tooling, so anyone holding Flogo can decrypt it. For a real deployment, inject the values from your platform's secret store instead, and put TLS in front of both servers — a bearer token on plain HTTP is only as private as the network. The MCP Server terminates TLS itself; the A2A Agent Trigger has no TLS settings, so it needs ingress or a reverse proxy in front of it. See [What to Customize](#what-to-customize) for both.
 >
@@ -458,7 +458,7 @@ All backend data is mocked with `#actreturn` — no database required. The mock 
 
 - **TIBCO Flogo 2.26.5 or later**. For more information, please refer to the [documentation](https://docs.tibco.com/pub/flogo/latest/doc/html/Default.htm#connectors/agentic-AI/agentic-AI-overview.htm)
 - An **OpenAI API key** (or swap for Anthropic, Gemini, Ollama, or vLLM in the LLM configuration properties)
-- A WebSocket client: the browser [Flogo Chatbot](../Chatbot/), [Postman](https://www.postman.com/), or [websocat](https://github.com/vi/websocat)
+- A WebSocket client: the browser [Flogo Chatbot](../../Chatbot/), [Postman](https://www.postman.com/), or [websocat](https://github.com/vi/websocat)
 
 ---
 
@@ -541,7 +541,7 @@ Run it. The WebSocket server starts on **9220**.
 
 ### Step 4 — Connect and Triage a Case
 
-**Flogo Chatbot**: start the browser client in [`Chatbot/`](../Chatbot/) and point it at `ws://localhost:9220/drugsafety?caseId=VEL-301-0442`.
+**Flogo Chatbot**: start the browser client in [`Chatbot/`](../../Chatbot/) and point it at `ws://localhost:9220/drugsafety?caseId=VEL-301-0442`.
 
 **websocat**:
 ```bash

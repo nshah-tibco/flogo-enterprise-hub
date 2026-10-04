@@ -219,7 +219,7 @@ Run `ApartmentFinderAgent`. It listens on `ws://localhost:9097/apartment-finder`
 ### 6. Connect the chat client
 
 ```bash
-cd ../Chatbot
+cd ../../Chatbot
 npm install
 npm start
 ```

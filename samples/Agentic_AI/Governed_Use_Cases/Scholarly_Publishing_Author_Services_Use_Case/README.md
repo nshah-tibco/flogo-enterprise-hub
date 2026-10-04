@@ -46,7 +46,7 @@ Chat UI ──WebSocket :9840 /authorservices──► AuthorServicesAIOrchestra
 - **TIBCO Flogo VS Code extension** 2.26.6 or later.
 - **PostgreSQL** 14 or later.
 - An **OpenAI API key** (or another provider the AI Agent supports).
-- **Node.js** 16 or later, for the shared [Chatbot](../Chatbot/) web client.
+- **Node.js** 16 or later, for the shared [Chatbot](../../Chatbot/) web client.
 
 ## Steps to run
 
@@ -97,11 +97,11 @@ connections. If a trigger shows a red ✗ after import, open it and click **Sync
 
 ### 4. Open the chat client and connect
 
-The chat client is the shared web app in [`samples/Agentic_AI/Chatbot`](../Chatbot/) (one folder up from
+The chat client is the shared web app in [`samples/Agentic_AI/Chatbot`](../../Chatbot/) (one folder up from
 this one). It needs Node.js 16+.
 
 ```bash
-cd ../Chatbot
+cd ../../Chatbot
 npm install    # first time only
 npm start
 ```

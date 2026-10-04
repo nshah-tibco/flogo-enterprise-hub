@@ -1,6 +1,6 @@
 # Specification: Retail Banking Self-Service Assistant
 
-> Worked example of the [agentic-ai-use-case spec template](../../../skills-library/.claude/skills/agentic-ai-use-case/references/use-case-spec-template.md),
+> Worked example of the [agentic-ai-use-case spec template](../../../../skills-library/.claude/skills/agentic-ai-use-case/references/use-case-spec-template.md),
 > reverse-engineered from this use case. This is the **spec** (WHAT/WHY) you would hand to the
 > `agentic-ai-use-case` skill to (re)generate the Retail Banking use case as the standard 3-app pattern
 > (MCP read tools + A2A write agents + WebSocket orchestrator). Technology choices (Flogo, MCP, A2A,
@@ -98,7 +98,7 @@ inquiries and the two low-risk service actions (dispute, card block) — politel
 - No fund-transfer / bill-pay write action in this cut (read + dispute + card block only) — confirm if payments should be added.
 
 ---
-**Handoff:** *"Build the Retail Banking Self-Service use case from `samples/Agentic_AI/Retail_Banking_Assistant_Use_Case/banking.spec.md`."*
+**Handoff:** *"Build the Retail Banking Self-Service use case from `samples/Agentic_AI/Industry_Use_Cases/Retail_Banking_Assistant_Use_Case/banking.spec.md`."*
 The skill frames it back, clarifies §10, plans the 3 apps, then generates the MCP server (7 lookups),
 A2A agents (dispute transaction, block card, send email), `database.sql`, `reset_data.sql`, `prompts.md`,
 and `README`, and verifies them.

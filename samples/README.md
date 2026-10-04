@@ -16,20 +16,20 @@ Build, orchestrate, and govern AI agents inside Flogo integration flows using th
 
 | Sample | Vertical | What It Demonstrates |
 |---|---|---|
-| [Insurance Claims Processor](./Agentic_AI/InsuranceClaimsProcessor/) | Banking, Financial Services & Insurance | LLM Client chaining: MCP coverage check → A2A fraud scoring → decision |
-| [Mortgage AI Processor](./Agentic_AI/mortgagedemo/) | Banking, Financial Services & Insurance | Flogo as an MCP server for autonomous loan decisioning (approve/escalate/decline) |
-| [Healthcare Patient Support Agent](./Agentic_AI/Healthcare-Compliance-Agent/) | Healthcare | AI Agent Trigger with a custom PHI guardrail + custom conversation store (HIPAA-aware) |
-| [BeautyCo Retail Intelligence](./Agentic_AI/demo_retail/) | Retail & Consumer | Flogo as an MCP server exposing enterprise data for personalized consultations |
-| [Mobile Customer Care Multi-Agent Hub](./Agentic_AI/Mobile-Customer-Care-Multi-Agent/) | Telecommunications & Customer Service | AI Agent dispatcher with multi-agent handoff + deterministic `callagent` routing |
-| [Travel Itinerary Planner with A2A Server](./Agentic_AI/Travel-Itinerary-Planner/) | Travel & Hospitality | Agent-to-Agent (A2A) protocol between two collaborating apps |
-| [Smart Supply Chain Assistant](./Agentic_AI/Smart-Supply-Chain-Assistant/) | Manufacturing & Supply Chain | Agent Trigger using multiple MCP servers + a custom write tool |
-| [AI-Powered Incident Triage Agent](./Agentic_AI/Ai-Triage-Agent/) | IT Operations & Service Management | AI Agent + MCP with semantic duplicate detection to cut ticket noise |
-| [IT Help Desk Advisor](./Agentic_AI/LLMClient-Dynamic-Config-And-Memory/) | IT Operations & Service Management | LLM Client with memory conversation store + dynamic MCP/A2A config |
-| [Dynamic Semantic Tool Selection at Scale](./Agentic_AI/DynamicSemanticToolSelectionAtScale/) | IT Operations & Service Management | Two-step tool selection across a large tool set (`filteredToolNames`) |
-| [Scheduled Reasoning Agent](./Agentic_AI/ScheduledReasoningAgent/) | Cross-Industry / Workplace Productivity | Timer-driven pipeline: fetch → analyze → HTML report → email, unattended |
-| [Morning Briefing](./Agentic_AI/morning-briefing/) | Cross-Industry / Workplace Productivity | Aggregate Slack / email / calendar / reminders into a prioritized AI briefing |
-| [Apartment Finder Agent](./Agentic_AI/Apartment-Finder-Agent/) | Real Estate & Property Management | AI Agent Activity over a Flogo MCP server (8 tools); one tool books a tour and sends a real email |
-| [Drug Safety Intake Advisor](./Agentic_AI/LLMClient-Dynamic-Auth/) | Pharmaceutical & Life Sciences | LLM Client with **authenticated** MCP + A2A backends — provider, URLs and bearer tokens all injected at runtime |
+| [Insurance Claims Processor](./Agentic_AI/Feature_Samples/InsuranceClaimsProcessor/) | Banking, Financial Services & Insurance | LLM Client chaining: MCP coverage check → A2A fraud scoring → decision |
+| [Mortgage AI Processor](./Agentic_AI/Feature_Samples/mortgagedemo/) | Banking, Financial Services & Insurance | Flogo as an MCP server for autonomous loan decisioning (approve/escalate/decline) |
+| [Healthcare Patient Support Agent](./Agentic_AI/Feature_Samples/Healthcare-Compliance-Agent/) | Healthcare | AI Agent Trigger with a custom PHI guardrail + custom conversation store (HIPAA-aware) |
+| [BeautyCo Retail Intelligence](./Agentic_AI/Feature_Samples/demo_retail/) | Retail & Consumer | Flogo as an MCP server exposing enterprise data for personalized consultations |
+| [Mobile Customer Care Multi-Agent Hub](./Agentic_AI/Feature_Samples/Mobile-Customer-Care-Multi-Agent/) | Telecommunications & Customer Service | AI Agent dispatcher with multi-agent handoff + deterministic `callagent` routing |
+| [Travel Itinerary Planner with A2A Server](./Agentic_AI/Feature_Samples/Travel-Itinerary-Planner/) | Travel & Hospitality | Agent-to-Agent (A2A) protocol between two collaborating apps |
+| [Smart Supply Chain Assistant](./Agentic_AI/Feature_Samples/Smart-Supply-Chain-Assistant/) | Manufacturing & Supply Chain | Agent Trigger using multiple MCP servers + a custom write tool |
+| [AI-Powered Incident Triage Agent](./Agentic_AI/Feature_Samples/Ai-Triage-Agent/) | IT Operations & Service Management | AI Agent + MCP with semantic duplicate detection to cut ticket noise |
+| [IT Help Desk Advisor](./Agentic_AI/Feature_Samples/LLMClient-Dynamic-Config-And-Memory/) | IT Operations & Service Management | LLM Client with memory conversation store + dynamic MCP/A2A config |
+| [Dynamic Semantic Tool Selection at Scale](./Agentic_AI/Feature_Samples/DynamicSemanticToolSelectionAtScale/) | IT Operations & Service Management | Two-step tool selection across a large tool set (`filteredToolNames`) |
+| [Scheduled Reasoning Agent](./Agentic_AI/Feature_Samples/ScheduledReasoningAgent/) | Cross-Industry / Workplace Productivity | Timer-driven pipeline: fetch → analyze → HTML report → email, unattended |
+| [Morning Briefing](./Agentic_AI/Feature_Samples/morning-briefing/) | Cross-Industry / Workplace Productivity | Aggregate Slack / email / calendar / reminders into a prioritized AI briefing |
+| [Apartment Finder Agent](./Agentic_AI/Feature_Samples/Apartment-Finder-Agent/) | Real Estate & Property Management | AI Agent Activity over a Flogo MCP server (8 tools); one tool books a tour and sends a real email |
+| [Drug Safety Intake Advisor](./Agentic_AI/Feature_Samples/LLMClient-Dynamic-Auth/) | Pharmaceutical & Life Sciences | LLM Client with **authenticated** MCP + A2A backends — provider, URLs and bearer tokens all injected at runtime |
 
 > **TIBCO Flogo® 3 users:** nine of these feature samples are also available in the Flogo 3.x folder-based project format under [`Agentic_AI/Flogo3x/`](./Agentic_AI/Flogo3x/README.md).
 
@@ -39,20 +39,20 @@ End-to-end, PostgreSQL-backed demos that apply the same **three-app pattern** �
 
 | Use Case | Vertical |
 |---|---|
-| [Aerospace MRO & AOG Operations](./Agentic_AI/Aerospace_Defense_MRO_Use_Case/) | Aerospace & Defense |
-| [Retail Banking Assistant](./Agentic_AI/Retail_Banking_Assistant_Use_Case/) | Banking, Financial Services & Insurance |
-| [Life & Pensions Member Assistant](./Agentic_AI/Life_And_Pensions_Use_Case/) | Banking, Financial Services & Insurance |
-| [Auto Insurance Policyholder Assistant](./Agentic_AI/Auto_Insurance_Assistant_Use_Case/) *(RAG)* | Banking, Financial Services & Insurance |
-| [Hospital Post-Discharge Assistant](./Agentic_AI/Hospital_AI-Agent_Use_Case/) | Healthcare |
-| [Telecom Invoice Chatbot](./Agentic_AI/Telecom_Invoice_Chatbot_Use_Case/) | Telecommunications |
-| [Electric Power Distribution](./Agentic_AI/Power_Distribution_Use_Case/) | Utilities & Energy |
-| [Semiconductor Customer & Order Assistant](./Agentic_AI/Semiconductor_Customer_Use_Case/) | Manufacturing & Industrial |
-| [Predictive Maintenance & Asset Monitoring](./Agentic_AI/Predictive_Maintenance_Use_Case/) | Manufacturing & Industrial |
-| [Airline Passenger Services](./Agentic_AI/Airline_Passenger_Services_Use_Case/) | Transportation, Travel & Logistics |
-| [Logistics / Transport Shipper Assistant](./Agentic_AI/Logistics_Transport_Use_Case/) | Transportation, Travel & Logistics |
-| [Retail — BW & Flogo, Better Together](./Agentic_AI/Retail_AI_BW_Flogo/) *(BW6)* | Retail & Consumer |
-| [Real Estate Lead Engagement Assistant](./Agentic_AI/Real_Estate_Lead_Assistant_Use_Case/) | Real Estate |
-| [Scholarly Publishing — Author Services](./Agentic_AI/Scholarly_Publishing_Author_Services_Use_Case/) *(governed)* | Publishing & Education |
+| [Aerospace MRO & AOG Operations](./Agentic_AI/Industry_Use_Cases/Aerospace_Defense_MRO_Use_Case/) | Aerospace & Defense |
+| [Retail Banking Assistant](./Agentic_AI/Industry_Use_Cases/Retail_Banking_Assistant_Use_Case/) | Banking, Financial Services & Insurance |
+| [Life & Pensions Member Assistant](./Agentic_AI/Industry_Use_Cases/Life_And_Pensions_Use_Case/) | Banking, Financial Services & Insurance |
+| [Auto Insurance Policyholder Assistant](./Agentic_AI/Industry_Use_Cases/Auto_Insurance_Assistant_RAG_Use_Case/) *(RAG)* | Banking, Financial Services & Insurance |
+| [Hospital Post-Discharge Assistant](./Agentic_AI/Industry_Use_Cases/Hospital_AI-Agent_Use_Case/) | Healthcare |
+| [Telecom Invoice Chatbot](./Agentic_AI/Industry_Use_Cases/Telecom_Invoice_Chatbot_Use_Case/) | Telecommunications |
+| [Electric Power Distribution](./Agentic_AI/Industry_Use_Cases/Power_Distribution_Use_Case/) | Utilities & Energy |
+| [Semiconductor Customer & Order Assistant](./Agentic_AI/Industry_Use_Cases/Semiconductor_Customer_Use_Case/) | Manufacturing & Industrial |
+| [Predictive Maintenance & Asset Monitoring](./Agentic_AI/Industry_Use_Cases/Predictive_Maintenance_Use_Case/) | Manufacturing & Industrial |
+| [Airline Passenger Services](./Agentic_AI/Industry_Use_Cases/Airline_Passenger_Services_Use_Case/) | Transportation, Travel & Logistics |
+| [Logistics / Transport Shipper Assistant](./Agentic_AI/Industry_Use_Cases/Logistics_Transport_Use_Case/) | Transportation, Travel & Logistics |
+| [Retail — BW & Flogo, Better Together](./Agentic_AI/Industry_Use_Cases/Retail_AI_BW_Flogo/) *(BW6)* | Retail & Consumer |
+| [Real Estate Lead Engagement Assistant](./Agentic_AI/Industry_Use_Cases/Real_Estate_Lead_Assistant_Use_Case/) | Real Estate |
+| [Scholarly Publishing — Author Services](./Agentic_AI/Governed_Use_Cases/Scholarly_Publishing_Author_Services_Use_Case/) *(governed)* | Publishing & Education |
 
 ---
 

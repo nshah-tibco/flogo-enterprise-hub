@@ -85,9 +85,9 @@ coming soon...
 |---|---|---|
 | **Triage Agent** | `flogo-apps/ticket-triage-agent` | Core AI reasoning flow (Flogo 3 project) |
 | **MCP Wrapper** | `flogo-apps/sn-mcp-wrapper` | Exposes ServiceNow as MCP tools (Flogo 3 project) |
-| **Mock ServiceNow** | [`../../Ai-Triage-Agent/mock-servicenow/`](../../Ai-Triage-Agent/mock-servicenow/) | Local REST API (incident store) |
-| **Error Simulator** | [`../../Ai-Triage-Agent/bw6-error-simulator/`](../../Ai-Triage-Agent/bw6-error-simulator/) | Generates realistic integration error events |
-| **Live Dashboard** | [`../../Ai-Triage-Agent/dashboard/index.html`](../../Ai-Triage-Agent/dashboard/) | Real-time view of decisions |
+| **Mock ServiceNow** | [`../../Ai-Triage-Agent/mock-servicenow/`](../../Feature_Samples/Ai-Triage-Agent/mock-servicenow/) | Local REST API (incident store) |
+| **Error Simulator** | [`../../Ai-Triage-Agent/bw6-error-simulator/`](../../Feature_Samples/Ai-Triage-Agent/bw6-error-simulator/) | Generates realistic integration error events |
+| **Live Dashboard** | [`../../Ai-Triage-Agent/dashboard/index.html`](../../Feature_Samples/Ai-Triage-Agent/dashboard/) | Real-time view of decisions |
 
 > The two Flogo 3 apps live under this sample's `flogo-apps/` folder — each is a project folder containing an `app.fgmd`. The Node.js helper services (**mock-servicenow**, **bw6-error-simulator**, **dashboard**) were not migrated and remain in the original sample; the relative links above point to them.
 
@@ -174,7 +174,7 @@ Set these in each app's `.fgprops` file (App Properties) before running.
 ---
 
 ## 📊 Live Dashboard & Simulator
-[`../../Ai-Triage-Agent/dashboard/index.html`](../../Ai-Triage-Agent/dashboard/) is a single self-contained file — open it in any browser. It does everything: runs the simulator, streams results live, and displays the full incident table. No extra tooling required once the services are running.
+[`../../Ai-Triage-Agent/dashboard/index.html`](../../Feature_Samples/Ai-Triage-Agent/dashboard/) is a single self-contained file — open it in any browser. It does everything: runs the simulator, streams results live, and displays the full incident table. No extra tooling required once the services are running.
 
 ![AI Triage Agent Live Dashboard & Error Simulator](images/image-3.png)
 
@@ -275,7 +275,7 @@ No extra browser tabs. No portal searches. The engineer can start acting in seco
 
 ### From the dashboard (recommended for demos)
 
-1. Open [`../../Ai-Triage-Agent/dashboard/index.html`](../../Ai-Triage-Agent/dashboard/)
+1. Open [`../../Ai-Triage-Agent/dashboard/index.html`](../../Feature_Samples/Ai-Triage-Agent/dashboard/)
 2. Use the **Error Simulator** panel — no terminal needed
 3. Click **Reset demo** in the page header between runs
 
@@ -379,4 +379,4 @@ Or click **Reset demo** in the dashboard header.
 
 ## 📖 Deep Dive
 
-For a full technical walkthrough — including how the system prompt is structured, why edge cases need pre-seeding, and what the noise-reduction math looks like — read [BLOG.md](../../Ai-Triage-Agent/BLOG.md).
+For a full technical walkthrough — including how the system prompt is structured, why edge cases need pre-seeding, and what the noise-reduction math looks like — read [BLOG.md](../../Feature_Samples/Ai-Triage-Agent/BLOG.md).

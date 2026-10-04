@@ -1,6 +1,6 @@
 # Author Services Assistant — demo prompts
 
-Connect the [Chatbot](../Chatbot/) client to `ws://localhost:9840/authorservices`: enter the URL, **click
+Connect the [Chatbot](../../Chatbot/) client to `ws://localhost:9840/authorservices`: enter the URL, **click
 the ↻ icon next to the URL box**, then **Connect** (see the README, step 4). **One browser tab = one
 conversation**: a new tab has to verify again. Reload `reset_data.sql` between full demos.
 

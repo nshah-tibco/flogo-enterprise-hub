@@ -56,7 +56,7 @@ Same as `agentic-ai-use-case`: the Flogo Design CLI (`fda`), PostgreSQL + `psql`
 
 ## Worked example
 
-[Scholarly Publishing — Author Services](../../../../samples/Agentic_AI/Scholarly_Publishing_Author_Services_Use_Case/README.md):
+[Scholarly Publishing — Author Services](../../../../samples/Agentic_AI/Governed_Use_Cases/Scholarly_Publishing_Author_Services_Use_Case/README.md):
 authors verify with ORCID + a code, check status, get journal suggestions from an agent, see APC
 coverage computed in SQL, transfer a manuscript in two steps, and have fee waivers and appeals routed
 to people.

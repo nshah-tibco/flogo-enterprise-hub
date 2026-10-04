@@ -30,7 +30,7 @@ validator, the manual-config gap) and changes **what** gets built:
 | Identity | none / trust the chat | `verify_*` → session token; per-connection `conversationId` |
 | Done means | design-time validation | **4-rung test ladder**, including prompt injection |
 
-**Worked example:** `samples/Agentic_AI/Scholarly_Publishing_Author_Services_Use_Case/`. Read its
+**Worked example:** `samples/Agentic_AI/Governed_Use_Cases/Scholarly_Publishing_Author_Services_Use_Case/`. Read its
 `database.sql`, `_rebuild/tool_spec.py` and `README.md` before building a new one.
 
 ## Hard rules

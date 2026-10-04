@@ -1,6 +1,6 @@
 # Specification: Hospital Post-Discharge Coordination Assistant
 
-> Worked example of the [agentic-ai-use-case spec template](../../../skills-library/.claude/skills/agentic-ai-use-case/references/use-case-spec-template.md),
+> Worked example of the [agentic-ai-use-case spec template](../../../../skills-library/.claude/skills/agentic-ai-use-case/references/use-case-spec-template.md),
 > reverse-engineered from this use case. This is the **spec** (WHAT/WHY) you would hand to the
 > `agentic-ai-use-case` skill to regenerate a Hospital use case as the standard 3-app pattern
 > (MCP read tools + A2A write agents + WebSocket orchestrator). Technology choices (Flogo, MCP, A2A,
@@ -92,7 +92,7 @@ post-discharge coordination — politely declined.
 - Confirm email recipient source (patient record vs preconfigured service mailbox).
 
 ---
-**Handoff:** *"Build the Hospital Post-Discharge use case from `samples/Agentic_AI/Hospital_AI-Agent_Use_Case/hospital.spec.md`."*
+**Handoff:** *"Build the Hospital Post-Discharge use case from `samples/Agentic_AI/Industry_Use_Cases/Hospital_AI-Agent_Use_Case/hospital.spec.md`."*
 The skill frames it back, clarifies §10, plans the 3 apps, then generates the MCP server (7 lookups),
 A2A agents (book appointment, pharmacy orders, bed turnover, send email), `database.sql`,
 `reset_data.sql`, `prompts.md`, and `README`, and verifies them.
