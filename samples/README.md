@@ -29,6 +29,7 @@ Build, orchestrate, and govern AI agents inside Flogo integration flows using th
 | [Scheduled Reasoning Agent](./Agentic_AI/ScheduledReasoningAgent/) | Cross-Industry / Workplace Productivity | Timer-driven pipeline: fetch → analyze → HTML report → email, unattended |
 | [Morning Briefing](./Agentic_AI/morning-briefing/) | Cross-Industry / Workplace Productivity | Aggregate Slack / email / calendar / reminders into a prioritized AI briefing |
 | [Apartment Finder Agent](./Agentic_AI/Apartment-Finder-Agent/) | Real Estate & Property Management | AI Agent Activity over a Flogo MCP server (8 tools); one tool books a tour and sends a real email |
+| [Drug Safety Intake Advisor](./Agentic_AI/LLMClient-Dynamic-Auth/) | Pharmaceutical & Life Sciences | LLM Client with **authenticated** MCP + A2A backends — provider, URLs and bearer tokens all injected at runtime |
 
 > **TIBCO Flogo® 3 users:** nine of these feature samples are also available in the Flogo 3.x folder-based project format under [`Agentic_AI/Flogo3x/`](./Agentic_AI/Flogo3x/README.md).
 

@@ -105,6 +105,12 @@ Samples grouped by **industry vertical**. The **Flogo Features Used** column lis
 |---|---|---|---|---|
 | 13 | [Apartment Finder Agent](./Apartment-Finder-Agent/) | Conversational apartment search that ends in a booked, emailed tour | **AI Agent Activity** · Memory Conversation Store · **Flogo MCP Server** (8 tools) · Send Mail write tool · `#mapper` `@conditional` lookup · prompt-level scope guardrails · WebSocket trigger | WebSocket |
 
+### Pharmaceutical & Life Sciences
+
+| # | Sample | Use Case | Flogo Features Used | Interface |
+|---|---|---|---|---|
+| 14 | [Drug Safety Intake Advisor](./LLMClient-Dynamic-Auth/) | Pharmacovigilance SUSAR triage that ends in a filed E2B(R3) expedited report | **LLM Client Activity** · dynamic `llmConfiguration` (no LLM connection resource in the orchestrator) · **authenticated** `mcpServerConfigs` (`authType: Token`) · **authenticated** `a2aServerConfigs` (`authType: Static Token`) · MCP Server (`API Key` + per-tool `scope`) · A2A Server (`agentAuthMode: Static Token`) · Memory Conversation Store · WebSocket trigger | WebSocket |
+
 > **Testing any WebSocket sample?** Use the shared browser **[Flogo Chatbot](#flogo-chatbot--browser-based-websocket-test-client)** in [`Chatbot/`](./Chatbot/) — it also drives every Part 2 use case.
 
 ## Suggested Learning Order
@@ -124,6 +130,7 @@ New to the Agentic AI Connector? This path moves from the simplest building bloc
 11. **[BeautyCo Retail Intelligence](./demo_retail/)** — turn Flogo into an **MCP tool server** that external AI clients (e.g. Claude Desktop) can call.
 12. **[Mortgage AI Processor](./mortgagedemo/)** — apply the MCP-server pattern to autonomous, auditable decisioning.
 13. **[Apartment Finder Agent](./Apartment-Finder-Agent/)** — put both halves together: an AI Agent Activity chats over your own MCP tool server, and one of those tools sends real email.
+14. **[Drug Safety Intake Advisor](./LLMClient-Dynamic-Auth/)** — revisit the LLM Client with **bearer-token authentication** on both hops, and matching auth on the MCP and A2A servers it calls.
 
 Ready to see the full pattern applied end-to-end? Continue to **[Part 2 — Industry Use-Case Demos](#part-2--industry-use-case-demos)**.
 
@@ -167,6 +174,9 @@ A workflow that aggregates data from four sources (Slack, email, calendar, remin
 
 ### 13. [Apartment Finder Agent](./Apartment-Finder-Agent/) — *Real Estate & Property Management*
 A renter describes what they want in plain English and an **AI Agent Activity** chains eight tools on a **Flogo MCP Server** to answer it — resolving a place name to zip codes, shortlisting communities, then fanning out to rent, amenities, proximity and trailing-12-month crime data before ranking the options. The eighth tool, `schedule_visit`, **sends real email**: a `#mapper` `@conditional` step resolves the chosen `community_id` to its leasing office server-side, so the LLM can never redirect the confirmation, and `#sendmail` delivers it to the renter and the office at once. Prompt-level guardrails pin the agent to Texas apartment search and roll "Houston" up to its serviced suburbs.
+
+### 14. [Drug Safety Intake Advisor](./LLMClient-Dynamic-Auth/) — *Pharmaceutical & Life Sciences*
+The authenticated counterpart to the IT Help Desk Advisor: the orchestrator configures nothing through a connection resource, and **both backends require a bearer token**. A drug safety associate reports an adverse event over WebSocket and one **LLM Client Activity** triages it against ICH E2A — reading product labeling and prior case history from a token-protected **MCP Server** (`authType: Token` on the client, `API Key` on the server, per-tool `scope` values ready for a JWT upgrade), then opening the ICSR and filing the E2B(R3) expedited report through a token-protected **A2A Server** (`Static Token` on both sides). Provider, model, API key, base URL, both URLs and both tokens all resolve from App Properties, so rotating a credential or moving to an on-premises model never touches a flow. The A2A server app deliberately goes the other way and *does* use an `#llmprovider` connection, so the two styles sit side by side. A Memory Conversation Store keyed on a required `caseId` carries one case across turns.
 
 ---
 
@@ -297,7 +307,7 @@ Grouped by **industry vertical**. Click a use case to open its folder and full R
 
 **Every sample and use case needs:**
 
-- **TIBCO Flogo® 2.26.4 or later** (2.26.5+ for the [IT Help Desk Advisor](./LLMClient-Dynamic-Config-And-Memory/) memory / dynamic-config sample), with the [Flogo VS Code extension](https://marketplace.visualstudio.com/items?itemName=tibco.flogo). See the [Agentic AI documentation](https://docs.tibco.com/pub/flogo/latest/doc/html/Default.htm#connectors/agentic-AI/agentic-AI-overview.htm).
+- **TIBCO Flogo® 2.26.4 or later** (2.26.5+ for the [IT Help Desk Advisor](./LLMClient-Dynamic-Config-And-Memory/) and [Drug Safety Intake Advisor](./LLMClient-Dynamic-Auth/) memory / dynamic-config samples), with the [Flogo VS Code extension](https://marketplace.visualstudio.com/items?itemName=tibco.flogo). See the [Agentic AI documentation](https://docs.tibco.com/pub/flogo/latest/doc/html/Default.htm#connectors/agentic-AI/agentic-AI-overview.htm).
 - An **API key** for your chosen LLM provider (OpenAI, Gemini, or Anthropic). Where a base URL is used, point it at a **real endpoint** (e.g. `https://api.openai.com/v1`). The default model referenced in the Part 2 demos is `gpt-5.6`; substitute any model your account can access.
 - A **WebSocket client** for testing WebSocket samples/use cases: the included [Flogo Chatbot](#flogo-chatbot--browser-based-websocket-test-client) (Node.js 16+) or [websocat](https://github.com/vi/websocat).
 
