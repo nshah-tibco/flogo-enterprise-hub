@@ -2331,7 +2331,7 @@
     {
       "name": "PostgreSQL.PostgresConn.Password",
       "type": "string",
-      "value": "SET_YOUR_DB_PASSWORD"
+      "value": "SECRET:h5BDAKgkhNyg8xXzC7SRvv2/OG0M"
     },
     {
       "name": "MCP_SERVER_PORT",

@@ -445,7 +445,7 @@ for i,(k,v) in enumerate(cards):
     textbox(s,x+Inches(0.28),y0+Inches(0.25),cw-Inches(0.5),Inches(0.35),k.upper(),size=13,color=RGBColor(0x7F,0xD4,0xD1),bold=True)
     textbox(s,x+Inches(0.28),y0+Inches(0.7),cw-Inches(0.5),Inches(0.9),v,size=15,color=RGBColor(0xD7,0xE6,0xEF),space_after=0)
 textbox(s,Inches(0.9),Inches(6.35),Inches(11.5),Inches(0.4),
-        "samples/Agentic_AI/Industry_Use_Cases/Retail_Banking_Assistant_Use_Case",size=14,color=RGBColor(0x9F,0xD8,0xD5))
+        "samples/Agentic_AI/Industry_Use_Cases_old/Retail_Banking_Assistant_Use_Case",size=14,color=RGBColor(0x9F,0xD8,0xD5))
 footer(s,"Thank you",dark=True)
 
 out = "RetailBankingAssistant_Architecture.pptx"

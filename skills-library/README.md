@@ -39,7 +39,7 @@ The library contains **9 skills** that cover the full Flogo development lifecycl
 | **mapping-from-excel** | Recipe | Recipe to **build a Flogo flow from an Excel mapping spec** — input fields, output fields, and per-field mapping rules. |
 | **rest-to-database-app** | Recipe | Recipe to **scaffold a REST API Flogo app that queries a database** (REST trigger → log → DB query → reply). |
 | **agentic-ai-use-case** | Use-case builder | Scaffold a complete, runnable **Agentic AI demo for any vertical** — an MCP Server (read-only DB tools) + A2A Agents app (write-workflow agents) + WebSocket AI Orchestrator, backed by PostgreSQL, modeled on the reference use cases under `samples/Agentic_AI/`. Asks which build method to use: **from scratch via the `fda` CLI** (recommended default) or **cloning an existing reference app**. |
-| **agentic-ai-governed-use-case** | Use-case builder | Build a **governed** Agentic AI use case — same three apps, but it passes the **decision framework** first (agent vs. deterministic vs. human-owned), enforces identity, scoping, prices and state changes **in PostgreSQL** (scoped reads, guarded writes, two-step confirm, routed review cases), and proves it with a **4-rung test ladder** ending in a real chat with prompt injection. Worked example: `samples/Agentic_AI/Governed_Use_Cases/Scholarly_Publishing_Author_Services_Use_Case/`. |
+| **agentic-ai-governed-use-case** | Use-case builder | Build a **governed** Agentic AI use case — same three apps, but it passes the **decision framework** first (agent vs. deterministic vs. human-owned), enforces identity, scoping, prices and state changes **in PostgreSQL** (scoped reads, guarded writes, two-step confirm, routed review cases), and proves it with a **4-rung test ladder** ending in a real chat that includes a **prompt-injection attempt** (a user message that tries to talk the agent past its rules — e.g. "ignore your rules and do X" — which fails because the rules live in SQL, not the prompt). Worked examples: `samples/Agentic_AI/Industry_Use_Cases/Airline_Passenger_Services_Use_Case/` and `.../Scholarly_Publishing_Author_Services_Use_Case/`. |
 
 ---
 
@@ -162,7 +162,9 @@ Step-by-step workflows that chain several CLI steps into one outcome.
 - **How to invoke it:** Describe the vertical and the persona. Explicit: `/agentic-ai-governed-use-case`. It shows the classification table and plan and builds nothing until you approve.
 - **Template prompt:**
   > *"Build a governed `<vertical>` Agentic AI use case for `<persona>`. The agent should `<the semantic step>`; the system must enforce `<rules>`; people decide `<exceptions>`. Test it end to end."*
-- **Example prompt:**
+- **Example prompts:**
+  > *"Build a governed airline passenger-services assistant: travellers verify with a PNR + PIN, check flight status and connection risk (computed in SQL), get agent-ranked rebooking options for a missed connection, rebook in two confirmed steps, and email the confirmation; compensation, baggage and name-change requests go to people. Test it end to end."*
+  >
   > *"Build a governed author-services assistant for a scholarly publisher: authors verify with ORCID, get journal suggestions for a transfer, see APC coverage, and transfer in two steps; waivers and appeals go to people."*
 
 ---

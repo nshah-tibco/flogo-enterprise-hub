@@ -47,6 +47,14 @@ LLM_Temperature: 0
 > Set it only for Azure OpenAI, a gateway/proxy, or a non-OpenAI provider. `gpt-5-nano` is the
 > cheapest option for demos/testing; if this file is missing, the agentic skills default to
 > `gpt-5-nano`, an empty base URL, and temperature `0`.
+>
+> **Runtime model for multi-agent / governed use cases:** the AI **Orchestrator** must do multi-step
+> tool-calling and hand off to the A2A agent — `gpt-5-nano` is too weak for that (it drops tool calls
+> and fails to delegate). Use a capable tool-calling model such as **`gpt-5.5`** (or a Claude
+> Sonnet-/Opus-class or Gemini 2.5 Pro-class model) for the orchestrator; the A2A agent can be one tier
+> down. Because all rules live in SQL, a cheaper runtime model only lowers conversation quality, never
+> safety — so pick the cheapest model that still delegates reliably (confirm at test rung 4). Set this
+> in `LLM_Model` **before** building so the apps are baked with the right model and you don't rebuild.
 ---
 
 ## Email Server, Username and app password

@@ -39,20 +39,21 @@ End-to-end, PostgreSQL-backed demos that apply the same **three-app pattern** �
 
 | Use Case | Vertical |
 |---|---|
-| [Aerospace MRO & AOG Operations](./Agentic_AI/Industry_Use_Cases/Aerospace_Defense_MRO_Use_Case/) | Aerospace & Defense |
-| [Retail Banking Assistant](./Agentic_AI/Industry_Use_Cases/Retail_Banking_Assistant_Use_Case/) | Banking, Financial Services & Insurance |
-| [Life & Pensions Member Assistant](./Agentic_AI/Industry_Use_Cases/Life_And_Pensions_Use_Case/) | Banking, Financial Services & Insurance |
-| [Auto Insurance Policyholder Assistant](./Agentic_AI/Industry_Use_Cases/Auto_Insurance_Assistant_RAG_Use_Case/) *(RAG)* | Banking, Financial Services & Insurance |
-| [Hospital Post-Discharge Assistant](./Agentic_AI/Industry_Use_Cases/Hospital_AI-Agent_Use_Case/) | Healthcare |
-| [Telecom Invoice Chatbot](./Agentic_AI/Industry_Use_Cases/Telecom_Invoice_Chatbot_Use_Case/) | Telecommunications |
-| [Electric Power Distribution](./Agentic_AI/Industry_Use_Cases/Power_Distribution_Use_Case/) | Utilities & Energy |
-| [Semiconductor Customer & Order Assistant](./Agentic_AI/Industry_Use_Cases/Semiconductor_Customer_Use_Case/) | Manufacturing & Industrial |
-| [Predictive Maintenance & Asset Monitoring](./Agentic_AI/Industry_Use_Cases/Predictive_Maintenance_Use_Case/) | Manufacturing & Industrial |
-| [Airline Passenger Services](./Agentic_AI/Industry_Use_Cases/Airline_Passenger_Services_Use_Case/) | Transportation, Travel & Logistics |
-| [Logistics / Transport Shipper Assistant](./Agentic_AI/Industry_Use_Cases/Logistics_Transport_Use_Case/) | Transportation, Travel & Logistics |
-| [Retail — BW & Flogo, Better Together](./Agentic_AI/Industry_Use_Cases/Retail_AI_BW_Flogo/) *(BW6)* | Retail & Consumer |
-| [Real Estate Lead Engagement Assistant](./Agentic_AI/Industry_Use_Cases/Real_Estate_Lead_Assistant_Use_Case/) | Real Estate |
-| [Scholarly Publishing — Author Services](./Agentic_AI/Governed_Use_Cases/Scholarly_Publishing_Author_Services_Use_Case/) *(governed)* | Publishing & Education |
+| [Aerospace MRO & AOG Operations](./Agentic_AI/Industry_Use_Cases_old/Aerospace_Defense_MRO_Use_Case/) | Aerospace & Defense |
+| [Retail Banking Assistant](./Agentic_AI/Industry_Use_Cases_old/Retail_Banking_Assistant_Use_Case/) | Banking, Financial Services & Insurance |
+| [Life & Pensions Member Assistant](./Agentic_AI/Industry_Use_Cases_old/Life_And_Pensions_Use_Case/) | Banking, Financial Services & Insurance |
+| [Auto Insurance Policyholder Assistant](./Agentic_AI/Industry_Use_Cases_old/Auto_Insurance_Assistant_RAG_Use_Case/) *(RAG)* | Banking, Financial Services & Insurance |
+| [Hospital Post-Discharge Assistant](./Agentic_AI/Industry_Use_Cases_old/Hospital_AI-Agent_Use_Case/) | Healthcare |
+| [Telecom Invoice Chatbot](./Agentic_AI/Industry_Use_Cases_old/Telecom_Invoice_Chatbot_Use_Case/) | Telecommunications |
+| [Electric Power Distribution](./Agentic_AI/Industry_Use_Cases_old/Power_Distribution_Use_Case/) | Utilities & Energy |
+| [Semiconductor Customer & Order Assistant](./Agentic_AI/Industry_Use_Cases_old/Semiconductor_Customer_Use_Case/) | Manufacturing & Industrial |
+| [Predictive Maintenance & Asset Monitoring](./Agentic_AI/Industry_Use_Cases_old/Predictive_Maintenance_Use_Case/) | Manufacturing & Industrial |
+| [Airline Passenger Services](./Agentic_AI/Industry_Use_Cases_old/Airline_Passenger_Services_Use_Case/) | Transportation, Travel & Logistics |
+| [Logistics / Transport Shipper Assistant](./Agentic_AI/Industry_Use_Cases_old/Logistics_Transport_Use_Case/) | Transportation, Travel & Logistics |
+| [Retail — BW & Flogo, Better Together](./Agentic_AI/Industry_Use_Cases_old/Retail_AI_BW_Flogo/) *(BW6)* | Retail & Consumer |
+| [Real Estate Lead Engagement Assistant](./Agentic_AI/Industry_Use_Cases_old/Real_Estate_Lead_Assistant_Use_Case/) | Real Estate |
+| [Scholarly Publishing — Author Services](./Agentic_AI/Industry_Use_Cases/Scholarly_Publishing_Author_Services_Use_Case/) *(governed)* | Publishing & Education |
+| [Airline Passenger Services — Meridian](./Agentic_AI/Industry_Use_Cases/Airline_Passenger_Services_Use_Case/) *(governed)* | Transportation & Travel |
 
 ---
 

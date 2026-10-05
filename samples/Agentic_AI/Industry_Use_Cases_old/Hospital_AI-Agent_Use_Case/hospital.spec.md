@@ -92,7 +92,7 @@ post-discharge coordination — politely declined.
 - Confirm email recipient source (patient record vs preconfigured service mailbox).
 
 ---
-**Handoff:** *"Build the Hospital Post-Discharge use case from `samples/Agentic_AI/Industry_Use_Cases/Hospital_AI-Agent_Use_Case/hospital.spec.md`."*
+**Handoff:** *"Build the Hospital Post-Discharge use case from `samples/Agentic_AI/Industry_Use_Cases_old/Hospital_AI-Agent_Use_Case/hospital.spec.md`."*
 The skill frames it back, clarifies §10, plans the 3 apps, then generates the MCP server (7 lookups),
 A2A agents (book appointment, pharmacy orders, bed turnover, send email), `database.sql`,
 `reset_data.sql`, `prompts.md`, and `README`, and verifies them.

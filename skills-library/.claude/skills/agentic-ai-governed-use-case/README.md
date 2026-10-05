@@ -24,9 +24,50 @@
 It will ask clarifying questions and show you the classification table and plan. **It builds nothing
 until you approve.**
 
+### Prompt templates (for a cheap, reliable build)
+
+A governed build costs single-digit to low-double-digit dollars of agent tokens **when done in a fresh
+session with the spec front-loaded and the e2e run once**; it balloons when done in a long session with
+avoidable re-runs. See [SKILL.md → Cost & efficiency](SKILL.md#cost--efficiency). Give these four prompts:
+
+**1. Start clean, then one message with the whole spec.** First `/clear` (or open a new session), then:
+
+```
+Use the agentic-ai-governed-use-case skill to build a governed use case.
+Vertical / persona: <who the end user is>
+Tools (reads + actions): <list>
+The one semantic step (the A2A agent): <the genuinely fuzzy judgment>
+Human-owned requests: <what a person must decide>
+Email: <yes / no>
+Runtime model: gpt-5.5            # capable tool-calling model; NOT gpt-5-nano
+Ports: pick free ones
+Run the full test ladder through the chat e2e.
+Plan first; I'll approve in one pass — don't stop for small confirmations.
+Use a subagent to read the reference sample/templates, and keep large command output out of context.
+```
+
+**2. Approve the plan** (when the classification table + plan appear):
+
+```
+Approved — build it. Cheap rungs first; run the chat e2e once at the end.
+```
+
+**3. (optional) Drive the dev-model per phase** — or just toggle `/model` yourself:
+
+```
+Use Sonnet for the build and tests; Opus only for a hard bug; Haiku for the README/docs/scrub.
+```
+
+**4. Finish:**
+
+```
+Scrub secrets, write the customer-facing README, add the catalogue rows, and give me the test results
++ chatbot steps. Don't commit yet.
+```
+
 ## What you get
 
-`samples/Agentic_AI/<UseCase>_Use_Case/` (or your apps folder) containing:
+`samples/Agentic_AI/Industry_Use_Cases/<UseCase>_Use_Case/` (or your apps folder) containing:
 
 | File | Purpose |
 |---|---|
@@ -54,9 +95,37 @@ Same as `agentic-ai-use-case`: the Flogo Design CLI (`fda`), PostgreSQL + `psql`
 `skills-library/.claude/skills/config.md`. For rungs 3–4 you also need `flogobuild` (run
 `flogobuild list-context` for the context name) and `pip install websocket-client`.
 
-## Worked example
+## Worked examples
 
-[Scholarly Publishing — Author Services](../../../../samples/Agentic_AI/Governed_Use_Cases/Scholarly_Publishing_Author_Services_Use_Case/README.md):
-authors verify with ORCID + a code, check status, get journal suggestions from an agent, see APC
-coverage computed in SQL, transfer a manuscript in two steps, and have fee waivers and appeals routed
-to people.
+- [Scholarly Publishing — Author Services](../../../../samples/Agentic_AI/Industry_Use_Cases/Scholarly_Publishing_Author_Services_Use_Case/README.md):
+  authors verify with ORCID + a code, check status, get journal suggestions from an agent, see APC
+  coverage computed in SQL, transfer a manuscript in two steps, and have fee waivers and appeals routed
+  to people.
+- [Airline Passenger Services — Meridian](../../../../samples/Agentic_AI/Industry_Use_Cases/Airline_Passenger_Services_Use_Case/README.md):
+  travellers verify with PNR + a PIN, check flight status and **connection risk (computed in SQL, not
+  guessed)**, get agent-ranked rebooking options, rebook in two confirmed steps, email the confirmation,
+  and have compensation / baggage / name-change requests routed to people. Converted from the
+  (ungoverned) Part-2 Airline demo without touching it.
+
+### Sample prompt (the airline example)
+
+This is the one-message spec (prompt 1 above) that produces the Meridian airline sample:
+
+```
+Use the agentic-ai-governed-use-case skill. Convert the Part-2 Airline Passenger Services demo into a
+governed use case WITHOUT touching the original app, SQL or DB — new folder under Industry_Use_Cases/
+and a new database.
+
+Vertical / persona: airline traveller caught in a disruption (fictional carrier, ATL hub).
+Identity: PNR + a 4-digit PIN -> session token; every read/write scoped to that booking.
+Reads: my itinerary, a specific flight's status, loyalty standing.
+Deterministic (SQL): connection risk (SAFE / AT_RISK / MISSED by arithmetic), rebooking eligibility
+(route, seats, departs-after-inbound+min-connection), APC-style seat assignment.
+Two-step action: rebook a disrupted leg (propose -> explicit yes -> confirm; event row + trigger).
+The one semantic step (A2A agent): rank replacement flights against the traveller's free-text
+preferences ("arrive before 8pm, window seat, no red-eye") — identity never passed to it.
+Human-owned: compensation claims, baggage claims, special assistance, complaints, name changes.
+Email: yes — a guarded tool that only emails an executed rebooking for the verified session.
+Runtime model: gpt-5.5.  Ports: pick free ones.
+Run the full test ladder through the chat e2e. Plan first; I'll approve in one pass.
+```

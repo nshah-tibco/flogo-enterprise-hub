@@ -98,7 +98,7 @@ inquiries and the two low-risk service actions (dispute, card block) — politel
 - No fund-transfer / bill-pay write action in this cut (read + dispute + card block only) — confirm if payments should be added.
 
 ---
-**Handoff:** *"Build the Retail Banking Self-Service use case from `samples/Agentic_AI/Industry_Use_Cases/Retail_Banking_Assistant_Use_Case/banking.spec.md`."*
+**Handoff:** *"Build the Retail Banking Self-Service use case from `samples/Agentic_AI/Industry_Use_Cases_old/Retail_Banking_Assistant_Use_Case/banking.spec.md`."*
 The skill frames it back, clarifies §10, plans the 3 apps, then generates the MCP server (7 lookups),
 A2A agents (dispute transaction, block card, send email), `database.sql`, `reset_data.sql`, `prompts.md`,
 and `README`, and verifies them.

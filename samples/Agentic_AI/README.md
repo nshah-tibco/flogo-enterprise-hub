@@ -12,8 +12,8 @@ New here? Skim **[What Is the Agentic AI Connector?](#what-is-the-agentic-ai-con
 | Folder | What's inside |
 |---|---|
 | [`Feature_Samples/`](./Feature_Samples/) | Part 1 — connector feature samples, one building block at a time (Flogo 2.x). |
-| [`Industry_Use_Cases/`](./Industry_Use_Cases/) | Part 2 — end-to-end, vertical-specific demos on the three-app pattern. |
-| [`Governed_Use_Cases/`](./Governed_Use_Cases/) | Governed demos: business rules, identity, prices and state changes enforced in PostgreSQL, built with the `agentic-ai-governed-use-case` skill. |
+| [`Industry_Use_Cases/`](./Industry_Use_Cases/) | Part 2 — governed, vertical-specific demos: business rules, identity, prices and state changes enforced in PostgreSQL, built with the `agentic-ai-governed-use-case` skill. The canonical industry use cases going forward. |
+| [`Industry_Use_Cases_old/`](./Industry_Use_Cases_old/) | Earlier vertical demos on the three-app pattern, being migrated to the governed style above. |
 | [`Chatbot/`](./Chatbot/) | Shared browser WebSocket test client for every use case that exposes a WebSocket endpoint. |
 | [`Flogo3x/`](./Flogo3x/) | Flogo 3.x folder-based project versions of nine feature samples. |
 
@@ -222,65 +222,71 @@ Grouped by **industry vertical**. Click a use case to open its folder and full R
 
 | Use Case | What it does | Endpoints | Database | Status |
 |---|---|---|---|---|
-| [Aerospace MRO & AOG Operations](./Industry_Use_Cases/Aerospace_Defense_MRO_Use_Case/) | Maintenance/repair/overhaul + aircraft-on-ground assistant — check work orders & parts, then schedule/dispatch. | WS `:8085` `/mro` · MCP `:9095` · A2A `8091–8094` | `aerospace_mro` | ✅ Complete |
+| [Aerospace MRO & AOG Operations](./Industry_Use_Cases_old/Aerospace_Defense_MRO_Use_Case/) | Maintenance/repair/overhaul + aircraft-on-ground assistant — check work orders & parts, then schedule/dispatch. | WS `:8085` `/mro` · MCP `:9095` · A2A `8091–8094` | `aerospace_mro` | ✅ Complete |
 
 ### Banking, Financial Services & Insurance
 
 | Use Case | What it does | Endpoints | Database | Status |
 |---|---|---|---|---|
-| [Retail Banking Assistant](./Industry_Use_Cases/Retail_Banking_Assistant_Use_Case/) | Balances, transactions, cards & payments self-service with guarded write actions. | WS `:8088` `/banking` · MCP `:9096` · A2A `8710–8712` | `banking` | ✅ Complete · 🖼️ deck |
-| [Life & Pensions Member Assistant](./Industry_Use_Cases/Life_And_Pensions_Use_Case/) | Pension pots, holdings, contributions, beneficiaries, claims & adviser callbacks; email confirmations. | WS `:9600` `/lifepensions` · MCP `:9982` · A2A `9983–9988` | `life_pensions` | ✅ Complete |
-| [Auto Insurance Policyholder Assistant](./Industry_Use_Cases/Auto_Insurance_Assistant_RAG_Use_Case/) | Policy, coverage & claims assistant, **grounded on policy documents via RAG**. | WS `:9700` `/auto-insurance` · MCP `:9701` · A2A `9711–9714` | `auto_insurance` (+ vector store) | 🔍 RAG |
+| [Retail Banking Assistant](./Industry_Use_Cases_old/Retail_Banking_Assistant_Use_Case/) | Balances, transactions, cards & payments self-service with guarded write actions. | WS `:8088` `/banking` · MCP `:9096` · A2A `8710–8712` | `banking` | ✅ Complete · 🖼️ deck |
+| [Life & Pensions Member Assistant](./Industry_Use_Cases_old/Life_And_Pensions_Use_Case/) | Pension pots, holdings, contributions, beneficiaries, claims & adviser callbacks; email confirmations. | WS `:9600` `/lifepensions` · MCP `:9982` · A2A `9983–9988` | `life_pensions` | ✅ Complete |
+| [Auto Insurance Policyholder Assistant](./Industry_Use_Cases_old/Auto_Insurance_Assistant_RAG_Use_Case/) | Policy, coverage & claims assistant, **grounded on policy documents via RAG**. | WS `:9700` `/auto-insurance` · MCP `:9701` · A2A `9711–9714` | `auto_insurance` (+ vector store) | 🔍 RAG |
 
 ### Healthcare
 
 | Use Case | What it does | Endpoints | Database | Status |
 |---|---|---|---|---|
-| [Hospital Post-Discharge Assistant](./Industry_Use_Cases/Hospital_AI-Agent_Use_Case/) | Post-discharge coordination — care instructions, appointments, refills, follow-ups. | WS `:8652` `/hospital` · MCP `:9092` · A2A `8070–8073` | `hospital` | 🔌 REST-tier |
+| [Hospital Post-Discharge Assistant](./Industry_Use_Cases_old/Hospital_AI-Agent_Use_Case/) | Post-discharge coordination — care instructions, appointments, refills, follow-ups. | WS `:8652` `/hospital` · MCP `:9092` · A2A `8070–8073` | `hospital` | 🔌 REST-tier |
 
 ### Telecommunications
 
 | Use Case | What it does | Endpoints | Database | Status |
 |---|---|---|---|---|
-| [Telecom Invoice Chatbot](./Industry_Use_Cases/Telecom_Invoice_Chatbot_Use_Case/) | Explain invoices, usage & charges; dispute, adjust and email confirmations. | WS `:9500` `/telecom` · MCP `:9882` · A2A `9883–9885` | `telecom` | ✅ Complete |
+| [Telecom Invoice Chatbot](./Industry_Use_Cases_old/Telecom_Invoice_Chatbot_Use_Case/) | Explain invoices, usage & charges; dispute, adjust and email confirmations. | WS `:9500` `/telecom` · MCP `:9882` · A2A `9883–9885` | `telecom` | ✅ Complete |
 
 ### Utilities & Energy
 
 | Use Case | What it does | Endpoints | Database | Status |
 |---|---|---|---|---|
-| [Electric Power Distribution](./Industry_Use_Cases/Power_Distribution_Use_Case/) | Residential self-service — bills, usage, outages; report outage, schedule visit, reconnect (past-due guardrail). | WS `:9680` `/grid` · MCP `:9682` · A2A `9683–9686` | `power_distribution` | ✅ Complete · 🖼️ deck |
+| [Electric Power Distribution](./Industry_Use_Cases_old/Power_Distribution_Use_Case/) | Residential self-service — bills, usage, outages; report outage, schedule visit, reconnect (past-due guardrail). | WS `:9680` `/grid` · MCP `:9682` · A2A `9683–9686` | `power_distribution` | ✅ Complete · 🖼️ deck |
 
 ### Manufacturing & Industrial
 
 | Use Case | What it does | Endpoints | Database | Status |
 |---|---|---|---|---|
-| [Semiconductor Customer & Order Assistant](./Industry_Use_Cases/Semiconductor_Customer_Use_Case/) | Parts catalog, orders, RMAs & lead times for a semiconductor supplier. | WS `:9310` `/semiconductor` · MCP `:9098` · A2A `8730–8735` | `semiconductor` | ✅ Complete |
-| [Predictive Maintenance & Asset Monitoring](./Industry_Use_Cases/Predictive_Maintenance_Use_Case/) | Asset health, sensor readings & failure prediction with a REST backend and a single chat agent. | WS `:8083` `/ws/chat` · MCP `:9093` · REST api `:9095` | `predictive_maintenance` | 🔌 REST-tier |
+| [Semiconductor Customer & Order Assistant](./Industry_Use_Cases_old/Semiconductor_Customer_Use_Case/) | Parts catalog, orders, RMAs & lead times for a semiconductor supplier. | WS `:9310` `/semiconductor` · MCP `:9098` · A2A `8730–8735` | `semiconductor` | ✅ Complete |
+| [Predictive Maintenance & Asset Monitoring](./Industry_Use_Cases_old/Predictive_Maintenance_Use_Case/) | Asset health, sensor readings & failure prediction with a REST backend and a single chat agent. | WS `:8083` `/ws/chat` · MCP `:9093` · REST api `:9095` | `predictive_maintenance` | 🔌 REST-tier |
 
 ### Transportation, Travel & Logistics
 
 | Use Case | What it does | Endpoints | Database | Status |
 |---|---|---|---|---|
-| [Airline Passenger Services](./Industry_Use_Cases/Airline_Passenger_Services_Use_Case/) | Flights, bookings, seats & baggage passenger assistant. | WS `:8083` `/airline` · MCP `:9093` · A2A `8074–8076` | `airline` | 🔌 REST-tier |
-| [Logistics / Transport Shipper Assistant](./Industry_Use_Cases/Logistics_Transport_Use_Case/) | Shipment tracking, quotes & bookings; ships runnable binaries + FDA build script. | WS `:9690` `/logistics` · MCP `:9790` · A2A `9791–9794` | `logistics` | 📦 Prebuilt binaries |
+| [Airline Passenger Services](./Industry_Use_Cases_old/Airline_Passenger_Services_Use_Case/) | Flights, bookings, seats & baggage passenger assistant. | WS `:8083` `/airline` · MCP `:9093` · A2A `8074–8076` | `airline` | 🔌 REST-tier |
+| [Logistics / Transport Shipper Assistant](./Industry_Use_Cases_old/Logistics_Transport_Use_Case/) | Shipment tracking, quotes & bookings; ships runnable binaries + FDA build script. | WS `:9690` `/logistics` · MCP `:9790` · A2A `9791–9794` | `logistics` | 📦 Prebuilt binaries |
 
 ### Retail & Consumer
 
 | Use Case | What it does | Endpoints | Database | Status |
 |---|---|---|---|---|
-| [Retail — BW & Flogo, Better Together](./Industry_Use_Cases/Retail_AI_BW_Flogo/) | Retail assistant where **BW6 apps expose domain REST/MCP** and a Flogo **REST** orchestrator drives the LLM. | Flogo REST `:18085` `/api/query` · BW6 MCP `:18000` | *(inside BW6 apps)* | 🏛️ BW6 |
+| [Retail — BW & Flogo, Better Together](./Industry_Use_Cases_old/Retail_AI_BW_Flogo/) | Retail assistant where **BW6 apps expose domain REST/MCP** and a Flogo **REST** orchestrator drives the LLM. | Flogo REST `:18085` `/api/query` · BW6 MCP `:18000` | *(inside BW6 apps)* | 🏛️ BW6 |
 
 ### Real Estate
 
 | Use Case | What it does | Endpoints | Database | Status |
 |---|---|---|---|---|
-| [Real Estate Lead Engagement Assistant](./Industry_Use_Cases/Real_Estate_Lead_Assistant_Use_Case/) | MLS search & lead engagement; trio generated via `fda` CLI build scripts. | WS `:9590` `/realestate` · MCP `:9592` · A2A `9593–9597` | `realestate` | ✅ Complete |
+| [Real Estate Lead Engagement Assistant](./Industry_Use_Cases_old/Real_Estate_Lead_Assistant_Use_Case/) | MLS search & lead engagement; trio generated via `fda` CLI build scripts. | WS `:9590` `/realestate` · MCP `:9592` · A2A `9593–9597` | `realestate` | ✅ Complete |
 
 ### Publishing & Education
 
 | Use Case | What it does | Endpoints | Database | Status |
 |---|---|---|---|---|
-| [Scholarly Publishing — Author Services](./Governed_Use_Cases/Scholarly_Publishing_Author_Services_Use_Case/) | Verified authors check manuscript status, get journal suggestions from an agent, see APC coverage, transfer in two confirmed steps; waivers & appeals routed to people. **Governed:** rules in SQL, tested end to end incl. prompt injection. | WS `:9840` `/authorservices` · MCP `:9842` · A2A `:9843` | `author_services` | ✅ Complete · 🛡️ Governed |
+| [Scholarly Publishing — Author Services](./Industry_Use_Cases/Scholarly_Publishing_Author_Services_Use_Case/) | Verified authors check manuscript status, get journal suggestions from an agent, see APC coverage, transfer in two confirmed steps; waivers & appeals routed to people. **Governed:** rules in SQL, tested end to end incl. prompt injection. | WS `:9840` `/authorservices` · MCP `:9842` · A2A `:9843` | `author_services` | ✅ Complete · 🛡️ Governed |
+
+### Transportation & Travel
+
+| Use Case | What it does | Endpoints | Database | Status |
+|---|---|---|---|---|
+| [Airline Passenger Services — Meridian](./Industry_Use_Cases/Airline_Passenger_Services_Use_Case/) | Verified travellers check flight status & connection risk (computed in SQL), get agent-ranked rebooking options, rebook in two confirmed steps and email the confirmation; compensation, baggage & name-change requests routed to people. **Governed:** rules in SQL, tested end to end incl. prompt injection. An earlier, simpler version is kept under `Industry_Use_Cases_old/`. | WS `:9850` `/passengerservices` · MCP `:9852` · A2A `:9853` | `airline_governed` | ✅ Complete · 🛡️ Governed |
 
 ### Status Legend
 
@@ -327,8 +333,8 @@ Grouped by **industry vertical**. Click a use case to open its folder and full R
 
 **Some samples/use cases have extra prerequisites** — check the catalogs and each folder's README:
 
-- **🔍 RAG** ([Auto Insurance](./Industry_Use_Cases/Auto_Insurance_Assistant_RAG_Use_Case/)): a document set + vector store; it ingests policy PDFs.
-- **🏛️ BW6** ([Retail — BW & Flogo](./Industry_Use_Cases/Retail_AI_BW_Flogo/)): **TIBCO BusinessWorks 6.12** and Node.js for the MCP proxy.
+- **🔍 RAG** ([Auto Insurance](./Industry_Use_Cases_old/Auto_Insurance_Assistant_RAG_Use_Case/)): a document set + vector store; it ingests policy PDFs.
+- **🏛️ BW6** ([Retail — BW & Flogo](./Industry_Use_Cases_old/Retail_AI_BW_Flogo/)): **TIBCO BusinessWorks 6.12** and Node.js for the MCP proxy.
 - **SMTP** (Life & Pensions, Telecom, Power Distribution and others with an email agent): an SMTP account — e.g. Gmail with an App Password over SSL (port 465).
 - **PostgreSQL / Docker / Claude Desktop** for several Part 1 samples (Mortgage AI, BeautyCo Retail, Morning Briefing) — see each sample's README.
 
@@ -353,7 +359,7 @@ The steps are identical for each ✅ use case; only the database name, ports, an
 **1. Create and load the database:**
 
 ```bash
-cd samples/Agentic_AI/Industry_Use_Cases/Life_And_Pensions_Use_Case
+cd samples/Agentic_AI/Industry_Use_Cases_old/Life_And_Pensions_Use_Case
 createdb life_pensions                          # or: psql -U postgres -c "CREATE DATABASE life_pensions;"
 psql -U postgres -d life_pensions -f database.sql
 psql -U postgres -d life_pensions -f reset_data.sql   # optional: refresh demo dates relative to today

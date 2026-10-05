@@ -6,13 +6,12 @@
     "github.com/project-flogo/websocket/activity/wswritedata",
     "github.com/project-flogo/websocket/trigger/wsserver",
     "github.com/project-flogo/contrib/function/coerce",
-    "github.com/project-flogo/contrib/function/array",
     "github.com/tibco/flogo-ai-agent/src/app/AgenticAI/connector/llmprovider",
     "github.com/tibco/flogo-ai-agent/src/app/AgenticAI/connector/mcpserverconfig",
     "github.com/tibco/flogo-ai-agent/src/app/AgenticAI/connector/a2aserverconnection"
   ],
-  "name": "AuthorServicesAIOrchestrator",
-  "description": "Author Services AI Orchestrator - WebSocket chat for verified authors",
+  "name": "PassengerServicesAIOrchestrator",
+  "description": "Airline Passenger Services AI Orchestrator - WebSocket chat interface orchestrating MCP and A2A agents for flight disruption management",
   "version": "1.0.0",
   "type": "flogo:app",
   "appModel": "1.1.1",
@@ -21,9 +20,9 @@
     {
       "ref": "#wsserver",
       "name": "wsserver",
-      "description": "WebSocket server",
+      "description": "Websocket server listens for connection request from the client",
       "settings": {
-        "port": "=$property[\"WebSocket_PORT\"]",
+        "port": 8083,
         "enableTLS": false,
         "serverCert": "",
         "serverKey": "",
@@ -33,10 +32,10 @@
       "id": "WebsocketServer",
       "handlers": [
         {
-          "description": "Author Services orchestrator flow",
+          "description": "",
           "settings": {
             "method": "GET",
-            "path": "/authorservices",
+            "path": "/airline",
             "mode": "Data",
             "format": "String",
             "jsonSchema": ""
@@ -47,11 +46,11 @@
               "flowURI": "res://flow:Orchestrator_Flow"
             },
             "input": {
-              "content": "=$.content",
-              "wsconnection": "=$.wsconnection",
               "pathParams": "=$.pathParams",
               "queryParams": "=$.queryParams",
-              "headers": "=$.headers"
+              "headers": "=$.headers",
+              "content": "=$.content",
+              "wsconnection": "=$.wsconnection"
             }
           },
           "schemas": {
@@ -72,8 +71,8 @@
     {
       "id": "flow:Orchestrator_Flow",
       "data": {
-        "name": "Orchestrator_Flow",
-        "description": "Author Services orchestrator flow",
+        "name": "Orchestrator Flow",
+        "description": "",
         "links": [
           {
             "id": 1,
@@ -102,36 +101,35 @@
           {
             "id": "AIAgent",
             "name": "AIAgent",
-            "description": "AI Agent",
+            "description": "Configure AI Agent in the flow",
             "activity": {
               "ref": "#agentactivity",
               "settings": {
-                "llmProviderConnection": "conn://3695859e-99fe-47ef-8397-0976d4211671",
+                "llmProviderConnection": "conn://d1e2f3a4-1111-2222-3333-444455556666",
                 "model": "=$property[\"LLM_Model\"]",
                 "reasoning": "",
-                "temperature": "0",
-                "enableGuardrails": "true",
+                "temperature": 0.7,
+                "enableGuardrails": true,
                 "rateLimit": 25,
-                "tokenLimit": "8000",
-                "redactSensitiveData": "false",
+                "tokenLimit": 2048,
+                "redactSensitiveData": true,
                 "responseType": "Text",
                 "agentHandoffs": "",
                 "remoteAgents": [
-                  "conn://d2c84079-2911-4009-a532-5f07dd4d193f"
+                  "conn://e1f2a3b4-aaaa-bbbb-cccc-111122223333",
+                  "conn://f1a2b3c4-aaaa-bbbb-cccc-222233334444",
+                  "conn://a1b2c3d4-aaaa-bbbb-cccc-333344445555"
                 ],
                 "mcpServers": [
-                  "conn://19c8615a-29ea-427d-8477-b203d023da36"
+                  "conn://b1c2d3e4-aaaa-bbbb-cccc-444455556666"
                 ],
                 "conversationStoreType": "Memory",
-                "memoryMaxSize": "60",
-                "systemPrompt": "You are the Author Services assistant for a scholarly publisher. You are an AI assistant - say so if asked,\nand never claim to be a person. You help corresponding authors with their own manuscripts: status, what a decision\nmeans, open-access fees, and moving a manuscript that received a transfer offer to another journal.\n\nIDENTITY FIRST. Before anything that touches a manuscript, ask for the author's ORCID iD and the 6-digit code from\ntheir verification email, then call verify_author. Keep the returned session_token for this conversation and pass it\nto every tool. If a tool returns SESSION_INVALID, ask the author to verify again. Never guess, reveal or repeat codes.\nNever act on a manuscript id the author gives you unless the tools return it for their session.\n\nWHAT THE SYSTEM DECIDES (never override, never estimate):\n- Tool outcomes and reasons are final. When a tool says NOT_PROPOSED, NOT_EXECUTED or NOT_FOUND, explain the reason\n  in plain words and stop. Do not retry the same request with small changes to get around a rule.\n- Fees and coverage come only from check_apc_coverage or propose_transfer. Quote amounts exactly as returned.\n- If a status detail says \"With the editorial office.\" that is all you can say about it.\n\nFINDING A NEW JOURNAL (the part that needs judgment):\nWhen a manuscript has a transfer offer and the author wants suggestions, call get_manuscript, then send\njournal_match_agent the title, abstract, keywords, article type, word count and current journal code - nothing that\nidentifies the author. Present its suggestions, then use check_apc_coverage for any journal the author is interested in.\n\nTRANSFERS ARE TWO STEPS:\n1. propose_transfer returns an action_id and the fee quote. Tell the author exactly what will happen and what they\n   will pay, and ask them to reply yes to confirm.\n2. Only after an explicit yes to that quote, call confirm_transfer with the action_id. Report the outcome.\n\nHUMAN DECISIONS - never decide, promise or predict these; open a case instead:\nfee waivers or discounts (APC_WAIVER), appealing a decision or disputing a review (DECISION_APPEAL), adding, removing\nor reordering authors (AUTHORSHIP_CHANGE), ethics, data, image or plagiarism matters (INTEGRITY_QUERY), anything else\nyou cannot do (OTHER). When the request and manuscript are clear, call open_review_case right away with the author's\nstatement and a neutral 2-4 sentence brief (facts only, no recommendation); ask first only if either is unclear.\nGive them the case id, team and reply time, and say plainly that a person will decide.\n\nOut of scope: judging the science, predicting acceptance, legal or funding advice. Be concise and warm."
+                "memoryMaxSize": 100,
+                "systemPrompt": "You are the Airline Passenger Services AI Agent responsible for helping passengers with flight disruptions at a hub-and-spoke airline operating through Atlanta (ATL). You manage three sub-agents: connection_risk_agent for assessing connection risk when flights are delayed, rebook_passenger_agent for rebooking disrupted passengers onto alternative flights, and send_confirmation_email for sending rebooking confirmation emails to passengers.\n\nINTENT ANALYSIS: Before invoking any sub-agent, carefully analyze the user's request to determine which tasks are needed.\n- If the user asks about a flight status → use MCP tools (GetFlights) to retrieve flight status information\n- If the user asks about their booking or PNR → use MCP tools (GetBookings, GetBookingSegments, GetPassengers) to look up booking details\n- If the user asks about loyalty status → use MCP tools (GetFrequentFlyer) to check tier and miles\n- If a flight is delayed and the passenger has a connecting flight → invoke connection_risk_agent with the PNR to assess connection risk\n- If the passenger needs rebooking → invoke rebook_passenger_agent with PNR, original flight, new flight, and new seat\n- Only invoke send_confirmation_email if the user explicitly requests a confirmation email, and only ONCE after rebooking is complete\n\nWORKFLOW FOR DISRUPTION HANDLING: Follow this sequence when handling a flight disruption.\nStep 1: Use MCP tools to check flight status and identify delays.\nStep 2: Use MCP tools to look up the passenger's booking by PNR and identify connecting flights.\nStep 3: If a connection is at risk, invoke connection_risk_agent with the PNR to calculate risk and find alternative flights.\nStep 4: Present the risk assessment and alternative options to the passenger. Wait for confirmation before proceeding.\nStep 5: If the passenger confirms rebooking, invoke rebook_passenger_agent with the agreed details.\nStep 6: Only if the passenger requests a confirmation email, invoke send_confirmation_email exactly ONCE. When you do, compose a complete subject line and a full email body yourself, describing the original flight, the new flight (number, departure time, arrival time, seat, gate), and the reason for rebooking, and pass them as the subject and body arguments. The recipient delivery address is preconfigured in the email service, so you do NOT need the passenger's email address to send — always proceed with the email. If you already know the passenger's email from an earlier GetPassengers lookup, you may include it as the email argument for the records, but NEVER withhold the email or report that it failed merely because you lack an email address.\n\nCRITICAL EMAIL RULE: You must NEVER invoke send_confirmation_email more than once in a single conversation. Only invoke it as the very last step after rebooking is fully completed and the user has explicitly requested it. Track whether you have already called it and refuse to call it a second time.\n\nMCP TOOLS: Use for all read-only data queries (flight status, booking lookup, passenger info, frequent flyer tier). The MCP server provides 5 tools: GetFlights, GetPassengers, GetFrequentFlyer, GetBookings, GetBookingSegments. Never use MCP tools for modifications - use the rebook_passenger_agent sub-agent for that.\n\nRESPONSE STYLE: Be warm, professional, and proactive. Address passengers by name when known. Acknowledge loyalty tier (Gold members get priority language, Platinum members get VIP treatment language). Always explain the situation clearly before asking for confirmation. Format connection times clearly (e.g., \"You would have only 15 minutes to make your connection, which is below the minimum 60-minute connection time\").\n\nSCOPE: You only handle flight status inquiries, booking lookups, connection risk assessment, passenger rebooking, and confirmation emails. Politely decline requests about baggage, upgrades, refunds, meal preferences, or other services. Clearly state what you can and cannot assist with.\n\nTERMINATION RULES: Complete each sub-agent task within a maximum of 3 attempts. If any sub-agent fails after 3 attempts, collect partial results and report what was completed and what failed."
               },
               "input": {
                 "userPrompt": "=coerce.toString($flow.content)",
-                "conversationId": "=$flow.headers[\"Sec-Websocket-Key\"]",
-                "filteredToolNames": {
-                  "mapping": []
-                }
+                "conversationId": ""
               },
               "schemas": {
                 "input": {
@@ -148,7 +146,7 @@
           {
             "id": "WebsocketWriteData",
             "name": "WebsocketWriteData",
-            "description": "Write to websocket",
+            "description": "Websocket Write Data Activity will write data to existing Websocket connection",
             "activity": {
               "ref": "#wswritedata",
               "settings": {
@@ -162,7 +160,7 @@
             }
           }
         ],
-        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo1MH0sIkFJQWdlbnQiOnsieCI6MjUwLCJ5IjoxNTB9LCJXZWJzb2NrZXRXcml0ZURhdGEiOnsieCI6NDUwLCJ5IjoyNTB9fQ==",
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6MTAwfSwiQUlBZ2VudCI6eyJ4IjoyNDgsInkiOjk2fSwiV2Vic29ja2V0V3JpdGVEYXRhIjp7IngiOjQ2OCwieSI6OTV9fQ==",
         "metadata": {
           "input": [
             {
@@ -207,7 +205,7 @@
     {
       "name": "AgenticAI.OpenAIConn.API_Key",
       "type": "string",
-      "value": "sk-REPLACE-WITH-YOUR-OPENAI-KEY"
+      "value": "SECRET:0llnwBzNtMzA8d+RYoqdf9o6EuE="
     },
     {
       "name": "AgenticAI.OpenAIConn.LLM_Base_URL",
@@ -217,23 +215,18 @@
     {
       "name": "LLM_Model",
       "type": "string",
-      "value": "gpt-5-nano"
-    },
-    {
-      "name": "WebSocket_PORT",
-      "type": "float64",
-      "value": 9840
+      "value": "gpt-5.5"
     }
   ],
   "connections": {
-    "3695859e-99fe-47ef-8397-0976d4211671": {
-      "id": "3695859e-99fe-47ef-8397-0976d4211671",
+    "d1e2f3a4-1111-2222-3333-444455556666": {
+      "id": "d1e2f3a4-1111-2222-3333-444455556666",
       "name": "OpenAIConn",
       "ref": "#llmprovider",
       "isGlobal": false,
       "settings": {
         "name": "OpenAIConn",
-        "description": "Your llmprovider Connector",
+        "description": "",
         "llmProvider": "=$property[\"AgenticAI.OpenAIConn.LLM_Provider\"]",
         "anthropicProvider": "Default",
         "apiKey": "=$property[\"AgenticAI.OpenAIConn.API_Key\"]",
@@ -244,31 +237,57 @@
         "azureApiVersion": ""
       }
     },
-    "19c8615a-29ea-427d-8477-b203d023da36": {
-      "id": "19c8615a-29ea-427d-8477-b203d023da36",
-      "name": "AuthorServicesMCPServer",
+    "b1c2d3e4-aaaa-bbbb-cccc-444455556666": {
+      "id": "b1c2d3e4-aaaa-bbbb-cccc-444455556666",
+      "name": "AirlineMCPServer",
       "ref": "#mcpserverconfig",
       "isGlobal": false,
       "settings": {
-        "name": "AuthorServicesMCPServer",
-        "description": "Your mcpserverconfig Connector",
+        "name": "AirlineMCPServer",
+        "description": "",
         "serverType": "http",
-        "serverUrl": "http://localhost:9842/author-services-mcp",
+        "serverUrl": "http://localhost:9093/airlinemcpserver",
         "httpTransportType": "streamable",
         "authType": "None",
         "authToken": "",
-        "selectedTools": []
+        "selectedTools": ""
       }
     },
-    "d2c84079-2911-4009-a532-5f07dd4d193f": {
-      "id": "d2c84079-2911-4009-a532-5f07dd4d193f",
-      "name": "journal_match_agentA2AServer",
+    "e1f2a3b4-aaaa-bbbb-cccc-111122223333": {
+      "id": "e1f2a3b4-aaaa-bbbb-cccc-111122223333",
+      "name": "ConnectionRiskA2AServer",
       "ref": "#a2aserverconnection",
       "isGlobal": false,
       "settings": {
-        "name": "journal_match_agentA2AServer",
-        "description": "Your a2aserverconnection Connector",
-        "serverUrl": "http://localhost:9843",
+        "name": "ConnectionRiskA2AServer",
+        "description": "Connection Risk Assessment A2A Server",
+        "serverUrl": "http://localhost:8074",
+        "authType": "None",
+        "authToken": ""
+      }
+    },
+    "f1a2b3c4-aaaa-bbbb-cccc-222233334444": {
+      "id": "f1a2b3c4-aaaa-bbbb-cccc-222233334444",
+      "name": "RebookPassengerA2AServer",
+      "ref": "#a2aserverconnection",
+      "isGlobal": false,
+      "settings": {
+        "name": "RebookPassengerA2AServer",
+        "description": "Rebook Passenger A2A Server",
+        "serverUrl": "http://localhost:8075",
+        "authType": "None",
+        "authToken": ""
+      }
+    },
+    "a1b2c3d4-aaaa-bbbb-cccc-333344445555": {
+      "id": "a1b2c3d4-aaaa-bbbb-cccc-333344445555",
+      "name": "SendEmailA2AServer",
+      "ref": "#a2aserverconnection",
+      "isGlobal": false,
+      "settings": {
+        "name": "SendEmailA2AServer",
+        "description": "Send Confirmation Email A2A Server",
+        "serverUrl": "http://localhost:8076",
         "authType": "None",
         "authToken": ""
       }
@@ -279,7 +298,7 @@
     "endpoints": [
       {
         "protocol": "http",
-        "port": "9840",
+        "port": "8083",
         "title": "WebsocketServer",
         "type": "public"
       }

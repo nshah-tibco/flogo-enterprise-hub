@@ -5,7 +5,7 @@ user-invocable: true
 metadata:
   author: Flogo Skills Author <author@example.com>
   version: "1.0.0"
-  last-updated-date: "2026-10-04"
+  last-updated-date: "2026-10-05"
 ---
 
 # Governed Agentic AI Use Case Builder
@@ -30,7 +30,7 @@ validator, the manual-config gap) and changes **what** gets built:
 | Identity | none / trust the chat | `verify_*` → session token; per-connection `conversationId` |
 | Done means | design-time validation | **4-rung test ladder**, including prompt injection |
 
-**Worked example:** `samples/Agentic_AI/Governed_Use_Cases/Scholarly_Publishing_Author_Services_Use_Case/`. Read its
+**Worked example:** `samples/Agentic_AI/Industry_Use_Cases/Scholarly_Publishing_Author_Services_Use_Case/`. Read its
 `database.sql`, `_rebuild/tool_spec.py` and `README.md` before building a new one.
 
 ## Hard rules
@@ -76,7 +76,23 @@ that:
 Read `skills-library/.claude/skills/config.md` for the fda path, psql, PostgreSQL, LLM provider and
 model. **Redact** passwords and keys before echoing anything. Run `flogobuild list-context` and record
 the real context name; config.md's value can be stale (runtime-gotchas.md §7). Pick the output folder:
-`samples/Agentic_AI/<UseCase>_Use_Case/` for a catalogue demo.
+`samples/Agentic_AI/Industry_Use_Cases/<UseCase>_Use_Case/` for a catalogue demo — this is the canonical
+home for governed use cases. When migrating an existing non-governed demo, build the governed version
+here and leave the original untouched under `samples/Agentic_AI/Industry_Use_Cases_old/`.
+
+**Naming — no `Gov` suffix.** Name the apps `<Vertical>MCPServer` / `<Vertical>Agents` /
+`<Vertical>AIOrchestrator` after the persona/vertical (e.g. `AuthorServices*`, `PassengerServices*`). Do
+**not** add a `Gov`/`Governed` suffix to app, trigger, connection, folder or endpoint names — governance
+is the default style of these samples, not a label. Only the **database** name may stay distinct (e.g.
+`<vertical>_governed`) while a same-named non-governed original still exists in `Industry_Use_Cases_old/`,
+to avoid a collision; drop the suffix once that original is retired.
+
+**Decide the runtime model now** (it is baked into the apps — getting it wrong means a rebuild): the
+orchestrator needs a capable tool-calling model that will delegate to the A2A agent. `gpt-5-nano` is
+too weak (drops tool calls, won't delegate); use **`gpt-5.5`** or a Sonnet-/Opus-class or Gemini 2.5
+Pro-class model. If config.md's `LLM_Model` is a tiny model, override it (env `LLM_MODEL=gpt-5.5` or set
+it in config.md) before Phase 4. See [cost-and-efficiency](#cost--efficiency); ideally run the whole
+build in a **fresh session**.
 
 ### Phase 1: frame and gate
 Name the persona and the vertical. Use fictional organisations, and never a customer's name on
@@ -106,6 +122,12 @@ build the exes in a scratch folder outside the repo → rung 3 `mcp_smoke.py` �
 `chat_e2e.py` with `A2A_LOG` set. The user asking for an end-to-end test counts as the explicit
 request to build binaries. Otherwise, stop at rung 2 and say so.
 
+**Run the cheap rungs first and fix everything there, then run the expensive e2e once.** Rungs 1–2 use
+no LLM and no binaries — make them fully green (and confirm the runtime model from Phase 0) before you
+build exes or touch the chat e2e. The e2e is the slowest, most token- and OpenAI-expensive rung; a weak
+runtime model, a wrong assertion, or a non-ASCII console crash each force a full re-run. Getting rungs
+1–3 right makes the e2e a single pass.
+
 ### Phase 6: hand over
 1. Stop the exes. Reset the DB.
 2. **Scrub the secrets** in the sample's `.flogo` files with surgical text replacement. Never
@@ -125,6 +147,37 @@ request to build binaries. Otherwise, stop at rung 2 and say so.
    [chatbot-test.md](../agentic-ai-use-case/references/chatbot-test.md), filled in with this use case's
    `ws://localhost:<port><path>`. Include the ↻ click next to the URL box, which people miss. Don't commit
    unless asked.
+
+## Cost & efficiency
+
+A governed build is cheap when done well (single-digit to low-double-digit dollars of agent tokens) and
+expensive when done in a bloated session with avoidable re-runs. The cost is driven by **turns × context
+size** (cache reads dominate), not by app size. Levers, highest-impact first:
+
+1. **Build in a fresh session.** Don't chain a build onto a long prior task — every turn re-reads the
+   whole accumulated context. A clean session is the single biggest saving (often 6–10×).
+2. **Front-load the spec in one prompt** (vertical, persona, tools, the semantic step, human-owned list,
+   email yes/no, runtime model, ports, "run the test ladder", "I'll approve the plan in one pass").
+   Every clarification round-trip re-reads the context.
+3. **Pick the runtime model up front** (Phase 0) so you never rebuild to swap it.
+4. **Cheap rungs first, e2e once** (Phase 5).
+5. **Delegate heavy reads to a subagent** (Explore/fork, on a cheaper model): reading the reference
+   sample and templates into the main context is costly — have a subagent read and summarise them.
+6. **Keep tool output out of context:** pipe long output through `grep`/`tail`, read only the file
+   slices you need, never dump a whole `.flogo` or log.
+
+**Which dev model for which phase** (switch with `/model`, or run a step as a subagent with a model
+override):
+
+| Phase | Model | Why |
+|---|---|---|
+| Frame + decision-framework gate + spec + plan (1–3) | **Opus** | judgment/architecture — the classification is the whole game |
+| Write drivers + SQL, write tests (4) | **Sonnet** | structured codegen following the templates |
+| Debug a hard failure (e.g. a SQL planner surprise) | **Opus** | deep reasoning |
+| Run the ladder, read logs, triage | **Sonnet** | mechanical; escalate to Opus only when stuck |
+| README, prompts.md, catalogue rows, secret scrub | **Haiku** (or Sonnet) | pure mechanical text |
+
+Rule of thumb: **Opus for design & debugging, Sonnet for the bulk build/tests, Haiku for docs/scrub.**
 
 ## Top gotchas (full list in runtime-gotchas.md)
 
