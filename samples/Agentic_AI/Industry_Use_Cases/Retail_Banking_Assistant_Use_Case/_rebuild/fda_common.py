@@ -55,7 +55,7 @@ def _find_fda():
 FDA = _find_fda()
 PSQL = setting("PSQL", "PSQL_PATH", "psql")
 PG = dict(host=setting("PG_HOST", "PG_HOST", "localhost"), port=setting("PG_PORT", "PG_PORT", "5432"),
-          db=os.environ.get("PG_DB", "author_services"), user=setting("PG_USER", "PG_USER", "postgres"))
+          db=os.environ.get("PG_DB", "banking_governed"), user=setting("PG_USER", "PG_USER", "postgres"))
 LLM = dict(provider=os.environ.get("LLM_PROVIDER", CFG.get("LLM_Provider") or "OpenAI"),
            model=setting("LLM_MODEL", "LLM_Model"),
            base_url=os.environ.get("LLM_BASE_URL", CFG.get("LLM_Base_URL", "")).strip())
