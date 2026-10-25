@@ -95,7 +95,7 @@ module.exports = function authRoutes({ store, config }) {
     if (!claims) {
       return res.status(400).json({ error: 'That does not look like a JWT (header.payload.signature)' });
     }
-    if (typeof claims.exp === 'number' && claims.exp * 1000 <= Date.now()) {
+    if (typeof claims.exp === 'number' && !(claims.exp * 1000 > Date.now())) {   // also -Infinity (JSON -1e400)
       return res.status(400).json({ error: 'This token has expired. Mint a new one and sign in again.' });
     }
 

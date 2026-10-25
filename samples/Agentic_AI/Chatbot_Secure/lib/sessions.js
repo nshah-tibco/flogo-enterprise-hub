@@ -26,7 +26,7 @@ class SessionStore {
     const id = crypto.randomBytes(32).toString('base64url');
     const now = Date.now();
     let expiresAt = now + this.ttlMs;
-    if (typeof claims.exp === 'number') expiresAt = Math.min(expiresAt, claims.exp * 1000);
+    if (typeof claims.exp === 'number' && Number.isFinite(claims.exp)) expiresAt = Math.min(expiresAt, claims.exp * 1000);
     // historyId names this session's chat history in the browser. It is random and new on every sign-in, because the
     // JWT's sub is not verified here: history must never be handed to whoever signs in with the same claimed sub.
     const historyId = crypto.randomBytes(16).toString('base64url');

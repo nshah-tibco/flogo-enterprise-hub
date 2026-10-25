@@ -651,6 +651,61 @@ async function main() {
       }
     });
 
+    await check('hostile claim shapes (unverified JSON) never crash the server or break sign-in, status or connect', async () => {
+      const exp = Math.floor(Date.now() / 1000) + 600;
+      // raw JSON payloads: some cannot be produced by JSON.stringify (1e400 parses as Infinity)
+      const payloads = [
+        `{"sub":"CUST-X","scp":[{"toString":null}],"exp":${exp}}`,
+        `{"sub":"CUST-X","scp":[{},[],null,7,true,"accounts:read"],"exp":${exp}}`,
+        `{"sub":"CUST-X","scp":{"toString":null},"scope":"x","exp":${exp}}`,
+        `{"sub":{"toString":null},"name":{"valueOf":null},"exp":${exp}}`,
+        `{"sub":["a"],"name":[{"toString":null}],"scope":123,"exp":${exp}}`,
+        `{"sub":1e400,"name":-1e400,"exp":1e400}`,
+        `{"sub":"CUST-X","exp":-1e400}`,
+        `{"sub":"CUST-X","exp":"${exp}"}`,
+        `{"__proto__":{"sub":"admin"},"constructor":{"prototype":{"x":1}},"exp":${exp}}`,
+        `{"sub":"${'A'.repeat(5000)}","scp":"${'s '.repeat(3000)}","exp":${exp}}`
+      ];
+      const raw = json => `${b64u({ alg: 'HS256', typ: 'JWT' })}.${Buffer.from(json).toString('base64url')}.c2ln`;
+      const problems = [];
+      for (const p of payloads) {
+        const what = p.slice(0, 70);
+        let si;
+        try {
+          si = await request(appPort, 'POST', '/auth/session', {
+            headers: { Origin: origin, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: raw(p) })
+          });
+        } catch (e) {
+          problems.push(`sign-in request failed (${e.code || e.message}) for ${what}`);
+          break; // the server is gone
+        }
+        if (![200, 400].includes(si.status)) problems.push(`sign-in ${si.status} for ${what}`);
+        if (!si.headers['set-cookie']) continue;
+        const c = si.headers['set-cookie'][0].split(';')[0]; // also a cookie set by a failed sign-in
+        try {
+          const st = await request(appPort, 'GET', '/auth/session', { headers: { Cookie: c } });
+          if (st.status !== 200 || !Array.isArray(st.json && st.json.scp) || !st.json.scp.every(x => typeof x === 'string')) {
+            problems.push(`status ${st.status} ${st.text.slice(0, 80)} for ${what}`);
+          } else if (st.json.scp.length > 64 || (st.json.sub || '').length > 256) {
+            problems.push(`claims shown to the page are not capped for ${what}`);
+          }
+          const w = await wsConnect(proxyUrl(upstream), { Origin: origin, Cookie: c }).catch(e => ({ error: e.message }));
+          if (!w.ws) problems.push(`upgrade ${w.status || w.error} for ${what}`);
+          else w.ws.terminate();
+        } catch (e) {
+          problems.push(`request failed (${e.code || e.message}) after signing in with ${what}`);
+          break;
+        }
+      }
+      await sleep(300);
+      if (child.exitCode !== null) problems.push(`the server process EXITED (code ${child.exitCode})`);
+      assert.deepStrictEqual(problems, []);
+      await sleep(300);
+      assert.strictEqual(child.exitCode, null, 'the server process exited');
+      assert.strictEqual((await request(appPort, 'GET', '/client-config')).status, 200, 'the server stopped answering');
+    });
+
     await check('invalid configuration stops the server at startup with a clear message', async () => {
       for (const [name, value] of [['SESSION_TTL_MINUTES', 'abc'], ['UPSTREAM_TIMEOUT_MS', '-1'], ['COOKIE_SECURE', 'yes'],
         ['ALLOWED_UPSTREAMS', 'localhost:9970/retailbanking'], ['ALLOWED_ORIGINS', 'https://chat.example.com/'],

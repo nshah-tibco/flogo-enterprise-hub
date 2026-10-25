@@ -79,17 +79,21 @@ function decodeJwtClaims(token) {
   }
 }
 
-/** Non-secret claims safe to show in the UI. */
+/** Non-secret claims safe to show in the UI. The claims are UNVERIFIED JSON (any shape, e.g. an object whose
+ *  toString is null), so only plain strings and finite numbers are read - nothing is coerced with String(). */
+const MAX_SCOPES = 64;
+const MAX_CLAIM_CHARS = 256;
 function displayClaims(claims) {
-  const str = v => (typeof v === 'string' || typeof v === 'number' ? String(v) : null);
-  let scp = claims.scp !== undefined ? claims.scp : claims.scope;
-  if (typeof scp === 'string') scp = scp.split(/\s+/).filter(Boolean);
+  const str = v =>
+    typeof v === 'string' ? v.slice(0, MAX_CLAIM_CHARS) : typeof v === 'number' && Number.isFinite(v) ? String(v) : null;
+  let scp = Object.prototype.hasOwnProperty.call(claims, 'scp') ? claims.scp : claims.scope;
+  if (typeof scp === 'string') scp = scp.split(/\s+/);
   if (!Array.isArray(scp)) scp = [];
   return {
     sub: str(claims.sub),
     name: str(claims.name),
-    scp: scp.map(String),
-    exp: typeof claims.exp === 'number' ? claims.exp : null
+    scp: scp.filter(v => typeof v === 'string' && v).slice(0, MAX_SCOPES).map(v => v.slice(0, MAX_CLAIM_CHARS)),
+    exp: typeof claims.exp === 'number' && Number.isFinite(claims.exp) ? claims.exp : null
   };
 }
 

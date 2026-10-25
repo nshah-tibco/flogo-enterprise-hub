@@ -66,11 +66,7 @@ class FlogoChatbot {
      * Initialize the application
      */
     async init() {
-        this.loadSettingsFromStorage();
-        this.setupEventListeners();
-        this.updateUI(); // no history yet: it is restored only after the session check, for its owner
-        await this.loadClientConfig();
-        await this.refreshAuthStatus();
+        // The session checks are wired up first, so nothing that fails later in start-up can leave the page without them
         // Another tab signed in or out (the session cookie is shared): check the session again
         window.addEventListener('storage', (e) => {
             if (e.key === null || e.key === 'flogoChatbotSecure_owner') this.refreshAuthStatus();
@@ -82,6 +78,11 @@ class FlogoChatbot {
         setInterval(() => {
             if (this.auth.signedIn) this.refreshAuthStatus();
         }, 60 * 1000);
+        this.loadSettingsFromStorage();
+        this.setupEventListeners();
+        this.updateUI(); // no history yet: it is restored only after the session check, for its owner
+        await this.loadClientConfig();
+        await this.refreshAuthStatus();
     }
 
     /**
@@ -188,6 +189,21 @@ class FlogoChatbot {
             this.elements.signInBtn.disabled = false;
         }
         this.renderAuth();
+        // the panel that had focus may now be hidden: move on to the next step (Connect), or back to the token box
+        this.focusFirst(this.auth.signedIn ? ['connectBtn', 'signOutBtn'] : ['jwtInput']);
+    }
+
+    /**
+     * Focus the first of these controls that is visible and enabled (keyboard and screen-reader users keep their place)
+     */
+    focusFirst(ids) {
+        for (const id of ids) {
+            const el = this.elements[id];
+            if (el && !el.disabled && el.offsetParent !== null) {
+                el.focus();
+                return;
+            }
+        }
     }
 
     /**
@@ -211,6 +227,7 @@ class FlogoChatbot {
         this.authCheckSeq++;
         this.auth = { signedIn: false };
         this.renderAuth(); // signed out: drops the history (releaseChats)
+        this.focusFirst(['jwtInput']);
     }
 
     showAuthError(text) {
@@ -226,7 +243,14 @@ class FlogoChatbot {
         this.elements.authSignedOut.hidden = signedIn;
         this.elements.authSignedIn.hidden = !signedIn;
         if (signedIn) {
-            this.claimChats(this.auth.historyId);
+            try {
+                this.claimChats(this.auth.historyId);
+            } catch (error) { // unreadable stored history: drop it rather than leave the page half set up
+                console.error('Could not restore the chat history:', error);
+                this.resetChats();
+                this.forgetStoredChats();
+                this.updateUI();
+            }
             this.elements.authName.textContent = this.auth.name || '(no name claim)';
             this.elements.authSub.textContent = `sub: ${this.auth.sub || '-'}`;
             const exp = this.auth.exp ? new Date(this.auth.exp * 1000) : null;
@@ -405,6 +429,7 @@ class FlogoChatbot {
                 this.isConnected = true;
                 this.updateConnectionStatus(true);
                 this.addSystemMessage('Connected to server', chatId);
+                this.focusFirst(['messageInput']);
             };
             
             // Message received
@@ -426,6 +451,10 @@ class FlogoChatbot {
                 console.log('WebSocket disconnected');
                 this.isConnected = false;
                 this.updateConnectionStatus(false);
+                // the focused control (message box, Disconnect) is now disabled: go back to Connect
+                if (!document.activeElement || document.activeElement === document.body || document.activeElement.disabled) {
+                    this.focusFirst(['connectBtn', 'jwtInput']);
+                }
                 if (ws.userClosed) { // Disconnect, Sign out or switching chats: nothing went wrong
                     this.addSystemMessage('Disconnected', chatId);
                     return;
@@ -469,8 +498,10 @@ class FlogoChatbot {
             this.ws.close();
             this.ws = null;
         }
+        const hadFocus = document.activeElement === this.elements.disconnectBtn || document.activeElement === this.elements.messageInput;
         this.isConnected = false;
         this.updateConnectionStatus(false);
+        if (hadFocus) this.focusFirst(['connectBtn']);
     }
     
     /**
@@ -561,7 +592,9 @@ class FlogoChatbot {
      */
     createNewChat() {
         this.endConversationForChatChange();
-        this.chatCounter++;
+        do {
+            this.chatCounter++;
+        } while (this.chats.has(`chat-${this.chatCounter}`));
         const chatId = `chat-${this.chatCounter}`;
         const chatTitle = `Chat ${this.chatCounter}`;
         
@@ -698,7 +731,7 @@ class FlogoChatbot {
         if (message.type === 'system') {
             messageDiv.innerHTML = `
                 <div class="message-content" style="margin-left: 0; background-color: #fef3c7; color: #92400e; text-align: center; font-size: 0.875rem;">
-                    <i class="fas fa-info-circle"></i> ${this.escapeHtml(message.content)}
+                    <i aria-hidden="true" class="fas fa-info-circle"></i> ${this.escapeHtml(message.content)}
                 </div>
             `;
         } else {
@@ -725,7 +758,7 @@ class FlogoChatbot {
         const container = this.elements.messagesContainer;
         container.innerHTML = `
             <div class="welcome-message">
-                <i class="fas fa-shield-halved"></i>
+                <i aria-hidden="true" class="fas fa-shield-halved"></i>
                 <h2>Welcome to Flogo Chatbot (Secure Proxy)</h2>
                 <p>Start a conversation by typing a message below</p>
             </div>
@@ -737,21 +770,46 @@ class FlogoChatbot {
      */
     updateChatSessionsList() {
         const container = this.elements.chatSessions;
+        const focused = container.contains(document.activeElement) ? document.activeElement.dataset.chatId : null;
         container.innerHTML = '';
         
+        // Built with the DOM API (no innerHTML, no inline handlers): titles come from storage. Each chat is a list item
+        // with two real buttons, so it can be opened and deleted from the keyboard and has an accessible name.
         this.chats.forEach((chat, chatId) => {
-            const sessionDiv = document.createElement('div');
-            sessionDiv.className = `chat-session ${chatId === this.currentChatId ? 'active' : ''}`;
-            sessionDiv.innerHTML = `
-                <span class="chat-session-title" title="${chat.title}">${chat.title}</span>
-                <button class="chat-session-delete" onclick="event.stopPropagation(); chatbot.deleteChat('${chatId}')" title="Delete chat">
-                    <i class="fas fa-trash"></i>
-                </button>
-            `;
-            
-            sessionDiv.addEventListener('click', () => this.switchChat(chatId));
-            container.appendChild(sessionDiv);
+            const active = chatId === this.currentChatId;
+            const item = document.createElement('div');
+            item.className = `chat-session${active ? ' active' : ''}`;
+            item.setAttribute('role', 'listitem');
+            const open = document.createElement('button');
+            open.type = 'button';
+            open.className = 'chat-session-title';
+            open.textContent = chat.title;
+            open.title = chat.title;
+            open.dataset.chatId = chatId;
+            if (active) open.setAttribute('aria-current', 'true');
+            const del = document.createElement('button');
+            del.type = 'button';
+            del.className = 'chat-session-delete';
+            del.title = 'Delete chat';
+            del.setAttribute('aria-label', `Delete ${chat.title}`);
+            del.dataset.chatId = chatId;
+            const icon = document.createElement('i');
+            icon.className = 'fas fa-trash';
+            icon.setAttribute('aria-hidden', 'true');
+            del.appendChild(icon);
+            del.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.deleteChat(chatId);
+            });
+            item.addEventListener('click', () => this.switchChat(chatId)); // the whole row (and its title button)
+            item.append(open, del);
+            container.appendChild(item);
         });
+        if (focused !== null && focused !== undefined) {
+            const target = container.querySelector(`button.chat-session-title[data-chat-id="${CSS.escape(focused)}"]`) ||
+                container.querySelector('button.chat-session-title[aria-current="true"]');
+            if (target) target.focus();
+        }
     }
     
     /**
@@ -766,7 +824,7 @@ class FlogoChatbot {
         } else {
             this.elements.messagesContainer.innerHTML = `
                 <div class="welcome-message">
-                    <i class="fas fa-shield-halved"></i>
+                    <i aria-hidden="true" class="fas fa-shield-halved"></i>
                     <h2>Welcome to Flogo Chatbot (Secure Proxy)</h2>
                     <p>Sign in, then click Connect to start a conversation</p>
                 </div>
@@ -880,39 +938,37 @@ class FlogoChatbot {
      * Load chats from localStorage (only called by claimChats, for the stored history's owner)
      */
     loadChatsFromStorage() {
+        // localStorage can hold anything (an older version, another script, a hand edit): keep only well-formed chats
+        // and messages, so one odd value cannot break start-up, rendering or later saves.
+        const TYPES = ['user', 'bot', 'system'];
+        const date = v => {
+            const d = new Date(typeof v === 'string' || typeof v === 'number' ? v : NaN);
+            return Number.isNaN(d.getTime()) ? new Date() : d;
+        };
         try {
-            const chatsData = localStorage.getItem('flogoChatbotSecure_chats');
-            const currentChatId = localStorage.getItem('flogoChatbotSecure_currentChatId');
-            const chatCounter = localStorage.getItem('flogoChatbotSecure_chatCounter');
-            
-            if (chatCounter) {
-                this.chatCounter = parseInt(chatCounter, 10);
-            }
-            
-            if (chatsData) {
-                const parsed = JSON.parse(chatsData);
-                parsed.forEach(chatData => {
-                    const chat = {
-                        id: chatData.id,
-                        title: chatData.title,
-                        messages: chatData.messages.map(msg => ({
-                            type: msg.type,
-                            content: msg.content,
-                            timestamp: new Date(msg.timestamp)
-                        })),
-                        createdAt: new Date(chatData.createdAt)
-                    };
-                    this.chats.set(chat.id, chat);
-                });
-                
-                if (currentChatId && this.chats.has(currentChatId)) {
-                    this.currentChatId = currentChatId;
-                } else if (this.chats.size > 0) {
-                    this.currentChatId = Array.from(this.chats.keys())[0];
-                }
-            }
+            const parsed = JSON.parse(localStorage.getItem('flogoChatbotSecure_chats') || '[]');
+            (Array.isArray(parsed) ? parsed : []).forEach(c => {
+                if (!c || typeof c !== 'object' || typeof c.id !== 'string' || !/^chat-\d{1,9}$/.test(c.id)) return;
+                if (this.chats.has(c.id) || !Array.isArray(c.messages)) return;
+                const messages = c.messages
+                    .filter(m => m && typeof m === 'object' && TYPES.includes(m.type) && typeof m.content === 'string')
+                    .map(m => ({ type: m.type, content: m.content, timestamp: date(m.timestamp) }));
+                const title = typeof c.title === 'string' && c.title.trim() ? c.title.slice(0, 100) : `Chat ${c.id.slice(5)}`;
+                this.chats.set(c.id, { id: c.id, title, messages, createdAt: date(c.createdAt) });
+            });
         } catch (error) {
-            console.error('Error loading chats from storage:', error);
+            console.error('Stored chat history is unreadable; starting empty:', error);
+            this.chats.clear();
+        }
+        // the counter only ever moves forward past every chat that exists
+        const stored = Number.parseInt(localStorage.getItem('flogoChatbotSecure_chatCounter'), 10);
+        const highest = Math.max(0, ...Array.from(this.chats.keys(), id => Number(id.slice(5))));
+        this.chatCounter = Math.max(Number.isFinite(stored) && stored > 0 ? stored : 0, highest);
+        const currentChatId = localStorage.getItem('flogoChatbotSecure_currentChatId');
+        if (currentChatId && this.chats.has(currentChatId)) {
+            this.currentChatId = currentChatId;
+        } else if (this.chats.size > 0) {
+            this.currentChatId = Array.from(this.chats.keys())[0];
         }
     }
 }

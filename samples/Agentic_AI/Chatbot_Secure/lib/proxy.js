@@ -86,6 +86,15 @@ function attachProxy(server, { store, config }) {
 
   server.on('upgrade', (req, socket, head) => {
     socket.on('error', () => {});
+    try {
+      handleUpgrade(req, socket, head);
+    } catch (err) {
+      console.error(`[proxy] upgrade failed: ${err && err.message ? err.message : 'unknown error'}`);
+      rejectUpgrade(socket, 500, 'Internal error');
+    }
+  });
+
+  function handleUpgrade(req, socket, head) {
 
     let url;
     try {
@@ -185,6 +194,17 @@ function attachProxy(server, { store, config }) {
       if (settled) return;
       settled = true;
       socket.removeListener('close', abortUpstream);
+      try {
+        openBrowserSide();
+      } catch (err) {
+        console.error(`[proxy] could not open the browser side: ${err && err.message ? err.message : 'unknown error'} ${tag}`);
+        release();
+        upstream.terminate();
+        rejectUpgrade(socket, 500, 'Internal error');
+      }
+    });
+
+    const openBrowserSide = () => {
 
       // The session may have been signed out while we were connecting.
       if (store.get(sid) !== session) {
@@ -207,8 +227,8 @@ function attachProxy(server, { store, config }) {
         });
         bridge(client, upstream, session, tag, config, release);
       });
-    });
-  });
+    };
+  }
 
   return wss;
 }

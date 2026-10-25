@@ -217,10 +217,15 @@ async function check(label, fn) {
 
   const cleanup = async () => {
     server.child.kill();
-    browser.kill();
     mock.wss.close();
-    await sleep(500);
-    fs.rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+    const exited = new Promise(resolve => (browser.exitCode !== null ? resolve() : browser.once('exit', resolve)));
+    browser.kill();
+    await Promise.race([exited, sleep(5000)]);
+    try {
+      fs.rmSync(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 300 });
+    } catch (e) {
+      console.log(`(could not remove the temporary browser profile ${profile}: ${e.code})`);
+    }
   };
 
   try {
@@ -421,6 +426,109 @@ async function check(label, fn) {
       await sleep(500);
       const err = await page.eval(`document.getElementById('authError').hidden ? '' : document.getElementById('authError').textContent`);
       assert.strictEqual(err, '', `error shown after a normal sign-out: ${err}`);
+    });
+
+    // 8. Accessibility: every control has an accessible name (from Chrome's accessibility tree), and a chat can be
+    //    opened from the keyboard.
+    assert.strictEqual(await signIn('CUST-A'), 200);
+    await page.goto(`${origin}/`);
+    await waitUntil(authSettled, 'sign-in panel rendered');
+    await waitUntil(async () => (await page.eval('chatbot.chatOwner')) !== null, 'history claimed for the session');
+    await page.eval(`document.getElementById('newChatBtn').click(), document.getElementById('newChatBtn').click(), true`);
+    await waitUntil(async () => (await page.eval('chatbot.chats.size')) === 2, 'two chats listed');
+    await check('every button, text box and checkbox has an accessible name (Send, New chat, chat list, URL, message)', async () => {
+      await page.send('Accessibility.enable');
+      const { nodes } = await page.send('Accessibility.getFullAXTree');
+      const controls = nodes.filter(n => !n.ignored && ['button', 'textbox', 'checkbox', 'combobox'].includes(n.role && n.role.value));
+      // an icon glyph (private-use character) or a bare symbol such as '+' is not a name: require a letter or digit
+      const unnamed = controls.filter(n => !/[\p{L}\p{N}]/u.test(String((n.name && n.name.value) || '')));
+      assert.ok(controls.length >= 10, `only ${controls.length} controls found`);
+      assert.deepStrictEqual(unnamed.map(n => `${n.role.value} named ${JSON.stringify((n.name && n.name.value) || '')}`), []);
+      const names = controls.map(n => n.name.value);
+      for (const want of ['Send message', 'New chat', 'Message', 'Upstream WebSocket URL', 'Delete Chat 1', 'Chat 1']) {
+        assert.ok(names.includes(want), `no control named "${want}" (have: ${names.join(' | ')})`);
+      }
+    });
+    await check('a chat can be opened from the keyboard (Tab to its title, Enter)', async () => {
+      await page.eval(`document.querySelector('#chatSessions .chat-session-title').focus(), true`);
+      await page.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, text: '\r' });
+      await page.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
+      await waitUntil(async () => (await page.eval('chatbot.currentChatId')) === 'chat-1', 'chat-1 opened by keyboard');
+      assert.strictEqual(await page.eval(`document.querySelector('#chatSessions [aria-current="true"]').textContent`), 'Chat 1');
+    });
+
+    // 9. Stored history is untrusted: odd values are repaired or dropped, start-up still completes (panel, session
+    //    timer), a bad stored counter never makes New chat overwrite a chat, and saving keeps working.
+    assert.strictEqual(await signIn('CUST-A', 8), 200);
+    await page.eval(`fetch('/auth/session', { credentials: 'same-origin' }).then(r => r.json()).then(s => {
+      localStorage.setItem('flogoChatbotSecure_owner', s.historyId);
+      localStorage.setItem('flogoChatbotSecure_chats', JSON.stringify([
+        { id: 'chat-1', title: { toString: null }, createdAt: 'garbage', messages: [
+          { type: 'bot', content: { toString: null }, timestamp: 'garbage' },
+          { type: 'evil', content: 'dropped', timestamp: 'garbage' },
+          { type: 'bot', content: 'IMPORTANT HISTORY', timestamp: 'garbage' }] },
+        { id: 'chat-2', title: 'Chat 2', createdAt: new Date().toISOString(), messages: [] },
+        { id: '<img src=x onerror=alert(1)>', title: 'x', messages: [] }, 'junk', null]));
+      localStorage.setItem('flogoChatbotSecure_currentChatId', 'chat-1');
+      localStorage.setItem('flogoChatbotSecure_chatCounter', 'abc');
+      return true; })`);
+    await page.goto(`${origin}/`);
+    await check('odd stored history does not break start-up: signed-in panel filled, valid messages kept, bad ones dropped', async () => {
+      await waitUntil(async () => (await page.eval(`document.getElementById('authName').textContent`)) === 'Test CUST-A', 'panel');
+      await waitUntil(async () => (await text()).includes('IMPORTANT HISTORY'), 'valid message shown');
+      assert.deepStrictEqual(await page.eval('Array.from(chatbot.chats.keys())'), ['chat-1', 'chat-2']);
+      assert.ok(!(await text()).includes('dropped'), 'a message with an unknown type was shown');
+      assert.ok(!(await text()).includes('NaN'), 'an invalid timestamp was shown as NaN');
+    });
+    await check('New chat after a bad stored counter creates chat-3 (never overwrites chat-1), and saving still works', async () => {
+      await page.eval(`document.getElementById('newChatBtn').click(), true`);
+      assert.strictEqual(await page.eval('chatbot.currentChatId'), 'chat-3');
+      const saved = JSON.parse(await page.eval(`localStorage.getItem('flogoChatbotSecure_chats')`));
+      assert.deepStrictEqual(saved.map(c => c.id), ['chat-1', 'chat-2', 'chat-3']);
+      assert.ok(JSON.stringify(saved).includes('IMPORTANT HISTORY'), 'chat-1 history lost');
+    });
+    await check('...and the session check still runs: the history goes when that session expires', async () => {
+      // (chat-3 is on screen now, so wait on the stored history and the in-memory chats, not on the visible text)
+      await waitUntil(async () => (await stored()).owner === null, 'stored history removed at expiry', 15000);
+      assert.deepStrictEqual(await stored(), { owner: null, chats: null });
+      assert.strictEqual(await page.eval('chatbot.chats.size'), 0, 'chats still in memory');
+      assert.ok(!(await text()).includes('IMPORTANT HISTORY'));
+    });
+
+    // 10. Keyboard focus follows the task: sign in -> Connect -> message box; Disconnect -> Connect; a chat opened
+    //     from the list keeps focus; Sign out -> token box.
+    const enter = async () => {
+      await page.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, text: '\r' });
+      await page.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
+    };
+    const focusedId = () => page.eval(`document.activeElement ? (document.activeElement.id || document.activeElement.dataset.chatId || document.activeElement.tagName) : ''`);
+    await page.goto(`${origin}/`);
+    await waitUntil(async () => (await page.eval(`document.getElementById('authSignedOut').hidden`)) === false, 'signed out');
+    await check('keyboard: Enter in the token box signs in and moves focus to Connect', async () => {
+      await page.eval(`(() => { const i = document.getElementById('jwtInput'); i.value = ${JSON.stringify(makeJwt('CUST-A'))}; i.focus(); return true; })()`);
+      await enter();
+      await waitUntil(async () => (await focusedId()) === 'connectBtn', 'focus on Connect', 5000);
+    });
+    await check('keyboard: Enter on Connect connects and moves focus to the message box', async () => {
+      await enter();
+      await waitUntil(async () => (await focusedId()) === 'messageInput', 'focus on the message box', 5000);
+    });
+    await check('keyboard: Disconnect moves focus back to Connect', async () => {
+      await page.eval(`document.getElementById('disconnectBtn').focus(), true`);
+      await enter();
+      await waitUntil(async () => (await focusedId()) === 'connectBtn', 'focus on Connect', 5000);
+    });
+    await check('keyboard: opening a chat from the list keeps focus on that chat', async () => {
+      await page.eval(`document.getElementById('newChatBtn').click(), true`);
+      await page.eval(`document.querySelector('#chatSessions button.chat-session-title[data-chat-id="chat-1"]').focus(), true`);
+      await enter();
+      await waitUntil(async () => (await page.eval('chatbot.currentChatId')) === 'chat-1', 'chat-1 opened');
+      assert.strictEqual(await focusedId(), 'chat-1');
+    });
+    await check('keyboard: Sign out moves focus to the token box', async () => {
+      await page.eval(`document.getElementById('signOutBtn').focus(), true`);
+      await enter();
+      await waitUntil(async () => (await focusedId()) === 'jwtInput', 'focus on the token box', 5000);
     });
 
     page.ws.close();

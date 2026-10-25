@@ -245,6 +245,14 @@ body {
 }
 
 .chat-session-title {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    min-width: 0;
     flex: 1;
     font-size: 0.875rem;
     font-weight: 500;
