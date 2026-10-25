@@ -189,8 +189,6 @@ CREATE TABLE pending_actions (
   provisional_credit   NUMERIC(12,2),
   fraud_review         BOOLEAN,
   status               VARCHAR(10) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING','EXECUTED')),
-  confirm_count        INTEGER NOT NULL DEFAULT 0,   -- confirm calls seen (distinguishes EXECUTED vs ALREADY_EXECUTED)
-  executed_confirm_no  INTEGER,                      -- which confirm call executed it
   created_at           TIMESTAMP NOT NULL DEFAULT clock_timestamp(),
   expires_at           TIMESTAMP NOT NULL DEFAULT clock_timestamp() + INTERVAL '15 minutes'
 );
@@ -257,9 +255,7 @@ CREATE TABLE service_cases (
   customer_message    TEXT,                     -- customer-safe outcome text, set by the reviewer's decision
   approved_amount     NUMERIC(12,2),
   decided_at          TIMESTAMP,
-  created_at          TIMESTAMP NOT NULL DEFAULT clock_timestamp(),
-  last_requested_at   TIMESTAMP                 -- opened, or asked for again (a retry / the same parked action): the case
-                                                -- open_service_case's readback reports; set by trg_case_defaults on insert
+  created_at          TIMESTAMP NOT NULL DEFAULT clock_timestamp()
 );
 ALTER SEQUENCE case_seq OWNED BY service_cases.case_id;
 
@@ -287,6 +283,7 @@ CREATE TABLE decide_attempts (
   decision         VARCHAR(8),                   -- CONFIRM_REQUIRED: the pending decision, amount and customer message
   approved_amount  NUMERIC(12,2),
   customer_message TEXT,
+  internal_note    TEXT,                         -- CONFIRM_REQUIRED: the note given with the decision that was read back
   created_at       TIMESTAMP NOT NULL DEFAULT clock_timestamp()
 );
 
@@ -331,11 +328,9 @@ CREATE TABLE payment_requests (
   signals              TEXT,                     -- HIDDEN: deterministic signals computed in SQL
   risk_points          INTEGER NOT NULL,         -- HIDDEN
   risk_band            VARCHAR(6) NOT NULL CHECK (risk_band IN ('LOW','MEDIUM','HIGH')),   -- HIDDEN
-  status               VARCHAR(10) NOT NULL CHECK (status IN ('PROPOSED','HELD','SENT','RELEASED','CANCELLED')),
+  status               VARCHAR(10) NOT NULL CHECK (status IN ('PROPOSED','HELD','SENT','RELEASED','CANCELLED','SUPERSEDED')),
   warning_required     BOOLEAN NOT NULL DEFAULT FALSE,
   case_id              VARCHAR(12),              -- the PAYMENT_HOLD case (HIGH band)
-  confirm_count        INTEGER NOT NULL DEFAULT 0,
-  executed_confirm_no  INTEGER,
   created_at           TIMESTAMP NOT NULL DEFAULT clock_timestamp(),
   expires_at           TIMESTAMP NOT NULL DEFAULT clock_timestamp() + INTERVAL '15 minutes'
 );
@@ -357,7 +352,8 @@ CREATE TABLE agent_audit (
   customer_id  VARCHAR(20),
   actor        VARCHAR(20),            -- reviewer id (the reviewer's JWT sub) for CASE_DECIDED
   action       VARCHAR(30) NOT NULL,   -- CARD_BLOCK_PROPOSED, CARD_BLOCKED, DISPUTE_PROPOSED, DISPUTE_FILED,
-                                       -- SERVICE_CASE_OPENED, PAYMENT_PROPOSED, PAYMENT_HELD, PAYMENT_SENT, LOAN_DEFERRED, CASE_DECIDED
+                                       -- SERVICE_CASE_OPENED, PAYMENT_PROPOSED, PAYMENT_SUPERSEDED, PAYMENT_HELD,
+                                       -- PAYMENT_SENT, LOAN_DEFERRED, CASE_DECIDED
   ref          TEXT,
   detail       TEXT
 );
@@ -403,6 +399,14 @@ END $$ LANGUAGE plpgsql STABLE;
 
 -- whoami: what the bank knows about the signed-in subject. role CUSTOMER / REVIEWER / UNKNOWN, a display name and,
 -- for a reviewer, the team and approval limit. Never an email, phone, account or anything secret.
+-- One write at a time per customer where a check and the write that depends on it must not interleave with another
+-- call for the same customer: money (the customer's confirm, a reviewer's release, the debit itself) and opening a case.
+-- Taken BEFORE the checks and held until the transaction commits, so a second call waits, then sees the first one.
+-- Without it, two calls at the same moment both pass the checks (two debits, or two copies of the same case).
+CREATE OR REPLACE FUNCTION lock_customer(p_customer TEXT) RETURNS VOID AS $$
+  SELECT pg_advisory_xact_lock(hashtext('kestrel-customer'), hashtext(coalesce(p_customer, '')));
+$$ LANGUAGE sql VOLATILE;
+
 CREATE OR REPLACE FUNCTION whoami(p_sub TEXT)
 RETURNS TABLE (role TEXT, subject TEXT, display_name TEXT, team TEXT, approval_limit NUMERIC, reason TEXT) AS $$
   SELECT CASE WHEN cc.customer_id IS NOT NULL THEN 'CUSTOMER' WHEN cr.reviewer_id IS NOT NULL THEN 'REVIEWER' ELSE 'UNKNOWN' END,
@@ -650,8 +654,10 @@ BEGIN
   RETURN NEXT;
 END $$ LANGUAGE plpgsql STABLE;
 
--- Confirm row: VOLATILE because it counts confirm calls (so a repeat confirm reads ALREADY_EXECUTED).
--- Returns the card_blocks row ONLY for this customer's PENDING, unexpired CARD_BLOCK whose rules still pass.
+-- Confirm row: returns the card_blocks row ONLY for this customer's PENDING, unexpired CARD_BLOCK whose rules still
+-- pass. Under lock_customer, so two confirms at once (two proposals for one card) block it once.
+-- The readback reports EXECUTED for 2 minutes after the block (the confirm that did it, a retry, a second chat at the
+-- same moment), then ALREADY_EXECUTED.
 CREATE OR REPLACE FUNCTION card_block_confirmation_row(p_sub TEXT, p_action TEXT)
 RETURNS TABLE (action_id TEXT, card_id TEXT, reason TEXT) AS $$
 #variable_conflict use_column
@@ -659,10 +665,10 @@ DECLARE v_cid TEXT; pa pending_actions; e RECORD;
 BEGIN
   SELECT sc.customer_id INTO v_cid FROM caller_customer(p_sub) sc;
   IF v_cid IS NULL THEN RETURN; END IF;
+  PERFORM lock_customer(v_cid);                 -- after another confirm for this customer, its result is seen below
   SELECT * INTO pa FROM pending_actions p
    WHERE p.action_id = upper(trim(coalesce(p_action,''))) AND p.customer_id = v_cid AND p.action_type = 'CARD_BLOCK';
   IF NOT FOUND THEN RETURN; END IF;
-  UPDATE pending_actions p SET confirm_count = p.confirm_count + 1 WHERE p.action_id = pa.action_id;
   IF pa.status <> 'PENDING' OR pa.expires_at <= clock_timestamp() THEN RETURN; END IF;
   SELECT * INTO e FROM card_block_eval(p_sub, pa.card_id, pa.reason_code);
   IF NOT e.ok THEN RETURN; END IF;
@@ -694,7 +700,7 @@ BEGIN
     SELECT cr.expected_delivery INTO v_delivery FROM card_replacements cr WHERE cr.block_id = b.block_id
      ORDER BY cr.ordered_at DESC LIMIT 1;
     block_id := b.block_id; blocked_at := b.created_at; replacement_expected_delivery := v_delivery;
-    IF pa.executed_confirm_no = pa.confirm_count THEN
+    IF b.created_at > clock_timestamp() - INTERVAL '2 minutes' THEN   -- this confirm, a retry or a second chat
       outcome := 'EXECUTED'; reason_code := 'EXECUTED';
       reason := 'Card blocked. A replacement card has been ordered.';
     ELSE
@@ -718,7 +724,7 @@ BEGIN
   UPDATE cards SET status = 'BLOCKED' WHERE card_id = NEW.card_id;
   INSERT INTO card_replacements (card_id, block_id, expected_delivery)
     VALUES (NEW.card_id, NEW.block_id, add_business_days(current_date, 5));
-  UPDATE pending_actions SET status = 'EXECUTED', executed_confirm_no = confirm_count WHERE action_id = NEW.action_id;
+  UPDATE pending_actions SET status = 'EXECUTED' WHERE action_id = NEW.action_id;
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 CREATE TRIGGER trg_card_block_apply AFTER INSERT ON card_blocks FOR EACH ROW EXECUTE FUNCTION apply_card_block();
@@ -786,10 +792,21 @@ BEGIN
      WHERE o.customer_id = v_cid AND o.transaction_id <> t.transaction_id AND o.txn_type = 'DEBIT' AND o.status = 'POSTED'
        AND upper(trim(o.descriptor)) = upper(trim(t.descriptor)) AND o.amount = t.amount
        AND abs(o.txn_date - t.txn_date) <= 3
-     ORDER BY o.transaction_id LIMIT 1;
+       -- the duplicate is the LATER charge of the pair, so only one of the two can be disputed (and credited) as such
+       AND (o.txn_date < t.txn_date OR (o.txn_date = t.txn_date AND o.transaction_id < t.transaction_id))
+     ORDER BY o.txn_date DESC, o.transaction_id DESC LIMIT 1;
     IF v_dup IS NULL THEN
+      SELECT o.transaction_id INTO v_dup FROM transactions o
+       WHERE o.customer_id = v_cid AND o.transaction_id <> t.transaction_id AND o.txn_type = 'DEBIT' AND o.status = 'POSTED'
+         AND upper(trim(o.descriptor)) = upper(trim(t.descriptor)) AND o.amount = t.amount
+         AND abs(o.txn_date - t.txn_date) <= 3
+       ORDER BY o.txn_date, o.transaction_id LIMIT 1;
       reason_code := 'NOT_DUPLICATE';
-      reason := 'NOT_DUPLICATE: there is no other posted charge from ' || t.descriptor || ' for the same amount within 3 days, so this is not a duplicate.';
+      reason := CASE WHEN v_dup IS NOT NULL
+                     THEN 'NOT_DUPLICATE: ' || t.transaction_id || ' is the first of the matching charges from ' || t.descriptor
+                          || '; the duplicate is the later one, ' || v_dup || '. Dispute that one as DUPLICATE.'
+                     ELSE 'NOT_DUPLICATE: there is no other posted charge from ' || t.descriptor
+                          || ' for the same amount within 3 days, so this is not a duplicate.' END;
       RETURN NEXT; RETURN;
     END IF;
   END IF;
@@ -857,10 +874,10 @@ DECLARE v_cid TEXT; pa pending_actions; e RECORD;
 BEGIN
   SELECT sc.customer_id INTO v_cid FROM caller_customer(p_sub) sc;
   IF v_cid IS NULL THEN RETURN; END IF;
+  PERFORM lock_customer(v_cid);                 -- after another confirm for this customer, its result is seen below
   SELECT * INTO pa FROM pending_actions p
    WHERE p.action_id = upper(trim(coalesce(p_action,''))) AND p.customer_id = v_cid AND p.action_type = 'DISPUTE';
   IF NOT FOUND THEN RETURN; END IF;
-  UPDATE pending_actions p SET confirm_count = p.confirm_count + 1 WHERE p.action_id = pa.action_id;
   IF pa.status <> 'PENDING' OR pa.expires_at <= clock_timestamp() THEN RETURN; END IF;
   SELECT * INTO e FROM dispute_eval(p_sub, pa.transaction_id, pa.reason_code);
   IF NOT e.ok THEN RETURN; END IF;
@@ -896,7 +913,7 @@ BEGIN
     SELECT x.transaction_id INTO provisional_credit_txn FROM transactions x
      WHERE x.descriptor = 'PROVISIONAL CREDIT ' || d.dispute_id LIMIT 1;
     SELECT c.case_id INTO fraud_case_id FROM service_cases c WHERE c.dispute_id = d.dispute_id AND c.request_type = 'FRAUD_REVIEW' LIMIT 1;
-    IF pa.executed_confirm_no = pa.confirm_count THEN
+    IF d.created_at > clock_timestamp() - INTERVAL '2 minutes' THEN   -- this confirm, a retry or a second chat
       outcome := 'FILED'; reason_code := 'FILED';
       reason := 'Dispute filed. ' || CASE WHEN d.provisional_credit > 0
                   THEN 'A provisional credit of ' || d.provisional_credit || ' USD is pending on the account. '
@@ -939,7 +956,7 @@ BEGIN
               tm.team, NEW.dispute_id, NEW.created_at);
   END IF;
   IF NEW.action_id IS NOT NULL THEN
-    UPDATE pending_actions SET status = 'EXECUTED', executed_confirm_no = confirm_count WHERE action_id = NEW.action_id;
+    UPDATE pending_actions SET status = 'EXECUTED' WHERE action_id = NEW.action_id;
   END IF;
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
@@ -1007,45 +1024,47 @@ DECLARE t service_teams;
 BEGIN
   SELECT * INTO t FROM service_teams WHERE request_type = NEW.request_type;
   NEW.sla_due_at := coalesce(NEW.sla_due_at, add_business_days(NEW.created_at::date, t.reply_business_days) + NEW.created_at::time);
-  NEW.last_requested_at := coalesce(NEW.last_requested_at, NEW.created_at);
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 CREATE TRIGGER trg_case_defaults BEFORE INSERT ON service_cases FOR EACH ROW EXECUTE FUNCTION case_defaults();
 
+-- The case an open_service_case request is about: an OPEN case parking the same action (whenever it was opened), else
+-- a case of the same type with the same statement opened in the last 10 minutes (an AI retry). The guarded write uses
+-- it (a match = no new case) and so does the readback, which then finds the case the write inserted or matched - so
+-- every call reports its own case, also when two chats of the same customer open different cases at the same moment.
+CREATE OR REPLACE FUNCTION case_match(p_customer TEXT, p_type TEXT, p_parked TEXT, p_statement TEXT) RETURNS VARCHAR AS $$
+  SELECT c.case_id FROM service_cases c
+   WHERE c.customer_id = p_customer AND c.request_type = p_type
+     AND ((p_parked IS NOT NULL AND c.parked_action = p_parked AND c.status = 'OPEN')
+          OR (c.created_at > clock_timestamp() - INTERVAL '10 minutes'
+              AND lower(regexp_replace(btrim(c.customer_statement), '\s+', ' ', 'g'))
+                  = lower(regexp_replace(btrim(left(coalesce(p_statement, ''), 4000)), '\s+', ' ', 'g'))))
+   ORDER BY (p_parked IS NOT NULL AND c.parked_action = p_parked AND c.status = 'OPEN') DESC, c.created_at DESC
+   LIMIT 1
+$$ LANGUAGE sql STABLE;
+
 -- Guarded write-row for open_service_case. 0 rows when refused (unknown caller, bad type, bad reference) or when this
--- request is already with the team: an OPEN case parking the same action (whenever it was opened), or the SAME statement
--- of the same type within 10 minutes (an AI retry). That case is then marked as asked for again (last_requested_at), so
--- the readback reports the case THIS request matched. A different request of the same type is a new case.
+-- request is already with the team (case_match). Under lock_customer, so the same request sent twice at once opens
+-- one case. A different request of the same type is a new case.
 CREATE OR REPLACE FUNCTION service_case_row(p_sub TEXT, p_type TEXT, p_statement TEXT, p_brief TEXT, p_reference TEXT)
 RETURNS TABLE (customer_id TEXT, request_type VARCHAR, customer_statement TEXT, agent_brief TEXT, assigned_team VARCHAR,
                requested_amount NUMERIC, parked_action TEXT) AS $$
 #variable_conflict use_column
-DECLARE v_cid TEXT; t service_teams; pk RECORD; v_stmt TEXT := left(coalesce(p_statement, ''), 4000); v_match TEXT;
+DECLARE v_cid TEXT; t service_teams; pk RECORD; v_stmt TEXT := left(coalesce(p_statement, ''), 4000);
 BEGIN
   SELECT sc.customer_id INTO v_cid FROM caller_customer(p_sub) sc;
   SELECT * INTO t FROM service_teams x WHERE x.request_type = norm_request_type(p_type) AND x.customer_openable;
   IF v_cid IS NULL OR t.request_type IS NULL THEN RETURN; END IF;
+  PERFORM lock_customer(v_cid);
   SELECT * INTO pk FROM case_parking(v_cid, p_type, p_reference);
-  IF NOT pk.ok THEN RETURN; END IF;
-  SELECT c.case_id INTO v_match FROM service_cases c
-   WHERE c.customer_id = v_cid AND c.request_type = t.request_type
-     AND ((pk.parked_action IS NOT NULL AND c.parked_action = pk.parked_action AND c.status = 'OPEN')
-          OR (c.created_at > clock_timestamp() - INTERVAL '10 minutes'
-              AND lower(regexp_replace(btrim(c.customer_statement), '\s+', ' ', 'g'))
-                  = lower(regexp_replace(btrim(v_stmt), '\s+', ' ', 'g'))))
-   ORDER BY (pk.parked_action IS NOT NULL AND c.parked_action = pk.parked_action AND c.status = 'OPEN') DESC, c.created_at DESC
-   LIMIT 1;
-  IF v_match IS NOT NULL THEN
-    UPDATE service_cases c SET last_requested_at = clock_timestamp() WHERE c.case_id = v_match;
-    RETURN;
-  END IF;
+  IF NOT pk.ok OR case_match(v_cid, t.request_type, pk.parked_action, v_stmt) IS NOT NULL THEN RETURN; END IF;
   RETURN QUERY SELECT v_cid, t.request_type, v_stmt, left(coalesce(p_brief, ''), 4000), t.team, pk.requested_amount,
                       pk.parked_action;
 END $$ LANGUAGE plpgsql VOLATILE;
 
--- Readback for open_service_case: the refusal reason, or the case this request opened or matched (the one service_case_row
--- just inserted or marked; never another case of the same type, never a case for a refused request).
-CREATE OR REPLACE FUNCTION service_case_result(p_sub TEXT, p_type TEXT, p_reference TEXT)
+-- Readback for open_service_case: the refusal reason, or the case this request opened or matched - case_match with
+-- the same arguments as the write (never another case of the same type, never a case for a refused request).
+CREATE OR REPLACE FUNCTION service_case_result(p_sub TEXT, p_type TEXT, p_statement TEXT, p_reference TEXT)
 RETURNS TABLE (outcome TEXT, reason_code TEXT, reason TEXT, case_id VARCHAR, request_type VARCHAR, assigned_team VARCHAR,
                reply_within_business_days INTEGER, reply_by DATE, status VARCHAR, requested_amount NUMERIC,
                if_approved TEXT, created_at TIMESTAMP) AS $$
@@ -1075,12 +1094,8 @@ RETURNS TABLE (outcome TEXT, reason_code TEXT, reason TEXT, case_id VARCHAR, req
     FROM (SELECT * FROM caller_customer(p_sub)) sc
     LEFT JOIN service_teams t0 ON t0.request_type = norm_request_type(p_type) AND t0.customer_openable
     LEFT JOIN LATERAL (SELECT * FROM case_parking(sc.customer_id, p_type, p_reference)) pk ON TRUE
-    LEFT JOIN LATERAL (
-      SELECT x.* FROM service_cases x
-       WHERE x.customer_id = sc.customer_id AND x.request_type = t0.request_type AND pk.ok
-         AND x.last_requested_at > clock_timestamp() - INTERVAL '10 minutes'
-         AND (pk.parked_action IS NULL OR x.parked_action = pk.parked_action)
-       ORDER BY x.last_requested_at DESC, x.case_id DESC LIMIT 1) c ON TRUE
+    LEFT JOIN service_cases c
+           ON pk.ok AND c.case_id = case_match(sc.customer_id, t0.request_type, pk.parked_action, p_statement)
     LEFT JOIN service_teams t ON t.request_type = c.request_type;
 $$ LANGUAGE sql STABLE;
 
@@ -1267,13 +1282,6 @@ CREATE OR REPLACE FUNCTION sent_today(p_customer TEXT) RETURNS NUMERIC AS $$
    WHERE pr.customer_id = p_customer AND ps.sent_at::date = current_date
 $$ LANGUAGE sql STABLE;
 
--- Money moves one at a time per customer. Every path that sends money (the customer's confirm, a reviewer's release)
--- takes this lock BEFORE it re-checks the balance and the daily total, and keeps it until its transaction commits - so a
--- second send for the same customer waits, then sees the first one. Without it, two sends at the same moment both pass
--- the checks and both debit.
-CREATE OR REPLACE FUNCTION lock_customer_money(p_customer TEXT) RETURNS VOID AS $$
-  SELECT pg_advisory_xact_lock(hashtext('kestrel-money'), hashtext(coalesce(p_customer, '')));
-$$ LANGUAGE sql VOLATILE;
 
 CREATE OR REPLACE FUNCTION payment_eval(p_sub TEXT, p_account TEXT, p_payee TEXT, p_amount TEXT)
 RETURNS TABLE (ok BOOLEAN, reason_code TEXT, reason TEXT, customer_id TEXT, account_id TEXT, account_masked TEXT,
@@ -1381,24 +1389,42 @@ BEGIN
   RETURN NEXT;
 END $$ LANGUAGE plpgsql STABLE;
 
--- Guarded write-row for propose_payment: the assessed request is written ONLY when every payment rule passes, and not
--- twice (an unexpired PROPOSED or a HELD request for the same account / payee / amount is reused).
+-- Guarded write-row for propose_payment: the assessed request is written ONLY when every payment rule passes. The same
+-- account / payee / amount is not proposed twice: an unexpired PROPOSED or a HELD request is reused - unless this
+-- assessment is riskier than the one it was proposed with (the customer told more of the story: LOW -> MEDIUM -> HIGH).
+-- Then the old proposal is SUPERSEDED and the new one is written (warning or hold), so the band never goes down.
 CREATE OR REPLACE FUNCTION payment_request_row(p_sub TEXT, p_account TEXT, p_payee TEXT, p_amount TEXT, p_story TEXT,
                                                p_indicators TEXT, p_score TEXT, p_notes TEXT)
 RETURNS TABLE (customer_id TEXT, account_id TEXT, payee_id TEXT, amount NUMERIC, customer_story TEXT, agent_notes TEXT,
                narrative_indicators TEXT, ignored_indicators TEXT, narrative_score INTEGER, signals TEXT,
                risk_points INTEGER, risk_band TEXT, status TEXT, warning_required BOOLEAN) AS $$
-  SELECT e.customer_id, e.account_id, e.payee_id, e.amount, left(coalesce(p_story, ''), 4000), left(coalesce(p_notes, ''), 4000),
-         s.narrative_indicators, s.ignored_indicators, s.narrative_score, s.signals, s.risk_points, s.risk_band,
-         CASE WHEN s.risk_band = 'HIGH' THEN 'HELD' ELSE 'PROPOSED' END, s.risk_band = 'MEDIUM'
-    FROM payment_eval(p_sub, p_account, p_payee, p_amount) e
-    CROSS JOIN LATERAL scam_assessment(e.customer_id, e.account_id, e.payee_id, e.amount, p_indicators, p_score) s
-   WHERE e.ok
-     AND NOT EXISTS (SELECT 1 FROM payment_requests r
-                      WHERE r.customer_id = e.customer_id AND r.account_id = e.account_id AND r.payee_id = e.payee_id
-                        AND r.amount = e.amount
-                        AND ((r.status = 'PROPOSED' AND r.expires_at > clock_timestamp()) OR r.status = 'HELD'));
-$$ LANGUAGE sql STABLE;
+#variable_conflict use_column
+DECLARE e RECORD; a RECORD; r payment_requests;
+BEGIN
+  SELECT * INTO e FROM payment_eval(p_sub, p_account, p_payee, p_amount);
+  IF NOT e.ok THEN RETURN; END IF;
+  PERFORM lock_customer(e.customer_id);         -- two proposals at once: the second sees (and reuses) the first
+  SELECT * INTO a FROM scam_assessment(e.customer_id, e.account_id, e.payee_id, e.amount, p_indicators, p_score);
+  SELECT * INTO r FROM payment_requests x
+   WHERE x.customer_id = e.customer_id AND x.account_id = e.account_id AND x.payee_id = e.payee_id AND x.amount = e.amount
+     AND ((x.status = 'PROPOSED' AND x.expires_at > clock_timestamp()) OR x.status = 'HELD')
+   ORDER BY x.created_at DESC LIMIT 1;
+  IF r.payment_id IS NOT NULL THEN
+    IF r.status = 'HELD' OR band_rank(a.risk_band) <= band_rank(r.risk_band) THEN RETURN; END IF;
+    UPDATE payment_requests x SET status = 'SUPERSEDED' WHERE x.payment_id = r.payment_id;
+    INSERT INTO agent_audit (customer_id, action, ref, detail)
+      VALUES (r.customer_id, 'PAYMENT_SUPERSEDED', r.payment_id,
+              'band ' || r.risk_band || ' -> ' || a.risk_band || ' on re-assessment; replaced by a new proposal');
+  END IF;
+  RETURN QUERY SELECT e.customer_id, e.account_id, e.payee_id, e.amount, left(coalesce(p_story, ''), 4000),
+                      left(coalesce(p_notes, ''), 4000), a.narrative_indicators, a.ignored_indicators, a.narrative_score,
+                      a.signals, a.risk_points, a.risk_band,
+                      CASE WHEN a.risk_band = 'HIGH' THEN 'HELD' ELSE 'PROPOSED' END, a.risk_band = 'MEDIUM';
+END $$ LANGUAGE plpgsql VOLATILE;
+
+CREATE OR REPLACE FUNCTION band_rank(p_band TEXT) RETURNS INTEGER AS $$
+  SELECT CASE p_band WHEN 'LOW' THEN 1 WHEN 'MEDIUM' THEN 2 WHEN 'HIGH' THEN 3 ELSE 0 END
+$$ LANGUAGE sql IMMUTABLE;
 
 CREATE OR REPLACE FUNCTION payment_warning_text() RETURNS TEXT AS $$
   SELECT 'Stop and check before you send this payment. Kestrel Bank, the police and government agencies will never ask you '
@@ -1451,10 +1477,10 @@ CREATE OR REPLACE FUNCTION ack_yes(p TEXT) RETURNS BOOLEAN AS $$
   SELECT upper(trim(coalesce(p, ''))) IN ('YES', 'Y', 'TRUE', 'ACKNOWLEDGED', 'I ACKNOWLEDGE', 'CONFIRMED', 'I UNDERSTAND')
 $$ LANGUAGE sql IMMUTABLE;
 
--- Confirm row: VOLATILE because it counts confirm calls (so a repeat confirm reads ALREADY_SENT). Returns the
--- payment_sends row ONLY for this customer's PROPOSED, unexpired request whose rules still pass (and, for a MEDIUM
--- request, only when the customer acknowledged the warning). The checks run under lock_customer_money, so they see
--- every send of this customer that committed before this one.
+-- Confirm row: returns the payment_sends row ONLY for this customer's PROPOSED, unexpired request whose rules still
+-- pass (and, for a MEDIUM request, only when the customer acknowledged the warning). The checks run under
+-- lock_customer, so they see every send of this customer that committed before this one. The readback reports SENT
+-- for 2 minutes after the send (the confirm that sent it, a retry, a second chat at the same moment), then ALREADY_SENT.
 CREATE OR REPLACE FUNCTION payment_confirmation_row(p_sub TEXT, p_payment TEXT, p_ack TEXT)
 RETURNS TABLE (payment_id TEXT, via TEXT, case_id TEXT, amount NUMERIC) AS $$
 #variable_conflict use_column
@@ -1462,10 +1488,9 @@ DECLARE v_cid TEXT; r payment_requests; e RECORD;
 BEGIN
   SELECT sc.customer_id INTO v_cid FROM caller_customer(p_sub) sc;
   IF v_cid IS NULL THEN RETURN; END IF;
-  PERFORM lock_customer_money(v_cid);
+  PERFORM lock_customer(v_cid);
   SELECT * INTO r FROM payment_requests x WHERE x.payment_id = norm_ref(p_payment) AND x.customer_id = v_cid;
   IF NOT FOUND THEN RETURN; END IF;
-  UPDATE payment_requests x SET confirm_count = x.confirm_count + 1 WHERE x.payment_id = r.payment_id;
   IF r.status <> 'PROPOSED' OR r.expires_at <= clock_timestamp() THEN RETURN; END IF;
   IF r.warning_required AND NOT ack_yes(p_ack) THEN RETURN; END IF;
   SELECT * INTO e FROM payment_eval(p_sub, r.account_id, r.payee_id, r.amount::text);
@@ -1496,7 +1521,7 @@ BEGIN
   SELECT * INTO s FROM payment_sends x WHERE x.payment_id = r.payment_id;
   IF FOUND THEN
     sent_at := s.sent_at;
-    IF s.via = 'CUSTOMER' AND r.executed_confirm_no = r.confirm_count THEN
+    IF s.via = 'CUSTOMER' AND s.sent_at > clock_timestamp() - INTERVAL '2 minutes' THEN   -- this confirm, a retry or a second chat
       outcome := 'SENT'; reason_code := 'SENT'; reason := 'Payment sent.';
     ELSE
       reason_code := 'ALREADY_SENT'; reason := 'ALREADY_SENT: this payment was already sent. Nothing new was done.';
@@ -1509,6 +1534,10 @@ BEGIN
     reason := 'HELD_FOR_REVIEW: this payment is paused for a security check by the fraud team. It cannot be sent from here.';
   ELSIF r.status = 'CANCELLED' THEN
     reason_code := 'CANCELLED'; reason := 'CANCELLED: this payment was stopped after a security review. No money moved.';
+  ELSIF r.status = 'SUPERSEDED' THEN
+    reason_code := 'SUPERSEDED';
+    reason := 'SUPERSEDED: this proposal was replaced when the payment was assessed again. Nothing was sent; use the '
+              || 'payment_id from the latest propose_payment.';
   ELSIF r.expires_at <= clock_timestamp() THEN
     reason_code := 'EXPIRED'; reason := 'EXPIRED: the payment proposal expired after 15 minutes. Propose it again.';
   ELSIF r.warning_required AND NOT ack_yes(p_ack) THEN
@@ -1554,13 +1583,13 @@ END $$ LANGUAGE plpgsql;
 CREATE TRIGGER trg_payment_request AFTER INSERT ON payment_requests FOR EACH ROW EXECUTE FUNCTION apply_payment_request();
 
 -- Side effects of a sent payment, atomically: the POSTED debit, the balance, the payee's last-paid date, the status.
--- The debit itself never overdraws or passes the daily limit, whatever wrote the send row: under lock_customer_money
+-- The debit itself never overdraws or passes the daily limit, whatever wrote the send row: under lock_customer
 -- (already held on the tool paths) it re-checks both and refuses the whole send if either fails.
 CREATE OR REPLACE FUNCTION apply_payment_send() RETURNS TRIGGER AS $$
 DECLARE r payment_requests; p payees;
 BEGIN
   SELECT * INTO r FROM payment_requests WHERE payment_id = NEW.payment_id;
-  PERFORM lock_customer_money(r.customer_id);
+  PERFORM lock_customer(r.customer_id);
   IF sent_today(r.customer_id) > payment_daily_limit() THEN                     -- today's total includes this send
     RAISE EXCEPTION 'OVER_DAILY_LIMIT: payment % would take today''s payments over the % daily limit',
       NEW.payment_id, usd(payment_daily_limit());
@@ -1576,8 +1605,7 @@ BEGIN
     VALUES (r.account_id, r.customer_id, NULL, NEW.sent_at::date, left('PAYMENT TO ' || upper(p.payee_name), 80), NEW.amount,
             'DEBIT', 'TRANSFER', 'POSTED');
   UPDATE payees SET last_paid_at = NEW.sent_at WHERE payee_id = r.payee_id;
-  UPDATE payment_requests SET status = CASE WHEN NEW.via = 'REVIEWER' THEN 'RELEASED' ELSE 'SENT' END,
-         executed_confirm_no = CASE WHEN NEW.via = 'CUSTOMER' THEN confirm_count END
+  UPDATE payment_requests SET status = CASE WHEN NEW.via = 'REVIEWER' THEN 'RELEASED' ELSE 'SENT' END
    WHERE payment_id = NEW.payment_id;
   INSERT INTO agent_audit (customer_id, action, ref, detail)
     VALUES (r.customer_id, 'PAYMENT_SENT', NEW.payment_id,
@@ -1708,9 +1736,9 @@ BEGIN
       VALUES (rv.reviewer_id, v_ref, 'BLOCKED', 'NOT_FOUND', 'There is no case with that number.');
     RETURN;
   END IF;
-  -- One at a time with this customer's payments and other decisions (lock_customer_money): re-read the case once the
+  -- One at a time with this customer's payments and other decisions (lock_customer): re-read the case once the
   -- lock is held, so the status, the parked action and the balance / daily-limit checks all see committed data.
-  PERFORM lock_customer_money(s.customer_id);
+  PERFORM lock_customer(s.customer_id);
   SELECT * INTO s FROM service_cases x WHERE x.case_id = v_ref;
   SELECT * INTO t FROM service_teams x WHERE x.request_type = s.request_type;
   IF t.team <> rv.team THEN
@@ -1776,19 +1804,25 @@ BEGIN
   SELECT * INTO pa FROM decide_attempts x
    WHERE x.reviewer_id = rv.reviewer_id AND x.case_ref = v_ref AND x.outcome = 'CONFIRM_REQUIRED'
    ORDER BY x.attempt_id DESC LIMIT 1;
+  -- The confirming call records the decision, amount, customer message and note that were READ BACK. A different
+  -- decision or amount - or a different customer message passed explicitly - is a new decision: read it back again.
   IF pa.attempt_id IS NULL OR pa.created_at < clock_timestamp() - INTERVAL '15 minutes'
-     OR pa.decision IS DISTINCT FROM v_dec OR pa.approved_amount IS DISTINCT FROM v_amt THEN
-    INSERT INTO decide_attempts (reviewer_id, case_ref, outcome, reason_code, reason_text, decision, approved_amount, customer_message)
+     OR pa.decision IS DISTINCT FROM v_dec OR pa.approved_amount IS DISTINCT FROM v_amt
+     OR (nullif(trim(p_message), '') IS NOT NULL
+         AND lower(regexp_replace(btrim(left(v_msg, 2000)), '\s+', ' ', 'g'))
+             IS DISTINCT FROM lower(regexp_replace(btrim(pa.customer_message), '\s+', ' ', 'g'))) THEN
+    INSERT INTO decide_attempts (reviewer_id, case_ref, outcome, reason_code, reason_text, decision, approved_amount,
+                                 customer_message, internal_note)
       VALUES (rv.reviewer_id, v_ref, 'CONFIRM_REQUIRED', 'CONFIRM_REQUIRED',
               'Nothing is recorded yet. Read this decision back to the reviewer and ask them to confirm: ' || v_dec
               || coalesce(' ' || usd(v_amt), '') || ' on ' || v_ref || '. Only after they confirm, call decide_review_case '
               || 'again with the same decision and amount (within 15 minutes).',
-              v_dec, v_amt, left(v_msg, 2000));
+              v_dec, v_amt, left(v_msg, 2000), left(trim(p_note), 2000));
     RETURN;
   END IF;
   INSERT INTO decide_attempts (reviewer_id, case_ref, outcome, reason_text)
     VALUES (rv.reviewer_id, v_ref, CASE WHEN v_dec = 'APPROVE' THEN 'APPROVED' ELSE 'REJECTED' END, 'Decision recorded.');
-  RETURN QUERY SELECT s.case_id, rv.reviewer_id::varchar, v_dec::varchar, v_amt, left(trim(p_note), 2000), left(v_msg, 2000);
+  RETURN QUERY SELECT s.case_id, rv.reviewer_id::varchar, v_dec::varchar, v_amt, pa.internal_note, pa.customer_message;
 END $$ LANGUAGE plpgsql VOLATILE;
 
 CREATE OR REPLACE FUNCTION decide_case_result(p_sub TEXT, p_case TEXT)
@@ -1854,6 +1888,8 @@ RETURNS TABLE (deferral_id TEXT, loan_id TEXT, case_id TEXT, payments_deferred I
     CROSS JOIN LATERAL (SELECT least(deferral_max_payments(), floor(p_amount / l.monthly_payment + 0.000001))::int AS n) x
    WHERE l.loan_id = p_loan AND l.status = 'ACTIVE' AND x.n >= 1
      AND NOT EXISTS (SELECT 1 FROM loan_deferrals d WHERE d.case_id = p_case)
+     AND NOT EXISTS (SELECT 1 FROM loan_deferrals d                       -- one deferral per loan per 12 months
+                      WHERE d.loan_id = l.loan_id AND d.created_at > clock_timestamp() - INTERVAL '12 months')
      AND EXISTS (SELECT 1 FROM service_cases s WHERE s.case_id = p_case AND s.parked_action = 'LOAN_DEFERRAL:' || l.loan_id);
 $$ LANGUAGE sql VOLATILE;
 
@@ -1880,8 +1916,11 @@ BEGIN
   ELSIF v_kind = 'LOAN_DEFERRAL' AND NOT EXISTS (
           SELECT 1 FROM loans l
            WHERE l.loan_id = v_ref AND l.status = 'ACTIVE' AND floor(p_amount / l.monthly_payment + 0.000001) >= 1
-             AND NOT EXISTS (SELECT 1 FROM loan_deferrals d WHERE d.case_id = p_case)) THEN
-    RETURN 'Loan ' || v_ref || ' can no longer be deferred: it is not active, or this case already deferred it.';
+             AND NOT EXISTS (SELECT 1 FROM loan_deferrals d WHERE d.case_id = p_case)
+             AND NOT EXISTS (SELECT 1 FROM loan_deferrals d
+                              WHERE d.loan_id = l.loan_id AND d.created_at > clock_timestamp() - INTERVAL '12 months')) THEN
+    RETURN 'Loan ' || v_ref || ' can no longer be deferred: it is not active, or it was already deferred in the last '
+        || '12 months (one deferral per loan per year).';
   ELSIF v_kind = 'RELEASE_PAYMENT' AND NOT EXISTS (SELECT 1 FROM payment_release_row(v_ref, p_amount, p_case)) THEN
     SELECT * INTO r FROM payment_requests x WHERE x.payment_id = v_ref;
     SELECT * INTO a FROM accounts x WHERE x.account_id = r.account_id;

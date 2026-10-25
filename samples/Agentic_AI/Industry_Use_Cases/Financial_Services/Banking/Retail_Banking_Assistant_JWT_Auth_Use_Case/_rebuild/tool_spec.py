@@ -172,8 +172,9 @@ TOOLS = [
                   "CAST(?w_brief AS text), CAST(?w_ref AS text));",
                   [("w_sub", SUB), ("w_type", "request_type"), ("w_stmt", "customer_statement"),
                    ("w_brief", "brief"), ("w_ref", "reference_id")]),
-        "read": ("SELECT * FROM service_case_result(CAST(?r_sub AS text), CAST(?r_type AS text), CAST(?r_ref AS text));",
-                 [("r_sub", SUB), ("r_type", "request_type"), ("r_ref", "reference_id")]),
+        "read": ("SELECT * FROM service_case_result(CAST(?r_sub AS text), CAST(?r_type AS text), CAST(?r_stmt AS text), "
+                 "CAST(?r_ref AS text));",
+                 [("r_sub", SUB), ("r_type", "request_type"), ("r_stmt", "customer_statement"), ("r_ref", "reference_id")]),
     },
     {
         "tool": "get_my_cases", "flow": "get_my_cases_flow", "scope": "cases:read", "readonly": True,

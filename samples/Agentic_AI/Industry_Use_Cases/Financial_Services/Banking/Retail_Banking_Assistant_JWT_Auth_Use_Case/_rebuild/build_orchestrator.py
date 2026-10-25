@@ -41,6 +41,7 @@ APP_NAME = "RetailBankingSecureOrchestrator"
 app = App(f"{APP_NAME}.flogo", os.environ.get("OUT_DIR"))
 f = app.fda
 WS_PORT, WS_PATH = "9970", "/retailbanking"
+ENDPOINTS = [{"protocol": "http", "port": WS_PORT, "title": "WebsocketServer", "type": "public"}]
 MCP_NAME, MCP_URL = "RetailBankingSecureMCPServer", "http://localhost:9972/retail-banking-mcp"
 AGENTS = [("dispute_triage_agent", "http://localhost:9973"),
           ("scam_signal_agent", "http://localhost:9974"),
@@ -101,6 +102,9 @@ for name, url in AGENTS:
 print("== trigger + flow + activities ==")
 f("ct", "WebsocketServer", "tr_wsserver", "WebSocket server")
 f("sa", "trigger", "WebsocketServer.settings.port", "WebSocket_PORT", "-C", "app-property")
+# metadata.endpoints = the port a deployment exposes as a Kubernetes Service (the designer fills it on save; fda leaves it
+# empty -> no Service port -> 503 on TIBCO Platform). title = the Control Plane's "Service Name".
+f("sa", "any", "metadata.endpoints", "--jsonValue", json.dumps(ENDPOINTS), "--force")
 f("cf", FLOW, "Kestrel Bank secure orchestrator: Bearer guard -> LLM Client (caller JWT to MCP) -> reply")
 for task, typ, desc in [
         ("LLMClient", "act_agenticai_llmclientactivity",
@@ -246,6 +250,7 @@ def need(cond, msg):
 need(str(props.get("WebSocket_PORT")) in (WS_PORT, WS_PORT + ".0") and
      tr["settings"]["port"] == '=$property["WebSocket_PORT"]', "ws port")
 need(h["settings"].get("path") == WS_PATH, "ws path")
+need(d.get("metadata", {}).get("endpoints") == ENDPOINTS, "metadata.endpoints (the deployment's Service port)")
 need("Authorization" in json.loads(h["schemas"]["output"]["headers"]["value"])["properties"], "Authorization header")
 need(llm["ref"].endswith("llmclientactivity"), "LLM Client ref")
 need(llm["settings"].get("conversationStoreType") == "Memory" and llm["settings"].get("memoryMaxSize") == 60, "memory")

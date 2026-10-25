@@ -548,9 +548,113 @@ async function main() {
       r.ws.terminate();
     });
 
+    await check('DNS rebinding: an unknown Host is refused on pages, sign-in and the WebSocket upgrade (421)', async () => {
+      const evil = `evil.example:${appPort}`;
+      let r = await request(appPort, 'GET', '/', { headers: { Host: evil } });
+      assert.strictEqual(r.status, 421, 'page');
+      r = await request(appPort, 'POST', '/auth/session', {
+        headers: { Host: evil, Origin: `http://${evil}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      });
+      assert.strictEqual(r.status, 421, 'sign-in');
+      assert.ok(!r.headers['set-cookie'], 'no session for a rebinding page');
+      const ok = await request(appPort, 'POST', '/auth/session', {
+        headers: { Origin: origin, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      });
+      const c = ok.headers['set-cookie'][0].split(';')[0];
+      const w = await wsConnect(proxyUrl(upstream), { Host: evil, Origin: `http://${evil}`, Cookie: c });
+      assert.strictEqual(w.status, 421, 'upgrade');
+      r = await request(appPort, 'GET', '/client-config', { headers: { Host: `localhost:${appPort}` } });
+      assert.strictEqual(r.status, 200, 'localhost is still served');
+    });
+
+    await check('the session cookie is a browser-session cookie (no Max-Age / Expires)', async () => {
+      const r = await request(appPort, 'POST', '/auth/session', {
+        headers: { Origin: origin, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      });
+      const raw = r.headers['set-cookie'][0];
+      assert.ok(!/max-age|expires/i.test(raw), raw);
+    });
+
+    await check('one session can hold at most 5 proxied connections (429); closing one frees a place', async () => {
+      const si = await request(appPort, 'POST', '/auth/session', {
+        headers: { Origin: origin, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: makeJwt({ sub: 'cap-user', exp: Math.floor(Date.now() / 1000) + 600 }) })
+      });
+      const c = si.headers['set-cookie'][0].split(';')[0];
+      const open = [];
+      for (let i = 0; i < 5; i++) {
+        const r = await wsConnect(proxyUrl(upstream), { Origin: origin, Cookie: c });
+        assert.ok(r.ws, `connection ${i + 1} refused (${r.status})`);
+        open.push(r.ws);
+      }
+      const sixth = await wsConnect(proxyUrl(upstream), { Origin: origin, Cookie: c });
+      assert.strictEqual(sixth.status, 429);
+      open[0].close();
+      await nextClose(open[0]);
+      await sleep(200);
+      const again = await wsConnect(proxyUrl(upstream), { Origin: origin, Cookie: c });
+      assert.ok(again.ws, `a freed place was not reused (${again.status})`);
+      for (const ws of [...open.slice(1), again.ws]) ws.terminate();
+    });
+
+    await check('server-wide connection cap (503) and a heartbeat that closes a browser that stops answering pings', async () => {
+      const port = await freePort();
+      const p = spawn(process.execPath, ['server.js'], {
+        cwd: ROOT,
+        env: { ...process.env, PORT: String(port), HOST: '127.0.0.1', ALLOWED_UPSTREAMS: upstream, MAX_CONNECTIONS: '2',
+               HEARTBEAT_SECONDS: '1', SIGNIN_PER_MINUTE: '1000', ALLOWED_ORIGINS: '', ALLOWED_HOSTS: '' },
+        stdio: 'ignore'
+      });
+      try {
+        for (let i = 0; i < 100; i++) {
+          try {
+            if ((await request(port, 'GET', '/client-config')).status === 200) break;
+          } catch (e) {
+            /* not up yet */
+          }
+          await sleep(100);
+        }
+        const o = `http://127.0.0.1:${port}`;
+        const url = `ws://127.0.0.1:${port}/proxy?target=${encodeURIComponent(upstream)}`;
+        const cookieFor = async sub => {
+          const r = await request(port, 'POST', '/auth/session', {
+            headers: { Origin: o, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: makeJwt({ sub, exp: Math.floor(Date.now() / 1000) + 600 }) })
+          });
+          return r.headers['set-cookie'][0].split(';')[0];
+        };
+        const live = await wsConnect(url, { Origin: o, Cookie: await cookieFor('a') });
+        // a browser that never answers pings (autoPong off) = a half-open connection
+        const silent = await new Promise((resolve, reject) => {
+          cookieFor('b').then(c => {
+            const ws = new WebSocket(url, { headers: { Origin: o, Cookie: c }, autoPong: false });
+            ws.once('open', () => resolve(ws));
+            ws.once('error', reject);
+          });
+        });
+        const third = await wsConnect(url, { Origin: o, Cookie: await cookieFor('c') });
+        assert.strictEqual(third.status, 503, 'third connection over MAX_CONNECTIONS=2');
+        const t0 = Date.now();
+        await nextClose(silent, 6000);
+        assert.ok(Date.now() - t0 < 5000, 'the silent connection was not closed by the heartbeat');
+        await sleep(500);
+        assert.strictEqual(live.ws.readyState, WebSocket.OPEN, 'a connection that answers pings must stay open');
+        const fourth = await wsConnect(url, { Origin: o, Cookie: await cookieFor('d') });
+        assert.ok(fourth.ws, `the heartbeat-closed place was not freed (${fourth.status})`);
+        live.ws.terminate();
+        fourth.ws.terminate();
+      } finally {
+        p.kill();
+      }
+    });
+
     await check('invalid configuration stops the server at startup with a clear message', async () => {
       for (const [name, value] of [['SESSION_TTL_MINUTES', 'abc'], ['UPSTREAM_TIMEOUT_MS', '-1'], ['COOKIE_SECURE', 'yes'],
-        ['ALLOWED_UPSTREAMS', 'localhost:9970/retailbanking']]) {
+        ['ALLOWED_UPSTREAMS', 'localhost:9970/retailbanking'], ['ALLOWED_ORIGINS', 'https://chat.example.com/'],
+        ['WS_URL', 'ws://elsewhere:1/x'], ['ALLOWED_HOSTS', 'bad host'], ['MAX_CONNECTIONS', '0']]) {
         const out = await new Promise(resolve => {
           const p = spawn(process.execPath, ['server.js'], { cwd: ROOT, env: { ...process.env, PORT: '1', [name]: value } });
           let text = '';

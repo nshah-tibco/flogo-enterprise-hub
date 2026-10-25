@@ -304,7 +304,10 @@ try:
     check("confirm_card_block -> EXECUTED with BLK-NNNNN", c["outcome"] == "EXECUTED"
           and re.fullmatch(r"BLK-\d{5}", s(c.get("block_id"))), c)
     c2 = james.call("confirm_card_block", action_id=s(b.get("action_id")))[0]
-    check("re-confirm -> ALREADY_EXECUTED (same block)", c2["reason_code"] == "ALREADY_EXECUTED" and c2.get("block_id") == c.get("block_id"), c2)
+    check("re-confirm at once -> the same EXECUTED block", c2["outcome"] == "EXECUTED" and c2.get("block_id") == c.get("block_id"), c2)
+    q("UPDATE card_blocks SET created_at = created_at - interval '3 minutes'")
+    c2 = james.call("confirm_card_block", action_id=s(b.get("action_id")))[0]
+    check("re-confirm later -> ALREADY_EXECUTED (same block)", c2["reason_code"] == "ALREADY_EXECUTED" and c2.get("block_id") == c.get("block_id"), c2)
     check("DB: CARD-9001 BLOCKED + one card_replacements row",
           q("SELECT status FROM cards WHERE card_id='CARD-9001'")[0]["status"] == "BLOCKED"
           and n("SELECT count(*) FROM card_replacements WHERE card_id='CARD-9001'") == 1)

@@ -24,9 +24,9 @@ const SECRET = 'Available balance 48,213.77 on ****9921';
 // ---------------------------------------------------------------- helpers
 
 const b64u = obj => Buffer.from(JSON.stringify(obj)).toString('base64url');
-function makeJwt(sub) {
+function makeJwt(sub, ttlSeconds = 3600) {
   const now = Math.floor(Date.now() / 1000);
-  const claims = { sub, name: `Test ${sub}`, scp: ['profile:read'], iat: now, exp: now + 3600 };
+  const claims = { sub, name: `Test ${sub}`, scp: ['profile:read'], iat: now, exp: now + ttlSeconds };
   return `${b64u({ alg: 'HS256', typ: 'JWT' })}.${b64u(claims)}.${crypto.randomBytes(32).toString('base64url')}`;
 }
 
@@ -83,6 +83,27 @@ function findBrowser() {
   return candidates.find(p => p && fs.existsSync(p));
 }
 
+// Mock orchestrator: answers each message after a delay (long enough to switch chats in between)
+function startMockUpstream() {
+  return new Promise(resolve => {
+    const wss = new WebSocket.WebSocketServer({ host: '127.0.0.1', port: 0, path: '/retailbanking' });
+    wss.on('connection', ws => {
+      ws.on('message', data => {
+        let text = data.toString();
+        try {
+          text = JSON.parse(text).message;
+        } catch (e) {
+          /* plain text */
+        }
+        setTimeout(() => ws.readyState === WebSocket.OPEN && ws.send(JSON.stringify({ message: `reply to: ${text}` })), 1500);
+      });
+    });
+    wss.on('listening', () => resolve({ wss, url: `ws://127.0.0.1:${wss.address().port}/retailbanking` }));
+  });
+}
+
+let UPSTREAM = 'ws://127.0.0.1:1/unused';
+
 async function startServer(port) {
   let logs = '';
   const child = spawn(process.execPath, ['server.js'], {
@@ -91,7 +112,7 @@ async function startServer(port) {
       ...process.env,
       PORT: String(port),
       HOST: '127.0.0.1',
-      ALLOWED_UPSTREAMS: 'ws://127.0.0.1:1/unused',
+      ALLOWED_UPSTREAMS: UPSTREAM,
       SIGNIN_PER_MINUTE: '1000',
       ALLOWED_ORIGINS: '',
       WS_URL: '',
@@ -186,6 +207,8 @@ async function check(label, fn) {
   const cdpPort = await freePort();
   const origin = `http://127.0.0.1:${appPort}`;
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'chatbot-ui-'));
+  const mock = await startMockUpstream();
+  UPSTREAM = mock.url;
   let server = await startServer(appPort);
   const browser = spawn(browserPath, [
     '--headless=new', `--remote-debugging-port=${cdpPort}`, `--user-data-dir=${profile}`,
@@ -195,6 +218,7 @@ async function check(label, fn) {
   const cleanup = async () => {
     server.child.kill();
     browser.kill();
+    mock.wss.close();
     await sleep(500);
     fs.rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
   };
@@ -217,17 +241,18 @@ async function check(label, fn) {
     const text = () => page.eval('document.body.innerText');
     const stored = () => page.eval(`JSON.stringify({ owner: localStorage.getItem('flogoChatbotSecure_owner'),
       chats: localStorage.getItem('flogoChatbotSecure_chats') })`).then(JSON.parse);
-    const plant = owner => page.eval(`(() => {
-      localStorage.setItem('flogoChatbotSecure_owner', ${JSON.stringify(owner)});
+    // History as the page stores it, for the CURRENT server session (its historyId)
+    const plant = () => page.eval(`fetch('/auth/session', { credentials: 'same-origin' }).then(r => r.json()).then(s => {
+      localStorage.setItem('flogoChatbotSecure_owner', s.historyId || s.sub); // (sub: what older versions keyed on)
       localStorage.setItem('flogoChatbotSecure_chats', JSON.stringify([{ id: 'chat-1', title: 'Chat 1',
         createdAt: new Date().toISOString(), messages: [
           { type: 'user', content: 'What is my balance?', timestamp: new Date().toISOString() },
           { type: 'bot', content: ${JSON.stringify(SECRET)}, timestamp: new Date().toISOString() }] }]));
       localStorage.setItem('flogoChatbotSecure_currentChatId', 'chat-1');
       localStorage.setItem('flogoChatbotSecure_chatCounter', '1');
-      return true; })()`);
-    const signIn = sub => page.eval(`fetch('/auth/session', { method: 'POST', credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: ${JSON.stringify(makeJwt(sub))} }) })
+      return true; })`);
+    const signIn = (sub, ttl) => page.eval(`fetch('/auth/session', { method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: ${JSON.stringify(makeJwt(sub, ttl))} }) })
       .then(r => r.status)`);
     const authSettled = () => page.eval(`!document.getElementById('authSignedIn').hidden ||
       !document.getElementById('authSignedOut').hidden`);
@@ -235,7 +260,7 @@ async function check(label, fn) {
     // 1. The previous customer's history is in localStorage, but the session is gone (server restarted).
     await page.goto(`${origin}/client-config`);
     assert.strictEqual(await signIn('CUST-A'), 200);
-    await plant('CUST-A');
+    await plant();
     server.child.kill();
     await sleep(300);
     server = await startServer(appPort);
@@ -262,25 +287,52 @@ async function check(label, fn) {
 
     // 2. The same user, still signed in, reloads: their history comes back.
     assert.strictEqual(await signIn('CUST-A'), 200);
-    await plant('CUST-A');
+    await plant();
     await page.goto(`${origin}/`);
     await check('the signed-in owner reloads: their conversation is restored', async () => {
       await waitUntil(async () => (await text()).includes(SECRET), 'restored conversation');
     });
 
     // 3. A different user signs in on this browser: they never see it, and it is deleted.
+    const ownerBefore = (await stored()).owner;
     assert.strictEqual(await signIn('CUST-B'), 200);
     await page.goto(`${origin}/`);
     await waitUntil(authSettled, 'sign-in panel rendered');
     await check('a different user signs in: the previous conversation is not shown and is deleted', async () => {
-      await waitUntil(async () => (await stored()).owner === 'CUST-B', 'owner switched to CUST-B');
+      await waitUntil(async () => ![null, ownerBefore].includes((await stored()).owner), 'history owner switched');
       assert.ok(!(await text()).includes(SECRET), 'another user sees the cached balance');
       assert.ok(!String((await stored()).chats || '').includes(SECRET), 'cached balance still stored');
     });
 
+    // 3b. A token that merely CLAIMS the same sub (this server does not check signatures) starts a new session: the
+    //     earlier session's history is not handed to it.
+    assert.strictEqual(await signIn('CUST-A'), 200);
+    await plant();
+    await page.goto(`${origin}/`);
+    await waitUntil(async () => (await text()).includes(SECRET), 'restored conversation');
+    assert.strictEqual(await signIn('CUST-A'), 200); // forged: any signature is accepted here
+    await page.goto(`${origin}/`);
+    await waitUntil(authSettled, 'sign-in panel rendered');
+    await check('a new sign-in claiming the same sub does not get the earlier session conversation', async () => {
+      await sleep(500);
+      assert.ok(!(await text()).includes(SECRET), 'a forged token with the same sub sees the cached balance');
+      assert.ok(!String((await stored()).chats || '').includes(SECRET), 'cached balance still stored');
+    });
+
+    // 3c. The session expires while the tab is idle and nothing is connected: the history goes at expiry.
+    assert.strictEqual(await signIn('CUST-A', 6), 200);
+    await plant();
+    await page.goto(`${origin}/`);
+    await waitUntil(async () => (await text()).includes(SECRET), 'restored conversation');
+    await check('an idle tab (no connection) drops the conversation when the session expires', async () => {
+      await waitUntil(async () => !(await text()).includes(SECRET), 'conversation removed at expiry', 15000);
+      assert.deepStrictEqual(await stored(), { owner: null, chats: null });
+      assert.strictEqual(await page.eval(`document.getElementById('authSignedOut').hidden`), false);
+    });
+
     // 4. Sign out with the button: the history is gone.
     assert.strictEqual(await signIn('CUST-A'), 200);
-    await plant('CUST-A');
+    await plant();
     await page.goto(`${origin}/`);
     await waitUntil(async () => (await text()).includes(SECRET), 'restored conversation');
     await page.eval(`document.getElementById('signOutBtn').click(), true`);
@@ -291,7 +343,7 @@ async function check(label, fn) {
 
     // 5. Sign-out in another tab: this tab drops the history too (no reload).
     assert.strictEqual(await signIn('CUST-A'), 200);
-    await plant('CUST-A');
+    await plant();
     await page.goto(`${origin}/`);
     await waitUntil(async () => (await text()).includes(SECRET), 'restored conversation');
     const other = await page.send('Target.createTarget', { url: `${origin}/` }).catch(() => null);
@@ -311,6 +363,64 @@ async function check(label, fn) {
       await page2.eval(`document.getElementById('signOutBtn').click(), true`);
       await waitUntil(async () => !(await text()).includes(SECRET), 'first tab cleared');
       page2.ws.close();
+    });
+
+    // 6. A reply belongs to the chat its connection was opened in: switching chats ends that conversation, and the
+    //    reply never lands in the chat now on screen.
+    page.listeners.push(m => {
+      if (m.method === 'Page.javascriptDialogOpening') page.send('Page.handleJavaScriptDialog', { accept: true });
+    });
+    assert.strictEqual(await signIn('CUST-A'), 200);
+    await page.goto(`${origin}/`);
+    await waitUntil(authSettled, 'sign-in panel rendered');
+    await page.eval(`document.getElementById('connectBtn').click(), true`);
+    await waitUntil(async () => (await text()).includes('Connected to server'), 'connected');
+    await page.eval(`(() => { const i = document.getElementById('messageInput'); i.value = 'what is my balance';
+      document.getElementById('sendBtn').click(); document.getElementById('newChatBtn').click(); return true; })()`);
+    await check('switching to a new chat while a reply is pending ends the connection; the reply never lands in the new chat', async () => {
+      await sleep(2500); // the mock answers after 1.5 s
+      const t = await text();
+      assert.ok(!t.includes('reply to: what is my balance'), 'the reply was shown in the newly opened chat');
+      const stored = await page.eval(`JSON.stringify(chatbot.chats.get('chat-2') ? chatbot.chats.get('chat-2').messages : [])`);
+      assert.ok(!stored.includes('reply to:'), 'the reply was filed into the new chat');
+      assert.strictEqual(await page.eval('chatbot.isConnected'), false, 'still connected after switching chats');
+      const first = await page.eval(`JSON.stringify(chatbot.chats.get('chat-1').messages.map(m => m.content))`);
+      assert.ok(first.includes('what is my balance') && first.includes('Disconnected'), first);
+      assert.ok(!/session ended/i.test(t), 'a deliberate disconnect must not report a session problem');
+    });
+
+    // 7. Sign-out that cannot reach the server: still signed in (and told so), history kept until it really ends.
+    await page.eval(`document.getElementById('connectBtn').click(), true`);
+    await waitUntil(async () => (await text()).includes('Connected to server'), 'connected again');
+    await page.send('Fetch.enable', { patterns: [{ urlPattern: '*/auth/session*', requestStage: 'Request' }] });
+    const failer = m => {
+      if (m.method === 'Fetch.requestPaused') {
+        const fail = m.params.request.method === 'DELETE';
+        page.send(fail ? 'Fetch.failRequest' : 'Fetch.continueRequest',
+          fail ? { requestId: m.params.requestId, errorReason: 'InternetDisconnected' } : { requestId: m.params.requestId });
+      }
+    };
+    page.listeners.push(failer);
+    let dialog = '';
+    page.listeners.push(m => {
+      if (m.method === 'Page.javascriptDialogOpening') dialog = m.params.message;
+    });
+    await page.eval(`document.getElementById('signOutBtn').click(), true`);
+    await check('a sign-out that cannot reach the server says so and stays signed in (no false "signed out")', async () => {
+      await waitUntil(async () => dialog.length > 0, 'sign-out failure message');
+      assert.match(dialog, /still signed in/);
+      assert.strictEqual(await page.eval(`document.getElementById('authSignedIn').hidden`), false, 'shows signed out');
+      const st = await page.eval(`fetch('/auth/session', { credentials: 'same-origin' }).then(r => r.json()).then(j => j.signedIn)`);
+      assert.strictEqual(st, true, 'the server session is still live, as the page says');
+    });
+    page.listeners.splice(page.listeners.indexOf(failer), 1);
+    await page.send('Fetch.disable');
+    await page.eval(`document.getElementById('signOutBtn').click(), true`);
+    await check('a normal sign-out shows no error', async () => {
+      await waitUntil(async () => (await page.eval(`document.getElementById('authSignedOut').hidden`)) === false, 'signed out');
+      await sleep(500);
+      const err = await page.eval(`document.getElementById('authError').hidden ? '' : document.getElementById('authError').textContent`);
+      assert.strictEqual(err, '', `error shown after a normal sign-out: ${err}`);
     });
 
     page.ws.close();

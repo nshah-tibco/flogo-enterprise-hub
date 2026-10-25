@@ -17,11 +17,13 @@ Browser ──(HttpOnly session cookie)──> Chatbot_Secure :3001 ──(Autho
 ```
 
 1. You sign in once: the page sends the JWT to the server in a `POST /auth/session` request body and clears the field.
-2. The server keeps the token in a server-side session and gives the browser an **HttpOnly, SameSite=Strict** cookie
-   (plus `Secure` when served over HTTPS through a TLS-terminating reverse proxy). Page scripts cannot read the cookie or the token.
-3. When you click **Connect**, the page opens a WebSocket to this server (`/proxy`). The server checks the cookie,
-   the `Origin` and the target URL allow-list, then opens the upstream WebSocket **with the `Authorization` header**
-   and relays messages both ways. Each browser connection gets its own upstream connection (its own conversation).
+2. The server keeps the token in a server-side session and gives the browser an **HttpOnly, SameSite=Strict**
+   browser-session cookie (dropped when the browser closes; plus `Secure` when served over HTTPS through a
+   TLS-terminating reverse proxy). Page scripts cannot read the cookie or the token.
+3. When you click **Connect**, the page opens a WebSocket to this server (`/proxy`). The server checks the `Host`,
+   the cookie, the `Origin`, the target URL allow-list and the connection caps, then opens the upstream WebSocket
+   **with the `Authorization` header** and relays messages both ways. Each browser connection gets its own upstream
+   connection (its own conversation).
 
 The token never appears in a URL, in browser storage, or in the server log (only the `sub` and a short session-id
 prefix are logged).
@@ -47,8 +49,10 @@ Open **http://localhost:3001**.
    name, `sub`, token expiry and scopes.
 2. **Connect:** the URL box is pre-filled with the first allowed upstream (`ws://localhost:9970/retailbanking`).
    Click **Connect**; the status turns green: **● Connected**.
-3. **Chat** as usual. Each Connect starts a new conversation with the orchestrator.
-4. **Sign out** ends the server session, closes open connections and clears this browser's chat history.
+3. **Chat** as usual. Each Connect starts a new conversation with the orchestrator, in the chat that is open.
+   Switching to another chat (or starting a new one) ends that connection; click **Connect** to continue there.
+4. **Sign out** ends the server session, closes open connections and clears this browser's chat history. If the
+   server cannot be reached, the page says so and stays signed in (try again before you leave the computer).
    To switch persona, sign out and sign in with another token.
 
 If Connect fails, the chat shows why: not signed in / session expired (sign in again), or the orchestrator could not
@@ -70,11 +74,16 @@ Copy `env.example` to `.env` to change the defaults:
 | `SIGNIN_PER_MINUTE` | `10` | Sign-in attempts allowed per client address per minute (HTTP 429 above it; set `TRUST_PROXY=true` behind a reverse proxy so the client address is right) |
 | `COOKIE_SECURE` | `auto` | `auto` sets `Secure` when the request came over HTTPS; or `true` / `false` |
 | `TRUST_PROXY` | `false` | Set `true` behind a TLS-terminating reverse proxy that sets `X-Forwarded-Proto` |
-| `ALLOWED_ORIGINS` | this server's origin | Comma-separated browser origins allowed to sign in and connect (needed only behind a reverse proxy with a different host name) |
+| `ALLOWED_ORIGINS` | this server's origin | Comma-separated browser origins allowed to sign in and connect, each `scheme://host[:port]` with no path (needed only behind a reverse proxy with a different host name) |
+| `ALLOWED_HOSTS` | `localhost`, `127.0.0.1`, `[::1]` on `PORT`, plus the hosts of `ALLOWED_ORIGINS` | Extra `Host` header values the server answers to (`host` or `host:port`). Any other `Host` gets HTTP 421, so a web page cannot reach this server through DNS rebinding |
+| `MAX_CONNECTIONS_PER_SESSION` | `5` | Proxied WebSocket connections (open or connecting) per signed-in session; more get HTTP 429 |
+| `MAX_CONNECTIONS` | `200` | Proxied WebSocket connections in total; more get HTTP 503 |
+| `HEARTBEAT_SECONDS` | `30` | Seconds between pings to each browser connection; one that misses a pong (sleeping laptop, dropped network) is closed |
 | `DIRECT_MODE` | `false` | `true` shows a **Direct** checkbox that connects the browser straight to an upstream **without any token** (for unauthenticated samples only) |
 
 The server refuses to start, with a message naming the variable, when a value is invalid (for example a non-number,
-or an `ALLOWED_UPSTREAMS` entry that isn't a `ws://` or `wss://` URL).
+an `ALLOWED_UPSTREAMS` entry that isn't a `ws://` or `wss://` URL, an `ALLOWED_ORIGINS` entry with a path or trailing
+slash, or a `WS_URL` that is not in `ALLOWED_UPSTREAMS`).
 
 To use it with another JWT-secured orchestrator, add its URL to `ALLOWED_UPSTREAMS`, restart, and pick the URL in
 the URL box (click ↻ to apply it).
@@ -103,13 +112,16 @@ verify the signature: the Flogo MCP server does that on every tool call.
   OIDC authorization-code login on this server; the rest of the flow stays the same.
 - **The Node server holds the token, the browser does not.** Protect this server like any other component that
   holds user credentials.
-- Chat history is kept in this browser's `localStorage` only for the signed-in user it belongs to. It is shown only
-  after the server confirms that user's session, and it is deleted when you sign out (in any tab), when your session
-  ends (expiry, server restart) or when someone else signs in on this browser.
+- Chat history is kept in this browser's `localStorage` for the current server session only (a random id the
+  server gives each sign-in, not the token's `sub`, which this server does not verify). It is shown only after the
+  server confirms that session, survives a page reload, and is deleted when you sign out (in any tab), when the
+  session ends (checked at its expiry time, every minute and when the tab becomes visible, with or without a
+  connection), and on any new sign-in.
 
 ## Test
 
-`npm test` runs a self-contained smoke test of the proxy against a mock upstream (no Flogo needed).
+`npm test` runs a self-contained smoke test of the proxy against a mock upstream (no Flogo needed), including the
+`Host` check, the connection caps and the heartbeat.
 `npm run test:ui` checks the chat history in headless Chrome or Edge (set `CHROME_PATH` if the browser is elsewhere).
 
 ---

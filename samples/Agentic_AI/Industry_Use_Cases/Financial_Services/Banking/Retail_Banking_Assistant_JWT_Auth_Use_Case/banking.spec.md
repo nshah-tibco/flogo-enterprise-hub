@@ -48,18 +48,22 @@ propose_card_block(card, reason) — `card` = card_id (`CARD-9001`) or last 4 di
   `BAD_REASON` (reason not in LOST | STOLEN | DAMAGED | SUSPECTED_FRAUD) → otherwise `PROPOSED`.
 confirm_card_block(action_id): `NO_SUCH_PROPOSAL` (not this customer / wrong type), `EXPIRED` (>15 min),
 `ALREADY_EXECUTED`, rules re-checked → `EXECUTED` with block_id `BLK-NNNNN`, replacement card delivery date
-= `add_business_days(current_date, 5)`.
+= `add_business_days(current_date, 5)`. A repeat confirm within 2 minutes of the execution (a retry, or the same confirm from a second chat) reads the same result; later ones read `ALREADY_EXECUTED`. Confirms run under `lock_customer`, so two pending
+blocks of one card (LOST and STOLEN) confirmed at once block it once (the second reads `ALREADY_BLOCKED`).
 
 propose_dispute(transaction_id, reason_code, customer_statement):
 - `NOT_YOUR_TRANSACTION` (absent or another customer's), `NOT_A_DEBIT`, `PENDING_NOT_POSTED`,
   `OUTSIDE_WINDOW` (txn_date older than 120 days), `ALREADY_DISPUTED` (an OPEN/UNDER_REVIEW dispute exists),
   `BAD_REASON` (not in UNRECOGNISED | FRAUD | DUPLICATE | NOT_RECEIVED | NOT_AS_DESCRIBED | CANCELLED_RECURRING | WRONG_AMOUNT),
-  `NOT_DUPLICATE` (reason DUPLICATE but no other POSTED debit of the same customer, same merchant, same amount within 3 days)
+  `NOT_DUPLICATE` (reason DUPLICATE but no EARLIER POSTED debit of the same customer, same merchant, same amount within
+  3 days: the duplicate is the later charge of the pair, so only one of the two is disputed and credited; on the first
+  charge the reason names the later one)
   → otherwise `PROPOSED` with: amount, merchant, provisional_credit (= amount when reason ∈ {UNRECOGNISED, FRAUD,
   NOT_RECEIVED, DUPLICATE} AND amount ≤ 500.00, else 0), fraud_review (reason ∈ {UNRECOGNISED, FRAUD} OR amount > 1000),
   est_decision_date = `add_business_days(current_date, 10)`.
 confirm_dispute(action_id): `NO_SUCH_PROPOSAL`, `EXPIRED`, `ALREADY_EXECUTED`, rules re-checked → `FILED` with
-dispute_id `DSP-2026-NNNN` (sequence, starts after seeded 0001). Trigger on disputes insert:
+dispute_id `DSP-2026-NNNN` (sequence, starts after seeded 0001). A repeat confirm within 2 minutes of the execution (a retry, or the same confirm from a second chat) reads the same result; later ones read `ALREADY_EXECUTED`. Under
+`lock_customer`: two proposals for one charge confirmed at once file one dispute (the other reads `ALREADY_DISPUTED`). Trigger on disputes insert:
 - provisional_credit > 0 → INSERT a `CREDIT` / `PENDING` transaction "PROVISIONAL CREDIT <dispute_id>" on the same account;
 - fraud_review → INSERT service_cases row `FRAUD_REVIEW` (team Fraud Operations, statement = customer_statement,
   brief = system text with dispute_id/amount/reason);
@@ -195,25 +199,31 @@ also covers decided cases (`CASE-`) and sent payments (`PAY-`) and logs every au
 
 **Payment reason codes:** `ACCOUNT_NOT_FOUND`, `PAYEE_NOT_FOUND`, `BAD_AMOUNT`, `INSUFFICIENT_FUNDS`, `OVER_DAILY_LIMIT`,
 `UNKNOWN_CALLER`; outcomes `PROPOSED`, `PROPOSED_WITH_WARNING`, `HELD_FOR_REVIEW`; confirm: `SENT`, `NO_SUCH_PAYMENT`,
-`HELD_FOR_REVIEW`, `CANCELLED`, `EXPIRED`, `WARNING_NOT_ACKNOWLEDGED`, `ALREADY_SENT`. The customer never sees the score,
+`HELD_FOR_REVIEW`, `CANCELLED`, `SUPERSEDED`, `EXPIRED`, `WARNING_NOT_ACKNOWLEDGED`, `ALREADY_SENT` (a repeat confirm
+within 2 minutes of the send reads `SENT`). Re-proposing the same account / payee / amount reuses the request, unless
+the new assessment is riskier: then the old proposal is `SUPERSEDED` and the new one is written (warning or hold), so
+the band never goes down when the customer tells more of the story. The customer never sees the score,
 band or indicators; the Fraud Operations reviewer does (case facts + brief). Sends run one at a time per customer
-(`lock_customer_money`, taken by `payment_confirmation_row` and `decide_case_row` before their checks and held to
+(`lock_customer`, taken by `payment_confirmation_row` and `decide_case_row` before their checks and held to
 commit), and `trg_payment_send` refuses a debit that would overdraw the account or pass the daily limit.
 
 **Case parking (`case_parking`):** FEE_REFUND + a posted, unrefunded FEES debit (empty → the latest in 120 days) →
 `FEE_REFUND:<txn>` (requested = fee); LOAN_HARDSHIP + an ACTIVE loan (empty → the only one) → `LOAN_DEFERRAL:<loan>`
 (requested = 3 x monthly payment); a HIGH payment → `PAYMENT_HOLD` case `RELEASE_PAYMENT:<payment>` (requested = amount;
 not customer-openable). A foreign or non-fee reference → `BAD_REFERENCE`; an OPEN case with the same parked action →
-`ALREADY_OPEN`. The same statement of the same type within 10 minutes is a retry (no new case). The matched case's
-`last_requested_at` is updated, so the readback reports the case THIS request opened or matched (a refused request
-reports no case). Every case gets `sla_due_at` from `service_teams` (trigger).
+`ALREADY_OPEN`. The same statement of the same type within 10 minutes is a retry (no new case). The write and the
+readback share one definition of the matching case (`case_match`, the readback also gets the statement), so each
+call reports the case it opened or matched, even with two chats at once (a refused request reports no case). Every case gets `sla_due_at` from `service_teams` (trigger).
 
 **Reviewer loop (HITL_CONTRACT shape):** `reviewers` (KST-7001 Maya Chen, Customer Care, limit $25; KST-7002 Daniel
 Ortiz, Financial Support, $5,000; KST-7003 Priya Nair, Fraud Operations, $20,000). The reviewer is the verified `sub`,
 resolved by `caller_reviewer(sub)` on every reviewer call (role checked in SQL as well as by scope);
 `review_decisions` (insert-only) + `trg_review_decision` executing the parked action through `fee_refund_row` /
 `loan_deferral_row` (whole payments, 1-3) / `payment_release_row` (in full only); REJECT on a held payment cancels it
-(no money moves); `CASE_DECIDED` audit with the reviewer as actor. `decide_case_row` reason codes: `NOT_REVIEWER`,
+(no money moves); `CASE_DECIDED` audit with the reviewer as actor. A loan is deferred at most once in 12 months,
+whichever case asks (`ACTION_NOT_EXECUTABLE` otherwise). The confirming decide call records the decision, amount,
+customer message and note that were READ BACK (a different, explicitly passed message is a new decision →
+`CONFIRM_REQUIRED` again). `decide_case_row` reason codes: `NOT_REVIEWER`,
 `NOT_FOUND`, `NOT_YOUR_TEAM`, `ALREADY_DECIDED`, `INVALID_DECISION`, `NOTE_REQUIRED`, `AMOUNT_INVALID`,
 `OVER_AUTHORITY`. Seeded OPEN cases: Sophia's FRAUD_REVIEW + William's held $6,200 payment (Fraud Operations),
 Olivia's hardship deferral (Financial Support), Michael's $29 late fee (Customer Care).

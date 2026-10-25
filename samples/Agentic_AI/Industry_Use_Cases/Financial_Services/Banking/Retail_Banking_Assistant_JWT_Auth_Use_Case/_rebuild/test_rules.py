@@ -276,7 +276,11 @@ c1 = cblock(james, blk_act.lower())
 check("confirm -> EXECUTED with BLK-NNNNN", c1["outcome"] == "EXECUTED" and re.fullmatch(r"BLK-\d{5}", c1["block_id"] or "")
       and c1["replacement_expected_delivery"] == exp5, c1)
 c2 = cblock(james, blk_act)
-check("re-confirm -> ALREADY_EXECUTED, same block, one row", c2["reason_code"] == "ALREADY_EXECUTED"
+check("re-confirm at once (a retry, a second chat) -> the same EXECUTED block, one row", c2["outcome"] == "EXECUTED"
+      and c2["block_id"] == c1["block_id"] and one("SELECT count(*) FROM card_blocks") == "1", c2)
+psql("UPDATE card_blocks SET created_at = created_at - interval '3 minutes'")
+c2 = cblock(james, blk_act)
+check("re-confirm later -> ALREADY_EXECUTED, same block, one row", c2["reason_code"] == "ALREADY_EXECUTED"
       and c2["block_id"] == c1["block_id"] and one("SELECT count(*) FROM card_blocks") == "1", c2)
 check("trigger: card BLOCKED", one("SELECT status FROM cards WHERE card_id='CARD-9001'") == "BLOCKED")
 rep = psql("SELECT card_id, block_id, expected_delivery FROM card_replacements")
@@ -350,7 +354,10 @@ check("confirm -> FILED DSP-2026-0002 (sequence continues after seeded 0001)",
       f1["outcome"] == "FILED" and f1["dispute_id"] == "DSP-2026-0002" and f1["provisional_credit"] == "249.99"
       and f1["fraud_case_id"] and f1["provisional_credit_txn"] and f1["est_decision_date"] == exp10, f1)
 f2 = cdisp(james, q["action_id"])
-check("re-confirm -> ALREADY_EXECUTED, one dispute row", f2["reason_code"] == "ALREADY_EXECUTED"
+check("re-confirm at once -> the same FILED dispute", f2["outcome"] == "FILED" and f2["dispute_id"] == "DSP-2026-0002", f2)
+psql("UPDATE disputes SET created_at = created_at - interval '3 minutes' WHERE dispute_id = 'DSP-2026-0002'")
+f2 = cdisp(james, q["action_id"])
+check("re-confirm later -> ALREADY_EXECUTED, one dispute row", f2["reason_code"] == "ALREADY_EXECUTED"
       and f2["dispute_id"] == "DSP-2026-0002"
       and one("SELECT count(*) FROM disputes WHERE transaction_id='TXN-50003'") == "1", f2)
 pc = psql("SELECT account_id, txn_type, status, amount FROM transactions WHERE descriptor='PROVISIONAL CREDIT DSP-2026-0002'")
@@ -528,7 +535,11 @@ check("confirm a bogus id -> NO_SUCH_PAYMENT", cpay(emma, "PAY-99999")["reason_c
 c1 = cpay(emma, e1["payment_id"].lower())
 check("confirm -> SENT, balance after 2,250.00", c1["outcome"] == "SENT" and c1["available_balance_after"] == "2250.00", c1)
 c2 = cpay(emma, e1["payment_id"])
-check("re-confirm -> ALREADY_SENT, one send row", c2["reason_code"] == "ALREADY_SENT"
+check("re-confirm at once -> the same SENT payment, one send row", c2["outcome"] == "SENT"
+      and one(f"SELECT count(*) FROM payment_sends WHERE payment_id = {lit(e1['payment_id'])}") == "1", c2)
+psql(f"UPDATE payment_sends SET sent_at = sent_at - interval '3 minutes' WHERE payment_id = {lit(e1['payment_id'])}")
+c2 = cpay(emma, e1["payment_id"])
+check("re-confirm later -> ALREADY_SENT, one send row", c2["reason_code"] == "ALREADY_SENT"
       and one(f"SELECT count(*) FROM payment_sends WHERE payment_id = {lit(e1['payment_id'])}") == "1", c2)
 e3 = pay(emma, "ACC-1009", "PYE-0201", "100", "Topping up the deposit.", "NONE", "0")
 psql(f"UPDATE payment_requests SET expires_at = now() - interval '1 minute' WHERE payment_id = {lit(e3['payment_id'])}")
@@ -1015,6 +1026,111 @@ def decide_sql(tok, case, note="Customer confirmed the payee independently.", ms
     return bind(*T["decide_review_case"]["write"], {SUB: tok, "case_id": case, "decision": "APPROVE", "amount": "",
                                                     "internal_note": note, "customer_message": msg})
 def sends(*pids): return int(one("SELECT count(*) FROM payment_sends WHERE payment_id IN (" + ", ".join(map(lit, pids)) + ")"))
+
+# two chats of one customer open cases at the same moment: each readback reports its OWN case
+reset()
+def case_args(stmt, ty="COMPLAINT", ref=""):
+    return {SUB: james, "request_type": ty, "customer_statement": stmt, "brief": "Customer request.", "reference_id": ref}
+X, Y = case_args("The branch was closed during opening hours."), case_args("The app logged me out three times today.")
+psql(bind(*T["open_service_case"]["write"], X))          # chat 1 writes
+psql(bind(*T["open_service_case"]["write"], Y))          # chat 2 writes before chat 1 reads back
+rx = psql(bind(*T["open_service_case"]["read"], X))[0]
+ry = psql(bind(*T["open_service_case"]["read"], Y))[0]
+check("interleaved: write X, write Y, read X, read Y -> two different cases, each read reports its own statement's case",
+      rx["case_id"] and ry["case_id"] and rx["case_id"] != ry["case_id"]
+      and one(f"SELECT customer_statement FROM service_cases WHERE case_id = {lit(rx['case_id'])}") == X["customer_statement"]
+      and one(f"SELECT customer_statement FROM service_cases WHERE case_id = {lit(ry['case_id'])}") == Y["customer_statement"],
+      (rx, ry))
+Z = case_args("I was charged twice for the same coffee.")
+w = race(bind(*T["open_service_case"]["write"], Z), bind(*T["open_service_case"]["write"], Z))
+rz = psql(bind(*T["open_service_case"]["read"], Z))[0]
+check(f"the same request from two chats at once -> ONE case, both read it back (second waited {w:.1f}s)",
+      one(f"SELECT count(*) FROM service_cases WHERE customer_statement = {lit(Z['customer_statement'])}") == "1"
+      and rz["outcome"] == "CASE_OPENED" and rz["case_id"], rz)
+
+# ---- a re-proposal never lowers the risk: telling more of the story replaces a LOW proposal with a HELD one ----
+reset()
+lo = pay(patricia, "ACC-1014", "PYE-0101", "1200", "Rent for next month.", "NONE", "0")
+check("re-assessment setup: $1,200 rent -> PROPOSED (LOW)", lo["outcome"] == "PROPOSED"
+      and one(f"SELECT risk_band FROM payment_requests WHERE payment_id = {lit(lo['payment_id'])}") == "LOW", lo)
+hi = pay(patricia, "ACC-1014", "PYE-0101", "1200", STORY, "SAFE_ACCOUNT, IMPERSONATION, SECRECY", "95", NOTES)
+check("the same payment re-proposed with a safe-account story -> a NEW request, HELD_FOR_REVIEW with a case",
+      hi["outcome"] == "HELD_FOR_REVIEW" and hi["payment_id"] != lo["payment_id"] and re.fullmatch(r"CASE-\d{5}", hi["case_id"] or ""), hi)
+check("DB: the LOW proposal is SUPERSEDED (audited); nothing sent",
+      one(f"SELECT status FROM payment_requests WHERE payment_id = {lit(lo['payment_id'])}") == "SUPERSEDED"
+      and one(f"SELECT count(*) FROM agent_audit WHERE action = 'PAYMENT_SUPERSEDED' AND ref = {lit(lo['payment_id'])}") == "1"
+      and one("SELECT count(*) FROM payment_sends") == "0")
+r = cpay(patricia, lo["payment_id"], "YES")
+check("confirming the superseded LOW proposal -> NOT_SENT SUPERSEDED, balance untouched",
+      r["outcome"] == "NOT_SENT" and r["reason_code"] == "SUPERSEDED" and bal("ACC-1014") == "24000.00", r)
+again = pay(patricia, "ACC-1014", "PYE-0101", "1200", "Rent for next month.", "NONE", "0")
+check("re-proposing it again with the harmless story -> still the HELD request (the band never goes down)",
+      again["payment_id"] == hi["payment_id"] and again["outcome"] == "HELD_FOR_REVIEW", again)
+
+# ---- confirms at the same moment: every call reports what happened, the action runs once ----
+reset()
+p1 = pay(emma, "ACC-1009", "PYE-0201", "300", "Rent top-up.", "NONE", "0")
+w = race(confirm_sql(emma, p1["payment_id"]), confirm_sql(emma, p1["payment_id"]))
+rs = [psql(bind(*T["confirm_payment"]["read"], {SUB: emma, "payment_id": p1["payment_id"], "acknowledge_warning": "YES"}))[0]
+      for _ in range(2)]
+check(f"the same payment confirmed twice at once -> sent once, and both calls read SENT (second waited {w:.1f}s)",
+      sends(p1["payment_id"]) == 1 and all(x["outcome"] == "SENT" for x in rs) and bal("ACC-1009") == "5300.00", rs)
+b1, b2 = pblock(james, "CARD-9001", "LOST"), pblock(james, "CARD-9001", "STOLEN")
+cb = lambda act: bind(*T["confirm_card_block"]["write"], {SUB: james, "action_id": act})
+w = race(cb(b1["action_id"]), cb(b2["action_id"]))
+r2 = cblock(james, b2["action_id"])
+check(f"two block proposals for one card confirmed at once -> ONE block, ONE replacement (second waited {w:.1f}s)",
+      one("SELECT count(*) FROM card_blocks WHERE card_id = 'CARD-9001'") == "1"
+      and one("SELECT count(*) FROM card_replacements WHERE card_id = 'CARD-9001'") == "1"
+      and r2["outcome"] == "NOT_EXECUTED" and r2["reason_code"] == "ALREADY_BLOCKED", r2)
+d1 = pdisp(james, "TXN-50003", "NOT_RECEIVED", "It never arrived.")
+d2 = pdisp(james, "TXN-50003", "NOT_AS_DESCRIBED", "It was not what I ordered.")
+cd = lambda act: bind(*T["confirm_dispute"]["write"], {SUB: james, "action_id": act})
+w = race(cd(d1["action_id"]), cd(d2["action_id"]))         # an unhandled unique violation would stop the test here
+r2 = cdisp(james, d2["action_id"])
+check(f"two dispute proposals for one charge confirmed at once -> ONE dispute, the other reads ALREADY_DISPUTED (waited {w:.1f}s)",
+      one("SELECT count(*) FROM disputes WHERE transaction_id = 'TXN-50003'") == "1"
+      and r2["outcome"] == "NOT_FILED" and r2["reason_code"] == "ALREADY_DISPUTED", r2)
+
+# ---- a duplicate charge is the LATER one of the pair: only one provisional credit ----
+r = pdisp(sophia, "TXN-50017", "DUPLICATE", "Acme charged me twice.")
+check("DUPLICATE on the first of the two Acme charges -> NOT_DUPLICATE, pointing at the later one (TXN-50018)",
+      r["reason_code"] == "NOT_DUPLICATE" and "TXN-50018" in (r["reason"] or ""), r)
+f = cdisp(sophia, pdisp(sophia, "TXN-50018", "DUPLICATE", "Acme charged me twice.")["action_id"])
+r = pdisp(sophia, "TXN-50017", "DUPLICATE", "And this one too.")
+check("after the later charge is filed, the first still cannot be disputed as a duplicate -> one $64.10 credit in total",
+      f["outcome"] == "FILED" and r["reason_code"] == "NOT_DUPLICATE"
+      and one("SELECT count(*) FROM transactions WHERE descriptor LIKE 'PROVISIONAL CREDIT%' AND customer_id = 'CUST-2026-00104' "
+              "AND txn_date = current_date") == "1", r)
+
+# ---- the reviewer's confirming call records what was read back ----
+r = call("decide_review_case", sub=maya, case_id="CASE-00004", decision="APPROVE", amount="20",
+         internal_note="Long-standing customer, first late fee.", customer_message="We refunded $20 of the late fee.")[0]
+check("decide step 1 -> CONFIRM_REQUIRED carrying the message to read back", r["outcome"] == "CONFIRM_REQUIRED"
+      and r["customer_message"] == "We refunded $20 of the late fee.", r)
+r = call("decide_review_case", sub=maya, case_id="CASE-00004", decision="APPROVE", amount="20",
+         internal_note="ok fine", customer_message="Your full fee was refunded and all future fees are waived.")[0]
+check("a confirming call with a DIFFERENT customer message -> CONFIRM_REQUIRED again (nothing recorded)",
+      r["outcome"] == "CONFIRM_REQUIRED" and r["customer_message"].startswith("Your full fee")
+      and one("SELECT count(*) FROM review_decisions WHERE case_id = 'CASE-00004'") == "0", r)
+r = call("decide_review_case", sub=maya, case_id="CASE-00004", decision="APPROVE", amount="20",
+         internal_note="Confirmed by the reviewer.", customer_message="")[0]
+rd = psql("SELECT customer_message, internal_note FROM review_decisions WHERE case_id = 'CASE-00004'")
+check("confirming with no message -> APPROVED with the message and note that were read back",
+      r["outcome"] == "APPROVED" and rd == [{"customer_message": "Your full fee was refunded and all future fees are waived.",
+                                            "internal_note": "ok fine"}], (r, rd))
+
+# ---- a loan is deferred at most once in 12 months, whichever case asks ----
+h1 = ocase(benjamin, "LOAN_HARDSHIP", "I lost my job last month.", "LOAN-3003")
+r = decide(daniel, h1["case_id"], note="Layoff letter seen on file.", msg="Your next 3 payments are deferred.")
+check("first hardship case -> APPROVED, LOAN-3003 deferred", r["outcome"] == "APPROVED"
+      and one("SELECT count(*) FROM loan_deferrals WHERE loan_id = 'LOAN-3003'") == "1", r)
+h2 = ocase(benjamin, "LOAN_HARDSHIP", "Still out of work, can you defer again?", "LOAN-3003")
+r = decide(daniel, h2["case_id"], note="Second request for the same loan.", msg="Deferred again.")
+check("a second hardship case on the same loan -> BLOCKED ACTION_NOT_EXECUTABLE (one deferral per 12 months), case OPEN",
+      h2["outcome"] == "CASE_OPENED" and r["outcome"] == "BLOCKED" and r["reason_code"] == "ACTION_NOT_EXECUTABLE"
+      and "12 months" in (r["reason_text"] or "")
+      and one("SELECT count(*) FROM loan_deferrals WHERE loan_id = 'LOAN-3003'") == "1", (h2, r))
 
 reset()
 p1 = pay(emma, "ACC-1009", "PYE-0201", "3000", "Rent and deposit.", "NONE", "0")

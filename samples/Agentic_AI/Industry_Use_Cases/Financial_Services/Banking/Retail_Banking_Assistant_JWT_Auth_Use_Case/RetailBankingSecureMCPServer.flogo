@@ -3534,7 +3534,7 @@
                 "Connection": "conn://f2bd43ec-5125-4313-bc15-b0cf123b6171",
                 "QueryName": "",
                 "Schema": "public",
-                "Query": "SELECT * FROM service_case_result(CAST(?r_sub AS text), CAST(?r_type AS text), CAST(?r_ref AS text));",
+                "Query": "SELECT * FROM service_case_result(CAST(?r_sub AS text), CAST(?r_type AS text), CAST(?r_stmt AS text), CAST(?r_ref AS text));",
                 "manualmode": false,
                 "fetchMetadata": false,
                 "Fields": [
@@ -3547,6 +3547,13 @@
                   },
                   {
                     "FieldName": "r_type",
+                    "Type": "LONGVARCHAR",
+                    "Selected": false,
+                    "Parameter": true,
+                    "isEditable": false
+                  },
+                  {
+                    "FieldName": "r_stmt",
                     "Type": "LONGVARCHAR",
                     "Selected": false,
                     "Parameter": true,
@@ -3645,12 +3652,13 @@
                   }
                 ],
                 "RuntimeQuery": "",
-                "State": "31113592-22fa-4b3f-9ef4-190a2524736dSELECT * FROM service_case_result(CAST(?r_sub AS text), CAST(?r_type AS text), CAST(?r_ref AS text));",
+                "State": "31113592-22fa-4b3f-9ef4-190a2524736dSELECT * FROM service_case_result(CAST(?r_sub AS text), CAST(?r_type AS text), CAST(?r_stmt AS text), CAST(?r_ref AS text));",
                 "input": {
                   "mapping": {
                     "parameters": {
                       "r_sub": "=$flow.tokenInfo.sub",
                       "r_type": "=$flow.arguments.request_type",
+                      "r_stmt": "=$flow.arguments.customer_statement",
                       "r_ref": "=$flow.arguments.reference_id"
                     }
                   }
@@ -3660,8 +3668,8 @@
                 "input": {
                   "input": {
                     "type": "json",
-                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{\"r_sub\":{\"type\":\"string\"},\"r_type\":{\"type\":\"string\"},\"r_ref\":{\"type\":\"string\"}}}}}",
-                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{\"r_sub\":{\"type\":\"string\"},\"r_type\":{\"type\":\"string\"},\"r_ref\":{\"type\":\"string\"}}}}}"
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{\"r_sub\":{\"type\":\"string\"},\"r_type\":{\"type\":\"string\"},\"r_stmt\":{\"type\":\"string\"},\"r_ref\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"definitions\":{},\"properties\":{\"parameters\":{\"type\":\"object\",\"properties\":{\"r_sub\":{\"type\":\"string\"},\"r_type\":{\"type\":\"string\"},\"r_stmt\":{\"type\":\"string\"},\"r_ref\":{\"type\":\"string\"}}}}}"
                   }
                 },
                 "output": {

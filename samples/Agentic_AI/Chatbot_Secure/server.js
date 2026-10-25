@@ -11,12 +11,19 @@ const path = require('path');
 const config = require('./config/config');
 const { SessionStore } = require('./lib/sessions');
 const { attachProxy } = require('./lib/proxy');
+const { hostAllowed } = require('./lib/security');
 
 const store = new SessionStore({ ttlMs: config.sessionTtlMinutes * 60 * 1000, maxSessions: config.maxSessions });
 
 const app = express();
 app.disable('x-powered-by');
 if (config.trustProxy) app.set('trust proxy', 1);
+
+// DNS rebinding: a page on another site can point its host name at this machine; refuse any Host we do not serve
+app.use((req, res, next) => {
+  if (hostAllowed(req, config)) return next();
+  res.status(421).type('text/plain').send('Misdirected request: unknown Host. Add it to ALLOWED_HOSTS or ALLOWED_ORIGINS.');
+});
 
 // Basic hardening headers
 app.use((req, res, next) => {

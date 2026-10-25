@@ -38,13 +38,14 @@ Chunked build (keeps each run short): BUILD_TO=<n> builds the project + the firs
 the existing file from tool n (0-based). On a mid-run failure, delete ONLY RetailBankingSecureMCPServer.flogo and re-run.
 Add tools to an EXISTING app (e.g. a new tool after a designer edit, without regenerating anything else):
   ADD_TOOLS=whoami APP_FILE=<path>.flogo python _rebuild/build_mcp.py"""
-import json, os, subprocess
+import json, os, subprocess, sys
 os.environ.setdefault("PG_DB", "banking_jwt_auth")
 from fda_common import App, CFG, FDA, USE_CASE_DIR, jtmp, result_columns, setting
 from tool_spec import TOOLS, param_source
 
 APP_FILE_NAME = "RetailBankingSecureMCPServer.flogo"
 TRIG, PORT, ENDPOINT, SERVER_NAME = "RetailBankingSecureMCPServer", "9972", "/retail-banking-mcp", "RetailBankingSecure"
+ENDPOINTS = [{"protocol": "http", "port": PORT, "title": TRIG, "type": "public"}]
 JWT_PLACEHOLDER = "SET_YOUR_JWT_SECRET"
 
 # The verified-claims object the MCP Server trigger hands each tool flow (JWT Token / OAuth 2.0 auth).
@@ -110,6 +111,9 @@ def build_project(app, em):
     f("sa", "trigger", f"{TRIG}.settings.serverName", SERVER_NAME)
     f("sa", "trigger", f"{TRIG}.settings.serverVersion", "1.0.0")
     f("sa", "trigger", f"{TRIG}.settings.authType", "JWT Token")
+    # metadata.endpoints = the port a deployment exposes as a Kubernetes Service (the designer fills it on save; fda
+    # leaves it empty -> no Service port -> 503 on TIBCO Platform). title = the Control Plane's "Service Name".
+    f("sa", "any", "metadata.endpoints", "--jsonValue", json.dumps(ENDPOINTS), "--force")
     f("sa", "trigger", f"{TRIG}.settings.authToken", "MCP.JWT_Secret", "-C", "app-property")
     f("cs", "ToolResponse", '{"type":"object","properties":{"data":{"type":"string"},"error":{"type":"string"}}}')
 
@@ -203,6 +207,21 @@ def build_tool(app, t, trig=TRIG, em=None):
         f("mm", f"{flow}.ReturnNotSent.input.mappings.response.mapping.data", "=coerce.toString($activity[ReadOutcome].Output)")
 
 
+def self_check(app):
+    """What a deployment needs that fda does not fill in on its own."""
+    d = app.load()
+    tr = next(t for t in d["triggers"] if t["id"] == TRIG)
+    problems = []
+    if d.get("metadata", {}).get("endpoints") != ENDPOINTS:
+        problems.append(f"metadata.endpoints is {d.get('metadata', {}).get('endpoints')!r}, expected {ENDPOINTS!r}")
+    props = {p["name"]: p["value"] for p in d["properties"]}
+    if str(props.get("MCP_SERVER_PORT")) != PORT or tr["settings"].get("serverPort") != '=$property["MCP_SERVER_PORT"]':
+        problems.append("server port")
+    if problems:
+        sys.exit("SELF-CHECK FAILED: " + "; ".join(problems))
+    print("  self-check ok (endpoints, port)")
+
+
 def main():
     print("fda:", FDA)
     print(subprocess.run([FDA, "version"], capture_output=True, text=True).stdout.strip())
@@ -226,6 +245,7 @@ def main():
         build_project(app, em)
     for t in TOOLS[resume:build_to]:
         build_tool(app, t, TRIG, em)
+    self_check(app)
     print(f"\nMCP server build {'complete' if build_to >= len(TOOLS) else 'paused after tool ' + str(build_to)}:", app.file)
 
 

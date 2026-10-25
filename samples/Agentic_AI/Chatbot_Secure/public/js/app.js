@@ -19,12 +19,15 @@ class FlogoChatbot {
         this.clientConfig = { allowedUpstreams: [], defaultUpstream: this.wsUrl, directMode: false };
         this.auth = { signedIn: false };
         
-        // Chat sessions management. History belongs to one signed-in user (chatOwner = their sub); it is restored
-        // only once the server confirms that user's session, and never shown while signed out.
+        // Chat sessions management. History belongs to one server session (chatOwner = the session's historyId, new
+        // on every sign-in - never the JWT's sub, which this server does not verify). It is restored only once the
+        // server confirms that session, and dropped as soon as the session ends.
         this.chats = new Map();
         this.currentChatId = null;
         this.chatCounter = 0;
         this.chatOwner = null;
+        this.authCheckSeq = 0;
+        this.sessionTimer = null;
         
         // DOM elements
         this.elements = {
@@ -72,6 +75,13 @@ class FlogoChatbot {
         window.addEventListener('storage', (e) => {
             if (e.key === null || e.key === 'flogoChatbotSecure_owner') this.refreshAuthStatus();
         });
+        // An idle tab still notices a session that ended (expiry is also timed exactly, see scheduleSessionCheck)
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && this.auth.signedIn) this.refreshAuthStatus();
+        });
+        setInterval(() => {
+            if (this.auth.signedIn) this.refreshAuthStatus();
+        }, 60 * 1000);
     }
 
     /**
@@ -116,14 +126,30 @@ class FlogoChatbot {
      * Ask the server whether this browser has a live session (non-secret claims only)
      */
     async refreshAuthStatus() {
+        const seq = ++this.authCheckSeq;
+        let auth;
         try {
             const res = await fetch('/auth/session', { credentials: 'same-origin', cache: 'no-store' });
-            this.auth = res.ok ? await res.json() : { signedIn: false };
+            auth = res.ok ? await res.json() : { signedIn: false };
         } catch (error) {
-            this.auth = { signedIn: false };
+            auth = { signedIn: false };
         }
+        if (seq !== this.authCheckSeq) return this.auth; // a newer check (or a sign-in / sign-out) already answered
+        this.auth = auth;
         this.renderAuth();
         return this.auth;
+    }
+
+    /**
+     * Check the session again the moment it expires, so its history disappears even with no connection open
+     */
+    scheduleSessionCheck() {
+        clearTimeout(this.sessionTimer);
+        this.sessionTimer = null;
+        const expiresAt = this.auth.signedIn ? Date.parse(this.auth.sessionExpiresAt) : NaN;
+        if (Number.isNaN(expiresAt)) return;
+        const delay = Math.min(Math.max(expiresAt - Date.now() + 500, 0), 2 ** 31 - 1);
+        this.sessionTimer = setTimeout(() => this.refreshAuthStatus(), delay);
     }
 
     /**
@@ -149,6 +175,7 @@ class FlogoChatbot {
                 body: JSON.stringify({ token })
             });
             const body = await res.json().catch(() => ({}));
+            this.authCheckSeq++; // this answer is newer than any session check still in flight
             if (!res.ok) {
                 this.showAuthError(body.error || `Sign-in failed (${res.status})`);
                 this.auth = { signedIn: false };
@@ -168,11 +195,20 @@ class FlogoChatbot {
      */
     async signOut() {
         this.disconnect();
+        let ok = false;
         try {
-            await fetch('/auth/session', { method: 'DELETE', credentials: 'same-origin', cache: 'no-store' });
+            const res = await fetch('/auth/session', { method: 'DELETE', credentials: 'same-origin', cache: 'no-store' });
+            ok = res.ok;
         } catch (error) {
             console.error('Sign-out request failed:', error);
         }
+        if (!ok) {
+            // The server may still hold the session (and the cookie still points at it): say so, stay signed in.
+            alert('Sign-out failed: the server could not end your session, so you are still signed in. ' +
+                  'Try again before you leave this computer.');
+            return;
+        }
+        this.authCheckSeq++;
         this.auth = { signedIn: false };
         this.renderAuth(); // signed out: drops the history (releaseChats)
     }
@@ -190,7 +226,7 @@ class FlogoChatbot {
         this.elements.authSignedOut.hidden = signedIn;
         this.elements.authSignedIn.hidden = !signedIn;
         if (signedIn) {
-            this.claimChats(this.auth.sub);
+            this.claimChats(this.auth.historyId);
             this.elements.authName.textContent = this.auth.name || '(no name claim)';
             this.elements.authSub.textContent = `sub: ${this.auth.sub || '-'}`;
             const exp = this.auth.exp ? new Date(this.auth.exp * 1000) : null;
@@ -205,15 +241,21 @@ class FlogoChatbot {
         } else {
             this.releaseChats();
         }
+        this.scheduleSessionCheck();
         this.updateConnectionStatus(this.isConnected);
     }
 
     /**
-     * Chats in localStorage belong to one signed-in user. Restore them only for that user; anyone else (a different
-     * user, also after a sign-in from another tab) starts from an empty history and the stored one is deleted.
+     * Chats in localStorage belong to one server session (its historyId). Restore them only while that session lasts
+     * (a reload); any new sign-in - another user, the same user again, a token claiming someone's sub - starts from an
+     * empty history and the stored one is deleted.
      */
-    claimChats(sub) {
-        const owner = sub || '-';
+    claimChats(historyId) {
+        if (!historyId) { // a server that does not name the history: keep none
+            this.releaseChats();
+            return;
+        }
+        const owner = historyId;
         if (this.chatOwner === owner) return;
         if (this.isConnected) return; // never replace the conversation that is on screen
         this.resetChats();
@@ -338,6 +380,7 @@ class FlogoChatbot {
         if (!this.currentChatId) {
             this.createNewChat(); // so connection status messages have somewhere to appear
         }
+        const chatId = this.currentChatId; // this connection's conversation lives in this chat only
 
         // Proxy mode: connect to this server; it adds the Authorization header upstream.
         // Direct mode: connect straight to the upstream (no token is ever sent).
@@ -349,6 +392,7 @@ class FlogoChatbot {
         try {
             console.log(`Connecting to ${this.wsUrl}${direct ? ' (direct)' : ' via proxy'}...`);
             const ws = new WebSocket(url);
+            ws.chatId = chatId;
             this.ws = ws;
             let opened = false;
             this.updateConnectionStatus(false); // disables Connect while the handshake is in progress
@@ -360,7 +404,7 @@ class FlogoChatbot {
                 opened = true;
                 this.isConnected = true;
                 this.updateConnectionStatus(true);
-                this.addSystemMessage('Connected to server');
+                this.addSystemMessage('Connected to server', chatId);
             };
             
             // Message received
@@ -368,10 +412,10 @@ class FlogoChatbot {
                 if (this.ws !== ws) return;
                 try {
                     const data = JSON.parse(event.data);
-                    this.handleIncomingMessage(data);
+                    this.handleIncomingMessage(data, chatId);
                 } catch (e) {
                     // If not JSON, treat as plain text
-                    this.handleIncomingMessage({ message: event.data });
+                    this.handleIncomingMessage({ message: event.data }, chatId);
                 }
             };
             
@@ -382,18 +426,22 @@ class FlogoChatbot {
                 console.log('WebSocket disconnected');
                 this.isConnected = false;
                 this.updateConnectionStatus(false);
+                if (ws.userClosed) { // Disconnect, Sign out or switching chats: nothing went wrong
+                    this.addSystemMessage('Disconnected', chatId);
+                    return;
+                }
+                const auth = await this.refreshAuthStatus(); // direct mode too: the history must follow the session
                 if (!direct) {
-                    const auth = await this.refreshAuthStatus();
                     if (!auth.signedIn) {
                         this.showAuthError('Not signed in (or the session ended). Please sign in again.');
                         return;
                     }
                     if (!opened) {
-                        this.addSystemMessage('Could not reach the orchestrator through the proxy. Check it is running and the URL is allowed.');
+                        this.addSystemMessage('Could not reach the orchestrator through the proxy. Check it is running and the URL is allowed.', chatId);
                         return;
                     }
                 }
-                this.addSystemMessage(event && event.reason ? `Disconnected: ${event.reason}` : 'Disconnected from server');
+                this.addSystemMessage(event && event.reason ? `Disconnected: ${event.reason}` : 'Disconnected from server', chatId);
             };
 
             // Error handling (details are reported by onclose)
@@ -417,6 +465,7 @@ class FlogoChatbot {
      */
     disconnect() {
         if (this.ws) {
+            this.ws.userClosed = true;
             this.ws.close();
             this.ws = null;
         }
@@ -452,11 +501,8 @@ class FlogoChatbot {
     /**
      * Handle incoming message from WebSocket
      */
-    handleIncomingMessage(data) {
-        if (!this.currentChatId) {
-            // Create a new chat if none exists
-            this.createNewChat();
-        }
+    handleIncomingMessage(data, chatId) {
+        if (!this.chats.has(chatId)) return; // its chat is gone (signed out meanwhile)
         
         const message = {
             type: 'bot',
@@ -465,7 +511,7 @@ class FlogoChatbot {
             timestamp: new Date()
         };
         
-        this.addMessageToChat(this.currentChatId, message);
+        this.addMessageToChat(chatId, message);
         this.saveChatsToStorage();
     }
     
@@ -479,10 +525,7 @@ class FlogoChatbot {
         if (!message || !this.isConnected || !this.ws) {
             return;
         }
-        
-        if (!this.currentChatId) {
-            this.createNewChat();
-        }
+        const chatId = this.ws.chatId;
         
         // Add user message to chat
         const userMessage = {
@@ -491,7 +534,7 @@ class FlogoChatbot {
             timestamp: new Date()
         };
         
-        this.addMessageToChat(this.currentChatId, userMessage);
+        this.addMessageToChat(chatId, userMessage);
         
         // Send to WebSocket server
         try {
@@ -517,6 +560,7 @@ class FlogoChatbot {
      * Create a new chat session
      */
     createNewChat() {
+        this.endConversationForChatChange();
         this.chatCounter++;
         const chatId = `chat-${this.chatCounter}`;
         const chatTitle = `Chat ${this.chatCounter}`;
@@ -540,6 +584,7 @@ class FlogoChatbot {
      * Switch to a different chat session
      */
     switchChat(chatId) {
+        if (this.chats.has(chatId) && chatId !== this.currentChatId) this.endConversationForChatChange();
         if (this.chats.has(chatId)) {
             this.currentChatId = chatId;
             this.displayChat(chatId);
@@ -557,6 +602,7 @@ class FlogoChatbot {
         }
         
         if (confirm('Are you sure you want to delete this chat session?')) {
+            if (this.ws && this.ws.chatId === chatId) this.disconnect();
             this.chats.delete(chatId);
             
             if (this.currentChatId === chatId) {
@@ -571,6 +617,13 @@ class FlogoChatbot {
         }
     }
     
+    /**
+     * A connection is one conversation in one chat: before another chat is shown, end it (Connect starts a new one)
+     */
+    endConversationForChatChange() {
+        if (this.ws) this.disconnect();
+    }
+
     /**
      * Display a chat session
      */
@@ -605,6 +658,7 @@ class FlogoChatbot {
         if (!chat) return;
         
         chat.messages.push(message);
+        if (chatId !== this.currentChatId) return; // stored; shown when that chat is opened
         this.renderMessage(message);
         this.scrollToBottom();
     }
@@ -612,8 +666,8 @@ class FlogoChatbot {
     /**
      * Add system message
      */
-    addSystemMessage(content) {
-        if (!this.currentChatId) return;
+    addSystemMessage(content, chatId = this.currentChatId) {
+        if (!chatId) return;
         
         const message = {
             type: 'system',
@@ -621,7 +675,7 @@ class FlogoChatbot {
             timestamp: new Date()
         };
         
-        this.addMessageToChat(this.currentChatId, message);
+        this.addMessageToChat(chatId, message);
     }
     
     /**

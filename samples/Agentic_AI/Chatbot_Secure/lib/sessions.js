@@ -27,7 +27,10 @@ class SessionStore {
     const now = Date.now();
     let expiresAt = now + this.ttlMs;
     if (typeof claims.exp === 'number') expiresAt = Math.min(expiresAt, claims.exp * 1000);
-    const session = { id, token, claims, createdAt: now, expiresAt, connections: new Set(), timer: null };
+    // historyId names this session's chat history in the browser. It is random and new on every sign-in, because the
+    // JWT's sub is not verified here: history must never be handed to whoever signs in with the same claimed sub.
+    const historyId = crypto.randomBytes(16).toString('base64url');
+    const session = { id, historyId, token, claims, createdAt: now, expiresAt, connections: new Set(), timer: null };
     this.sessions.set(id, session);
     this.scheduleExpiry(session);
     return session;

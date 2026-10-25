@@ -5,16 +5,18 @@
  *
  * The browser connects to  /proxy?target=<url-encoded upstream ws url>.
  * The upgrade is accepted only when:
+ *   - the Host header is one this server answers to (ALLOWED_HOSTS / ALLOWED_ORIGINS / loopback),
  *   - the Origin header matches this server's origin (or ALLOWED_ORIGINS),
  *   - the HttpOnly session cookie maps to a live session,
  *   - target is on the ALLOWED_UPSTREAMS allow-list (exact match),
+ *   - the session and the server are under their connection caps (MAX_CONNECTIONS_PER_SESSION / MAX_CONNECTIONS),
  *   - the upstream accepted the handshake.
  * One upstream connection per browser connection; frames are piped both ways.
  */
 
 const http = require('http');
 const WebSocket = require('ws');
-const { readCookie, originAllowed, logSub, sidTag } = require('./security');
+const { readCookie, hostAllowed, originAllowed, logSub, sidTag } = require('./security');
 
 const PROXY_PATH = '/proxy';
 
@@ -61,6 +63,26 @@ function closeQuietly(ws, code, reason, fallbackCode) {
 
 function attachProxy(server, { store, config }) {
   const wss = new WebSocket.WebSocketServer({ noServer: true, maxPayload: config.maxMessageBytes });
+  let total = 0; // proxied connections open or connecting, server-wide
+
+  // Heartbeat: a browser connection that does not answer a ping by the next one is half-open (sleeping laptop, dropped
+  // network) and is closed, so it does not hold an upstream connection until the session expires.
+  const heartbeat = setInterval(() => {
+    for (const client of wss.clients) {
+      if (client.awaitingPong) {
+        client.terminate();
+        continue;
+      }
+      client.awaitingPong = true;
+      try {
+        client.ping();
+      } catch (e) {
+        client.terminate();
+      }
+    }
+  }, config.heartbeatSeconds * 1000);
+  heartbeat.unref();
+  server.on('close', () => clearInterval(heartbeat));
 
   server.on('upgrade', (req, socket, head) => {
     socket.on('error', () => {});
@@ -73,6 +95,10 @@ function attachProxy(server, { store, config }) {
     }
     if (url.pathname !== PROXY_PATH) return rejectUpgrade(socket, 404, 'Not found');
 
+    if (!hostAllowed(req, config)) {
+      console.warn('[proxy] rejected upgrade: unknown Host');
+      return rejectUpgrade(socket, 421, 'Misdirected request');
+    }
     if (!originAllowed(req, config, { required: true })) {
       console.warn('[proxy] rejected upgrade: origin not allowed');
       return rejectUpgrade(socket, 403, 'Origin not allowed');
@@ -93,6 +119,25 @@ function attachProxy(server, { store, config }) {
 
     const tag = `sub=${logSub(session.claims)} sid=${sidTag(sid)} target=${target}`;
 
+    // Caps: sign-in only decodes the JWT, so without them one made-up token could open any number of upstreams.
+    if ((session.proxied || 0) >= config.maxConnectionsPerSession) {
+      console.warn(`[proxy] rejected upgrade: ${session.proxied} connections already open for this session ${tag}`);
+      return rejectUpgrade(socket, 429, 'Too many connections for this session. Close another chat first.');
+    }
+    if (total >= config.maxConnections) {
+      console.warn(`[proxy] rejected upgrade: server connection limit (${config.maxConnections}) reached ${tag}`);
+      return rejectUpgrade(socket, 503, 'Too many connections. Try again later.');
+    }
+    session.proxied = (session.proxied || 0) + 1;
+    total += 1;
+    let released = false;
+    const release = () => {
+      if (released) return;
+      released = true;
+      session.proxied -= 1;
+      total -= 1;
+    };
+
     let upstream;
     try {
       upstream = new WebSocket(target, {
@@ -105,6 +150,7 @@ function attachProxy(server, { store, config }) {
     } catch (err) {
       // ws throws synchronously on an unusable URL/option; config validation should prevent it, but never crash.
       console.warn(`[proxy] cannot open upstream (${err.message}) ${tag}`);
+      release();
       return rejectUpgrade(socket, 502, 'Upstream unavailable');
     }
 
@@ -112,6 +158,7 @@ function attachProxy(server, { store, config }) {
     const abortUpstream = () => {
       if (settled) return;
       settled = true;
+      release();
       upstream.terminate();
     };
     socket.once('close', abortUpstream);
@@ -120,6 +167,7 @@ function attachProxy(server, { store, config }) {
       if (settled) return;
       settled = true;
       console.warn(`[proxy] upstream rejected handshake (${upRes.statusCode}) ${tag}`);
+      release();
       upRes.resume();
       upReq.destroy();
       rejectUpgrade(socket, 502, `Upstream rejected the connection (${upRes.statusCode})`);
@@ -129,6 +177,7 @@ function attachProxy(server, { store, config }) {
       if (settled) return;
       settled = true;
       console.warn(`[proxy] upstream unavailable (${err.code || err.message}) ${tag}`);
+      release();
       rejectUpgrade(socket, 502, 'Upstream unavailable');
     });
 
@@ -139,17 +188,24 @@ function attachProxy(server, { store, config }) {
 
       // The session may have been signed out while we were connecting.
       if (store.get(sid) !== session) {
+        release();
         upstream.terminate();
         return rejectUpgrade(socket, 401, 'Sign in first');
       }
 
       // Keep the upstream tied to the browser socket until the browser handshake succeeds: handleUpgrade
       // destroys the socket without calling back when it rejects the handshake (bad key / version).
-      const dropUpstream = () => upstream.terminate();
+      const dropUpstream = () => {
+        release();
+        upstream.terminate();
+      };
       socket.once('close', dropUpstream);
       wss.handleUpgrade(req, socket, head, client => {
         socket.removeListener('close', dropUpstream);
-        bridge(client, upstream, session, tag, config);
+        client.on('pong', () => {
+          client.awaitingPong = false;
+        });
+        bridge(client, upstream, session, tag, config, release);
       });
     });
   });
@@ -162,7 +218,7 @@ function attachProxy(server, { store, config }) {
 // queue passes a hard limit anyway (memory stays bounded either way).
 const HIGH_WATER = 1024 * 1024;
 
-function bridge(client, upstream, session, tag, config) {
+function bridge(client, upstream, session, tag, config, release) {
   console.log(`[proxy] open ${tag}`);
 
   const closeBoth = reason => {
@@ -204,6 +260,7 @@ function bridge(client, upstream, session, tag, config) {
   let logged = false;
   const done = (side, code) => {
     session.connections.delete(closeBoth);
+    release();
     if (!logged) {
       logged = true;
       console.log(`[proxy] closed by ${side} (${code}) ${tag}`);

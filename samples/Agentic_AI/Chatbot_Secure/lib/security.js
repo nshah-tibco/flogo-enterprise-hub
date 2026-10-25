@@ -33,7 +33,12 @@ function isSecureRequest(req, config) {
   return false;
 }
 
-/** Origins the browser is allowed to call us from. */
+/** True when the Host header is one this server answers to (DNS-rebinding defence; see config.allowedHosts). */
+function hostAllowed(req, config) {
+  return config.allowedHosts.includes(String(req.headers.host || '').toLowerCase());
+}
+
+/** Origins the browser is allowed to call us from (the Host is checked by hostAllowed first). */
 function expectedOrigins(req, config) {
   if (config.allowedOrigins.length) return config.allowedOrigins;
   const host = String(req.headers.host || '').toLowerCase();
@@ -106,6 +111,7 @@ module.exports = {
   COOKIE_NAME,
   readCookie,
   isSecureRequest,
+  hostAllowed,
   originAllowed,
   decodeJwtClaims,
   displayClaims,

@@ -42,7 +42,8 @@ module.exports = function authRoutes({ store, config }) {
       ? {
           signedIn: true,
           ...displayClaims(session.claims),
-          sessionExpiresAt: new Date(session.expiresAt).toISOString()
+          sessionExpiresAt: new Date(session.expiresAt).toISOString(),
+          historyId: session.historyId
         }
       : { signedIn: false };
 
@@ -109,10 +110,8 @@ module.exports = function authRoutes({ store, config }) {
       return res.status(429).json({ error: 'Too many people are signed in right now. Try again later.' });
     }
 
-    res.cookie(COOKIE_NAME, session.id, {
-      ...cookieOptions(req),
-      maxAge: Math.max(0, session.expiresAt - Date.now())
-    });
+    // A browser-session cookie (no Max-Age): closing the browser drops it. The server-side session ends at expiresAt.
+    res.cookie(COOKIE_NAME, session.id, cookieOptions(req));
     console.log(`[auth] sign-in sub=${logSub(claims)} sid=${sidTag(session.id)}`);
     res.json(statusBody(session));
   });
