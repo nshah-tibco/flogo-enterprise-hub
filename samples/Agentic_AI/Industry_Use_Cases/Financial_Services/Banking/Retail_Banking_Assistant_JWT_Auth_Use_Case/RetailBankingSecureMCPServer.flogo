@@ -322,7 +322,7 @@
             "toolTitle": "",
             "readOnlyToolHint": false,
             "destructiveToolHint": false,
-            "idempotentToolHint": true,
+            "idempotentToolHint": false,
             "openWorldToolHint": false,
             "scope": "cards:block"
           },
@@ -366,7 +366,7 @@
             "handlerDescription": "Step 2 of 2: block the card the customer has explicitly confirmed. Pass the action_id from propose_card_block. The system re-checks every rule; proposals expire after 15 minutes. Returns EXECUTED with block_id (BLK-NNNNN) and the replacement's expected delivery date, or NOT_EXECUTED with reason_code NO_SUCH_PROPOSAL, EXPIRED, ALREADY_EXECUTED, UNKNOWN_CALLER or a rule's code. Only call after the customer says yes to the exact proposal; never call it without a fresh action_id.",
             "toolTitle": "",
             "readOnlyToolHint": false,
-            "destructiveToolHint": false,
+            "destructiveToolHint": true,
             "idempotentToolHint": true,
             "openWorldToolHint": false,
             "scope": "cards:block"
@@ -412,7 +412,7 @@
             "toolTitle": "",
             "readOnlyToolHint": false,
             "destructiveToolHint": false,
-            "idempotentToolHint": true,
+            "idempotentToolHint": false,
             "openWorldToolHint": false,
             "scope": "disputes:write"
           },
@@ -502,7 +502,7 @@
             "toolTitle": "",
             "readOnlyToolHint": false,
             "destructiveToolHint": false,
-            "idempotentToolHint": true,
+            "idempotentToolHint": false,
             "openWorldToolHint": false,
             "scope": "cases:write"
           },
@@ -592,8 +592,8 @@
             "toolTitle": "",
             "readOnlyToolHint": false,
             "destructiveToolHint": false,
-            "idempotentToolHint": true,
-            "openWorldToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
             "scope": "email:send"
           },
           "action": {
@@ -726,8 +726,8 @@
             "handlerDescription": "Step 2 of 2: send a payment the customer has explicitly confirmed. Pass the payment_id from propose_payment and acknowledge_warning YES only when the proposal was PROPOSED_WITH_WARNING and the customer said they read the warning and still want to go ahead (otherwise NO). The system re-checks every rule; proposals expire after 15 minutes. Returns SENT with the payment details, or NOT_SENT with reason_code NO_SUCH_PAYMENT, HELD_FOR_REVIEW, CANCELLED, EXPIRED, WARNING_NOT_ACKNOWLEDGED, ALREADY_SENT, UNKNOWN_CALLER or a rule's code. Only call after the customer says yes to the exact proposal.",
             "toolTitle": "",
             "readOnlyToolHint": false,
-            "destructiveToolHint": false,
-            "idempotentToolHint": false,
+            "destructiveToolHint": true,
+            "idempotentToolHint": true,
             "openWorldToolHint": false,
             "scope": "payments:write"
           },
@@ -861,7 +861,7 @@
             "handlerDescription": "Record the reviewer's decision on a case in their team queue, in two steps. decision is APPROVE or REJECT; amount is the approved amount in dollars (empty = the full eligible amount; ignored for REJECT); internal_note is required (at least 5 characters, never shown to the customer); customer_message is what the customer will see. A valid first call records NOTHING and returns CONFIRM_REQUIRED with the decision, amount and customer_message to read back: ask the reviewer to confirm, and only after they do, call it again with the same decision and amount (within 15 minutes). That call runs the parked action (fee refund, loan payment deferral or release of a held payment) through the system's checks; rejecting a held payment cancels it. Returns CONFIRM_REQUIRED, APPROVED / REJECTED with executed_action, or BLOCKED with reason_code NOT_YOUR_TEAM, ALREADY_DECIDED, NOTE_REQUIRED, AMOUNT_INVALID, OVER_AUTHORITY (case stays open for a senior reviewer), ACTION_NOT_EXECUTABLE (the approved action cannot run now, e.g. the balance no longer covers a held payment or it would go over the daily limit; the case stays open), INVALID_DECISION or NOT_FOUND, or NOT_REVIEWER (the signed-in user is not an active staff reviewer).",
             "toolTitle": "",
             "readOnlyToolHint": false,
-            "destructiveToolHint": false,
+            "destructiveToolHint": true,
             "idempotentToolHint": false,
             "openWorldToolHint": false,
             "scope": "reviews:decide"

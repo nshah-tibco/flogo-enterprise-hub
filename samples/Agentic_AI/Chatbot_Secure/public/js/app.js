@@ -28,6 +28,9 @@ class FlogoChatbot {
         this.chatOwner = null;
         this.authCheckSeq = 0;
         this.sessionTimer = null;
+        this.authUnavailable = false; // the last session check got no answer (network error, 5xx): state unknown
+        this.authRetryTimer = null;
+        this.authRetryDelay = 0;
         
         // DOM elements
         this.elements = {
@@ -52,6 +55,7 @@ class FlogoChatbot {
             authSignedOut: document.getElementById('authSignedOut'),
             authSignedIn: document.getElementById('authSignedIn'),
             authError: document.getElementById('authError'),
+            authNote: document.getElementById('authNote'),
             authName: document.getElementById('authName'),
             authSub: document.getElementById('authSub'),
             authExp: document.getElementById('authExp'),
@@ -128,17 +132,50 @@ class FlogoChatbot {
      */
     async refreshAuthStatus() {
         const seq = ++this.authCheckSeq;
-        let auth;
+        let auth = null; // null = no answer: the server was unreachable or failed, so the session state is UNKNOWN
         try {
             const res = await fetch('/auth/session', { credentials: 'same-origin', cache: 'no-store' });
-            auth = res.ok ? await res.json() : { signedIn: false };
+            if (res.ok) {
+                const body = await res.json();
+                if (body && typeof body.signedIn === 'boolean') auth = body;
+            }
         } catch (error) {
-            auth = { signedIn: false };
+            auth = null;
         }
         if (seq !== this.authCheckSeq) return this.auth; // a newer check (or a sign-in / sign-out) already answered
+        if (auth === null) {
+            // Unknown is not signed out: keep the history and retry. Only the session's own expiry time (known from
+            // the last answer) ends it without the server.
+            const expiresAt = Date.parse(this.auth.sessionExpiresAt);
+            if (!(this.auth.signedIn && Date.now() >= expiresAt)) {
+                this.setAuthUnavailable(true);
+                return this.auth;
+            }
+            auth = { signedIn: false };
+        }
+        this.setAuthUnavailable(false);
         this.auth = auth;
         this.renderAuth();
         return this.auth;
+    }
+
+    /**
+     * While the session cannot be verified: say so, keep Connect locked, and retry with back-off (2 s doubling to 30 s)
+     */
+    setAuthUnavailable(unavailable) {
+        this.authUnavailable = unavailable;
+        this.elements.authNote.textContent = unavailable
+            ? 'Cannot reach the server to check your sign-in. Your chats are kept; retrying...' : '';
+        this.elements.authNote.hidden = !unavailable;
+        clearTimeout(this.authRetryTimer);
+        this.authRetryTimer = null;
+        if (unavailable) {
+            this.authRetryDelay = Math.min(this.authRetryDelay ? this.authRetryDelay * 2 : 2000, 30000);
+            this.authRetryTimer = setTimeout(() => this.refreshAuthStatus(), this.authRetryDelay);
+        } else {
+            this.authRetryDelay = 0;
+        }
+        this.updateConnectionStatus(this.isConnected);
     }
 
     /**
@@ -177,6 +214,7 @@ class FlogoChatbot {
             });
             const body = await res.json().catch(() => ({}));
             this.authCheckSeq++; // this answer is newer than any session check still in flight
+            this.setAuthUnavailable(false); // the server answered
             if (!res.ok) {
                 this.showAuthError(body.error || `Sign-in failed (${res.status})`);
                 this.auth = { signedIn: false };
@@ -225,6 +263,7 @@ class FlogoChatbot {
             return;
         }
         this.authCheckSeq++;
+        this.setAuthUnavailable(false); // the server answered
         this.auth = { signedIn: false };
         this.renderAuth(); // signed out: drops the history (releaseChats)
         this.focusFirst(['jwtInput']);
@@ -460,6 +499,10 @@ class FlogoChatbot {
                     return;
                 }
                 const auth = await this.refreshAuthStatus(); // direct mode too: the history must follow the session
+                if (this.authUnavailable) {
+                    this.addSystemMessage('Disconnected. The server cannot be reached right now; the page keeps trying.', chatId);
+                    return;
+                }
                 if (!direct) {
                     if (!auth.signedIn) {
                         this.showAuthError('Not signed in (or the session ended). Please sign in again.');
@@ -522,7 +565,8 @@ class FlogoChatbot {
             indicator.classList.remove('connected');
             statusText.textContent = 'Disconnected';
             const connecting = !!(this.ws && this.ws.readyState === WebSocket.CONNECTING);
-            this.elements.connectBtn.disabled = connecting || !(this.isDirectMode() || (this.auth && this.auth.signedIn));
+            this.elements.connectBtn.disabled = connecting || this.authUnavailable ||
+                !(this.isDirectMode() || (this.auth && this.auth.signedIn));
             this.elements.disconnectBtn.disabled = true;
             this.elements.messageInput.disabled = true;
             this.elements.sendBtn.disabled = true;

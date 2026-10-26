@@ -116,7 +116,8 @@ verify the signature: the Flogo MCP server does that on every tool call.
   server gives each sign-in, not the token's `sub`, which this server does not verify). It is shown only after the
   server confirms that session, survives a page reload, and is deleted when you sign out (in any tab), when the
   session ends (checked at its expiry time, every minute and when the tab becomes visible, with or without a
-  connection), and on any new sign-in.
+  connection), and on any new sign-in. If the server cannot be reached to check the session, nothing is deleted: the
+  page says so, keeps Connect locked and retries (the session's known expiry time still ends it).
 
 ## Test
 

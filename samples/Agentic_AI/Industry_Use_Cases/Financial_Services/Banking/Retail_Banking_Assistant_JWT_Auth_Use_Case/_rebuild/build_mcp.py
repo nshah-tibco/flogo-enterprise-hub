@@ -182,8 +182,9 @@ def build_tool(app, t, trig=TRIG, em=None):
     # MCP hints must be real JSON booleans (--type boolean stores the string "true")
     f("sa", "handler", f"{trig}.{flow}.settings.readOnlyToolHint", "--jsonValue", str(t["readonly"]).lower())
     f("sa", "handler", f"{trig}.{flow}.settings.destructiveToolHint", "--jsonValue", str(t.get("destructive", False)).lower())
-    f("sa", "handler", f"{trig}.{flow}.settings.idempotentToolHint", "--jsonValue", str(t.get("idempotent", True)).lower())
-    f("sa", "handler", f"{trig}.{flow}.settings.openWorldToolHint", "--jsonValue", "false")
+    # a read is idempotent; a write only when its spec says so (MCP clients may retry idempotent tools freely)
+    f("sa", "handler", f"{trig}.{flow}.settings.idempotentToolHint", "--jsonValue", str(t.get("idempotent", t["readonly"])).lower())
+    f("sa", "handler", f"{trig}.{flow}.settings.openWorldToolHint", "--jsonValue", str(t.get("open_world", False)).lower())
 
     # flow metadata + fe_metadata so $flow.arguments.<x> and $flow.tokenInfo.sub resolve in the designer without a Sync
     compact = json.dumps({a: {"type": "string"} for a, _ in t["args"]})

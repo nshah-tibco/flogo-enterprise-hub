@@ -531,6 +531,70 @@ async function check(label, fn) {
       await waitUntil(async () => (await focusedId()) === 'jwtInput', 'focus on the token box', 5000);
     });
 
+    // 11. A session check that gets NO answer (network error, 5xx) is not a sign-out: the history stays, the page says
+    //     so, Connect is locked, and it retries. Only the session's known expiry ends it without the server.
+    let mode = 'pass';
+    const interceptor = m => {
+      if (m.method !== 'Fetch.requestPaused') return;
+      const id = m.params.requestId;
+      if (m.params.request.method !== 'GET' || mode === 'pass') return page.send('Fetch.continueRequest', { requestId: id });
+      if (mode === 'fail') return page.send('Fetch.failRequest', { requestId: id, errorReason: 'InternetDisconnected' });
+      return page.send('Fetch.fulfillRequest', { requestId: id, responseCode: 503,
+        responseHeaders: [{ name: 'Content-Type', value: 'text/plain' }], body: Buffer.from('busy').toString('base64') });
+    };
+    page.listeners.push(interceptor);
+    await page.send('Fetch.enable', { patterns: [{ urlPattern: '*/auth/session*', requestStage: 'Request' }] });
+    const note = () => page.eval(`document.getElementById('authNote').hidden ? '' : document.getElementById('authNote').textContent`);
+    const connectLocked = () => page.eval(`document.getElementById('connectBtn').disabled`);
+
+    assert.strictEqual(await signIn('CUST-A'), 200);
+    await plant();
+    await page.goto(`${origin}/`);
+    await waitUntil(async () => (await text()).includes(SECRET), 'restored conversation');
+    for (const [label, m] of [['a network error', 'fail'], ['an HTTP 503', '503']]) {
+      mode = m;
+      await page.eval('chatbot.refreshAuthStatus().then(() => true)');
+      await check(`${label} on the session check keeps the conversation (screen and storage), says so and locks Connect`, async () => {
+        assert.ok((await text()).includes(SECRET), 'conversation removed from the screen');
+        assert.ok(String((await stored()).chats || '').includes(SECRET), 'conversation deleted from storage');
+        assert.match(await note(), /Cannot reach the server/);
+        assert.strictEqual(await connectLocked(), true, 'Connect usable while the session is unverified');
+        assert.strictEqual(await page.eval(`document.getElementById('authSignedIn').hidden`), false);
+      });
+    }
+    mode = 'pass';
+    await check('when the server answers again the page recovers by itself (note gone, Connect usable, chats kept)', async () => {
+      await waitUntil(async () => (await note()) === '', 'retry succeeded', 40000);
+      assert.strictEqual(await connectLocked(), false);
+      assert.ok((await text()).includes(SECRET));
+    });
+
+    assert.strictEqual(await signIn('CUST-A', 6), 200);
+    await plant();
+    await page.goto(`${origin}/`);
+    await waitUntil(async () => (await text()).includes(SECRET), 'restored conversation');
+    mode = 'fail';
+    await check('with the server unreachable, the conversation still goes when the session\'s known expiry passes', async () => {
+      await waitUntil(async () => (await stored()).owner === null, 'history removed at the known expiry', 20000);
+      assert.ok(!(await text()).includes(SECRET));
+      assert.strictEqual(await page.eval(`document.getElementById('authSignedOut').hidden`), false);
+    });
+
+    mode = 'pass';
+    assert.strictEqual(await signIn('CUST-A'), 200);
+    await plant();
+    mode = 'fail';
+    await page.goto(`${origin}/`);
+    await check('a page loaded while the server is unreachable neither shows nor deletes the history; it is restored once the server answers', async () => {
+      await waitUntil(async () => /Cannot reach the server/.test(await note()), 'unreachable note', 10000);
+      assert.ok(!(await text()).includes(SECRET), 'history shown before the session was verified');
+      assert.ok(String((await stored()).chats || '').includes(SECRET), 'history deleted because the server was unreachable');
+      mode = 'pass';
+      await waitUntil(async () => (await text()).includes(SECRET), 'history restored after the retry', 40000);
+    });
+    page.listeners.splice(page.listeners.indexOf(interceptor), 1);
+    await page.send('Fetch.disable');
+
     page.ws.close();
   } catch (err) {
     failed += 1;

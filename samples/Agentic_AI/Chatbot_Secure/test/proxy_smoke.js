@@ -706,6 +706,49 @@ async function main() {
       assert.strictEqual((await request(appPort, 'GET', '/client-config')).status, 200, 'the server stopped answering');
     });
 
+    await check('cross-origin sign-in POSTs are refused before the rate limit, so another site cannot use up the quota', async () => {
+      const port = await freePort();
+      const p = spawn(process.execPath, ['server.js'], {
+        cwd: ROOT,
+        env: { ...process.env, PORT: String(port), HOST: '127.0.0.1', ALLOWED_UPSTREAMS: upstream, SIGNIN_PER_MINUTE: '2',
+               ALLOWED_ORIGINS: '', ALLOWED_HOSTS: '' },
+        stdio: 'ignore'
+      });
+      try {
+        for (let i = 0; i < 100; i++) {
+          try {
+            if ((await request(port, 'GET', '/client-config')).status === 200) break;
+          } catch (e) {
+            /* not up yet */
+          }
+          await sleep(100);
+        }
+        const o = `http://127.0.0.1:${port}`;
+        for (let i = 0; i < 10; i++) { // what a page on another site can send without CORS: a text/plain POST
+          const r = await request(port, 'POST', '/auth/session', {
+            headers: { Origin: 'http://evil.example', 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ token })
+          });
+          assert.strictEqual(r.status, 403, `cross-origin attempt ${i + 1} got ${r.status}`);
+        }
+        const ok = await request(port, 'POST', '/auth/session', {
+          headers: { Origin: o, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token })
+        });
+        assert.strictEqual(ok.status, 200, `the real sign-in after 10 cross-origin attempts got ${ok.status}: ${ok.text}`);
+        // callers without an Origin header (scripts) are still limited: 1 used above + 1 more allowed, then 429
+        const statuses = [];
+        for (let i = 0; i < 2; i++) {
+          statuses.push((await request(port, 'POST', '/auth/session', {
+            headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: 'not-a-jwt' })
+          })).status);
+        }
+        assert.deepStrictEqual(statuses, [400, 429]);
+      } finally {
+        p.kill();
+      }
+    });
+
     await check('invalid configuration stops the server at startup with a clear message', async () => {
       for (const [name, value] of [['SESSION_TTL_MINUTES', 'abc'], ['UPSTREAM_TIMEOUT_MS', '-1'], ['COOKIE_SECURE', 'yes'],
         ['ALLOWED_UPSTREAMS', 'localhost:9970/retailbanking'], ['ALLOWED_ORIGINS', 'https://chat.example.com/'],

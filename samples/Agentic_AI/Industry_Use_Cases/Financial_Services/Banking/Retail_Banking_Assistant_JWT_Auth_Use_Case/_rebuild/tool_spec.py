@@ -84,7 +84,7 @@ TOOLS = [
         "read": ("SELECT * FROM find_branch(CAST(?city AS text));", [("city", "city")]),
     },
     {
-        "tool": "propose_card_block", "flow": "propose_card_block_flow", "scope": "cards:block", "readonly": False,
+        "tool": "propose_card_block", "flow": "propose_card_block_flow", "scope": "cards:block", "readonly": False, "idempotent": False, "destructive": False,
         "desc": ("Step 1 of 2 for blocking a lost, stolen, damaged or compromised card. Give the card (card_id such as "
                  "CARD-9001, or its last 4 digits) and the reason: LOST, STOLEN, DAMAGED or SUSPECTED_FRAUD. The system "
                  "checks every rule and returns PROPOSED with an action_id and the replacement card's expected delivery "
@@ -100,7 +100,7 @@ TOOLS = [
                  [("r_sub", SUB), ("r_card", "card"), ("r_rsn", "reason")]),
     },
     {
-        "tool": "confirm_card_block", "flow": "confirm_card_block_flow", "scope": "cards:block", "readonly": False,
+        "tool": "confirm_card_block", "flow": "confirm_card_block_flow", "scope": "cards:block", "readonly": False, "idempotent": True, "destructive": True,
         "desc": ("Step 2 of 2: block the card the customer has explicitly confirmed. Pass the action_id from "
                  "propose_card_block. The system re-checks every rule; proposals expire after 15 minutes. Returns "
                  "EXECUTED with block_id (BLK-NNNNN) and the replacement's expected delivery date, or NOT_EXECUTED with "
@@ -114,7 +114,7 @@ TOOLS = [
                  [("r_sub", SUB), ("r_act", "action_id")]),
     },
     {
-        "tool": "propose_dispute", "flow": "propose_dispute_flow", "scope": "disputes:write", "readonly": False,
+        "tool": "propose_dispute", "flow": "propose_dispute_flow", "scope": "disputes:write", "readonly": False, "idempotent": False, "destructive": False,
         "desc": ("Step 1 of 2 for disputing a card or account charge. Give the transaction_id (from "
                  "get_my_transactions), the reason_code (UNRECOGNISED, FRAUD, DUPLICATE, NOT_RECEIVED, NOT_AS_DESCRIBED, "
                  "CANCELLED_RECURRING or WRONG_AMOUNT) and the customer's own words. The system checks eligibility and "
@@ -136,7 +136,7 @@ TOOLS = [
                  [("r_sub", SUB), ("r_txn", "transaction_id"), ("r_rsn", "reason_code")]),
     },
     {
-        "tool": "confirm_dispute", "flow": "confirm_dispute_flow", "scope": "disputes:write", "readonly": False,
+        "tool": "confirm_dispute", "flow": "confirm_dispute_flow", "scope": "disputes:write", "readonly": False, "idempotent": True, "destructive": False,
         "desc": ("Step 2 of 2: file the dispute the customer has explicitly confirmed. Pass the action_id from "
                  "propose_dispute. The system re-checks every rule; proposals expire after 15 minutes. Returns FILED "
                  "with dispute_id (DSP-2026-NNNN), the provisional credit posted (if any), whether Fraud Operations "
@@ -152,7 +152,7 @@ TOOLS = [
                  [("r_sub", SUB), ("r_act", "action_id")]),
     },
     {
-        "tool": "open_service_case", "flow": "open_service_case_flow", "scope": "cases:write", "readonly": False,
+        "tool": "open_service_case", "flow": "open_service_case_flow", "scope": "cases:write", "readonly": False, "idempotent": False, "destructive": False,
         "desc": ("Hand a request that needs a human to the right team: FEE_REFUND (refund of a fee such as overdraft or "
                  "late fee; reference_id = the fee's transaction_id), LOAN_HARDSHIP (payment difficulty or deferral; "
                  "reference_id = the loan_id; brief = the hardship intake brief), CREDIT_LIMIT_INCREASE, COMPLAINT, "
@@ -186,7 +186,7 @@ TOOLS = [
         "read": ("SELECT * FROM my_cases(CAST(?sub AS text));", [("sub", SUB)]),
     },
     {
-        "tool": "email_my_confirmation", "flow": "email_my_confirmation_flow", "scope": "email:send", "readonly": False, "idempotent": True,
+        "tool": "email_my_confirmation", "flow": "email_my_confirmation_flow", "scope": "email:send", "readonly": False, "idempotent": False, "destructive": False, "open_world": True,
         "email": True,
         "desc": ("Email the confirmation for a dispute (DSP-...), card block (BLK-...), decided case (CASE-...) or sent "
                  "payment (PAY-...) of this customer. Pass the reference from confirm_dispute, confirm_card_block, "
@@ -210,7 +210,7 @@ TOOLS = [
         "read": ("SELECT * FROM my_payees(CAST(?sub AS text));", [("sub", SUB)]),
     },
     {
-        "tool": "propose_payment", "flow": "propose_payment_flow", "scope": "payments:write", "readonly": False, "idempotent": False,
+        "tool": "propose_payment", "flow": "propose_payment_flow", "scope": "payments:write", "readonly": False, "idempotent": False, "destructive": False,
         "desc": ("Step 1 of 2 for paying a saved payee from the customer's own checking or savings account. Pass the "
                  "from-account (account_id), the payee (payee_id), the amount in dollars, the customer's own words about "
                  "the payment, and the scam_signal_agent's indicators, narrative_score and full answer exactly as it "
@@ -240,7 +240,7 @@ TOOLS = [
                  [("r_sub", SUB), ("r_acct", "from_account"), ("r_payee", "payee"), ("r_amt", "amount")]),
     },
     {
-        "tool": "confirm_payment", "flow": "confirm_payment_flow", "scope": "payments:write", "readonly": False, "idempotent": False,
+        "tool": "confirm_payment", "flow": "confirm_payment_flow", "scope": "payments:write", "readonly": False, "idempotent": True, "destructive": True,
         "desc": ("Step 2 of 2: send a payment the customer has explicitly confirmed. Pass the payment_id from "
                  "propose_payment and acknowledge_warning YES only when the proposal was PROPOSED_WITH_WARNING and the "
                  "customer said they read the warning and still want to go ahead (otherwise NO). The system re-checks every "
@@ -277,7 +277,7 @@ TOOLS = [
                  [("sub", SUB), ("cid", "case_id")]),
     },
     {
-        "tool": "decide_review_case", "flow": "decide_review_case_flow", "scope": "reviews:decide", "readonly": False, "idempotent": False,
+        "tool": "decide_review_case", "flow": "decide_review_case_flow", "scope": "reviews:decide", "readonly": False, "idempotent": False, "destructive": True,
         "desc": ("Record the reviewer's decision on a case in their team queue, in two steps. decision is APPROVE or "
                  "REJECT; amount is the approved amount in dollars (empty = the full eligible amount; ignored for "
                  "REJECT); internal_note is required (at least 5 characters, never shown to the customer); "

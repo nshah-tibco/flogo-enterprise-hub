@@ -244,6 +244,15 @@ body {
     border-color: var(--primary-blue);
 }
 
+.auth-note {
+    margin: 0 0 0.5rem;
+    padding: 0.5rem;
+    border-radius: 6px;
+    background-color: #fef3c7;
+    color: #92400e;
+    font-size: 0.8rem;
+}
+
 .chat-session-title {
     background: none;
     border: 0;

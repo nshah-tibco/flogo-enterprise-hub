@@ -87,6 +87,27 @@ def check(label, cond, detail=""):
 
 subprocess.run(BASE + ["-f", os.path.join(DIR, "reset_data.sql")], check=True, env=ENV, capture_output=True)
 
+# ---- MCP tool hints say what each tool really does (clients may retry idempotent tools and auto-approve
+#      non-destructive ones), and the shipped app carries exactly the hints of the spec ----
+for t in TOOLS:
+    if not t["readonly"]:
+        check(f"hints: write tool {t['tool']} declares idempotent and destructive explicitly",
+              isinstance(t.get("idempotent"), bool) and isinstance(t.get("destructive"), bool), t["tool"])
+spec_hints = {t["tool"]: {"readOnlyToolHint": t["readonly"], "idempotentToolHint": t.get("idempotent", t["readonly"]),
+                          "destructiveToolHint": t.get("destructive", False), "openWorldToolHint": t.get("open_world", False)}
+              for t in TOOLS}
+check("hints: email_my_confirmation sends on every call (not idempotent) to an outside inbox (open world)",
+      spec_hints["email_my_confirmation"]["idempotentToolHint"] is False and spec_hints["email_my_confirmation"]["openWorldToolHint"] is True)
+check("hints: tools that move money, block a card or execute a decision are destructive",
+      all(spec_hints[n]["destructiveToolHint"] for n in ("confirm_payment", "confirm_card_block", "decide_review_case")))
+check("hints: a proposal or case opened again after its dedupe window writes a new row (not idempotent)",
+      not any(spec_hints[n]["idempotentToolHint"] for n in ("propose_card_block", "propose_dispute", "propose_payment", "open_service_case")))
+shipped = json.load(open(os.path.join(DIR, "RetailBankingSecureMCPServer.flogo"), encoding="utf-8"))
+shipped_hints = {h["settings"]["handlerName"]: {k: h["settings"].get(k) for k in spec_hints["whoami"]}
+                 for h in shipped["triggers"][0]["handlers"]}
+check("hints: the shipped MCP app carries exactly the spec's hints for every tool", shipped_hints == spec_hints,
+      {n: (shipped_hints.get(n), spec_hints[n]) for n in spec_hints if shipped_hints.get(n) != spec_hints[n]})
+
 # ---- static contract of tool_spec (governance shape) ----
 for t in TOOLS:
     for part in ("write", "read"):

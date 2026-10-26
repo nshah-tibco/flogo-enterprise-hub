@@ -161,9 +161,31 @@ try:
           set(tl) == expect_cust == CUSTOMER_TOOLS | SHARED_TOOLS and len(tl) == 16,
           {"missing": sorted(expect_cust - set(tl)), "extra": sorted(set(tl) - expect_cust)})
     check("...and NO reviewer tool", not (set(tl) & REVIEWER_TOOLS), set(tl) & REVIEWER_TOOLS)
-    reads = [t["tool"] for t in TOOLS if t.get("readonly") and t["tool"] in tl]
-    check("readOnlyHint on every read tool", all(tl[r].get("annotations", {}).get("readOnlyHint") is True for r in reads),
-          {r: tl[r].get("annotations") for r in reads})
+    # every tool's MCP hints, as the running server publishes them, are the ones tool_spec declares
+    # (an absent hint means the MCP default: readOnly false, idempotent false, destructive true, openWorld true; the
+    #  Flogo MCP trigger leaves out false readOnly / idempotent hints. idempotentHint only means something for a tool
+    #  that writes, so it is compared for write tools only.)
+    MCP_DEFAULTS = {"readOnlyHint": False, "idempotentHint": False, "destructiveHint": True, "openWorldHint": True}
+    def hints_of(listed):
+        out = {}
+        for name, t in listed.items():
+            ann = t.get("annotations") or {}
+            h = {k: ann.get(k, d) for k, d in MCP_DEFAULTS.items()}
+            if h["readOnlyHint"]: h.pop("idempotentHint")
+            out[name] = h
+        return out
+    def spec_hints(names):
+        out = {}
+        for t in TOOLS:
+            if t["tool"] not in names: continue
+            h = {"readOnlyHint": t["readonly"], "idempotentHint": t.get("idempotent", t["readonly"]),
+                 "destructiveHint": t.get("destructive", False), "openWorldHint": t.get("open_world", False)}
+            if h["readOnlyHint"]: h.pop("idempotentHint")
+            out[t["tool"]] = h
+        return out
+    got, want = hints_of(tl), spec_hints(tl)
+    check("customer tools/list: every tool's hints match tool_spec (email not idempotent + open world, confirm_payment "
+          "and confirm_card_block destructive)", got == want, {n: (got[n], want[n]) for n in want if got.get(n) != want[n]})
     bad_schema = [t["tool"] for t in TOOLS if t["tool"] in tl
                   and not all(a in json.dumps(tl[t["tool"]].get("inputSchema")) for a, _ in t["args"])]
     check("every listed tool publishes its argument schema", not bad_schema, bad_schema)
@@ -199,9 +221,9 @@ try:
     ml = maya.tools()
     check("reviewer token (Maya): tools/list = the 3 reviewer tools + whoami + find_branch only",
           set(ml) == REVIEWER_TOOLS | SHARED_TOOLS == tools_for_scopes(REVIEWER_SCOPES), sorted(ml))
-    ann = ml["decide_review_case"].get("annotations", {})
-    check("decide_review_case hints: not read-only, not destructive, not idempotent",
-          ann.get("readOnlyHint") is not True and ann.get("destructiveHint") is False and ann.get("idempotentHint") is not True, ann)
+    got, want = hints_of(ml), spec_hints(ml)
+    check("reviewer tools/list: every tool's hints match tool_spec (decide_review_case destructive, not idempotent)",
+          got == want, {n: (got[n], want[n]) for n in want if got.get(n) != want[n]})
     try:
         maya.call("get_my_accounts"); denied = False
     except ToolDenied:

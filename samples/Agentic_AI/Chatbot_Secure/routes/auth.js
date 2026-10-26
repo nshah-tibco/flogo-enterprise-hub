@@ -75,12 +75,14 @@ module.exports = function authRoutes({ store, config }) {
   };
 
   router.post('/session', (req, res) => {
+    // Origin first: a page on another site must not be able to use up this client's sign-in quota (its POSTs are
+    // refused here and never counted).
+    if (rejectCrossOrigin(req, res)) return;
     const retryAfter = tooManyAttempts(req);
     if (retryAfter) {
       res.set('Retry-After', String(retryAfter));
       return res.status(429).json({ error: 'Too many sign-in attempts. Wait a minute and try again.' });
     }
-    if (rejectCrossOrigin(req, res)) return;
     if (!req.is('application/json')) {
       return res.status(415).json({ error: 'Send the token as JSON: {"token": "<jwt>"}' });
     }
