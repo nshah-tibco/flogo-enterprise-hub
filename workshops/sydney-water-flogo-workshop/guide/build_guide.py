@@ -1329,6 +1329,14 @@ table(["Symptom", "Fix"], [
      "solution, 4.2) and retry. `[::1]` in the message is just the first address tried for localhost."],
     [f"`{L['l3_server']}` red in Cline", "MCP app not running; or after G1 the Bearer header is missing; restart the "
      "server entry in **MCP Servers**."],
+    ["Cline searches your files and guesses tool names (e.g. `log_leak_report`) instead of calling `report_leak`",
+     f"`{L['l3_server']}` is not in **Cline's** MCP settings — Cline has no tools. Add it via Cline → **MCP Servers** → "
+     "**Configure MCP Servers** (servers added with VS Code's **MCP: Add Server** are for Copilot Chat only), check "
+     "it is green with two tools, start a new task."],
+    ["VS Code: \"MCP Server Definition … wants to authenticate to localhost:9090\", then `/authorize` → 404 page not found",
+     "The server was added to VS Code's own MCP config without the Bearer header, so VS Code tried OAuth (Flogo has "
+     f"none). Click **Cancel**; add it in Cline instead. For Copilot, add `\"headers\": {{\"Authorization\": \"Bearer "
+     f"{L['l3_mcp_key']}\"}}` to the VS Code entry and run **Authentication: Remove Dynamic Authentication Providers**."],
     ["Port 9090 already in use", "The starter is still running. Stop it before running your changed app or the "
      "solution (`fuser -k 9090/tcp`)."],
     ["HTTP 500 \"invalid API key\"", f"Wrong key: the header must be exactly `Authorization: Bearer {L['l3_mcp_key']}`."],

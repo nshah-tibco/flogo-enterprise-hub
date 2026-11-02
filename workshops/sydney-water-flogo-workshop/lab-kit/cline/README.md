@@ -54,8 +54,38 @@ chmod +x ~/.vscode/extensions/tibco.flogo-2.26.*/bin/flogodesign-cli
   participants see each tool call.
 - `sw-water-mcp` sends `Authorization: Bearer sw-workshop-key` from the start. That is harmless before guardrail 1 (no
   auth on the starter) and exactly what the server expects after it. A wrong key gets HTTP 500 "invalid API key".
-- Not tested in Cline itself on the lab VM: plain-HTTP `http://localhost` with `streamableHttp` (the server side was
-  verified with a Python MCP client).
+- Verified in Cline 4.1.26 (VS Code on Windows, 2 Nov 2026): with the `sw-water-mcp` entry above, Cline connects to
+  plain-HTTP `http://localhost:9090/mcp` over `streamableHttp` and calls `report_leak` and `assess_rainfall_risk` for
+  the Lab 3 main prompt. Not yet re-run on the Ubuntu lab VM.
+
+## Cline's MCP list is not VS Code's MCP list
+
+VS Code has its **own** MCP configuration (`MCP: Add Server…`, `.vscode/mcp.json`, the user `mcp.json`, and a
+workspace `.mcp.json`). Those servers are used by **GitHub Copilot Chat only**. Cline ignores them and reads only
+its own `cline_mcp_settings.json`. Add `sw-water-mcp` through **Cline → MCP Servers → Configure → Configure MCP
+Servers**, not through VS Code's command palette.
+
+Symptoms of adding it in the wrong place:
+
+| What you see | Cause | Fix |
+|---|---|---|
+| Cline answers the Lab 3 prompt by **searching the workspace** and invents tool names (`log_leak_report`, `create_leak_report`) instead of calling `report_leak` | `sw-water-mcp` is not in Cline's MCP settings, so Cline has no tools | Add it to Cline's settings (above); check **MCP Servers → Installed** shows it green with 2 tools; start a **new** task |
+| VS Code pops up *"The MCP Server Definition '…' wants to authenticate to localhost:9090"*, then a browser tab `localhost:9090/authorize?client_id=…` shows `404 page not found` | The server was added to **VS Code's** MCP config without the `Authorization` header. The Flogo server answers 401, VS Code assumes OAuth, and the Flogo MCP trigger has no OAuth endpoints | Click **Cancel**. For Cline, use Cline's settings instead. If you also want it in Copilot, add the header to VS Code's entry (below), then run **Authentication: Remove Dynamic Authentication Providers** to clear the failed OAuth attempt and restart the server |
+
+If you want the same server in **Copilot Chat** as well, VS Code's format uses `servers` (not `mcpServers`) and
+`"type": "http"`, and it must send the static header. Never enter the key in an OAuth/client-ID prompt:
+
+```json
+{
+  "servers": {
+    "sw-water-mcp": {
+      "type": "http",
+      "url": "http://localhost:9090/mcp",
+      "headers": { "Authorization": "Bearer sw-workshop-key" }
+    }
+  }
+}
+```
 
 ## Second route: Cline + the FDA *skills* (fda command line, no MCP server)
 

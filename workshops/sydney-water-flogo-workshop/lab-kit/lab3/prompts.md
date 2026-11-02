@@ -4,6 +4,12 @@ Before you start: Lab 1 (`SW_RainfallRisk`, port 9999), Lab 2 (`SW_LeakReport`, 
 (`SW_Water_MCP`, port 9090, path `/mcp`) are all running, and Cline lists the server's two tools:
 `assess_rainfall_risk` and `report_leak`.
 
+Check that before you start: Cline → **MCP Servers** → **Installed** shows `sw-water-mcp` with a **green** dot and
+those two tools. The server must be in **Cline's** MCP settings (`bash ~/FlogoLab/cline/print-mcp-settings.sh`, then
+**Configure MCP Servers**). A server added through VS Code's own **MCP: Add Server** goes to Copilot Chat, not Cline.
+If Cline answers by searching your files and guesses tool names such as `log_leak_report`, it has no MCP tools. Fix
+the settings and start a new task (see `cline/README.md` → *Cline's MCP list is not VS Code's MCP list*).
+
 Run each prompt in a **new** Cline task. Approve each tool call when Cline asks.
 
 ## 1. The main prompt
