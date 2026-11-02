@@ -1,0 +1,601 @@
+{
+    "imports": [
+        "github.com/project-flogo/flow",
+        "github.com/tibco/flogo-general/src/app/General/activity/log",
+        "github.com/tibco/flogo-general/src/app/General/activity/rest",
+        "github.com/tibco/flogo-general/src/app/General/activity/mapper",
+        "github.com/project-flogo/contrib/activity/actreturn",
+        "rest_1 github.com/tibco/flogo-general/src/app/General/trigger/rest",
+        "github.com/project-flogo/contrib/function/string",
+        "github.com/project-flogo/contrib/function/array",
+        "github.com/project-flogo/contrib/function/datetime",
+        "github.com/project-flogo/contrib/function/coerce"
+    ],
+    "name": "SW_RainfallRisk",
+    "description": "Sydney Water workshop Lab 1 - API mediation: weather SaaS -> risk rule -> field service SaaS",
+    "version": "1.0.0",
+    "type": "flogo:app",
+    "appModel": "1.1.1",
+    "tags": [],
+    "triggers": [
+        {
+            "ref": "#rest_1",
+            "name": "tibco-wi-rest",
+            "description": "Rainfall risk REST API",
+            "settings": {
+                "port": 9999,
+                "APISpecUpdate": false,
+                "swagger": "",
+                "swaggerVersion": "v2",
+                "authenticationType": "None",
+                "username": "",
+                "password": "",
+                "apiVersion": "1.0.0",
+                "secureConnection": false,
+                "serverKey": "",
+                "caCertificate": ""
+            },
+            "id": "ReceiveHTTPMessage",
+            "handlers": [
+                {
+                    "description": "Assess rainfall risk for a site and raise an inspection when needed",
+                    "settings": {
+                        "Method": "POST",
+                        "reqType": "application/json",
+                        "Path": "/rainfall-risk/assessments",
+                        "OutputValidation": false
+                    },
+                    "action": {
+                        "ref": "github.com/project-flogo/flow",
+                        "settings": {
+                            "flowURI": "res://flow:AssessRainfallRisk"
+                        },
+                        "input": {
+                            "body": "=$.body",
+                            "headers": "=$.headers"
+                        },
+                        "output": {
+                            "code": "=$.code",
+                            "data": "=$.data"
+                        }
+                    },
+                    "reply": {
+                        "code": 200,
+                        "configureResponseCodes": false,
+                        "message": {}
+                    },
+                    "schemas": {
+                        "reply": {
+                            "data": {
+                                "type": "json",
+                                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"siteId\":{\"type\":\"string\"},\"siteName\":{\"type\":\"string\"},\"totalRainfallMm\":{\"type\":\"number\"},\"riskLevel\":{\"type\":\"string\"},\"inspectionRequested\":{\"type\":\"boolean\"},\"message\":{\"type\":\"string\"}}}",
+                                "fe_metadata": "{\"siteId\":\"\",\"siteName\":\"\",\"totalRainfallMm\":0.0,\"riskLevel\":\"\",\"inspectionRequested\":false,\"message\":\"\"}"
+                            },
+                            "responseBody": {
+                                "type": "json",
+                                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+                            }
+                        },
+                        "output": {
+                            "headers": {
+                                "type": "json",
+                                "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                                "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+                            },
+                            "body": {
+                                "type": "json",
+                                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"siteId\":{\"type\":\"string\"},\"siteName\":{\"type\":\"string\"},\"latitude\":{\"type\":\"number\"},\"longitude\":{\"type\":\"number\"},\"forecastDays\":{\"type\":\"number\"}}}",
+                                "fe_metadata": "{\"siteId\":\"PS-102\",\"siteName\":\"Parramatta Sewage Pumping Station\",\"latitude\":-33.815,\"longitude\":151.001,\"forecastDays\":3}"
+                            }
+                        }
+                    },
+                    "name": "AssessRainfallRisk"
+                }
+            ]
+        }
+    ],
+    "resources": [
+        {
+            "id": "flow:AssessRainfallRisk",
+            "data": {
+                "name": "AssessRainfallRisk",
+                "description": "Assess rainfall risk for a site and raise an inspection when needed",
+                "links": [
+                    {
+                        "id": 1,
+                        "from": "LogRequest",
+                        "to": "GetForecast",
+                        "type": "label",
+                        "label": "LogRequest to GetForecast"
+                    },
+                    {
+                        "id": 2,
+                        "from": "GetForecast",
+                        "to": "BuildAssessment",
+                        "type": "label",
+                        "label": "GetForecast to BuildAssessment"
+                    },
+                    {
+                        "id": 3,
+                        "from": "BuildAssessment",
+                        "to": "CreateInspection",
+                        "type": "expression",
+                        "label": "BuildAssessment to CreateInspection",
+                        "value": "$activity[BuildAssessment].output.riskLevel != \"LOW\""
+                    },
+                    {
+                        "id": 4,
+                        "from": "CreateInspection",
+                        "to": "ReturnTicketed",
+                        "type": "label",
+                        "label": "CreateInspection to ReturnTicketed"
+                    },
+                    {
+                        "id": 5,
+                        "from": "BuildAssessment",
+                        "to": "ReturnNoAction",
+                        "type": "exprOtherwise",
+                        "label": "BuildAssessment to ReturnNoAction"
+                    },
+                    {
+                        "id": 6,
+                        "from": "GetForecast",
+                        "to": "ReturnError",
+                        "type": "error",
+                        "label": "GetForecast to ReturnError"
+                    }
+                ],
+                "tasks": [
+                    {
+                        "id": "LogRequest",
+                        "name": "LogRequest",
+                        "description": "Log the incoming request",
+                        "activity": {
+                            "ref": "#log",
+                            "input": {
+                                "Log Level": "INFO",
+                                "flowInfo": false,
+                                "message": "=string.concat(\"Rainfall risk request for site \", $flow.body.siteId, \" - \", $flow.body.siteName)",
+                                "logLevel": ""
+                            },
+                            "schemas": {
+                                "input": {
+                                    "dynamicLogFields": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                                    }
+                                }
+                            },
+                            "feSchemaMap": {}
+                        }
+                    },
+                    {
+                        "id": "GetForecast",
+                        "name": "GetForecast",
+                        "description": "Get the daily rainfall forecast (Open-Meteo)",
+                        "settings": {
+                            "retryOnError": {
+                                "count": 0,
+                                "interval": 0
+                            }
+                        },
+                        "activity": {
+                            "ref": "#rest",
+                            "input": {
+                                "swagger": "",
+                                "authorization": false,
+                                "serviceName": "",
+                                "resourcePath": "",
+                                "Method": "GET",
+                                "Uri": "=$property[\"Weather.URL\"]",
+                                "requestType": "application/json",
+                                "Use certificate for verification": false,
+                                "mutualAuth": false,
+                                "Client Certificate": "",
+                                "Client Key": "",
+                                "Server Certificate": "",
+                                "disableSSLVerification": false,
+                                "disableKeepAlives": false,
+                                "followRedirects": true,
+                                "Timeout": 0,
+                                "proxy": "",
+                                "host": "",
+                                "queryParams": {
+                                    "mapping": {
+                                        "latitude": "=$flow.body.latitude",
+                                        "longitude": "=$flow.body.longitude",
+                                        "daily": "precipitation_sum,precipitation_probability_max",
+                                        "timezone": "Australia/Sydney",
+                                        "forecast_days": "=$flow.body.forecastDays"
+                                    }
+                                }
+                            },
+                            "output": {
+                                "configureResponseCodes": false,
+                                "throwError": true,
+                                "responseType": "application/json",
+                                "responseOutput": "JSON Object"
+                            },
+                            "schemas": {
+                                "input": {
+                                    "queryParams": {
+                                        "type": "json",
+                                        "value": "{\"type\":\"object\",\"properties\":{\"latitude\":{\"type\":\"number\"},\"longitude\":{\"type\":\"number\"},\"daily\":{\"type\":\"string\"},\"timezone\":{\"type\":\"string\"},\"forecast_days\":{\"type\":\"integer\"}},\"required\":[\"latitude\",\"longitude\",\"daily\",\"timezone\",\"forecast_days\"]}",
+                                        "fe_metadata": "[{\"parameterName\":\"latitude\",\"type\":\"number\",\"repeating\":\"false\",\"required\":\"true\",\"isEditable\":true},{\"parameterName\":\"longitude\",\"type\":\"number\",\"repeating\":\"false\",\"required\":\"true\",\"isEditable\":true},{\"parameterName\":\"daily\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"true\",\"isEditable\":true},{\"parameterName\":\"timezone\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"true\",\"isEditable\":true},{\"parameterName\":\"forecast_days\",\"type\":\"integer\",\"repeating\":\"false\",\"required\":\"true\",\"isEditable\":true}]"
+                                    },
+                                    "headers": {
+                                        "type": "json",
+                                        "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                                        "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+                                    },
+                                    "dynamicRequestHeaders": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"Header\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"Header\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                                    }
+                                },
+                                "output": {
+                                    "responseBody": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"latitude\":{\"type\":\"number\"},\"longitude\":{\"type\":\"number\"},\"timezone\":{\"type\":\"string\"},\"daily_units\":{\"type\":\"object\",\"properties\":{\"time\":{\"type\":\"string\"},\"precipitation_sum\":{\"type\":\"string\"},\"precipitation_probability_max\":{\"type\":\"string\"}}},\"daily\":{\"type\":\"object\",\"properties\":{\"time\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"precipitation_sum\":{\"type\":\"array\",\"items\":{\"type\":\"number\"}},\"precipitation_probability_max\":{\"type\":\"array\",\"items\":{\"type\":\"number\"}}}}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"latitude\":{\"type\":\"number\"},\"longitude\":{\"type\":\"number\"},\"timezone\":{\"type\":\"string\"},\"daily_units\":{\"type\":\"object\",\"properties\":{\"time\":{\"type\":\"string\"},\"precipitation_sum\":{\"type\":\"string\"},\"precipitation_probability_max\":{\"type\":\"string\"}}},\"daily\":{\"type\":\"object\",\"properties\":{\"time\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"precipitation_sum\":{\"type\":\"array\",\"items\":{\"type\":\"number\"}},\"precipitation_probability_max\":{\"type\":\"array\",\"items\":{\"type\":\"number\"}}}}}}"
+                                    },
+                                    "headers": {
+                                        "type": "json",
+                                        "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false},\"Set-Cookie\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                                        "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Set-Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+                                    }
+                                }
+                            },
+                            "feSchemaMap": {}
+                        }
+                    },
+                    {
+                        "id": "BuildAssessment",
+                        "name": "BuildAssessment",
+                        "description": "Sum forecast rainfall and classify the risk",
+                        "activity": {
+                            "ref": "#mapper",
+                            "input": {
+                                "input": {
+                                    "mapping": {
+                                        "totalRainfallMm": "=array.sum($activity[GetForecast].responseBody.daily.precipitation_sum)",
+                                        "riskLevel": "=array.sum($activity[GetForecast].responseBody.daily.precipitation_sum) >= $property[\"Risk.HighMm\"] ? \"HIGH\" : (array.sum($activity[GetForecast].responseBody.daily.precipitation_sum) >= $property[\"Risk.MediumMm\"] ? \"MEDIUM\" : \"LOW\")",
+                                        "assessedAt": "=datetime.now()"
+                                    }
+                                }
+                            },
+                            "schemas": {
+                                "input": {
+                                    "input": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"totalRainfallMm\":{\"type\":\"number\"},\"riskLevel\":{\"type\":\"string\"},\"assessedAt\":{\"type\":\"string\"}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"totalRainfallMm\":{\"type\":\"number\"},\"riskLevel\":{\"type\":\"string\"},\"assessedAt\":{\"type\":\"string\"}}}"
+                                    }
+                                },
+                                "output": {
+                                    "output": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"totalRainfallMm\":{\"type\":\"number\"},\"riskLevel\":{\"type\":\"string\"},\"assessedAt\":{\"type\":\"string\"}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"totalRainfallMm\":{\"type\":\"number\"},\"riskLevel\":{\"type\":\"string\"},\"assessedAt\":{\"type\":\"string\"}}}"
+                                    }
+                                }
+                            },
+                            "feSchemaMap": {}
+                        }
+                    },
+                    {
+                        "id": "CreateInspection",
+                        "name": "CreateInspection",
+                        "description": "Create an inspection work order in the Field Service SaaS",
+                        "settings": {
+                            "retryOnError": {
+                                "count": 0,
+                                "interval": 0
+                            }
+                        },
+                        "activity": {
+                            "ref": "#rest",
+                            "input": {
+                                "swagger": "",
+                                "authorization": false,
+                                "serviceName": "",
+                                "resourcePath": "",
+                                "Method": "POST",
+                                "Uri": "=$property[\"FieldService.URL\"]",
+                                "requestType": "application/json",
+                                "Use certificate for verification": false,
+                                "mutualAuth": false,
+                                "Client Certificate": "",
+                                "Client Key": "",
+                                "Server Certificate": "",
+                                "disableSSLVerification": false,
+                                "disableKeepAlives": false,
+                                "followRedirects": true,
+                                "Timeout": 0,
+                                "proxy": "",
+                                "host": "",
+                                "body": {
+                                    "mapping": {
+                                        "source": "flogo-rainfall-risk",
+                                        "siteId": "=$flow.body.siteId",
+                                        "siteName": "=$flow.body.siteName",
+                                        "priority": "=$activity[BuildAssessment].output.riskLevel",
+                                        "reason": "=string.concat(\"Forecast rainfall \", coerce.toString($activity[BuildAssessment].output.totalRainfallMm), \" mm over \", coerce.toString($flow.body.forecastDays), \" days - \", $activity[BuildAssessment].output.riskLevel, \" overflow/inflow risk\")",
+                                        "totalRainfallMm": "=$activity[BuildAssessment].output.totalRainfallMm",
+                                        "requestedAt": "=$activity[BuildAssessment].output.assessedAt"
+                                    }
+                                }
+                            },
+                            "output": {
+                                "configureResponseCodes": false,
+                                "throwError": false,
+                                "responseType": "text/plain",
+                                "responseOutput": "JSON Object"
+                            },
+                            "schemas": {
+                                "input": {
+                                    "headers": {
+                                        "type": "json",
+                                        "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                                        "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+                                    },
+                                    "dynamicRequestHeaders": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"Header\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"Header\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                                    },
+                                    "body": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"source\":{\"type\":\"string\"},\"siteId\":{\"type\":\"string\"},\"siteName\":{\"type\":\"string\"},\"priority\":{\"type\":\"string\"},\"reason\":{\"type\":\"string\"},\"totalRainfallMm\":{\"type\":\"number\"},\"requestedAt\":{\"type\":\"string\"}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"source\":{\"type\":\"string\"},\"siteId\":{\"type\":\"string\"},\"siteName\":{\"type\":\"string\"},\"priority\":{\"type\":\"string\"},\"reason\":{\"type\":\"string\"},\"totalRainfallMm\":{\"type\":\"number\"},\"requestedAt\":{\"type\":\"string\"}}}"
+                                    }
+                                },
+                                "output": {
+                                    "headers": {
+                                        "type": "json",
+                                        "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false},\"Set-Cookie\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                                        "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Set-Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+                                    }
+                                }
+                            },
+                            "feSchemaMap": {}
+                        }
+                    },
+                    {
+                        "id": "ReturnTicketed",
+                        "name": "ReturnTicketed",
+                        "description": "Risk is MEDIUM/HIGH - inspection raised",
+                        "activity": {
+                            "ref": "#actreturn",
+                            "settings": {
+                                "mappings": {
+                                    "code": 200,
+                                    "data": {
+                                        "mapping": {
+                                            "siteId": "=$flow.body.siteId",
+                                            "siteName": "=$flow.body.siteName",
+                                            "totalRainfallMm": "=$activity[BuildAssessment].output.totalRainfallMm",
+                                            "riskLevel": "=$activity[BuildAssessment].output.riskLevel",
+                                            "inspectionRequested": true,
+                                            "message": "=string.concat(\"Inspection requested in Field Service (HTTP \", coerce.toString($activity[CreateInspection].statusCode), \")\")"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "ReturnNoAction",
+                        "name": "ReturnNoAction",
+                        "description": "Risk is LOW - no action",
+                        "activity": {
+                            "ref": "#actreturn",
+                            "settings": {
+                                "mappings": {
+                                    "code": 200,
+                                    "data": {
+                                        "mapping": {
+                                            "siteId": "=$flow.body.siteId",
+                                            "siteName": "=$flow.body.siteName",
+                                            "totalRainfallMm": "=$activity[BuildAssessment].output.totalRainfallMm",
+                                            "riskLevel": "=$activity[BuildAssessment].output.riskLevel",
+                                            "inspectionRequested": false,
+                                            "message": "Rainfall risk LOW - no inspection needed"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "ReturnError",
+                        "name": "ReturnError",
+                        "description": "Weather API failed - reply 502",
+                        "activity": {
+                            "ref": "#actreturn",
+                            "settings": {
+                                "mappings": {
+                                    "code": 502,
+                                    "data": {
+                                        "mapping": {
+                                            "siteId": "=$flow.body.siteId",
+                                            "siteName": "=$flow.body.siteName",
+                                            "riskLevel": "UNKNOWN",
+                                            "inspectionRequested": false,
+                                            "message": "=string.concat(\"Weather service unavailable: \", $error[GetForecast].message)"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ],
+                "fe_metadata": "eyJMb2dSZXF1ZXN0Ijp7IngiOjEwMCwieSI6MTAwfSwiR2V0Rm9yZWNhc3QiOnsieCI6MzAwLCJ5IjoxMDB9LCJCdWlsZEFzc2Vzc21lbnQiOnsieCI6NTAwLCJ5IjoxMDB9LCJDcmVhdGVJbnNwZWN0aW9uIjp7IngiOjcwMCwieSI6MTAwfSwiUmV0dXJuVGlja2V0ZWQiOnsieCI6OTAwLCJ5IjoxMDB9LCJSZXR1cm5Ob0FjdGlvbiI6eyJ4Ijo3MDAsInkiOjI1MH0sIlJldHVybkVycm9yIjp7IngiOjUwMCwieSI6NDAwfX0=",
+                "metadata": {
+                    "input": [
+                        {
+                            "name": "headers",
+                            "type": "object",
+                            "schema": {
+                                "type": "json",
+                                "value": "{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false}}"
+                            }
+                        },
+                        {
+                            "name": "body",
+                            "type": "object",
+                            "schema": {
+                                "type": "json",
+                                "value": "{\"siteId\":{\"type\":\"string\"},\"siteName\":{\"type\":\"string\"},\"latitude\":{\"type\":\"number\"},\"longitude\":{\"type\":\"number\"},\"forecastDays\":{\"type\":\"integer\"}}"
+                            }
+                        }
+                    ],
+                    "output": [
+                        {
+                            "name": "code",
+                            "type": "integer"
+                        },
+                        {
+                            "name": "data",
+                            "type": "object",
+                            "schema": {
+                                "type": "json",
+                                "value": "{\"siteId\":{\"type\":\"string\"},\"siteName\":{\"type\":\"string\"},\"totalRainfallMm\":{\"type\":\"number\"},\"riskLevel\":{\"type\":\"string\"},\"inspectionRequested\":{\"type\":\"boolean\"},\"message\":{\"type\":\"string\"}}"
+                            }
+                        }
+                    ],
+                    "fe_metadata": {
+                        "input": "{\"type\":\"object\",\"title\":\"ReceiveHTTPMessage\",\"properties\":{\"headers\":{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false}}},\"body\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"siteId\":{\"type\":\"string\"},\"siteName\":{\"type\":\"string\"},\"latitude\":{\"type\":\"number\"},\"longitude\":{\"type\":\"number\"},\"forecastDays\":{\"type\":\"integer\"}}}}}",
+                        "output": "{\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"code\":{\"type\":\"integer\"},\"data\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"siteId\":{\"type\":\"string\"},\"siteName\":{\"type\":\"string\"},\"totalRainfallMm\":{\"type\":\"number\"},\"riskLevel\":{\"type\":\"string\"},\"inspectionRequested\":{\"type\":\"boolean\"},\"message\":{\"type\":\"string\"}}}}}"
+                    }
+                },
+                "explicitReply": true
+            }
+        }
+    ],
+    "properties": [
+        {
+            "name": "Weather.URL",
+            "type": "string",
+            "value": "https://api.open-meteo.com/v1/forecast"
+        },
+        {
+            "name": "FieldService.URL",
+            "type": "string",
+            "value": "https://postman-echo.com/post"
+        },
+        {
+            "name": "Risk.HighMm",
+            "type": "float64",
+            "value": 25
+        },
+        {
+            "name": "Risk.MediumMm",
+            "type": "float64",
+            "value": 5
+        }
+    ],
+    "connections": {},
+    "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTYiLCJ0YWciOiIxLjYuMTYtYjA1IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9XQ==",
+    "metadata": {
+        "endpoints": [
+            {
+                "protocol": "http",
+                "port": "9999",
+                "spec": {
+                    "name": "SW_RainfallRisk",
+                    "version": "1.0.0"
+                },
+                "title": "ReceiveHTTPMessage",
+                "swagger": {
+                    "swagger": "2.0",
+                    "info": {
+                        "title": "SW_RainfallRisk",
+                        "version": "1.0.0",
+                        "description": "Rainfall risk REST API"
+                    },
+                    "paths": {
+                        "/rainfall-risk/assessments": {
+                            "post": {
+                                "summary": "AssessRainfallRisk",
+                                "operationId": "post_rainfall-risk_assessments",
+                                "parameters": [
+                                    {
+                                        "name": "body",
+                                        "in": "body",
+                                        "description": "request body parameter",
+                                        "required": true,
+                                        "schema": {
+                                            "$ref": "#/definitions/schema1"
+                                        }
+                                    }
+                                ],
+                                "responses": {
+                                    "200": {
+                                        "description": "Rest Response",
+                                        "schema": {
+                                            "$ref": "#/definitions/schema2"
+                                        }
+                                    }
+                                },
+                                "description": "Assess rainfall risk for a site and raise an inspection when needed",
+                                "consumes": [
+                                    "application/json"
+                                ]
+                            }
+                        }
+                    },
+                    "definitions": {
+                        "schema1": {
+                            "type": "object",
+                            "properties": {
+                                "siteId": {
+                                    "type": "string"
+                                },
+                                "siteName": {
+                                    "type": "string"
+                                },
+                                "latitude": {
+                                    "type": "number"
+                                },
+                                "longitude": {
+                                    "type": "number"
+                                },
+                                "forecastDays": {
+                                    "type": "number"
+                                }
+                            }
+                        },
+                        "schema2": {
+                            "type": "object",
+                            "properties": {
+                                "siteId": {
+                                    "type": "string"
+                                },
+                                "siteName": {
+                                    "type": "string"
+                                },
+                                "totalRainfallMm": {
+                                    "type": "number"
+                                },
+                                "riskLevel": {
+                                    "type": "string"
+                                },
+                                "inspectionRequested": {
+                                    "type": "boolean"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "flogoVersion": "2.26.7"
+    }
+}

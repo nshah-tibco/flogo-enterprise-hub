@@ -1,0 +1,16 @@
+# Presentation decks are shared separately, not through the repo
+deck/
+deck-elevate/
+*.pptx
+
+# Local build output, internal test records and facilitator notes
+_build/
+verification/
+facilitator/
+bin/
+**/bin/
+*.exe
+__pycache__/
+*.pyc
+.mcp.json
+*.zip

@@ -1,0 +1,543 @@
+{
+    "imports": [
+        "github.com/project-flogo/flow",
+        "github.com/tibco/flogo-general/src/app/General/activity/log",
+        "github.com/tibco/flogo-general/src/app/General/activity/rest",
+        "github.com/tibco/flogo-general/src/app/General/activity/mapper",
+        "github.com/project-flogo/contrib/activity/actreturn",
+        "github.com/tibco/flogo-mcp/src/app/MCP/trigger/mcpserver",
+        "github.com/project-flogo/contrib/function/string",
+        "github.com/project-flogo/contrib/function/coerce"
+    ],
+    "name": "SW_Water_MCP_Starter",
+    "description": "Sydney Water workshop Lab 3 - MCP tools over the Lab 1 and Lab 2 Flogo APIs with NO guardrails (starter)",
+    "version": "1.0.0",
+    "type": "flogo:app",
+    "appModel": "1.1.1",
+    "tags": [],
+    "triggers": [
+        {
+            "ref": "#mcpserver",
+            "name": "flogo-mcp-mcpsever",
+            "description": "MCP server for AI agents",
+            "settings": {
+                "serverName": "SW_Water_MCP",
+                "serverVersion": "1.0.0",
+                "serverType": "HTTP",
+                "serverPort": "9090",
+                "statelessServer": false,
+                "serverEndpointPath": "/mcp",
+                "enableTLS": false,
+                "serverCertificate": "",
+                "serverPrivateKey": "",
+                "authType": "None",
+                "authToken": "",
+                "oauthIssuer": "",
+                "oauthJWKSURL": "",
+                "oauthAudience": "",
+                "oauthAuthorizationServers": "",
+                "oauthRequiredScopes": "",
+                "oauthResourceURL": ""
+            },
+            "id": "MCPServer",
+            "handlers": [
+                {
+                    "description": "Assess rainfall risk for a site.",
+                    "settings": {
+                        "handlerType": "Tool",
+                        "resourceUri": "",
+                        "handlerName": "assess_rainfall_risk",
+                        "handlerDescription": "Assess rainfall risk for a site.",
+                        "toolTitle": "",
+                        "readOnlyToolHint": false,
+                        "destructiveToolHint": false,
+                        "idempotentToolHint": false,
+                        "openWorldToolHint": true,
+                        "scope": ""
+                    },
+                    "action": {
+                        "ref": "github.com/project-flogo/flow",
+                        "settings": {
+                            "flowURI": "res://flow:AssessRainfallRisk"
+                        },
+                        "input": {
+                            "arguments": "=$.arguments",
+                            "httpHeaders": "=$.httpHeaders",
+                            "tokenInfo": "=$.tokenInfo"
+                        },
+                        "output": {
+                            "response": "=$.response"
+                        }
+                    },
+                    "reply": {
+                        "outputSchema": ""
+                    },
+                    "schemas": {
+                        "reply": {
+                            "response": {
+                                "type": "json",
+                                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"data\":{\"type\":\"string\"},\"audience\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"priority\":{\"type\":\"number\"},\"error\":{\"type\":\"string\"}}}",
+                                "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"data\":{\"type\":\"string\"},\"audience\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"priority\":{\"type\":\"number\"},\"error\":{\"type\":\"string\"}}}"
+                            }
+                        },
+                        "output": {
+                            "arguments": {
+                                "type": "json",
+                                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"siteId\":{\"type\":\"string\"},\"siteName\":{\"type\":\"string\"},\"latitude\":{\"type\":\"number\"},\"longitude\":{\"type\":\"number\"},\"forecastDays\":{\"type\":\"integer\"}},\"required\":[\"siteId\",\"siteName\",\"latitude\",\"longitude\",\"forecastDays\"]}",
+                                "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"siteId\":{\"type\":\"string\"},\"siteName\":{\"type\":\"string\"},\"latitude\":{\"type\":\"number\"},\"longitude\":{\"type\":\"number\"},\"forecastDays\":{\"type\":\"integer\"}},\"required\":[\"siteId\",\"siteName\",\"latitude\",\"longitude\",\"forecastDays\"]}"
+                            },
+                            "tokenInfo": {
+                                "type": "json",
+                                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"scopes\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"expiration\":{\"type\":\"number\"},\"iss\":{\"type\":\"string\"},\"sub\":{\"type\":\"string\"},\"aud\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"}}}",
+                                "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"scopes\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"expiration\":{\"type\":\"number\"},\"iss\":{\"type\":\"string\"},\"sub\":{\"type\":\"string\"},\"aud\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"}}}"
+                            }
+                        }
+                    },
+                    "name": "AssessRainfallRisk"
+                },
+                {
+                    "description": "Create a leak report.",
+                    "settings": {
+                        "handlerType": "Tool",
+                        "resourceUri": "",
+                        "handlerName": "report_leak",
+                        "handlerDescription": "Create a leak report.",
+                        "toolTitle": "",
+                        "readOnlyToolHint": false,
+                        "destructiveToolHint": false,
+                        "idempotentToolHint": false,
+                        "openWorldToolHint": true,
+                        "scope": ""
+                    },
+                    "action": {
+                        "ref": "github.com/project-flogo/flow",
+                        "settings": {
+                            "flowURI": "res://flow:ReportLeak"
+                        },
+                        "input": {
+                            "arguments": "=$.arguments",
+                            "httpHeaders": "=$.httpHeaders",
+                            "tokenInfo": "=$.tokenInfo"
+                        },
+                        "output": {
+                            "response": "=$.response"
+                        }
+                    },
+                    "reply": {
+                        "outputSchema": ""
+                    },
+                    "schemas": {
+                        "reply": {
+                            "response": {
+                                "type": "json",
+                                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"data\":{\"type\":\"string\"},\"audience\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"priority\":{\"type\":\"number\"},\"error\":{\"type\":\"string\"}}}",
+                                "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"data\":{\"type\":\"string\"},\"audience\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"priority\":{\"type\":\"number\"},\"error\":{\"type\":\"string\"}}}"
+                            }
+                        },
+                        "output": {
+                            "arguments": {
+                                "type": "json",
+                                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"reportId\":{\"type\":\"string\"},\"address\":{\"type\":\"string\"},\"suburb\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"severity\":{\"type\":\"string\"}},\"required\":[\"reportId\",\"address\",\"suburb\",\"description\",\"severity\"]}",
+                                "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"reportId\":{\"type\":\"string\"},\"address\":{\"type\":\"string\"},\"suburb\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"severity\":{\"type\":\"string\"}},\"required\":[\"reportId\",\"address\",\"suburb\",\"description\",\"severity\"]}"
+                            },
+                            "tokenInfo": {
+                                "type": "json",
+                                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"scopes\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"expiration\":{\"type\":\"number\"},\"iss\":{\"type\":\"string\"},\"sub\":{\"type\":\"string\"},\"aud\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"}}}",
+                                "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"scopes\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"expiration\":{\"type\":\"number\"},\"iss\":{\"type\":\"string\"},\"sub\":{\"type\":\"string\"},\"aud\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"}}}"
+                            }
+                        }
+                    },
+                    "name": "ReportLeak"
+                }
+            ]
+        }
+    ],
+    "resources": [
+        {
+            "id": "flow:AssessRainfallRisk",
+            "data": {
+                "name": "AssessRainfallRisk",
+                "description": "MCP tool assess_rainfall_risk",
+                "links": [
+                    {
+                        "id": 1,
+                        "from": "LogCall",
+                        "to": "CallRainfallRiskAPI",
+                        "type": "label",
+                        "label": "LogCall to CallRainfallRiskAPI"
+                    },
+                    {
+                        "id": 2,
+                        "from": "CallRainfallRiskAPI",
+                        "to": "Return",
+                        "type": "label",
+                        "label": "CallRainfallRiskAPI to Return"
+                    }
+                ],
+                "tasks": [
+                    {
+                        "id": "LogCall",
+                        "name": "LogCall",
+                        "description": "Log the tool call",
+                        "activity": {
+                            "ref": "#log",
+                            "input": {
+                                "Log Level": "INFO",
+                                "flowInfo": false,
+                                "message": "=string.concat(\"assess_rainfall_risk called with \", coerce.toString($flow.arguments))",
+                                "logLevel": ""
+                            }
+                        }
+                    },
+                    {
+                        "id": "CallRainfallRiskAPI",
+                        "name": "CallRainfallRiskAPI",
+                        "description": "Call the Lab 1 Rainfall Risk API",
+                        "settings": {
+                            "retryOnError": {
+                                "count": 0,
+                                "interval": 0
+                            }
+                        },
+                        "activity": {
+                            "ref": "#rest",
+                            "input": {
+                                "swagger": "",
+                                "authorization": false,
+                                "authorizationConn": "",
+                                "serviceName": "",
+                                "resourcePath": "",
+                                "Method": "POST",
+                                "Uri": "=$property[\"Lab1.AssessURL\"]",
+                                "requestType": "application/json",
+                                "Use certificate for verification": false,
+                                "mutualAuth": false,
+                                "Client Certificate": "",
+                                "Client Key": "",
+                                "Server Certificate": "",
+                                "disableSSLVerification": false,
+                                "disableKeepAlives": false,
+                                "followRedirects": true,
+                                "Timeout": 0,
+                                "proxy": "",
+                                "host": "",
+                                "body": {
+                                    "mapping": {
+                                        "siteId": "=$flow.arguments.siteId",
+                                        "siteName": "=$flow.arguments.siteName",
+                                        "latitude": "=$flow.arguments.latitude",
+                                        "longitude": "=$flow.arguments.longitude",
+                                        "forecastDays": "=$flow.arguments.forecastDays"
+                                    }
+                                }
+                            },
+                            "output": {
+                                "configureResponseCodes": false,
+                                "throwError": false,
+                                "responseType": "application/json",
+                                "responseOutput": "JSON Object"
+                            },
+                            "schemas": {
+                                "input": {
+                                    "headers": {
+                                        "type": "json",
+                                        "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                                        "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+                                    },
+                                    "dynamicRequestHeaders": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"Header\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"Header\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                                    },
+                                    "body": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"siteId\":{\"type\":\"string\"},\"siteName\":{\"type\":\"string\"},\"latitude\":{\"type\":\"number\"},\"longitude\":{\"type\":\"number\"},\"forecastDays\":{\"type\":\"integer\"}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"siteId\":{\"type\":\"string\"},\"siteName\":{\"type\":\"string\"},\"latitude\":{\"type\":\"number\"},\"longitude\":{\"type\":\"number\"},\"forecastDays\":{\"type\":\"integer\"}}}"
+                                    }
+                                },
+                                "output": {
+                                    "headers": {
+                                        "type": "json",
+                                        "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false},\"Set-Cookie\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                                        "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Set-Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+                                    },
+                                    "responseBody": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"siteId\":{\"type\":\"string\"},\"siteName\":{\"type\":\"string\"},\"riskLevel\":{\"type\":\"string\"},\"totalRainfallMm\":{\"type\":\"number\"},\"inspectionRequested\":{\"type\":\"boolean\"},\"message\":{\"type\":\"string\"}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"siteId\":{\"type\":\"string\"},\"siteName\":{\"type\":\"string\"},\"riskLevel\":{\"type\":\"string\"},\"totalRainfallMm\":{\"type\":\"number\"},\"inspectionRequested\":{\"type\":\"boolean\"},\"message\":{\"type\":\"string\"}}}"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "Return",
+                        "name": "Return",
+                        "description": "Return the raw API response",
+                        "activity": {
+                            "ref": "#actreturn",
+                            "settings": {
+                                "mappings": {
+                                    "response": {
+                                        "mapping": {
+                                            "data": "=coerce.toString($activity[CallRainfallRiskAPI].responseBody)"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ],
+                "fe_metadata": "eyJMb2dDYWxsIjp7IngiOjEwMCwieSI6MTAwfSwiQ2FsbFJhaW5mYWxsUmlza0FQSSI6eyJ4IjozMDAsInkiOjEwMH0sIlJldHVybiI6eyJ4Ijo1MDAsInkiOjEwMH19",
+                "metadata": {
+                    "input": [
+                        {
+                            "name": "arguments",
+                            "type": "object",
+                            "schema": {
+                                "type": "json",
+                                "value": "{\"siteId\":{\"type\":\"string\"},\"siteName\":{\"type\":\"string\"},\"latitude\":{\"type\":\"number\"},\"longitude\":{\"type\":\"number\"},\"forecastDays\":{\"type\":\"integer\"}}"
+                            }
+                        },
+                        {
+                            "name": "httpHeaders",
+                            "type": "object",
+                            "schema": {
+                                "type": "json",
+                                "value": "{}"
+                            }
+                        },
+                        {
+                            "name": "tokenInfo",
+                            "type": "object",
+                            "schema": {
+                                "type": "json",
+                                "value": "{\"scopes\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"expiration\":{\"type\":\"number\"},\"iss\":{\"type\":\"string\"},\"sub\":{\"type\":\"string\"},\"aud\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"}}"
+                            }
+                        }
+                    ],
+                    "output": [
+                        {
+                            "name": "response",
+                            "type": "object",
+                            "schema": {
+                                "type": "json",
+                                "value": "{\"data\":{\"type\":\"string\"},\"audience\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"priority\":{\"type\":\"number\"},\"error\":{\"type\":\"string\"}}"
+                            }
+                        }
+                    ],
+                    "fe_metadata": {
+                        "input": "{\"type\":\"object\",\"title\":\"MCPServer\",\"properties\":{\"arguments\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"siteId\":{\"type\":\"string\"},\"siteName\":{\"type\":\"string\"},\"latitude\":{\"type\":\"number\"},\"longitude\":{\"type\":\"number\"},\"forecastDays\":{\"type\":\"integer\"}},\"required\":[\"siteId\",\"siteName\",\"latitude\",\"longitude\",\"forecastDays\"]},\"httpHeaders\":{\"type\":\"object\",\"properties\":{}},\"tokenInfo\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"scopes\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"expiration\":{\"type\":\"number\"},\"iss\":{\"type\":\"string\"},\"sub\":{\"type\":\"string\"},\"aud\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"}}}}}",
+                        "output": "{\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"data\":{\"type\":\"string\"},\"audience\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"priority\":{\"type\":\"number\"},\"error\":{\"type\":\"string\"}}}}}"
+                    }
+                }
+            }
+        },
+        {
+            "id": "flow:ReportLeak",
+            "data": {
+                "name": "ReportLeak",
+                "description": "MCP tool report_leak",
+                "links": [
+                    {
+                        "id": 1,
+                        "from": "LogCall",
+                        "to": "CallLeakReportAPI",
+                        "type": "label",
+                        "label": "LogCall to CallLeakReportAPI"
+                    },
+                    {
+                        "id": 2,
+                        "from": "CallLeakReportAPI",
+                        "to": "Return",
+                        "type": "label",
+                        "label": "CallLeakReportAPI to Return"
+                    }
+                ],
+                "tasks": [
+                    {
+                        "id": "LogCall",
+                        "name": "LogCall",
+                        "description": "Log the tool call",
+                        "activity": {
+                            "ref": "#log",
+                            "input": {
+                                "Log Level": "INFO",
+                                "flowInfo": false,
+                                "message": "=string.concat(\"report_leak called with \", coerce.toString($flow.arguments))",
+                                "logLevel": ""
+                            }
+                        }
+                    },
+                    {
+                        "id": "CallLeakReportAPI",
+                        "name": "CallLeakReportAPI",
+                        "description": "Call the Lab 2 Leak Report API",
+                        "settings": {
+                            "retryOnError": {
+                                "count": 0,
+                                "interval": 0
+                            }
+                        },
+                        "activity": {
+                            "ref": "#rest",
+                            "input": {
+                                "swagger": "",
+                                "authorization": false,
+                                "authorizationConn": "",
+                                "serviceName": "",
+                                "resourcePath": "",
+                                "Method": "POST",
+                                "Uri": "=$property[\"Lab2.LeakReportURL\"]",
+                                "requestType": "application/json",
+                                "Use certificate for verification": false,
+                                "mutualAuth": false,
+                                "Client Certificate": "",
+                                "Client Key": "",
+                                "Server Certificate": "",
+                                "disableSSLVerification": false,
+                                "disableKeepAlives": false,
+                                "followRedirects": true,
+                                "Timeout": 0,
+                                "proxy": "",
+                                "host": "",
+                                "body": {
+                                    "mapping": {
+                                        "reportId": "=$flow.arguments.reportId",
+                                        "address": "=$flow.arguments.address",
+                                        "suburb": "=$flow.arguments.suburb",
+                                        "description": "=$flow.arguments.description",
+                                        "severity": "=$flow.arguments.severity"
+                                    }
+                                }
+                            },
+                            "output": {
+                                "configureResponseCodes": false,
+                                "throwError": false,
+                                "responseType": "application/json",
+                                "responseOutput": "JSON Object"
+                            },
+                            "schemas": {
+                                "input": {
+                                    "headers": {
+                                        "type": "json",
+                                        "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                                        "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+                                    },
+                                    "dynamicRequestHeaders": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"Header\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"Header\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                                    },
+                                    "body": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"reportId\":{\"type\":\"string\"},\"address\":{\"type\":\"string\"},\"suburb\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"severity\":{\"type\":\"string\"}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"reportId\":{\"type\":\"string\"},\"address\":{\"type\":\"string\"},\"suburb\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"severity\":{\"type\":\"string\"}}}"
+                                    }
+                                },
+                                "output": {
+                                    "headers": {
+                                        "type": "json",
+                                        "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false},\"Set-Cookie\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                                        "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Set-Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+                                    },
+                                    "responseBody": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"reportId\":{\"type\":\"string\"},\"workOrderRef\":{\"type\":\"string\"},\"priority\":{\"type\":\"string\"},\"status\":{\"type\":\"string\"}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"reportId\":{\"type\":\"string\"},\"workOrderRef\":{\"type\":\"string\"},\"priority\":{\"type\":\"string\"},\"status\":{\"type\":\"string\"}}}"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "Return",
+                        "name": "Return",
+                        "description": "Return the raw API response",
+                        "activity": {
+                            "ref": "#actreturn",
+                            "settings": {
+                                "mappings": {
+                                    "response": {
+                                        "mapping": {
+                                            "data": "=coerce.toString($activity[CallLeakReportAPI].responseBody)"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ],
+                "fe_metadata": "eyJMb2dDYWxsIjp7IngiOjEwMCwieSI6MTAwfSwiQ2FsbExlYWtSZXBvcnRBUEkiOnsieCI6MzAwLCJ5IjoxMDB9LCJSZXR1cm4iOnsieCI6NTAwLCJ5IjoxMDB9fQ==",
+                "metadata": {
+                    "input": [
+                        {
+                            "name": "arguments",
+                            "type": "object",
+                            "schema": {
+                                "type": "json",
+                                "value": "{\"reportId\":{\"type\":\"string\"},\"address\":{\"type\":\"string\"},\"suburb\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"severity\":{\"type\":\"string\"}}"
+                            }
+                        },
+                        {
+                            "name": "httpHeaders",
+                            "type": "object",
+                            "schema": {
+                                "type": "json",
+                                "value": "{}"
+                            }
+                        },
+                        {
+                            "name": "tokenInfo",
+                            "type": "object",
+                            "schema": {
+                                "type": "json",
+                                "value": "{\"scopes\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"expiration\":{\"type\":\"number\"},\"iss\":{\"type\":\"string\"},\"sub\":{\"type\":\"string\"},\"aud\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"}}"
+                            }
+                        }
+                    ],
+                    "output": [
+                        {
+                            "name": "response",
+                            "type": "object",
+                            "schema": {
+                                "type": "json",
+                                "value": "{\"data\":{\"type\":\"string\"},\"audience\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"priority\":{\"type\":\"number\"},\"error\":{\"type\":\"string\"}}"
+                            }
+                        }
+                    ],
+                    "fe_metadata": {
+                        "input": "{\"type\":\"object\",\"title\":\"MCPServer\",\"properties\":{\"arguments\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"reportId\":{\"type\":\"string\"},\"address\":{\"type\":\"string\"},\"suburb\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"severity\":{\"type\":\"string\"}},\"required\":[\"reportId\",\"address\",\"suburb\",\"description\",\"severity\"]},\"httpHeaders\":{\"type\":\"object\",\"properties\":{}},\"tokenInfo\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"scopes\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"expiration\":{\"type\":\"number\"},\"iss\":{\"type\":\"string\"},\"sub\":{\"type\":\"string\"},\"aud\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"}}}}}",
+                        "output": "{\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"data\":{\"type\":\"string\"},\"audience\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"priority\":{\"type\":\"number\"},\"error\":{\"type\":\"string\"}}}}}"
+                    }
+                }
+            }
+        }
+    ],
+    "properties": [
+        {
+            "name": "Lab1.AssessURL",
+            "type": "string",
+            "value": "http://localhost:9999/rainfall-risk/assessments"
+        },
+        {
+            "name": "Lab2.LeakReportURL",
+            "type": "string",
+            "value": "http://localhost:9998/leak-reports"
+        }
+    ],
+    "schemas": {},
+    "connections": {},
+    "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuNCIsInRhZyI6IjEuMC40IiwibmFtZSI6Ik1vZGVsIENvbnRleHQgUHJvdG9jb2wgKE1DUCkiLCJzM2xvY2F0aW9uIjoiVGliY28vTUNQIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWdlbmVyYWwvc3JjL2FwcC9HZW5lcmFsIiwiaWQiOiJHZW5lcmFsIiwidmVyc2lvbiI6IjEuNi4xNiIsInRhZyI6IjEuNi4xNiIsIm5hbWUiOiJHZW5lcmFsIiwiczNsb2NhdGlvbiI6IlRpYmNvL0dlbmVyYWwiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
+    "metadata": {
+        "endpoints": [
+            {
+                "protocol": "http",
+                "port": "9090",
+                "title": "MCPServer",
+                "type": "public"
+            }
+        ],
+        "flogoVersion": "2.26.7"
+    }
+}

@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Create a link (if missing) and set its type in one step, so nobody has to count link positions.
+#   fda-link <app.flogo> <Flow>                                    list the links with their positions
+#   fda-link <app.flogo> <Flow> <From> <To>                        plain success link
+#   fda-link <app.flogo> <Flow> <From> <To> expression '<condition>'   success with condition (no leading =)
+#   fda-link <app.flogo> <Flow> <From> <To> exprOtherwise          success with no matching condition
+#   fda-link <app.flogo> <Flow> <From> <To> error                  error link
+# Every change is made with fda (cl / sa flow '<Flow>.links[N].type|value'); the file is never edited directly.
+set -u
+FDA="$(dirname "$0")/fda"
+PY="$(command -v python3 || command -v python)"
+[ $# -ge 2 ] || { sed -n 2,8p "$0"; exit 2; }
+FILE="$1"; FLOW="$2"; FROM="${3:-}"; TO="${4:-}"; TYPE="${5:-label}"; COND="${6:-}"
+[ "$TYPE" = success ] && TYPE=label
+
+links() {  # prints "N<TAB>from<TAB>to<TAB>type<TAB>value"
+  "$FDA" da flow "$FLOW.links" -j -f "$FILE" 2>/dev/null | "$PY" -c '
+import json, sys
+raw = sys.stdin.read()
+raw = raw[raw.find("{"):] if "{" in raw else "{}"
+for i, l in enumerate(json.loads(raw).get("flogoAttributes") or []):
+    print("%d\t%s\t%s\t%s\t%s" % (i, l.get("from"), l.get("to"), l.get("type", "label"), l.get("value", "")))'
+}
+show() { links | awk -F'\t' -v f="$FLOW" '{v=($5!="")?"  ["$5"]":""; printf "  %s.links[%s]  %s -> %s  (%s)%s\n", f, $1, $2, $3, $4, v}'; }
+
+if [ -z "$FROM" ]; then show; exit 0; fi
+[ -n "$TO" ] || { echo "fda-link: give both <From> and <To>" >&2; exit 2; }
+case "$TYPE" in label|expression|exprOtherwise|error) ;; *) echo "fda-link: type must be success, expression, exprOtherwise or error" >&2; exit 2;; esac
+[ "$TYPE" != expression ] || [ -n "$COND" ] || { echo "fda-link: an expression link needs a condition" >&2; exit 2; }
+
+idx() { links | awk -F'\t' -v a="$FROM" -v b="$TO" '$2==a && $3==b {print $1; exit}'; }
+N="$(idx)"
+if [ -z "$N" ]; then
+  "$FDA" cl "$FLOW" "$FROM" "$TO" -f "$FILE" | sed 's/\x1b\[[0-9;]*m//g' | grep -E 'INFO|ERROR' || exit 1
+  N="$(idx)"
+  [ -n "$N" ] || { echo "fda-link: link $FROM -> $TO not found after fda cl (check the activity names)" >&2; exit 1; }
+fi
+if [ "$TYPE" != label ] || [ "$(links | awk -F'\t' -v n="$N" '$1==n {print $4}')" != label ]; then
+  "$FDA" sa flow "$FLOW.links[$N].type" "$TYPE" -f "$FILE" | sed 's/\x1b\[[0-9;]*m//g' | grep -E 'INFO|ERROR'
+fi
+if [ "$TYPE" = expression ]; then
+  "$FDA" sa flow "$FLOW.links[$N].value" "$COND" --force -f "$FILE" | sed 's/\x1b\[[0-9;]*m//g' | grep -E 'INFO|ERROR'
+fi
+echo "Links of $FLOW now:"; show

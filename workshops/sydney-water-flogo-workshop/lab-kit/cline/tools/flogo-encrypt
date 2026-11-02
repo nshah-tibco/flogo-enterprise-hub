@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Prints the SECRET:... value the Flogo designer stores for a password app property.
+# usage: ~/FlogoLab/cline/tools/flogo-encrypt <plain-text>
+[ -n "${1:-}" ] || { echo "usage: flogo-encrypt <plain-text>" >&2; exit 2; }
+name=flogo-vscode-cli
+case "${OSTYPE:-}" in msys*|cygwin*|win32*) name=flogo-vscode-cli.exe ;; esac
+cli=""
+for d in "$HOME/.vscode/extensions" "$HOME/.vscode-server/extensions" "$HOME/.vscode-insiders/extensions"; do
+  cli=$(ls -td "$d"/tibco.flogo-*/bin/"$name" 2>/dev/null | head -1)
+  [ -n "$cli" ] && break
+done
+[ -n "$cli" ] || { echo "flogo-encrypt: flogo-vscode-cli not found - install the TIBCO Flogo VS Code extension" >&2; exit 127; }
+[ -x "$cli" ] || chmod +x "$cli" 2>/dev/null
+out=$("$cli" secret encrypt -p "$1") || { echo "$out" >&2; exit 1; }
+secret=$(printf '%s' "$out" | grep -o '"cipherText": *"SECRET:[^"]*"' | head -1 | sed 's/.*"\(SECRET:[^"]*\)"/\1/')
+[ -n "$secret" ] || { echo "flogo-encrypt: no cipherText in: $out" >&2; exit 1; }
+printf '%s\n' "$secret"

@@ -1,0 +1,512 @@
+{
+    "imports": [
+        "github.com/project-flogo/flow",
+        "github.com/project-flogo/contrib/activity/noop",
+        "github.com/tibco/flogo-general/src/app/General/activity/log",
+        "github.com/tibco/flogo-general/src/app/General/activity/mapper",
+        "github.com/tibco/flogo-general/src/app/General/activity/rest",
+        "github.com/project-flogo/contrib/activity/actreturn",
+        "rest_1 github.com/tibco/flogo-general/src/app/General/trigger/rest",
+        "github.com/project-flogo/contrib/function/string"
+    ],
+    "name": "SW_LeakReport",
+    "description": "Sydney Water workshop Lab 2 - customer leak report intake (AI-scaffolded with FDA, finished in the designer)",
+    "version": "1.0.0",
+    "type": "flogo:app",
+    "appModel": "1.1.1",
+    "tags": [],
+    "triggers": [
+        {
+            "ref": "#rest_1",
+            "name": "tibco-wi-rest",
+            "description": "Receive leak report via REST POST /leak-reports on port 9998",
+            "settings": {
+                "port": 9998,
+                "APISpecUpdate": false,
+                "swagger": "",
+                "swaggerVersion": "v2",
+                "authenticationType": "None",
+                "username": "",
+                "password": "",
+                "apiVersion": "1.0.0",
+                "secureConnection": false,
+                "serverKey": "",
+                "caCertificate": ""
+            },
+            "id": "ReceiveHTTPMessage",
+            "handlers": [
+                {
+                    "description": "Customer Leak Report Intake process for REST API on port 9998.",
+                    "settings": {
+                        "APISpecPath": "",
+                        "Method": "POST",
+                        "reqType": "application/json",
+                        "Path": "/leak-reports",
+                        "OutputValidation": false
+                    },
+                    "action": {
+                        "ref": "github.com/project-flogo/flow",
+                        "settings": {
+                            "flowURI": "res://flow:LeakReportIntake"
+                        },
+                        "input": {
+                            "body": "=$.body",
+                            "headers": "=$.headers"
+                        },
+                        "output": {
+                            "code": "=$.code",
+                            "data": "=$.data"
+                        }
+                    },
+                    "reply": {
+                        "code": 200,
+                        "configureResponseCodes": false,
+                        "message": {}
+                    },
+                    "schemas": {
+                        "reply": {
+                            "data": {
+                                "type": "json",
+                                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"reportId\":{\"type\":\"string\"},\"workOrderRef\":{\"type\":\"string\"},\"priority\":{\"type\":\"string\"},\"status\":{\"type\":\"string\"}}}",
+                                "fe_metadata": "{\"reportId\":\"LR-1001\",\"workOrderRef\":\"WO-LR-1001\",\"priority\":\"P1\",\"status\":\"RECEIVED\"}"
+                            },
+                            "responseBody": {
+                                "type": "json",
+                                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+                            }
+                        },
+                        "output": {
+                            "headers": {
+                                "type": "json",
+                                "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                                "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+                            },
+                            "body": {
+                                "type": "json",
+                                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"reportId\":{\"type\":\"string\"},\"address\":{\"type\":\"string\"},\"suburb\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"severity\":{\"type\":\"string\"}}}",
+                                "fe_metadata": "{\"reportId\":\"LR-1001\",\"address\":\"12 Church St\",\"suburb\":\"Parramatta\",\"description\":\"Water bubbling up through the footpath\",\"severity\":\"HIGH\"}"
+                            }
+                        }
+                    },
+                    "name": "LeakReportIntake"
+                }
+            ]
+        }
+    ],
+    "resources": [
+        {
+            "id": "flow:LeakReportIntake",
+            "data": {
+                "name": "LeakReportIntake",
+                "description": "Customer Leak Report Intake process for REST API on port 9998.",
+                "links": [
+                    {
+                        "id": 1,
+                        "from": "StartActivity",
+                        "to": "LogReport",
+                        "type": "label",
+                        "label": "StartActivity to LogReport"
+                    },
+                    {
+                        "id": 2,
+                        "from": "LogReport",
+                        "to": "BuildWorkOrder",
+                        "type": "label",
+                        "label": "LogReport to BuildWorkOrder"
+                    },
+                    {
+                        "id": 3,
+                        "from": "BuildWorkOrder",
+                        "to": "CreateWorkOrder",
+                        "type": "label",
+                        "label": "BuildWorkOrder to CreateWorkOrder"
+                    },
+                    {
+                        "id": 4,
+                        "from": "CreateWorkOrder",
+                        "to": "LogWorkOrderId",
+                        "type": "label",
+                        "label": "CreateWorkOrder to LogWorkOrderId"
+                    },
+                    {
+                        "id": 5,
+                        "from": "LogWorkOrderId",
+                        "to": "Reply201",
+                        "type": "label",
+                        "label": "LogWorkOrderId to Reply201"
+                    },
+                    {
+                        "id": 6,
+                        "from": "BuildWorkOrder",
+                        "to": "LogAudit",
+                        "type": "label",
+                        "label": "BuildWorkOrder to LogAudit"
+                    },
+                    {
+                        "id": 7,
+                        "from": "LogAudit",
+                        "to": "Reply201",
+                        "type": "label",
+                        "label": "LogAudit to Reply201"
+                    }
+                ],
+                "tasks": [
+                    {
+                        "id": "StartActivity",
+                        "name": "StartActivity",
+                        "description": "NoOp Activity",
+                        "activity": {
+                            "ref": "#noop"
+                        }
+                    },
+                    {
+                        "id": "LogReport",
+                        "name": "LogReport",
+                        "description": "Log report",
+                        "activity": {
+                            "ref": "#log",
+                            "input": {
+                                "Log Level": "INFO",
+                                "flowInfo": false,
+                                "message": "=string.concat(\"Leak report \", $flow.body.reportId, \" at \", $flow.body.address, \", \", $flow.body.suburb, \" - severity \", $flow.body.severity)",
+                                "logLevel": ""
+                            },
+                            "schemas": {
+                                "input": {
+                                    "dynamicLogFields": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                                    }
+                                }
+                            },
+                            "feSchemaMap": {}
+                        }
+                    },
+                    {
+                        "id": "BuildWorkOrder",
+                        "name": "BuildWorkOrder",
+                        "description": "Build work order (map severity → priority)",
+                        "activity": {
+                            "ref": "#mapper",
+                            "input": {
+                                "input": {
+                                    "mapping": {
+                                        "workOrderRef": "=string.concat(\"WO-\", $flow.body.reportId)",
+                                        "priority": "=$flow.body.severity == \"HIGH\" ? \"P1\" : ($flow.body.severity == \"MEDIUM\" ? \"P2\" : \"P3\")",
+                                        "location": "=string.concat($flow.body.address, \", \", $flow.body.suburb)"
+                                    }
+                                }
+                            },
+                            "schemas": {
+                                "input": {
+                                    "input": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"workOrderRef\":{\"type\":\"string\"},\"priority\":{\"type\":\"string\"},\"location\":{\"type\":\"string\"}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"workOrderRef\":{\"type\":\"string\"},\"priority\":{\"type\":\"string\"},\"location\":{\"type\":\"string\"}}}"
+                                    }
+                                },
+                                "output": {
+                                    "output": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"workOrderRef\":{\"type\":\"string\"},\"priority\":{\"type\":\"string\"},\"location\":{\"type\":\"string\"}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"workOrderRef\":{\"type\":\"string\"},\"priority\":{\"type\":\"string\"},\"location\":{\"type\":\"string\"}}}"
+                                    }
+                                }
+                            },
+                            "feSchemaMap": {}
+                        }
+                    },
+                    {
+                        "id": "CreateWorkOrder",
+                        "name": "CreateWorkOrder",
+                        "description": "Create work order in Field Service SaaS (POST)",
+                        "settings": {
+                            "retryOnError": {
+                                "count": 0,
+                                "interval": 0
+                            }
+                        },
+                        "activity": {
+                            "ref": "#rest",
+                            "input": {
+                                "swagger": "",
+                                "authorization": false,
+                                "serviceName": "",
+                                "resourcePath": "",
+                                "Method": "POST",
+                                "Uri": "=$property[\"FieldService.URL\"]",
+                                "requestType": "application/json",
+                                "Use certificate for verification": false,
+                                "mutualAuth": false,
+                                "Client Certificate": "",
+                                "Client Key": "",
+                                "Server Certificate": "",
+                                "disableSSLVerification": false,
+                                "disableKeepAlives": false,
+                                "followRedirects": true,
+                                "Timeout": 0,
+                                "proxy": "",
+                                "host": "",
+                                "body": {
+                                    "mapping": {
+                                        "source": "flogo-leak-intake",
+                                        "workOrderRef": "=$activity[BuildWorkOrder].output.workOrderRef",
+                                        "reportId": "=$flow.body.reportId",
+                                        "location": "=$activity[BuildWorkOrder].output.location",
+                                        "description": "=$flow.body.description",
+                                        "priority": "=$activity[BuildWorkOrder].output.priority"
+                                    }
+                                }
+                            },
+                            "output": {
+                                "configureResponseCodes": false,
+                                "throwError": false,
+                                "responseType": "text/plain",
+                                "responseOutput": "JSON Object"
+                            },
+                            "schemas": {
+                                "input": {
+                                    "headers": {
+                                        "type": "json",
+                                        "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                                        "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+                                    },
+                                    "dynamicRequestHeaders": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"Header\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"Header\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                                    },
+                                    "body": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"source\":{\"type\":\"string\"},\"workOrderRef\":{\"type\":\"string\"},\"reportId\":{\"type\":\"string\"},\"location\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"priority\":{\"type\":\"string\"}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"source\":{\"type\":\"string\"},\"workOrderRef\":{\"type\":\"string\"},\"reportId\":{\"type\":\"string\"},\"location\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"priority\":{\"type\":\"string\"}}}"
+                                    }
+                                },
+                                "output": {
+                                    "headers": {
+                                        "type": "json",
+                                        "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false},\"Set-Cookie\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                                        "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Set-Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+                                    }
+                                }
+                            },
+                            "feSchemaMap": {}
+                        }
+                    },
+                    {
+                        "id": "LogWorkOrderId",
+                        "name": "LogWorkOrderId",
+                        "description": "Log the work order id after creation",
+                        "activity": {
+                            "ref": "#log",
+                            "input": {
+                                "Log Level": "INFO",
+                                "flowInfo": false,
+                                "message": "=string.concat(\"Work order created: \", $activity[BuildWorkOrder].output.workOrderRef)",
+                                "logLevel": ""
+                            },
+                            "schemas": {
+                                "input": {
+                                    "dynamicLogFields": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                                    }
+                                }
+                            },
+                            "feSchemaMap": {}
+                        }
+                    },
+                    {
+                        "id": "Reply201",
+                        "name": "Reply201",
+                        "description": "Reply 201 with work-order reference",
+                        "activity": {
+                            "ref": "#actreturn",
+                            "settings": {
+                                "mappings": {
+                                    "code": 201,
+                                    "data": {
+                                        "mapping": {
+                                            "reportId": "=$flow.body.reportId",
+                                            "workOrderRef": "=$activity[BuildWorkOrder].output.workOrderRef",
+                                            "priority": "=$activity[BuildWorkOrder].output.priority",
+                                            "status": "RECEIVED"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "LogAudit",
+                        "name": "LogAudit",
+                        "description": "Log audit entry",
+                        "activity": {
+                            "ref": "#log",
+                            "input": {
+                                "Log Level": "INFO",
+                                "flowInfo": false,
+                                "message": "=string.concat(\"AUDIT leak-report \", $flow.body.reportId, \" -> \", $activity[BuildWorkOrder].output.workOrderRef, \" priority \", $activity[BuildWorkOrder].output.priority)",
+                                "logLevel": ""
+                            },
+                            "schemas": {
+                                "input": {
+                                    "dynamicLogFields": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"fields\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"value\":{\"type\":\"string\"}},\"required\":[\"name\",\"value\"]}}}}"
+                                    }
+                                }
+                            },
+                            "feSchemaMap": {}
+                        }
+                    }
+                ],
+                "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6NTl9LCJMb2dSZXBvcnQiOnsieCI6MzUwLCJ5Ijo1MH0sIkJ1aWxkV29ya09yZGVyIjp7IngiOjYwMCwieSI6NTB9LCJDcmVhdGVXb3JrT3JkZXIiOnsieCI6ODUwLCJ5Ijo1MH0sIkxvZ1dvcmtPcmRlcklkIjp7IngiOjExMDAsInkiOjEzNX0sIlJlcGx5MjAxIjp7IngiOjEzNTAsInkiOjEzNX0sIkxvZ0F1ZGl0Ijp7IngiOjExMDAsInkiOjI4NX19",
+                "metadata": {
+                    "input": [
+                        {
+                            "name": "headers",
+                            "type": "object",
+                            "schema": {
+                                "type": "json",
+                                "value": "{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false}}"
+                            }
+                        },
+                        {
+                            "name": "body",
+                            "type": "object",
+                            "schema": {
+                                "type": "json",
+                                "value": "{\"reportId\":{\"type\":\"string\"},\"address\":{\"type\":\"string\"},\"suburb\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"severity\":{\"type\":\"string\"}}"
+                            }
+                        }
+                    ],
+                    "output": [
+                        {
+                            "name": "code",
+                            "type": "integer"
+                        },
+                        {
+                            "name": "data",
+                            "type": "object",
+                            "schema": {
+                                "type": "json",
+                                "value": "{\"reportId\":{\"type\":\"string\"},\"workOrderRef\":{\"type\":\"string\"},\"priority\":{\"type\":\"string\"},\"status\":{\"type\":\"string\"}}"
+                            }
+                        }
+                    ],
+                    "fe_metadata": {
+                        "input": "{\"type\":\"object\",\"title\":\"ReceiveHTTPMessage\",\"properties\":{\"headers\":{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false}}},\"body\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"reportId\":{\"type\":\"string\"},\"address\":{\"type\":\"string\"},\"suburb\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"severity\":{\"type\":\"string\"}}}}}",
+                        "output": "{\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"code\":{\"type\":\"integer\"},\"data\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"reportId\":{\"type\":\"string\"},\"workOrderRef\":{\"type\":\"string\"},\"priority\":{\"type\":\"string\"},\"status\":{\"type\":\"string\"}}}}}"
+                    }
+                },
+                "explicitReply": true
+            }
+        }
+    ],
+    "properties": [
+        {
+            "name": "FieldService.URL",
+            "type": "string",
+            "value": "https://postman-echo.com/post"
+        }
+    ],
+    "connections": {},
+    "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTYiLCJ0YWciOiIxLjYuMTYtYjA1IiwibmFtZSI6IkdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9XQ==",
+    "metadata": {
+        "endpoints": [
+            {
+                "protocol": "http",
+                "port": "9998",
+                "spec": {
+                    "name": "SW_LeakReport",
+                    "version": "1.0.0"
+                },
+                "title": "ReceiveHTTPMessage",
+                "swagger": {
+                    "swagger": "2.0",
+                    "info": {
+                        "title": "SW_LeakReport",
+                        "version": "1.0.0",
+                        "description": "Receive leak report via REST POST /leak-reports on port 9998"
+                    },
+                    "paths": {
+                        "/leak-reports": {
+                            "post": {
+                                "summary": "LeakReportIntake",
+                                "operationId": "post_leak-reports",
+                                "parameters": [
+                                    {
+                                        "name": "body",
+                                        "in": "body",
+                                        "description": "request body parameter",
+                                        "required": true,
+                                        "schema": {
+                                            "$ref": "#/definitions/schema1"
+                                        }
+                                    }
+                                ],
+                                "responses": {
+                                    "201": {
+                                        "description": "Rest Response",
+                                        "schema": {
+                                            "$ref": "#/definitions/schema2"
+                                        }
+                                    }
+                                },
+                                "description": "Customer Leak Report Intake process for REST API on port 9998.",
+                                "consumes": [
+                                    "application/json"
+                                ]
+                            }
+                        }
+                    },
+                    "definitions": {
+                        "schema1": {
+                            "type": "object",
+                            "properties": {
+                                "reportId": {
+                                    "type": "string"
+                                },
+                                "address": {
+                                    "type": "string"
+                                },
+                                "suburb": {
+                                    "type": "string"
+                                },
+                                "description": {
+                                    "type": "string"
+                                },
+                                "severity": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "schema2": {
+                            "type": "object",
+                            "properties": {
+                                "reportId": {
+                                    "type": "string"
+                                },
+                                "workOrderRef": {
+                                    "type": "string"
+                                },
+                                "priority": {
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "flogoVersion": "2.26.7"
+    }
+}

@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# fda = Flogo Design Assistant (flogodesign-cli) from the newest installed TIBCO Flogo VS Code extension.
+# usage: ~/FlogoLab/cline/tools/fda <task> [args] -f <app.flogo>      (fda help, fda version)
+name=flogodesign-cli
+case "${OSTYPE:-}" in msys*|cygwin*|win32*) name=flogodesign-cli.exe ;; esac
+cli=""
+for d in "$HOME/.vscode/extensions" "$HOME/.vscode-server/extensions" "$HOME/.vscode-insiders/extensions"; do
+  cli=$(ls -td "$d"/tibco.flogo-*/bin/"$name" 2>/dev/null | head -1)
+  [ -n "$cli" ] && break
+done
+if [ -z "$cli" ]; then
+  echo "fda: flogodesign-cli not found under ~/.vscode*/extensions/tibco.flogo-*/bin - install the TIBCO Flogo VS Code extension" >&2
+  exit 127
+fi
+[ -x "$cli" ] || chmod +x "$cli" 2>/dev/null
+case "${OSTYPE:-}" in
+  msys*|cygwin*)  # Git Bash on Windows: hand file paths (/c/...) to the .exe as C:/..., leave /api/paths alone
+    args=()
+    for a in "$@"; do
+      if [[ "$a" =~ ^/[a-zA-Z]/ ]]; then a="$(cygpath -m "$a")"; fi
+      args+=("$a")
+    done
+    set -- "${args[@]}" ;;
+esac
+MSYS_NO_PATHCONV=1 exec "$cli" "$@"

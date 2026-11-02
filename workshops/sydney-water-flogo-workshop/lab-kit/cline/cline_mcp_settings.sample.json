@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "flogo-fda-lab2": {
+      "type": "stdio",
+      "command": "/home/<USER>/.vscode/extensions/<EXT_DIR>/bin/flogodesign-cli",
+      "args": ["-f", "/home/<USER>/FlogoLab/lab2/SW_LeakReport.flogo", "mcp", "stdio"],
+      "env": {},
+      "disabled": false,
+      "autoApprove": [],
+      "timeout": 120
+    },
+    "sw-water-mcp": {
+      "type": "streamableHttp",
+      "url": "http://localhost:9090/mcp",
+      "headers": {
+        "Authorization": "Bearer sw-workshop-key"
+      },
+      "disabled": false,
+      "autoApprove": [],
+      "timeout": 60
+    }
+  }
+}
