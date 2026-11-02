@@ -1,0 +1,252 @@
+{
+    "imports": [
+        "github.com/project-flogo/flow",
+        "github.com/tibco/flogo-general/src/app/General/activity/log",
+        "github.com/tibco/flogo-general/src/app/General/activity/mapper",
+        "github.com/project-flogo/contrib/activity/actreturn",
+        "github.com/tibco/flogo-general/src/app/General/trigger/rest",
+        "github.com/project-flogo/contrib/function/string",
+        "github.com/project-flogo/contrib/function/coerce"
+    ],
+    "name": "SW_RainfallRisk_FromSpec",
+    "description": "Sydney Water workshop Lab 1 (hands-on) - the Rainfall Risk API contract with simple mock logic",
+    "version": "1.0.0",
+    "type": "flogo:app",
+    "appModel": "1.1.1",
+    "tags": [],
+    "triggers": [
+        {
+            "ref": "#rest",
+            "name": "tibco-wi-rest",
+            "description": "Rainfall risk REST API",
+            "settings": {
+                "port": 9999,
+                "APISpecUpdate": false,
+                "swagger": "",
+                "swaggerVersion": "v2",
+                "authenticationType": "None",
+                "username": "",
+                "password": "",
+                "apiVersion": "1.0.0",
+                "secureConnection": false,
+                "serverKey": "",
+                "caCertificate": ""
+            },
+            "id": "ReceiveHTTPMessage",
+            "handlers": [
+                {
+                    "description": "Assess rainfall risk for a site (contract from rainfall-risk-api.openapi.json)",
+                    "settings": {
+                        "Method": "POST",
+                        "reqType": "application/json",
+                        "Path": "/rainfall-risk/assessments",
+                        "OutputValidation": false
+                    },
+                    "action": {
+                        "ref": "github.com/project-flogo/flow",
+                        "settings": {
+                            "flowURI": "res://flow:AssessRainfallRisk"
+                        },
+                        "input": {
+                            "body": "=$.body",
+                            "headers": "=$.headers"
+                        },
+                        "output": {
+                            "code": "=$.code",
+                            "data": "=$.data"
+                        }
+                    },
+                    "reply": {
+                        "code": 200,
+                        "configureResponseCodes": false,
+                        "message": {}
+                    },
+                    "schemas": {
+                        "reply": {
+                            "data": {
+                                "type": "json",
+                                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"siteId\":{\"type\":\"string\"},\"siteName\":{\"type\":\"string\"},\"totalRainfallMm\":{\"type\":\"number\"},\"riskLevel\":{\"type\":\"string\"},\"inspectionRequested\":{\"type\":\"boolean\"},\"message\":{\"type\":\"string\"}}}",
+                                "fe_metadata": "{\"siteId\":\"\",\"siteName\":\"\",\"totalRainfallMm\":0.0,\"riskLevel\":\"\",\"inspectionRequested\":false,\"message\":\"\"}"
+                            },
+                            "responseBody": {
+                                "type": "json",
+                                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+                            }
+                        },
+                        "output": {
+                            "headers": {
+                                "type": "json",
+                                "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                                "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+                            },
+                            "body": {
+                                "type": "json",
+                                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"siteId\":{\"type\":\"string\"},\"siteName\":{\"type\":\"string\"},\"latitude\":{\"type\":\"number\"},\"longitude\":{\"type\":\"number\"},\"forecastDays\":{\"type\":\"integer\"}}}",
+                                "fe_metadata": "{\"siteId\":\"PS-102\",\"siteName\":\"Parramatta Sewage Pumping Station\",\"latitude\":-33.815,\"longitude\":151.001,\"forecastDays\":3}"
+                            }
+                        }
+                    },
+                    "name": "AssessRainfallRisk"
+                }
+            ]
+        }
+    ],
+    "resources": [
+        {
+            "id": "flow:AssessRainfallRisk",
+            "data": {
+                "name": "AssessRainfallRisk",
+                "description": "Assess rainfall risk for a site (mock logic)",
+                "links": [
+                    {
+                        "id": 1,
+                        "from": "LogRequest",
+                        "to": "MockAssessment",
+                        "type": "label",
+                        "label": "LogRequest to MockAssessment"
+                    },
+                    {
+                        "id": 2,
+                        "from": "MockAssessment",
+                        "to": "Return",
+                        "type": "label",
+                        "label": "MockAssessment to Return"
+                    }
+                ],
+                "tasks": [
+                    {
+                        "id": "LogRequest",
+                        "name": "LogRequest",
+                        "description": "Log the incoming request",
+                        "activity": {
+                            "ref": "#log",
+                            "input": {
+                                "Log Level": "INFO",
+                                "flowInfo": false,
+                                "message": "=string.concat(\"Rainfall risk request for site \", $flow.body.siteId, \" - \", $flow.body.siteName)",
+                                "logLevel": ""
+                            }
+                        }
+                    },
+                    {
+                        "id": "MockAssessment",
+                        "name": "MockAssessment",
+                        "description": "Simple mock logic: 4 mm of rain per forecast day, then rate the risk",
+                        "activity": {
+                            "ref": "#mapper",
+                            "input": {
+                                "input": {
+                                    "mapping": {
+                                        "totalRainfallMm": "=coerce.toFloat64($flow.body.forecastDays) * 4.0",
+                                        "riskLevel": "=coerce.toFloat64($flow.body.forecastDays) * 4.0 >= 25 ? \"HIGH\" : (coerce.toFloat64($flow.body.forecastDays) * 4.0 >= 5 ? \"MEDIUM\" : \"LOW\")",
+                                        "inspectionRequested": "=coerce.toFloat64($flow.body.forecastDays) * 4.0 >= 5",
+                                        "message": "=string.concat(\"Mock assessment: \", coerce.toString($flow.body.forecastDays), \" forecast days x 4 mm per day (no weather API called yet)\")"
+                                    }
+                                }
+                            },
+                            "schemas": {
+                                "input": {
+                                    "input": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"totalRainfallMm\":{\"type\":\"number\"},\"riskLevel\":{\"type\":\"string\"},\"inspectionRequested\":{\"type\":\"boolean\"},\"message\":{\"type\":\"string\"}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"totalRainfallMm\":{\"type\":\"number\"},\"riskLevel\":{\"type\":\"string\"},\"inspectionRequested\":{\"type\":\"boolean\"},\"message\":{\"type\":\"string\"}}}"
+                                    }
+                                },
+                                "output": {
+                                    "output": {
+                                        "type": "json",
+                                        "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"totalRainfallMm\":{\"type\":\"number\"},\"riskLevel\":{\"type\":\"string\"},\"inspectionRequested\":{\"type\":\"boolean\"},\"message\":{\"type\":\"string\"}}}",
+                                        "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"totalRainfallMm\":{\"type\":\"number\"},\"riskLevel\":{\"type\":\"string\"},\"inspectionRequested\":{\"type\":\"boolean\"},\"message\":{\"type\":\"string\"}}}"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "id": "Return",
+                        "name": "Return",
+                        "description": "Reply 200 with the assessment",
+                        "activity": {
+                            "ref": "#actreturn",
+                            "settings": {
+                                "mappings": {
+                                    "code": 200,
+                                    "data": {
+                                        "mapping": {
+                                            "siteId": "=$flow.body.siteId",
+                                            "siteName": "=$flow.body.siteName",
+                                            "totalRainfallMm": "=$activity[MockAssessment].output.totalRainfallMm",
+                                            "riskLevel": "=$activity[MockAssessment].output.riskLevel",
+                                            "inspectionRequested": "=$activity[MockAssessment].output.inspectionRequested",
+                                            "message": "=$activity[MockAssessment].output.message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ],
+                "fe_metadata": "eyJMb2dSZXF1ZXN0Ijp7IngiOjEwMCwieSI6MTAwfSwiTW9ja0Fzc2Vzc21lbnQiOnsieCI6MzAwLCJ5IjoxMDB9LCJSZXR1cm4iOnsieCI6NTAwLCJ5IjoxMDB9fQ==",
+                "metadata": {
+                    "input": [
+                        {
+                            "name": "headers",
+                            "type": "object",
+                            "schema": {
+                                "type": "json",
+                                "value": "{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false}}"
+                            }
+                        },
+                        {
+                            "name": "body",
+                            "type": "object",
+                            "schema": {
+                                "type": "json",
+                                "value": "{\"siteId\":{\"type\":\"string\"},\"siteName\":{\"type\":\"string\"},\"latitude\":{\"type\":\"number\"},\"longitude\":{\"type\":\"number\"},\"forecastDays\":{\"type\":\"integer\"}}"
+                            }
+                        }
+                    ],
+                    "output": [
+                        {
+                            "name": "code",
+                            "type": "integer"
+                        },
+                        {
+                            "name": "data",
+                            "type": "object",
+                            "schema": {
+                                "type": "json",
+                                "value": "{\"siteId\":{\"type\":\"string\"},\"siteName\":{\"type\":\"string\"},\"totalRainfallMm\":{\"type\":\"number\"},\"riskLevel\":{\"type\":\"string\"},\"inspectionRequested\":{\"type\":\"boolean\"},\"message\":{\"type\":\"string\"}}"
+                            }
+                        }
+                    ],
+                    "fe_metadata": {
+                        "input": "{\"type\":\"object\",\"title\":\"ReceiveHTTPMessage\",\"properties\":{\"headers\":{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false}}},\"body\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"siteId\":{\"type\":\"string\"},\"siteName\":{\"type\":\"string\"},\"latitude\":{\"type\":\"number\"},\"longitude\":{\"type\":\"number\"},\"forecastDays\":{\"type\":\"integer\"}}}}}",
+                        "output": "{\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"code\":{\"type\":\"integer\"},\"data\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"siteId\":{\"type\":\"string\"},\"siteName\":{\"type\":\"string\"},\"totalRainfallMm\":{\"type\":\"number\"},\"riskLevel\":{\"type\":\"string\"},\"inspectionRequested\":{\"type\":\"boolean\"},\"message\":{\"type\":\"string\"}}}}}"
+                    }
+                },
+                "explicitReply": true
+            }
+        }
+    ],
+    "properties": [],
+    "schemas": {},
+    "connections": {},
+    "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTYiLCJ0YWciOiIxLjYuMTYiLCJuYW1lIjoiR2VuZXJhbCIsInMzbG9jYXRpb24iOiJUaWJjby9HZW5lcmFsIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
+    "metadata": {
+        "endpoints": [
+            {
+                "protocol": "http",
+                "port": "9999",
+                "spec": {
+                    "name": "SW_RainfallRisk_FromSpec",
+                    "version": "1.0.0"
+                },
+                "title": "ReceiveHTTPMessage",
+                "type": "public"
+            }
+        ],
+        "flogoVersion": "2.26.7"
+    }
+}

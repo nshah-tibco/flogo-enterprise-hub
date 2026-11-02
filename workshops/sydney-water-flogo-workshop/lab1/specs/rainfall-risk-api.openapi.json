@@ -1,0 +1,112 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Sydney Water Rainfall Risk API",
+    "version": "1.0.0",
+    "description": "Lab 1 API: assess the wet-weather overflow/inflow risk at a Sydney Water site from forecast rainfall (Open-Meteo) and raise an inspection request in Field Service when the risk is MEDIUM or HIGH."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:9999",
+      "description": "Lab 1 SW_RainfallRisk"
+    }
+  ],
+  "paths": {
+    "/rainfall-risk/assessments": {
+      "post": {
+        "operationId": "assessRainfallRisk",
+        "summary": "Assess rainfall risk for a site",
+        "description": "Lab 1 SW_RainfallRisk: sums the forecast rainfall for the site and raises an inspection in Field Service when the risk is MEDIUM or HIGH.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssessmentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Assessment"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AssessmentRequest": {
+        "type": "object",
+        "required": [
+          "siteId",
+          "siteName",
+          "latitude",
+          "longitude",
+          "forecastDays"
+        ],
+        "properties": {
+          "siteId": {
+            "type": "string",
+            "example": "PS-102"
+          },
+          "siteName": {
+            "type": "string",
+            "example": "Parramatta Sewage Pumping Station SP0102"
+          },
+          "latitude": {
+            "type": "number",
+            "example": -33.815
+          },
+          "longitude": {
+            "type": "number",
+            "example": 151.001
+          },
+          "forecastDays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 7,
+            "example": 3
+          }
+        }
+      },
+      "Assessment": {
+        "type": "object",
+        "properties": {
+          "siteId": {
+            "type": "string"
+          },
+          "siteName": {
+            "type": "string"
+          },
+          "riskLevel": {
+            "type": "string",
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "UNKNOWN"
+            ]
+          },
+          "totalRainfallMm": {
+            "type": "number"
+          },
+          "inspectionRequested": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

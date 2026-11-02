@@ -1,0 +1,107 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Sydney Water Leak Report API",
+    "version": "1.0.0",
+    "description": "Lab 2 API: log a water leak reported by a resident or a field crew; creates a work order in Field Service and replies 201 with the work-order reference."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:9998",
+      "description": "Lab 2 SW_LeakReport"
+    }
+  ],
+  "paths": {
+    "/leak-reports": {
+      "post": {
+        "operationId": "createLeakReport",
+        "summary": "Log a water leak report",
+        "description": "Lab 2 SW_LeakReport: creates a work order in Field Service (HIGH=P1, MEDIUM=P2, LOW=P3).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LeakReport"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeakReportReceipt"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "LeakReport": {
+        "type": "object",
+        "required": [
+          "reportId",
+          "address",
+          "suburb",
+          "description",
+          "severity"
+        ],
+        "properties": {
+          "reportId": {
+            "type": "string",
+            "example": "LR-2001"
+          },
+          "address": {
+            "type": "string",
+            "example": "12 Church St"
+          },
+          "suburb": {
+            "type": "string",
+            "example": "Parramatta"
+          },
+          "description": {
+            "type": "string",
+            "example": "Water bubbling up through the footpath"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "HIGH",
+              "MEDIUM",
+              "LOW"
+            ]
+          }
+        }
+      },
+      "LeakReportReceipt": {
+        "type": "object",
+        "properties": {
+          "reportId": {
+            "type": "string"
+          },
+          "workOrderRef": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "P1",
+              "P2",
+              "P3"
+            ]
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,5 +1,5 @@
 ---
-name: tibco-platform-cli
+name: tibcop
 description: A command line tool to manage the TIBCO Platform, including Flogo & Business Works Applications. This tool can list and deploy applications.
 user-invocable: true
 ---

@@ -1,8 +1,8 @@
 # CLAUDE.md
 
-This project's conventions for AI coding agents live in [AGENT.md](AGENT.md), imported below so they apply whether you open the repo root or `skills-library/` as your workspace.
+This project's conventions for AI coding agents live in [AGENTS.md](AGENTS.md), imported below so they apply whether you open the repo root or `skills-library/` as your workspace.
 
-@AGENT.md
+@AGENTS.md
 
 ## Quick reminders
 

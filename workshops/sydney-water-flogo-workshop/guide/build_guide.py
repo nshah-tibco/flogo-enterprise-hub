@@ -40,6 +40,9 @@ LAB = {
     "flogo_ver": "2.26.x",
     "kit": "~/FlogoLab",                     # Ubuntu lab VM (RDP / xrdp); absolute form below for tools
     "kit_abs": "/home/<user>/FlogoLab",
+    "repo_url": "https://github.com/nshah-tibco/flogo-enterprise-hub.git",
+    "repo_branch": "sydney-water-workshop",
+    "repo_folder": "workshops/sydney-water-flogo-workshop",
     "os": "Ubuntu Linux desktop (RDP via xrdp)",
     "ext_dir": "~/.vscode/extensions/tibco.flogo-2.26.<version>",
     "ext_glob": "~/.vscode/extensions/tibco.flogo-2.26.*",
@@ -614,11 +617,20 @@ callout("note", "Copy and paste from this guide", [
     "sharing is off: in `mstsc` open **Show Options → Local Resources** and tick **Clipboard**, then reconnect.",
 ])
 
-h2("1.2  Check the prerequisites (2 minutes)")
-para(f"Your facilitator has prepared the VM. One script checks every prerequisite and prints **PASS**, **WARN** or "
-     f"**FAIL** for each. Open a terminal in VS Code (**Terminal → New Terminal**, or **Ctrl+Shift+`**) and run:")
-code(f"bash {L['kit']}/prereq-check.sh")
-para("All PASS (a WARN is fine) → carry on. Any FAIL → raise a hand. To check by hand:")
+h2("1.2  Get the workshop and run setup (3 minutes)")
+para("The workshop is a folder in a Git repository. If your facilitator has not cloned it for you, open a terminal "
+     "(Super key → type `terminal`) and run:")
+code(f"git clone -b {L['repo_branch']} {L['repo_url']} ~/flogo-enterprise-hub")
+steps([
+    f"In VS Code: **File → Open Folder…** → `~/flogo-enterprise-hub/{L['repo_folder']}` → **Open**. If VS Code asks "
+    "whether you trust the authors, click **Yes, I trust the authors**.",
+    "Open a terminal in VS Code (**Terminal → New Terminal**, or **Ctrl+Shift+`**) and run:",
+])
+code("bash setup.sh")
+para(f"`setup.sh` does three things: it makes `{L['kit']}` point to this folder (every `{L['kit']}` path in this guide "
+     "means *this* folder), adds the two workshop MCP servers to Cline, and checks every prerequisite, printing "
+     "**PASS**, **WARN** or **FAIL** for each. All PASS (a WARN is fine) → carry on. Any FAIL → raise a hand. "
+     "To check something by hand:")
 table(["Prerequisite", "Check it yourself", "Expected"], [
     ["Ubuntu desktop over RDP", "`grep PRETTY_NAME /etc/os-release`", "Ubuntu …"],
     [f"VS Code {L['vscode_min']} or later (Cline's minimum)", "`code --version`",
@@ -651,24 +663,19 @@ steps([
     f"**API Provider** = **OpenAI** (not \"OpenAI Compatible\"). Paste the key shown on the day into **OpenAI API Key**. "
     f"Model = **{L['model']}**. Continue.",
     "At the bottom of the chat, set the mode toggle to **Act** (Plan mode cannot change anything).",
-    "Generate your MCP settings with your real paths filled in, in a VS Code terminal:",
-])
-code(f"bash {L['kit']}/cline/print-mcp-settings.sh")
-steps([
-    "Select the whole JSON it prints and copy it (`Ctrl+Shift+C`).",
-    "In Cline click the **MCP Servers** icon (stacked servers, top of the Cline panel) → **Configure** tab → "
-    "**Configure MCP Servers** (at the bottom). `cline_mcp_settings.json` opens. Replace everything in it with "
-    "the JSON and save (`Ctrl+S`).",
+    "`setup.sh` already added the MCP servers. Click the **MCP Servers** icon (stacked servers, top of the Cline "
+    "panel). If the list is empty, reload VS Code (**Ctrl+Shift+P → Developer: Reload Window**).",
 ])
 callout("check", "✅ Checkpoint — Cline is ready", [
     f"In **MCP Servers**, `flogo-fda-lab2` has a **green** dot and lists tools such as `describe-project` and "
     f"`create-flow`. `{L['l3_server']}` stays red until your Lab 3 app is running — that is expected.",
 ])
 
-h2("1.4  The lab kit")
-para(f"Everything you need is on the VM in `{L['kit']}` (`{L['kit_abs']}`). Open it in VS Code with **File → "
-     "Open Folder… → Home → FlogoLab** (it is usually open already).")
+h2("1.4  The workshop folder")
+para(f"Everything you need is in the folder you opened in 1.2 (also reachable as `{L['kit']}`):")
 table(["Folder / file", "What it is for"], [
+    ["setup.sh", "One-time setup from 1.2 (run it again any time; it is safe to repeat)"],
+    ["guide/", "This guide (PDF and Word)"],
     ["lab1/", "Lab 1: you create SW_RainfallRisk.flogo here; parramatta-*.json requests; sample-requests.sh"],
     ["lab2/leak-report-process.png", "The process diagram the AI turns into a flow"],
     ["lab2/prompts.md", "The prompts for Lab 2, ready to copy"],
@@ -677,7 +684,7 @@ table(["Folder / file", "What it is for"], [
     ["lab3/starter/SW_Water_MCP_Starter.flogo", "Lab 3 starter: MCP Server with two tools that call your Lab 1 + 2 APIs, no guardrails"],
     ["lab3/test-mcp.sh", "Tests the MCP server without an LLM"],
     ["lab3/prompts.md", "The agent prompts for Lab 3"],
-    ["cline/", "Cline rules, MCP settings sample and print-mcp-settings.sh"],
+    ["cline/", "Cline MCP settings sample, the FDA skills and helper tools (optional prompts-fda-skills.md route)"],
     [".clinerules/", "Rules Cline loads automatically for this folder"],
     ["solutions/", "Fast track: Lab1_SW_RainfallRisk, Lab2_SW_LeakReport, Lab3_SW_Water_MCP"],
     ["prereq-check.sh", "The prerequisite check from 1.2"],
@@ -1065,7 +1072,7 @@ table(["The AI did", "You did"], [
 ], [8.5, 8.5])
 h2("3.8  Troubleshooting")
 table(["Symptom", "Fix"], [
-    ["`flogo-fda-lab2` is red", "Wrong `flogodesign-cli` path in the MCP settings (re-run `print-mcp-settings.sh`), or the "
+    ["`flogo-fda-lab2` is red", "Wrong `flogodesign-cli` path in the MCP settings (run `bash setup.sh` again, then reload VS Code), or the "
      f"file is not executable: `chmod +x {L['ext_glob']}/bin/flogodesign-cli`, then restart the server."],
     ["Cline says 401 / invalid key", "Re-select **API Provider: OpenAI** (not \"OpenAI Compatible\") and re-paste the key."],
     ["429 / rate limit", "Wait 30 s and retry; the room shares one key."],

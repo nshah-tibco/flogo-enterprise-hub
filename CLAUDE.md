@@ -2,9 +2,9 @@
 
 **flogo-enterprise-hub** collects TIBCO Flogo enterprise assets: reusable AI-agent **skills** under [`skills-library/.claude/skills/`](skills-library/.claude/skills/), runnable **demos** under [`samples/`](samples/), and custom **connector extensions** under `extensions/`.
 
-The project-level conventions for building, testing, and deploying Flogo apps live in [`skills-library/AGENT.md`](skills-library/AGENT.md), imported below so they apply from the repo root exactly as they do when you open `skills-library/` as your workspace.
+The project-level conventions for building, testing, and deploying Flogo apps live in [`skills-library/AGENTS.md`](skills-library/AGENTS.md), imported below so they apply from the repo root exactly as they do when you open `skills-library/` as your workspace.
 
-@skills-library/AGENT.md
+@skills-library/AGENTS.md
 
 ## Quick reminders
 

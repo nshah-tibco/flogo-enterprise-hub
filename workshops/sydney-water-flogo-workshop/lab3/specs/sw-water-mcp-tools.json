@@ -1,0 +1,92 @@
+{
+  "server": "SW_Water_MCP",
+  "url": "http://localhost:9090/mcp",
+  "transport": "MCP Streamable HTTP",
+  "auth": "Authorization: Bearer sw-workshop-key (solution); none (starter)",
+  "tools": [
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "openWorldHint": true
+      },
+      "description": "Assess the wet-weather overflow/inflow risk at one Sydney Water site in Greater Sydney from forecast rainfall. Calls the Rainfall Risk API, which reads the weather forecast and, when the risk is MEDIUM or HIGH, raises an inspection request in Field Service. forecastDays must be 1-7; latitude/longitude must be inside Greater Sydney (latitude -34.2 to -33.3, longitude 150.5 to 151.4). Returns siteId, siteName, riskLevel (LOW, MEDIUM or HIGH), totalRainfallMm, inspectionRequested and message.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "properties": {
+          "forecastDays": {
+            "description": "Number of forecast days to assess, 1 to 7",
+            "type": "integer"
+          },
+          "latitude": {
+            "description": "Site latitude in decimal degrees; Greater Sydney only (-34.2 to -33.3)",
+            "type": "number"
+          },
+          "longitude": {
+            "description": "Site longitude in decimal degrees; Greater Sydney only (150.5 to 151.4)",
+            "type": "number"
+          },
+          "siteId": {
+            "description": "Sydney Water site ID, e.g. PS-102",
+            "type": "string"
+          },
+          "siteName": {
+            "description": "Site name, e.g. Parramatta Sewage Pumping Station SP0102",
+            "type": "string"
+          }
+        },
+        "required": [
+          "siteId",
+          "siteName",
+          "latitude",
+          "longitude",
+          "forecastDays"
+        ],
+        "type": "object"
+      },
+      "name": "assess_rainfall_risk",
+      "title": "Assess rainfall risk"
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "openWorldHint": true
+      },
+      "description": "Log a water leak reported by a resident or a field crew. Calls the Leak Report API, which creates a work order in Field Service. reportId must look like LR-1234; severity must be HIGH, MEDIUM or LOW; description is what the reporter said, 10-500 characters. Returns reportId, workOrderRef, priority (P1, P2 or P3) and status.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "properties": {
+          "address": {
+            "description": "Street address of the leak, e.g. 12 Church St",
+            "type": "string"
+          },
+          "description": {
+            "description": "What the reporter observed, in their words (10-500 characters)",
+            "type": "string"
+          },
+          "reportId": {
+            "description": "Leak report ID: LR- followed by 4 digits, e.g. LR-2001",
+            "type": "string"
+          },
+          "severity": {
+            "description": "HIGH, MEDIUM or LOW",
+            "type": "string"
+          },
+          "suburb": {
+            "description": "Suburb, e.g. Parramatta",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reportId",
+          "address",
+          "suburb",
+          "description",
+          "severity"
+        ],
+        "type": "object"
+      },
+      "name": "report_leak",
+      "title": "Report a water leak"
+    }
+  ]
+}

@@ -1,50 +1,80 @@
 # TIBCO Flogo® Hands-on Workshop — Sydney Water
 
-A 2.5-hour hands-on workshop: build integration APIs in Flogo by hand and with AI, then expose them to an AI
-agent as MCP tools with guardrails.
+Build integration APIs in Flogo by hand and with AI, then expose them to an AI agent as MCP tools with guardrails.
 
-| Lab | What you build | Port | Skills |
+## How the session runs
+
+| # | Part | Who | Where |
 |---|---|---|---|
-| **1 · Rainfall Risk API** | REST API that calls a weather SaaS (Open-Meteo), rates the rainfall risk and raises an inspection work order in a field-service SaaS (webhook.site) | 9999 | API integration & mediation: REST trigger, Invoke REST, mapper, branching, error handling, app properties |
-| **2 · Leak Report Intake** | A flow built from a process diagram by an AI assistant (Cline + Flogo Design Assistant), finished and tested by you | 9998 | AI-assisted development, diagram → flow |
-| **3 · Your APIs as MCP tools** | An MCP server exposing the Lab 1 and Lab 2 APIs as tools for an AI agent, with four guardrails: API-key auth, input validation, PII masking, least privilege | 9090 | MCP, guardrails |
+| 1 | **Demo** of all three labs: API spec → REST service, process diagram → REST service (AI), API spec → MCP server + guardrails | Presenter | `lab1/`, `lab2/`, `lab3/` `presenter-demo.md` |
+| 2 | **Lab 0 — Hello Flogo**: timer trigger + log, by hand (~10 min) | You | [`lab0/README.md`](lab0/README.md) |
+| 3 | **Lab 1 — Rainfall Risk API from its spec**, by hand (~15 min) | You | [`lab1/README.md`](lab1/README.md) part A |
+| 4 | **Run all three solutions** and test them with curl | You | [`lab1`](lab1/README.md) part B, [`lab2`](lab2/README.md), [`lab3`](lab3/README.md) |
+| 5 | **Ask the AI agent** (Cline) to use your MCP tools, then try to break the guardrails | You | [`lab3/README.md`](lab3/README.md) |
 
-**Participant guide (step by step):** [`guide/SydneyWater_Flogo_Workshop_Guide.pdf`](guide/SydneyWater_Flogo_Workshop_Guide.pdf)
-(also as `.docx`). Section 1 lists every prerequisite and how to check it.
-
-## Quick start (Ubuntu lab VM)
+## Setup (once, ~5 min)
 
 ```bash
-# 1. Get the workshop and put the lab kit where the guide expects it (~/FlogoLab)
 git clone -b sydney-water-workshop https://github.com/nshah-tibco/flogo-enterprise-hub.git ~/flogo-enterprise-hub
-cp -r ~/flogo-enterprise-hub/workshops/sydney-water-flogo-workshop/lab-kit ~/FlogoLab
-chmod +x ~/FlogoLab/*.sh ~/FlogoLab/*/*.sh ~/FlogoLab/cline/tools/*
-
-# 2. Check the machine: VS Code, Flogo extension 2.26.x, Go 1.25.7+, curl, python3, network, free ports
-bash ~/FlogoLab/prereq-check.sh
-
-# 3. Open ~/FlogoLab in VS Code, install the Cline extension, choose OpenAI + gpt-4.1
-#    (the OpenAI key is handed out on the day - never commit it)
 ```
 
-Then follow the guide. Every lab has a **fast-track** solution in `lab-kit/solutions/` if you fall behind.
+1. VS Code → **File → Open Folder…** → `~/flogo-enterprise-hub/workshops/sydney-water-flogo-workshop`
+   (trust the authors if asked).
+2. **Terminal → New Terminal** (`Ctrl+Shift+`` ` ``), then:
+   ```bash
+   bash setup.sh
+   ```
+   It points `~/FlogoLab` at this folder, adds the workshop MCP servers to Cline, and checks the prerequisites
+   (VS Code, Flogo extension 2.26.x, Go 1.25.7+, curl, python3, network, free ports 9999 / 9998 / 9090).
+   All **PASS** (a WARN is fine) → carry on. Any **FAIL** → raise a hand.
+3. **Cline** (needed for step 5): Extensions (`Ctrl+Shift+X`) → search **Cline** → Install → *Bring my own API key*
+   → API Provider **OpenAI** → paste the workshop key (handed out on the day) → model **gpt-4.1** → mode **Act**.
 
-## What's in the lab kit (`lab-kit/` → `~/FlogoLab`)
+## The labs at a glance
 
-| Path | Contents |
+| Lab | App | Port | API spec | Test from a terminal |
+|---|---|---|---|---|
+| 0 | `HelloFlogo` — Timer → Log | – | – | watch the terminal: a greeting every 10 s |
+| 1 | `SW_RainfallRisk_FromSpec` (you build) / `SW_RainfallRisk` (solution) | 9999 | [`lab1/specs/rainfall-risk-api.openapi.json`](lab1/specs/rainfall-risk-api.openapi.json) | `bash lab1/sample-requests.sh` |
+| 2 | `SW_LeakReport` (solution) | 9998 | [`lab2/specs/leak-report-api.openapi.json`](lab2/specs/leak-report-api.openapi.json) | `bash lab2/test-leak.sh` |
+| 3 | `SW_Water_MCP` (solution) / starter | 9090 | tools: [`lab3/specs/sw-water-mcp-tools.json`](lab3/specs/sw-water-mcp-tools.json) · backend APIs: [`lab3/specs/sw-flogo-apis.openapi.json`](lab3/specs/sw-flogo-apis.openapi.json) | `bash lab3/test-mcp.sh` |
+
+Solutions for every lab are in [`solutions/`](solutions/): open one, then **Flogo** app view → **Run as Executable**.
+Only one app per port at a time — stop your Lab 1 app before running the Lab 1 solution.
+
+## curl cheat sheet (no Postman needed)
+
+```bash
+# Lab 1 - Rainfall Risk (port 9999)
+curl -s -X POST http://localhost:9999/rainfall-risk/assessments -H "Content-Type: application/json" \
+  -d '{"siteId":"PS-102","siteName":"Parramatta Sewage Pumping Station SP0102","latitude":-33.815,"longitude":151.001,"forecastDays":3}'
+
+# Lab 2 - Leak report (port 9998) -> 201 {"priority":"P1","reportId":"LR-1001","status":"RECEIVED","workOrderRef":"WO-LR-1001"}
+curl -s -i -X POST http://localhost:9998/leak-reports -H "Content-Type: application/json" \
+  -d '{"reportId":"LR-1001","address":"12 Church St","suburb":"Parramatta","description":"Water bubbling up through the footpath","severity":"HIGH"}'
+
+# Lab 3 - MCP server (port 9090): see lab3/README.md "Query it with curl" (initialize -> tools/list -> tools/call)
+```
+
+Add `-i` to see the HTTP status line, `| python3 -m json.tool` to pretty-print JSON.
+
+## Troubleshooting
+
+| Symptom | Fix |
 |---|---|
-| `prereq-check.sh` | PASS/WARN/FAIL check of every prerequisite (`--no-net` skips network checks) |
-| `lab1/` | `sample-requests.sh` (curl tests) and sample request bodies |
-| `lab2/` | `leak-report-process.png` (the process diagram), `prompts.md` (Cline + FDA prompts), `test-leak.sh` |
-| `lab3/` | `starter/SW_Water_MCP_Starter.flogo`, `prompts.md` (agent prompts), `test-mcp.sh` (MCP tests without an LLM), `presenter-demo.md`, `specs/` (OpenAPI spec of the Lab 1 + 2 APIs) |
-| `solutions/` | Finished apps: `Lab1_SW_RainfallRisk.flogo`, `Lab2_SW_LeakReport.flogo`, `Lab3_SW_Water_MCP.flogo` |
-| `cline/` | Cline MCP settings sample + rules for the Flogo Design Assistant, and the Flogo FDA skills setup (`setup-flogo-skills.sh`, `flogo-skills/`, `tools/`) |
-| `lab*/prompts-fda-skills.md` | Optional: natural-language prompts that make Cline build each lab app end to end with the Flogo FDA skills (tested with gpt-4.1) |
+| `curl: (7) Failed to connect … port 9999/9998/9090` | That app is not running: open it, **Run as Executable**, wait for "Started" in its terminal |
+| App won't start: `bind: address already in use` | Another app holds the port: stop it (`fuser -k 9999/tcp`) |
+| Lab 3 tool returns `… (Lab 1) failed` / `(Lab 2) failed` | Lab 1 or Lab 2 is not running |
+| Lab 3 curl/agent gets HTTP 401 | Solution app needs `Authorization: Bearer sw-workshop-key` (the Cline settings from `setup.sh` already send it) |
+| `sw-water-mcp` red in Cline | Lab 3 app not running yet, or restart the server in Cline's MCP panel / reload VS Code |
+| `flogo-fda-lab2` red in Cline | Run `bash setup.sh` again, then reload VS Code |
+| Lab 1 always LOW | Live weather; set `Risk.MediumMm` = `0` in APP PROPERTIES to force a ticket |
 
-## Notes
+## More
 
+- `~/FlogoLab` in the guide and prompts is a shortcut to this folder (created by `setup.sh`).
+- Full step-by-step guide, incl. building Labs 2 and 3 yourself: [`guide/SydneyWater_Flogo_Workshop_Guide.pdf`](guide/SydneyWater_Flogo_Workshop_Guide.pdf) (reference).
+- Build each app from a prompt with Cline + the FDA skills: `lab1/`, `lab2/`, `lab3/` `prompts-fda-skills.md` (optional).
 - Apps run in non-production mode (stop after 24 h) without a Flogo licence — fine for the workshop.
-- Lab 3 needs the Lab 1 and Lab 2 apps running (use the solutions if needed).
 - The Flogo Design Assistant is a Tech Preview: always review what it generates.
-- More Flogo samples, MCP and agentic AI examples, and the full skills library are in this repository
-  (`samples/`, `skills-library/`).
+- More samples, MCP and agentic AI examples and the full skills library are in this repository (`samples/`, `skills-library/`).

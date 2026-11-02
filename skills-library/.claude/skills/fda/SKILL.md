@@ -1,5 +1,5 @@
 ---
-name: flogo-design-assistant
+name: fda
 description: A command line tool to create and modify TIBCO Flogo Integration Applications
 user-invocable: true
 ---
