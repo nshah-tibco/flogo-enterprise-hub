@@ -68,6 +68,8 @@ Add `-i` to see the HTTP status line, `| python3 -m json.tool` to pretty-print J
 | Lab 3 curl/agent gets HTTP 401 | Solution app needs `Authorization: Bearer sw-workshop-key` (the Cline settings from `setup.sh` already send it) |
 | `sw-water-mcp` red in Cline | Lab 3 app not running yet, or restart the server in Cline's MCP panel / reload VS Code |
 | `flogo-fda-lab2` red in Cline | Run `bash setup.sh` again, then reload VS Code |
+| Cline searches files / guesses tool names (e.g. `log_leak_report`) instead of calling `report_leak` | `sw-water-mcp` is not in **Cline's** MCP settings: run `bash setup.sh`, reload VS Code, check it is green with two tools, start a new task. Servers added with VS Code's own **MCP: Add Server** are for Copilot Chat, not Cline |
+| VS Code: "MCP Server Definition … wants to authenticate to localhost:9090", then `/authorize` → 404 | The server was added to VS Code's MCP config without the Bearer header, so VS Code tried OAuth. Click **Cancel** and use Cline (or add `"headers": {"Authorization": "Bearer sw-workshop-key"}` to the VS Code entry) |
 | Lab 1 always LOW | Live weather; set `Risk.MediumMm` = `0` in APP PROPERTIES to force a ticket |
 
 ## More
