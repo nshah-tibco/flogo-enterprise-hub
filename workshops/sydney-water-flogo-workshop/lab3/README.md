@@ -33,10 +33,41 @@ through raw.
    **Run as Executable** (port 9090). (To see the problems first, run `starter/SW_Water_MCP_Starter.flogo` instead —
    only one of them at a time, both use 9090.)
 
+## Connect Cline to the MCP server
+
+`bash setup.sh` already adds this entry. To check or add it by hand: Cline → **MCP Servers** → **Configure** →
+**Configure MCP Servers**, and make sure `mcpServers` contains:
+
+```json
+{
+  "mcpServers": {
+    "sw-water-mcp": {
+      "type": "streamableHttp",
+      "url": "http://localhost:9090/mcp",
+      "headers": {
+        "Authorization": "Bearer sw-workshop-key"
+      },
+      "disabled": false,
+      "autoApprove": [],
+      "timeout": 60
+    }
+  }
+}
+```
+
+- `"type": "streamableHttp"` is required; without it Cline tries the older SSE transport and cannot connect.
+- The header is the API key for the solution app (without it → 401). The starter has no authentication and ignores it.
+- Keep any other servers (e.g. `flogo-fda-lab2`) as further entries under `mcpServers`.
+- File on disk: `~/.cline/data/settings/cline_mcp_settings.json`.
+- Add it in **Cline**, not with VS Code's **MCP: Add Server** (that is Copilot Chat's config; without the header VS Code
+  tries OAuth and shows "wants to authenticate … /authorize 404").
+
+With the Lab 3 app running, `sw-water-mcp` is **green** and lists `assess_rainfall_risk` and `report_leak`. If not,
+click the server's restart icon or reload VS Code, then start a **new** task.
+
 ## Query it from Cline (the AI agent)
 
-In Cline's **MCP Servers** panel, `sw-water-mcp` turns green once the app runs (if not: click the server's restart
-icon, or reload VS Code). Start a new task and paste:
+Start a new task and paste:
 
 ```
 A resident at 12 Church St, Parramatta reports water bubbling up through the footpath — they said call me on 0412 345 678 or email jo.citizen@example.com. Log it as leak report LR-2001 with HIGH severity, then check the rainfall risk for pumping station PS-102 (latitude -33.815, longitude 151.001) over the next 3 days.
