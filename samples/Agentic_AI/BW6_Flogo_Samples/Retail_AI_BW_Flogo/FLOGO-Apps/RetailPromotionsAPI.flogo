@@ -1,0 +1,1485 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/tibco/flogo-general/src/app/General/activity/log",
+    "github.com/tibco/flogo-general/src/app/General/activity/httpresponse",
+    "github.com/tibco/flogo-general/src/app/General/activity/mapper",
+    "github.com/project-flogo/contrib/activity/actreturn",
+    "github.com/project-flogo/flow/activity/subflow",
+    "github.com/tibco/flogo-general/src/app/General/trigger/rest",
+    "github.com/tibco/flogo-mcp/src/app/MCP/trigger/mcpserver",
+    "github.com/project-flogo/contrib/function/coerce",
+    "github.com/project-flogo/contrib/function/string",
+    "github.com/project-flogo/contrib/function/array",
+    "act_default_actreturn github.com/project-flogo/contrib/activity/actreturn",
+    "git.tibco.com/git/product/ipaas/wi-contrib.git/function/utility"
+  ],
+  "name": "RetailPromotionsAPI",
+  "description": "Flogo modernization of BW6 Retail.Promotions.API: REST API + MCP server for the same operations",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#rest",
+      "name": "tibco-wi-rest",
+      "description": "promotions service",
+      "settings": {
+        "port": "=$property[\"REST_PORT\"]",
+        "APISpecUpdate": true,
+        "swagger": "spec://e3e9fe6c-1552-4dd5-82da-5920a54f85dd",
+        "swaggerVersion": "v3",
+        "authenticationType": "None",
+        "username": "",
+        "password": "",
+        "apiVersion": "1.0",
+        "secureConnection": false,
+        "serverKey": "",
+        "caCertificate": "",
+        "readHeaderTimeout": 0,
+        "readTimeout": 0,
+        "maxRequestBodySize": 15
+      },
+      "id": "promotions_service",
+      "handlers": [
+        {
+          "description": "Flow for api/promotions GET",
+          "settings": {
+            "APISpecPath": "/api/promotions",
+            "Method": "GET",
+            "reqType": "application/json",
+            "Path": "/api/promotions",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:find_promotions_GET"
+            },
+            "input": {
+              "body": "=$.body",
+              "queryParams": "=$.queryParams"
+            },
+            "output": {
+              "code": "=$.code",
+              "responseBody": "=$.responseBody"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": true,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              },
+              "responseCodesSchema": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseType\":{\"type\":\"string\"},\"responseSchema\":{\"type\":\"string\"}},\"required\":[\"code\",\"responseType\",\"responseSchema\"]}}",
+                "fe_metadata": "[{\"code\":200,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"customerId\\\":{\\\"type\\\":\\\"string\\\"},\\\"category\\\":{\\\"type\\\":\\\"string\\\"},\\\"customerTier\\\":{\\\"type\\\":\\\"string\\\"},\\\"promotions\\\":{\\\"type\\\":\\\"array\\\",\\\"items\\\":{\\\"uniqueItems\\\":false,\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"id\\\":{\\\"type\\\":\\\"string\\\"},\\\"name\\\":{\\\"type\\\":\\\"string\\\"},\\\"discountPercent\\\":{\\\"type\\\":\\\"integer\\\",\\\"format\\\":\\\"int32\\\"},\\\"expiresOn\\\":{\\\"type\\\":\\\"string\\\"},\\\"exclusions\\\":{\\\"type\\\":\\\"array\\\",\\\"items\\\":{\\\"type\\\":\\\"string\\\",\\\"uniqueItems\\\":false}}}}},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":400,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":403,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":404,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":409,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":422,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":500,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"}]"
+              }
+            },
+            "output": {
+              "queryParams": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"customerId\":{\"type\":\"string\"},\"category\":{\"type\":\"string\"}},\"required\":[\"customerId\",\"category\"]}",
+                "fe_metadata": "[{\"parameterName\":\"customerId\",\"repeating\":\"false\",\"type\":\"string\",\"required\":\"true\"},{\"parameterName\":\"category\",\"repeating\":\"false\",\"type\":\"string\",\"required\":\"true\"}]"
+              },
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              },
+              "multipartForm": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{}}",
+                "fe_metadata": "[]"
+              }
+            }
+          },
+          "name": "find_promotions_GET"
+        },
+        {
+          "description": "Flow for api/promotions/applications POST",
+          "settings": {
+            "APISpecPath": "/api/promotions/applications",
+            "Method": "POST",
+            "reqType": "application/json",
+            "Path": "/api/promotions/applications",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:apply_promotion_POST"
+            },
+            "input": {
+              "body": "=$.body"
+            },
+            "output": {
+              "code": "=$.code",
+              "responseBody": "=$.responseBody"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": true,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              },
+              "responseCodesSchema": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseType\":{\"type\":\"string\"},\"responseSchema\":{\"type\":\"string\"}},\"required\":[\"code\",\"responseType\",\"responseSchema\"]}}",
+                "fe_metadata": "[{\"code\":200,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"approvalRequired\\\":{\\\"type\\\":\\\"boolean\\\"},\\\"tool\\\":{\\\"type\\\":\\\"string\\\"},\\\"arguments\\\":{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"customerId\\\":{\\\"type\\\":\\\"string\\\"},\\\"promotionId\\\":{\\\"type\\\":\\\"string\\\"},\\\"sku\\\":{\\\"type\\\":\\\"string\\\"}}},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":400,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":403,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":404,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":409,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":422,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":500,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"}]"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              },
+              "body": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"customerId\":{\"type\":\"string\"},\"promotionId\":{\"type\":\"string\"},\"sku\":{\"type\":\"string\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"customerId\":{\"type\":\"string\"},\"promotionId\":{\"type\":\"string\"},\"sku\":{\"type\":\"string\"}}}"
+              },
+              "multipartForm": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{}}",
+                "fe_metadata": "[]"
+              }
+            }
+          },
+          "name": "apply_promotion_POST"
+        }
+      ]
+    },
+    {
+      "ref": "#mcpserver",
+      "name": "flogo-mcp-mcpsever",
+      "description": "MCP server for Retail.Promotions.API",
+      "settings": {
+        "serverName": "Retail.Promotions.API",
+        "serverVersion": "1.0.0",
+        "serverType": "HTTP",
+        "serverPort": "=$property[\"MCP_PORT\"]",
+        "statelessServer": false,
+        "serverEndpointPath": "/mcp",
+        "enableTLS": false,
+        "serverCertificate": "",
+        "serverPrivateKey": "",
+        "authType": "None",
+        "authToken": "",
+        "oauthIssuer": "",
+        "oauthJWKSURL": "",
+        "oauthAudience": "",
+        "oauthAuthorizationServers": "",
+        "oauthRequiredScopes": "",
+        "oauthResourceURL": ""
+      },
+      "id": "mcp_server",
+      "handlers": [
+        {
+          "description": "MCP tool find_promotions: calls find_promotions_GET and returns its body",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "find_promotions",
+            "handlerDescription": "getPromotions",
+            "toolTitle": "",
+            "readOnlyToolHint": true,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:mcp_find_promotions"
+            },
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "reply": {
+              "response": {
+                "type": "json",
+                "value": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}",
+                "fe_metadata": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}"
+              }
+            },
+            "output": {
+              "arguments": {
+                "type": "json",
+                "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"customerId\": {\"type\": \"string\"}, \"category\": {\"type\": \"string\"}}, \"required\": [\"customerId\", \"category\"]}",
+                "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"customerId\": {\"type\": \"string\"}, \"category\": {\"type\": \"string\"}}, \"required\": [\"customerId\", \"category\"]}"
+              }
+            }
+          },
+          "name": "mcp_find_promotions"
+        },
+        {
+          "description": "MCP tool apply_promotion: calls apply_promotion_POST and returns its body",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "apply_promotion",
+            "handlerDescription": "postPromotions",
+            "toolTitle": "",
+            "readOnlyToolHint": false,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:mcp_apply_promotion"
+            },
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "reply": {
+              "response": {
+                "type": "json",
+                "value": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}",
+                "fe_metadata": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}"
+              }
+            },
+            "output": {
+              "arguments": {
+                "type": "json",
+                "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"customerId\": {\"type\": \"string\"}, \"promotionId\": {\"type\": \"string\"}, \"sku\": {\"type\": \"string\"}}}",
+                "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"customerId\": {\"type\": \"string\"}, \"promotionId\": {\"type\": \"string\"}, \"sku\": {\"type\": \"string\"}}}"
+              }
+            }
+          },
+          "name": "mcp_apply_promotion"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:find_promotions_GET",
+      "data": {
+        "name": "find_promotions_GET",
+        "description": "Flow for api/promotions GET",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Log_API",
+            "type": "label",
+            "label": "StartActivity to Log_API"
+          },
+          {
+            "id": 2,
+            "from": "Log_API",
+            "to": "BadRequest",
+            "type": "expression",
+            "label": "Log_API to BadRequest",
+            "value": "coerce.toString($flow.queryParams.customerId) == \"\" || coerce.toString($flow.queryParams.category) == \"\""
+          },
+          {
+            "id": 3,
+            "from": "Log_API",
+            "to": "CustomerData",
+            "type": "expression",
+            "label": "Log_API to CustomerData",
+            "value": "coerce.toString($flow.queryParams.customerId) != \"\" && coerce.toString($flow.queryParams.category) != \"\""
+          },
+          {
+            "id": 4,
+            "from": "CustomerData",
+            "to": "FindCustomer",
+            "type": "label",
+            "label": "CustomerData to FindCustomer"
+          },
+          {
+            "id": 5,
+            "from": "FindCustomer",
+            "to": "NotFound",
+            "type": "expression",
+            "label": "FindCustomer to NotFound",
+            "value": "array.count($activity[FindCustomer].output.matches) == 0"
+          },
+          {
+            "id": 6,
+            "from": "FindCustomer",
+            "to": "ConfigureHTTPResponse",
+            "type": "expression",
+            "label": "FindCustomer to ConfigureHTTPResponse",
+            "value": "array.count($activity[FindCustomer].output.matches) > 0"
+          },
+          {
+            "id": 7,
+            "from": "ConfigureHTTPResponse",
+            "to": "Return",
+            "type": "label",
+            "label": "ConfigureHTTPResponse to Return"
+          },
+          {
+            "id": 8,
+            "from": "BadRequest",
+            "to": "ReturnBadRequest",
+            "type": "label",
+            "label": "BadRequest to ReturnBadRequest"
+          },
+          {
+            "id": 9,
+            "from": "NotFound",
+            "to": "ReturnNotFound",
+            "type": "label",
+            "label": "NotFound to ReturnNotFound"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "Log_API",
+            "name": "Log_API",
+            "description": "Log API Call for api/promotions GET",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"find_promotions queryParams=\", coerce.toString($flow.queryParams))",
+                "logLevel": "",
+                "loggerName": "",
+                "fieldPrefix": "",
+                "dynamicLogFields": {
+                  "mapping": {}
+                }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "BadRequest",
+            "name": "BadRequest",
+            "description": "HTTP 400 response",
+            "activity": {
+              "ref": "#httpresponse",
+              "input": {
+                "trigger": "promotions_service",
+                "responsecode": "400",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "error": "invalid_request",
+                      "message": "customerId, category are required"
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://ErrorBody"
+                },
+                "output": {
+                  "response": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"error\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"error\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "CustomerData",
+            "name": "CustomerData",
+            "description": "Embedded customer list (BW ParseCustomerJSON literal)",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "customers": [
+                      {
+                        "customerId": "CUST-001",
+                        "name": "Avery Chen",
+                        "loyaltyTier": "Gold",
+                        "preferredStoreId": "SFO-001",
+                        "preferences": [
+                          "running",
+                          "lightweight gear",
+                          "blue"
+                        ]
+                      },
+                      {
+                        "customerId": "CUST-002",
+                        "name": "Jordan Lee",
+                        "loyaltyTier": "Silver",
+                        "preferredStoreId": "OAK-002",
+                        "preferences": [
+                          "hiking",
+                          "waterproof outerwear"
+                        ]
+                      },
+                      {
+                        "customerId": "CUST-003",
+                        "name": "Priya Shah",
+                        "loyaltyTier": "Member",
+                        "preferredStoreId": "SFO-001",
+                        "preferences": [
+                          "fitness electronics",
+                          "commuting"
+                        ]
+                      },
+                      {
+                        "customerId": "CUST-004",
+                        "name": "Marcus Reed",
+                        "loyaltyTier": "Platinum",
+                        "preferredStoreId": "SJC-003",
+                        "preferences": [
+                          "travel",
+                          "bags",
+                          "hydration"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"customers\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"loyaltyTier\": {\n            \"type\": \"string\"\n          },\n          \"preferredStoreId\": {\n            \"type\": \"string\"\n          },\n          \"preferences\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"customers\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"loyaltyTier\": {\n            \"type\": \"string\"\n          },\n          \"preferredStoreId\": {\n            \"type\": \"string\"\n          },\n          \"preferences\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"customers\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"loyaltyTier\": {\n            \"type\": \"string\"\n          },\n          \"preferredStoreId\": {\n            \"type\": \"string\"\n          },\n          \"preferences\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"customers\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"loyaltyTier\": {\n            \"type\": \"string\"\n          },\n          \"preferredStoreId\": {\n            \"type\": \"string\"\n          },\n          \"preferences\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "FindCustomer",
+            "name": "FindCustomer",
+            "description": "Select matching items (BW for-each with predicate)",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "matches": {
+                      "@foreach($activity[CustomerData].output.customers,c, $loop[c].customerId == $flow.queryParams.customerId)": {
+                        "customerId": "=$loop[c].customerId",
+                        "name": "=$loop[c].name",
+                        "loyaltyTier": "=$loop[c].loyaltyTier",
+                        "preferredStoreId": "=$loop[c].preferredStoreId",
+                        "preferences": "=$loop[c].preferences"
+                      }
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"loyaltyTier\": {\n            \"type\": \"string\"\n          },\n          \"preferredStoreId\": {\n            \"type\": \"string\"\n          },\n          \"preferences\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"loyaltyTier\": {\n            \"type\": \"string\"\n          },\n          \"preferredStoreId\": {\n            \"type\": \"string\"\n          },\n          \"preferences\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"loyaltyTier\": {\n            \"type\": \"string\"\n          },\n          \"preferredStoreId\": {\n            \"type\": \"string\"\n          },\n          \"preferences\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"loyaltyTier\": {\n            \"type\": \"string\"\n          },\n          \"preferredStoreId\": {\n            \"type\": \"string\"\n          },\n          \"preferences\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "NotFound",
+            "name": "NotFound",
+            "description": "HTTP 404 response",
+            "activity": {
+              "ref": "#httpresponse",
+              "input": {
+                "trigger": "promotions_service",
+                "responsecode": "404",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "error": "customer_not_found",
+                      "message": "=string.concat(\"No customer found with id \", $flow.queryParams.customerId)"
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://ErrorBody"
+                },
+                "output": {
+                  "response": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"error\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"error\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "ConfigureHTTPResponse",
+            "name": "ConfigureHTTPResponse",
+            "description": "Configure HTTP Response Activity",
+            "activity": {
+              "ref": "#httpresponse",
+              "input": {
+                "trigger": "promotions_service",
+                "responsecode": "200",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "customerId": "=$activity[FindCustomer].output.matches[0].customerId",
+                      "category": "=$flow.queryParams.category",
+                      "customerTier": "=$activity[FindCustomer].output.matches[0].loyaltyTier",
+                      "promotions": [
+                        {
+                          "id": "promo-spring-trail",
+                          "name": "Spring Trail Promotion",
+                          "discountPercent": 10,
+                          "expiresOn": "2026-05-31",
+                          "exclusions": [
+                            "Electronics"
+                          ]
+                        }
+                      ],
+                      "message": "A loyalty promotion may apply to this category."
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://FindPromotionsBody"
+                },
+                "output": {
+                  "response": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"customerId\":{\"type\":\"string\"},\"category\":{\"type\":\"string\"},\"customerTier\":{\"type\":\"string\"},\"promotions\":{\"type\":\"array\",\"items\":{\"uniqueItems\":false,\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"discountPercent\":{\"type\":\"integer\",\"format\":\"int32\"},\"expiresOn\":{\"type\":\"string\"},\"exclusions\":{\"type\":\"array\",\"items\":{\"type\":\"string\",\"uniqueItems\":false}}}}},\"message\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"customerId\":{\"type\":\"string\"},\"category\":{\"type\":\"string\"},\"customerTier\":{\"type\":\"string\"},\"promotions\":{\"type\":\"array\",\"items\":{\"uniqueItems\":false,\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"discountPercent\":{\"type\":\"integer\",\"format\":\"int32\"},\"expiresOn\":{\"type\":\"string\"},\"exclusions\":{\"type\":\"array\",\"items\":{\"type\":\"string\",\"uniqueItems\":false}}}}},\"message\":{\"type\":\"string\"}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Reply to API Call for api/promotions GET",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[ConfigureHTTPResponse].code",
+                  "responseBody": "=$activity[ConfigureHTTPResponse].response"
+                }
+              }
+            }
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[BadRequest].code",
+                  "responseBody": "=$activity[BadRequest].response"
+                }
+              }
+            },
+            "id": "ReturnBadRequest",
+            "name": "ReturnBadRequest",
+            "description": "Reply with the branch response"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[NotFound].code",
+                  "responseBody": "=$activity[NotFound].response"
+                }
+              }
+            },
+            "id": "ReturnNotFound",
+            "name": "ReturnNotFound",
+            "description": "Reply with the branch response"
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6NTl9LCJMb2dfQVBJIjp7IngiOjM1MCwieSI6NTB9LCJCYWRSZXF1ZXN0Ijp7IngiOjYwMCwieSI6NTB9LCJDdXN0b21lckRhdGEiOnsieCI6NjAwLCJ5IjoyMDB9LCJGaW5kQ3VzdG9tZXIiOnsieCI6ODUwLCJ5IjoyMDB9LCJOb3RGb3VuZCI6eyJ4IjoxMTAwLCJ5IjoyMDB9LCJDb25maWd1cmVIVFRQUmVzcG9uc2UiOnsieCI6MTEwMCwieSI6MzUwfSwiUmV0dXJuIjp7IngiOjEzNTAsInkiOjM1MH19",
+        "metadata": {
+          "input": [
+            {
+              "name": "queryParams",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"customerId\":{\"type\":\"string\"},\"category\":{\"type\":\"string\"}}"
+              }
+            },
+            {
+              "name": "headers",
+              "type": "object"
+            },
+            {
+              "name": "requestURI",
+              "type": "string"
+            },
+            {
+              "name": "method",
+              "type": "string"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "responseBody",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\": \"object\", \"properties\": {\"queryParams\": {\"type\": \"object\", \"properties\": {\"customerId\": {\"type\": \"string\"}, \"category\": {\"type\": \"string\"}}}, \"headers\": {\"type\": \"object\"}, \"requestURI\": {\"type\": \"string\"}, \"method\": {\"type\": \"string\"}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:apply_promotion_POST",
+      "data": {
+        "name": "apply_promotion_POST",
+        "description": "Flow for api/promotions/applications POST",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Log_API",
+            "type": "label",
+            "label": "StartActivity to Log_API"
+          },
+          {
+            "id": 2,
+            "from": "Log_API",
+            "to": "ConfigureHTTPResponse",
+            "type": "label",
+            "label": "Log_API to ConfigureHTTPResponse"
+          },
+          {
+            "id": 3,
+            "from": "ConfigureHTTPResponse",
+            "to": "Return",
+            "type": "label",
+            "label": "ConfigureHTTPResponse to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "Log_API",
+            "name": "Log_API",
+            "description": "Log API Call for api/promotions/applications POST",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "Log API call for apply_promotion_POST",
+                "logLevel": "",
+                "loggerName": "",
+                "fieldPrefix": "",
+                "dynamicLogFields": {
+                  "mapping": {}
+                }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "ConfigureHTTPResponse",
+            "name": "ConfigureHTTPResponse",
+            "description": "Configure HTTP Response Activity",
+            "activity": {
+              "ref": "#httpresponse",
+              "input": {
+                "trigger": "promotions_service",
+                "responsecode": "200",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "approvalRequired": true,
+                      "tool": "apply_promotion",
+                      "arguments": {
+                        "customerId": "=$flow.body.customerId",
+                        "promotionId": "promo-spring-trail",
+                        "sku": "=$flow.body.sku"
+                      },
+                      "message": "This operation changes retail state and must be approved through the agent approval flow."
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://ApplyPromotionBody"
+                },
+                "output": {
+                  "response": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"approvalRequired\":{\"type\":\"boolean\"},\"tool\":{\"type\":\"string\"},\"arguments\":{\"type\":\"object\",\"properties\":{\"customerId\":{\"type\":\"string\"},\"promotionId\":{\"type\":\"string\"},\"sku\":{\"type\":\"string\"}}},\"message\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"approvalRequired\":{\"type\":\"boolean\"},\"tool\":{\"type\":\"string\"},\"arguments\":{\"type\":\"object\",\"properties\":{\"customerId\":{\"type\":\"string\"},\"promotionId\":{\"type\":\"string\"},\"sku\":{\"type\":\"string\"}}},\"message\":{\"type\":\"string\"}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Reply to API Call for api/promotions/applications POST",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[ConfigureHTTPResponse].code",
+                  "responseBody": "=$activity[ConfigureHTTPResponse].response"
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo0NX0sIkxvZ19BUEkiOnsieCI6MjUwLCJ5Ijo0NX0sIkNvbmZpZ3VyZUhUVFBSZXNwb25zZSI6eyJ4Ijo0NTAsInkiOjQ1fSwiUmV0dXJuIjp7IngiOjY1MCwieSI6NDV9fQ==",
+        "metadata": {
+          "input": [
+            {
+              "name": "body",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"customerId\":{\"type\":\"string\"},\"promotionId\":{\"type\":\"string\"},\"sku\":{\"type\":\"string\"}}"
+              }
+            },
+            {
+              "name": "multipartFormData",
+              "type": "object"
+            },
+            {
+              "name": "requestURI",
+              "type": "string"
+            },
+            {
+              "name": "method",
+              "type": "string"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "responseBody",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"customerId\":{\"type\":\"string\"},\"promotionId\":{\"type\":\"string\"},\"sku\":{\"type\":\"string\"}}},\"multipartFormData\":{\"type\":\"object\",\"properties\":{}},\"requestURI\":{\"type\":\"string\"},\"method\":{\"type\":\"string\"}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:mcp_find_promotions",
+      "data": {
+        "name": "mcp_find_promotions",
+        "description": "MCP tool find_promotions: calls find_promotions_GET and returns its body",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "CallOperation",
+            "type": "label",
+            "label": "StartActivity to CallOperation"
+          },
+          {
+            "id": 2,
+            "from": "CallOperation",
+            "to": "Return",
+            "type": "label",
+            "label": "CallOperation to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "CallOperation",
+            "name": "CallOperation",
+            "description": "Run find_promotions_GET (the REST operation)",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#subflow",
+              "settings": {
+                "flowURI": "res://flow:find_promotions_GET",
+                "detached": false,
+                "execTimeout": 0,
+                "transactional": false,
+                "transactionConnection": ""
+              },
+              "input": {
+                "input": {
+                  "mapping": {}
+                },
+                "queryParams": "=$flow.arguments"
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"type\": \"object\", \"properties\": {\"queryParams\": {\"type\": \"object\", \"properties\": {\"customerId\": {\"type\": \"string\"}, \"category\": {\"type\": \"string\"}}}, \"headers\": {\"type\": \"object\"}, \"requestURI\": {\"type\": \"string\"}, \"method\": {\"type\": \"string\"}}}",
+                    "fe_metadata": "{\"type\": \"object\", \"properties\": {\"queryParams\": {\"type\": \"object\", \"properties\": {\"customerId\": {\"type\": \"string\"}, \"category\": {\"type\": \"string\"}}}, \"headers\": {\"type\": \"object\"}, \"requestURI\": {\"type\": \"string\"}, \"method\": {\"type\": \"string\"}}}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Return the REST body as the tool result",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=utility.renderJSON($activity[CallOperation].responseBody.body, false)",
+                      "error": "=$activity[CallOperation].code >= 400 ? utility.renderJSON($activity[CallOperation].responseBody.body, false) : \"\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo0NX0sIkNhbGxPcGVyYXRpb24iOnsieCI6MjUwLCJ5Ijo0NX0sIlJldHVybiI6eyJ4Ijo0NTAsInkiOjQ1fX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"mcp_server\",\"properties\":{\"arguments\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:mcp_apply_promotion",
+      "data": {
+        "name": "mcp_apply_promotion",
+        "description": "MCP tool apply_promotion: calls apply_promotion_POST and returns its body",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "CallOperation",
+            "type": "label",
+            "label": "StartActivity to CallOperation"
+          },
+          {
+            "id": 2,
+            "from": "CallOperation",
+            "to": "Return",
+            "type": "label",
+            "label": "CallOperation to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "CallOperation",
+            "name": "CallOperation",
+            "description": "Run apply_promotion_POST (the REST operation)",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#subflow",
+              "settings": {
+                "flowURI": "res://flow:apply_promotion_POST",
+                "detached": false,
+                "execTimeout": 0,
+                "transactional": false,
+                "transactionConnection": ""
+              },
+              "input": {
+                "input": {
+                  "mapping": {}
+                },
+                "body": "=$flow.arguments"
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"customerId\":{\"type\":\"string\"},\"promotionId\":{\"type\":\"string\"},\"sku\":{\"type\":\"string\"}}},\"multipartFormData\":{\"type\":\"object\",\"properties\":{}},\"requestURI\":{\"type\":\"string\"},\"method\":{\"type\":\"string\"}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"customerId\":{\"type\":\"string\"},\"promotionId\":{\"type\":\"string\"},\"sku\":{\"type\":\"string\"}}},\"multipartFormData\":{\"type\":\"object\",\"properties\":{}},\"requestURI\":{\"type\":\"string\"},\"method\":{\"type\":\"string\"}}}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Return the REST body as the tool result",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=utility.renderJSON($activity[CallOperation].responseBody.body, false)",
+                      "error": "=$activity[CallOperation].code >= 400 ? utility.renderJSON($activity[CallOperation].responseBody.body, false) : \"\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo0NX0sIkNhbGxPcGVyYXRpb24iOnsieCI6MjUwLCJ5Ijo0NX0sIlJldHVybiI6eyJ4Ijo0NTAsInkiOjQ1fX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"mcp_server\",\"properties\":{\"arguments\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "REST_PORT",
+      "type": "float64",
+      "value": 18082
+    },
+    {
+      "name": "MCP_PORT",
+      "type": "string",
+      "value": "19182"
+    }
+  ],
+  "schemas": {
+    "ErrorBody": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"error\": {\n          \"type\": \"string\"\n        },\n        \"message\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"error\": {\n          \"type\": \"string\"\n        },\n        \"message\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}"
+    },
+    "FindPromotionsBody": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"customerId\": {\n          \"type\": \"string\"\n        },\n        \"category\": {\n          \"type\": \"string\"\n        },\n        \"customerTier\": {\n          \"type\": \"string\"\n        },\n        \"promotions\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"id\": {\n                \"type\": \"string\"\n              },\n              \"name\": {\n                \"type\": \"string\"\n              },\n              \"discountPercent\": {\n                \"type\": \"integer\",\n                \"format\": \"int32\"\n              },\n              \"expiresOn\": {\n                \"type\": \"string\"\n              },\n              \"exclusions\": {\n                \"type\": \"array\",\n                \"items\": {\n                  \"type\": \"string\"\n                }\n              }\n            }\n          }\n        },\n        \"message\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"customerId\": {\n          \"type\": \"string\"\n        },\n        \"category\": {\n          \"type\": \"string\"\n        },\n        \"customerTier\": {\n          \"type\": \"string\"\n        },\n        \"promotions\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"id\": {\n                \"type\": \"string\"\n              },\n              \"name\": {\n                \"type\": \"string\"\n              },\n              \"discountPercent\": {\n                \"type\": \"integer\",\n                \"format\": \"int32\"\n              },\n              \"expiresOn\": {\n                \"type\": \"string\"\n              },\n              \"exclusions\": {\n                \"type\": \"array\",\n                \"items\": {\n                  \"type\": \"string\"\n                }\n              }\n            }\n          }\n        },\n        \"message\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}"
+    },
+    "ApplyPromotionBody": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"approvalRequired\": {\n          \"type\": \"boolean\"\n        },\n        \"tool\": {\n          \"type\": \"string\"\n        },\n        \"arguments\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"customerId\": {\n              \"type\": \"string\"\n            },\n            \"promotionId\": {\n              \"type\": \"string\"\n            },\n            \"sku\": {\n              \"type\": \"string\"\n            }\n          }\n        },\n        \"message\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"approvalRequired\": {\n          \"type\": \"boolean\"\n        },\n        \"tool\": {\n          \"type\": \"string\"\n        },\n        \"arguments\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"customerId\": {\n              \"type\": \"string\"\n            },\n            \"promotionId\": {\n              \"type\": \"string\"\n            },\n            \"sku\": {\n              \"type\": \"string\"\n            }\n          }\n        },\n        \"message\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}"
+    }
+  },
+  "specs": {
+    "e3e9fe6c-1552-4dd5-82da-5920a54f85dd": {
+      "id": "e3e9fe6c-1552-4dd5-82da-5920a54f85dd",
+      "name": "BW6Spec",
+      "type": "OpenAPI",
+      "version": "1.0.0",
+      "content": "eyJvcGVuYXBpIjoiMy4wLjAiLCJpbmZvIjp7InZlcnNpb24iOiIxLjAiLCJ0aXRsZSI6InByb21vdGlvbnMgc2VydmljZSIsImRlc2NyaXB0aW9uIjoicHJvbW90aW9ucyBzZXJ2aWNlIn0sInNlcnZlcnMiOlt7InVybCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MTkwODIvIn1dLCJwYXRocyI6eyIvYXBpL3Byb21vdGlvbnMiOnsiZ2V0Ijp7InN1bW1hcnkiOiJnZXRQcm9tb3Rpb25zIiwiZGVzY3JpcHRpb24iOiJnZXRQcm9tb3Rpb25zIiwib3BlcmF0aW9uSWQiOiJmaW5kX3Byb21vdGlvbnMiLCJwYXJhbWV0ZXJzIjpbeyJuYW1lIjoiY3VzdG9tZXJJZCIsImluIjoicXVlcnkiLCJkZXNjcmlwdGlvbiI6IiIsInNjaGVtYSI6eyJ0eXBlIjoic3RyaW5nIn0sInJlcXVpcmVkIjp0cnVlfSx7Im5hbWUiOiJjYXRlZ29yeSIsImluIjoicXVlcnkiLCJkZXNjcmlwdGlvbiI6IiIsInNjaGVtYSI6eyJ0eXBlIjoic3RyaW5nIn0sInJlcXVpcmVkIjp0cnVlfV0sInJlc3BvbnNlcyI6eyIyMDAiOnsiZGVzY3JpcHRpb24iOiJhIEdldFByb21vdGlvbnNSZXNwb25zZUVsZW1lbnQgdG8gYmUgcmV0dXJuZWQiLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImN1c3RvbWVySWQiOnsidHlwZSI6InN0cmluZyJ9LCJjYXRlZ29yeSI6eyJ0eXBlIjoic3RyaW5nIn0sImN1c3RvbWVyVGllciI6eyJ0eXBlIjoic3RyaW5nIn0sInByb21vdGlvbnMiOnsidHlwZSI6ImFycmF5IiwiaXRlbXMiOnsidW5pcXVlSXRlbXMiOmZhbHNlLCJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJpZCI6eyJ0eXBlIjoic3RyaW5nIn0sIm5hbWUiOnsidHlwZSI6InN0cmluZyJ9LCJkaXNjb3VudFBlcmNlbnQiOnsidHlwZSI6ImludGVnZXIiLCJmb3JtYXQiOiJpbnQzMiJ9LCJleHBpcmVzT24iOnsidHlwZSI6InN0cmluZyJ9LCJleGNsdXNpb25zIjp7InR5cGUiOiJhcnJheSIsIml0ZW1zIjp7InR5cGUiOiJzdHJpbmciLCJ1bmlxdWVJdGVtcyI6ZmFsc2V9fX19fSwibWVzc2FnZSI6eyJ0eXBlIjoic3RyaW5nIn19fX19fSwiNDAwIjp7ImRlc2NyaXB0aW9uIjoiSW52YWxpZCBvciBtaXNzaW5nIGlucHV0IiwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJlcnJvciI6eyJ0eXBlIjoic3RyaW5nIn0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX0sIjQwMyI6eyJkZXNjcmlwdGlvbiI6Ik5vdCBhbGxvd2VkIiwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJlcnJvciI6eyJ0eXBlIjoic3RyaW5nIn0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX0sIjQwNCI6eyJkZXNjcmlwdGlvbiI6IlJlcXVlc3RlZCBpdGVtIG5vdCBmb3VuZCIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiZXJyb3IiOnsidHlwZSI6InN0cmluZyJ9LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmcifX19fX19LCI0MDkiOnsiZGVzY3JpcHRpb24iOiJDb25mbGljdCB3aXRoIHRoZSBjdXJyZW50IHN0YXRlIiwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJlcnJvciI6eyJ0eXBlIjoic3RyaW5nIn0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX0sIjQyMiI6eyJkZXNjcmlwdGlvbiI6IlJlcXVlc3QgdW5kZXJzdG9vZCBidXQgY2Fubm90IGJlIHByb2Nlc3NlZCIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiZXJyb3IiOnsidHlwZSI6InN0cmluZyJ9LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmcifX19fX19LCI1MDAiOnsiZGVzY3JpcHRpb24iOiJVbmV4cGVjdGVkIGVycm9yIiwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJlcnJvciI6eyJ0eXBlIjoic3RyaW5nIn0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX19fX0sIi9hcGkvcHJvbW90aW9ucy9hcHBsaWNhdGlvbnMiOnsicG9zdCI6eyJzdW1tYXJ5IjoicG9zdFByb21vdGlvbnMiLCJkZXNjcmlwdGlvbiI6InBvc3RQcm9tb3Rpb25zIiwib3BlcmF0aW9uSWQiOiJhcHBseV9wcm9tb3Rpb24iLCJwYXJhbWV0ZXJzIjpbXSwicmVxdWVzdEJvZHkiOnsicmVxdWlyZWQiOnRydWUsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiY3VzdG9tZXJJZCI6eyJ0eXBlIjoic3RyaW5nIn0sInByb21vdGlvbklkIjp7InR5cGUiOiJzdHJpbmcifSwic2t1Ijp7InR5cGUiOiJzdHJpbmcifX19fX19LCJyZXNwb25zZXMiOnsiMjAwIjp7ImRlc2NyaXB0aW9uIjoiYSBQb3N0UHJvbW90aW9uQXBwbHlSZXNwb25zZUVsZW1lbnQgdG8gYmUgcmV0dXJuZWQiLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImFwcHJvdmFsUmVxdWlyZWQiOnsidHlwZSI6ImJvb2xlYW4ifSwidG9vbCI6eyJ0eXBlIjoic3RyaW5nIn0sImFyZ3VtZW50cyI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJjdXN0b21lcklkIjp7InR5cGUiOiJzdHJpbmcifSwicHJvbW90aW9uSWQiOnsidHlwZSI6InN0cmluZyJ9LCJza3UiOnsidHlwZSI6InN0cmluZyJ9fX0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX0sIjQwMCI6eyJkZXNjcmlwdGlvbiI6IkludmFsaWQgb3IgbWlzc2luZyBpbnB1dCIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiZXJyb3IiOnsidHlwZSI6InN0cmluZyJ9LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmcifX19fX19LCI0MDMiOnsiZGVzY3JpcHRpb24iOiJOb3QgYWxsb3dlZCIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiZXJyb3IiOnsidHlwZSI6InN0cmluZyJ9LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmcifX19fX19LCI0MDQiOnsiZGVzY3JpcHRpb24iOiJSZXF1ZXN0ZWQgaXRlbSBub3QgZm91bmQiLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImVycm9yIjp7InR5cGUiOiJzdHJpbmcifSwibWVzc2FnZSI6eyJ0eXBlIjoic3RyaW5nIn19fX19fSwiNDA5Ijp7ImRlc2NyaXB0aW9uIjoiQ29uZmxpY3Qgd2l0aCB0aGUgY3VycmVudCBzdGF0ZSIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiZXJyb3IiOnsidHlwZSI6InN0cmluZyJ9LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmcifX19fX19LCI0MjIiOnsiZGVzY3JpcHRpb24iOiJSZXF1ZXN0IHVuZGVyc3Rvb2QgYnV0IGNhbm5vdCBiZSBwcm9jZXNzZWQiLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImVycm9yIjp7InR5cGUiOiJzdHJpbmcifSwibWVzc2FnZSI6eyJ0eXBlIjoic3RyaW5nIn19fX19fSwiNTAwIjp7ImRlc2NyaXB0aW9uIjoiVW5leHBlY3RlZCBlcnJvciIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiZXJyb3IiOnsidHlwZSI6InN0cmluZyJ9LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmcifX19fX19fX19fSwiY29tcG9uZW50cyI6eyJzY2hlbWFzIjp7IlBvc3RQcm9tb3Rpb25BcHBseVJlcXVlc3RFbGVtZW50Ijp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImN1c3RvbWVySWQiOnsidHlwZSI6InN0cmluZyJ9LCJwcm9tb3Rpb25JZCI6eyJ0eXBlIjoic3RyaW5nIn0sInNrdSI6eyJ0eXBlIjoic3RyaW5nIn19fSwicHJvbW90aW9ucyI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJpZCI6eyJ0eXBlIjoic3RyaW5nIn0sIm5hbWUiOnsidHlwZSI6InN0cmluZyJ9LCJkaXNjb3VudFBlcmNlbnQiOnsidHlwZSI6ImludGVnZXIiLCJmb3JtYXQiOiJpbnQzMiJ9LCJleHBpcmVzT24iOnsidHlwZSI6InN0cmluZyJ9LCJleGNsdXNpb25zIjp7InR5cGUiOiJhcnJheSIsIml0ZW1zIjp7InR5cGUiOiJzdHJpbmciLCJ1bmlxdWVJdGVtcyI6ZmFsc2V9fX19LCJHZXRQcm9tb3Rpb25zUmVzcG9uc2VFbGVtZW50Ijp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImN1c3RvbWVySWQiOnsidHlwZSI6InN0cmluZyJ9LCJjYXRlZ29yeSI6eyJ0eXBlIjoic3RyaW5nIn0sImN1c3RvbWVyVGllciI6eyJ0eXBlIjoic3RyaW5nIn0sInByb21vdGlvbnMiOnsidHlwZSI6ImFycmF5IiwiaXRlbXMiOnsidW5pcXVlSXRlbXMiOmZhbHNlLCJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJpZCI6eyJ0eXBlIjoic3RyaW5nIn0sIm5hbWUiOnsidHlwZSI6InN0cmluZyJ9LCJkaXNjb3VudFBlcmNlbnQiOnsidHlwZSI6ImludGVnZXIiLCJmb3JtYXQiOiJpbnQzMiJ9LCJleHBpcmVzT24iOnsidHlwZSI6InN0cmluZyJ9LCJleGNsdXNpb25zIjp7InR5cGUiOiJhcnJheSIsIml0ZW1zIjp7InR5cGUiOiJzdHJpbmciLCJ1bmlxdWVJdGVtcyI6ZmFsc2V9fX19fSwibWVzc2FnZSI6eyJ0eXBlIjoic3RyaW5nIn19fSwiUG9zdFByb21vdGlvbkFwcGx5UmVzcG9uc2VFbGVtZW50Ijp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImFwcHJvdmFsUmVxdWlyZWQiOnsidHlwZSI6ImJvb2xlYW4ifSwidG9vbCI6eyJ0eXBlIjoic3RyaW5nIn0sImFyZ3VtZW50cyI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJjdXN0b21lcklkIjp7InR5cGUiOiJzdHJpbmcifSwicHJvbW90aW9uSWQiOnsidHlwZSI6InN0cmluZyJ9LCJza3UiOnsidHlwZSI6InN0cmluZyJ9fX0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX0sImFyZ3VtZW50cyI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJjdXN0b21lcklkIjp7InR5cGUiOiJzdHJpbmcifSwicHJvbW90aW9uSWQiOnsidHlwZSI6InN0cmluZyJ9LCJza3UiOnsidHlwZSI6InN0cmluZyJ9fX0sIkVycm9yUmVzcG9uc2UiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiZXJyb3IiOnsidHlwZSI6InN0cmluZyJ9LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmcifX19fX19"
+    }
+  },
+  "connections": {},
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTgiLCJ0YWciOiIxLjYuMTgtYjU5MSIsIm5hbWUiOiJUSUJDTyBGbG9nbyBDb25uZWN0b3IgZm9yIEdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuNCIsInRhZyI6IjEuMC40LWIwMiIsIm5hbWUiOiJUSUJDTyBGbG9nb8KuIENvbm5lY3RvciBmb3IgTW9kZWwgQ29udGV4dCBQcm90b2NvbCAoTUNQKSIsInMzbG9jYXRpb24iOiJUaWJjby9NQ1AiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
+  "metadata": {
+    "endpoints": [
+      {
+        "protocol": "http",
+        "port": "18082",
+        "spec": {
+          "name": "RetailPromotionsAPI",
+          "version": "1.0.0"
+        },
+        "title": "promotions_service",
+        "swagger": {
+          "openapi": "3.0.0",
+          "info": {
+            "title": "RetailPromotionsAPI",
+            "version": "1.0.0",
+            "description": "promotions service"
+          },
+          "paths": {
+            "/api/promotions": {
+              "get": {
+                "summary": "find_promotions_GET",
+                "operationId": "get_api_promotions",
+                "parameters": [
+                  {
+                    "name": "customerId",
+                    "in": "query",
+                    "description": "Request parameter",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "name": "category",
+                    "in": "query",
+                    "description": "Request parameter",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema1"
+                        }
+                      }
+                    }
+                  },
+                  "400": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "403": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "404": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "409": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "422": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "500": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  }
+                },
+                "description": "Flow for api/promotions GET"
+              }
+            },
+            "/api/promotions/applications": {
+              "post": {
+                "summary": "apply_promotion_POST",
+                "operationId": "post_api_promotions_applications",
+                "parameters": [],
+                "responses": {
+                  "200": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema3"
+                        }
+                      }
+                    }
+                  },
+                  "400": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "403": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "404": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "409": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "422": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "500": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  }
+                },
+                "description": "Flow for api/promotions/applications POST",
+                "requestBody": {
+                  "description": "",
+                  "required": false,
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/schema4"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "components": {
+            "schemas": {
+              "schema1": {
+                "type": "object",
+                "properties": {
+                  "customerId": {
+                    "type": "string"
+                  },
+                  "category": {
+                    "type": "string"
+                  },
+                  "customerTier": {
+                    "type": "string"
+                  },
+                  "promotions": {
+                    "type": "array",
+                    "items": {
+                      "uniqueItems": false,
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "discountPercent": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "expiresOn": {
+                          "type": "string"
+                        },
+                        "exclusions": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "uniqueItems": false
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              },
+              "schema2": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              },
+              "schema3": {
+                "type": "object",
+                "properties": {
+                  "approvalRequired": {
+                    "type": "boolean"
+                  },
+                  "tool": {
+                    "type": "string"
+                  },
+                  "arguments": {
+                    "type": "object",
+                    "properties": {
+                      "customerId": {
+                        "type": "string"
+                      },
+                      "promotionId": {
+                        "type": "string"
+                      },
+                      "sku": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              },
+              "schema4": {
+                "type": "object",
+                "properties": {
+                  "customerId": {
+                    "type": "string"
+                  },
+                  "promotionId": {
+                    "type": "string"
+                  },
+                  "sku": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "protocol": "http",
+        "port": "19182",
+        "title": "mcp_server",
+        "type": "public"
+      }
+    ],
+    "flogoVersion": "2.26.9"
+  }
+}

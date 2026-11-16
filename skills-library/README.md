@@ -239,9 +239,9 @@ python skills-library/.claude/skills/agentic-ai-use-case-builder/templates/prefl
 
 ## Setting up the `fda` alias
 
-The Flogo Design Assistant CLI (`flogodesign-cli`) ships inside the [**TIBCO Flogo VS Code extension**](https://marketplace.visualstudio.com/items?itemName=tibco.flogo) at a long, versioned path like `<vscode-extensions-dir>/tibco.flogo-<VERSION>/bin/flogodesign-cli`. Because that path **changes with every extension update**, don't hardcode it — set up an `fda` alias that **discovers the latest installed version dynamically**, so you (and the coding agent) can simply run `fda <task>` from any terminal.
+The Flogo Design Assistant CLI (`flogodesign-cli`) ships inside the TIBCO Flogo VS Code extension at a long, versioned path. Flogo 2.x and Flogo 3.x come from different extensions — [**TIBCO Flogo**](https://marketplace.visualstudio.com/items?itemName=tibco.flogo) installs `<vscode-extensions-dir>/tibco.flogo-2.<minor>.<patch>-<build>/bin/`, the Flogo 3.x extension installs `<vscode-extensions-dir>/tibco.flogo3-<version>-<build>-<branch>/bin/` — and both paths **change with every extension update**. Don't hardcode them: set up an `fda` function that **discovers the installed extension for the Flogo version you want**, so you (and the coding agent) can simply run `fda <task>` from any terminal.
 
-> **Never hardcode the extension folder name** (e.g. `tibco.flogo-2.26.6-2851`). The glob `tibco.flogo-*/bin/flogodesign-cli*` sorted by newest always resolves to the latest installed version. If the binary can't be found, install the TIBCO Flogo VS Code extension.
+> **Never hardcode the extension folder name** (e.g. `tibco.flogo-2.26.9-3611`). The function below uses the only installed extension of the requested version (2.x by default, `FLOGO_MAJOR=3` for 3.x); if several are installed it lists them and asks you to pick one with `export FDA=<path>`. If none is found, install the TIBCO Flogo VS Code extension. The coding agent follows the same rules — see [AGENT.md → Resolving the `fda` CLI](AGENT.md#resolving-the-fda-cli).
 
 Add the function below to your shell startup file so `fda` is available in every terminal session:
 
@@ -257,22 +257,27 @@ Add the function below to your shell startup file so `fda` is available in every
 Add to `~/.bashrc` (bash / Git Bash) or `~/.zshrc` (macOS zsh):
 
 ```bash
+# fda …                → Flogo 2.x CLI
+# FLOGO_MAJOR=3 fda …  → Flogo 3.x CLI
+# export FDA=<path>    → always use that flogodesign-cli
 fda() {
-  local cmd="" home_dir="${HOME:-$USERPROFILE}" ext_name="flogodesign-cli"
-  if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
-    ext_name="flogodesign-cli.exe"
-  fi
-  for dir in "$home_dir/.vscode/extensions" \
-             "$home_dir/.vscode-insiders/extensions" \
-             "$home_dir/.vscode-server/extensions"; do
-    cmd=$(ls -td "$dir/tibco.flogo-"*/bin/"$ext_name" 2>/dev/null | head -1)
-    [ -n "$cmd" ] && break
-  done
-  if [ -z "$cmd" ]; then
-    echo "Error: flogodesign-cli not found. Install the TIBCO Flogo VS Code extension." >&2
-    return 1
-  fi
-  "$cmd" "$@"
+  if [ -n "$FDA" ]; then "$FDA" "$@"; return; fi
+  local home_dir="${HOME:-$USERPROFILE}" ext_name="flogodesign-cli" pat found dir
+  [[ "$OSTYPE" == msys* || "$OSTYPE" == cygwin* || "$OSTYPE" == win32 ]] && ext_name="flogodesign-cli.exe"
+  case "${FLOGO_MAJOR:-2}" in
+    2) pat='tibco.flogo-2.*' ;;
+    3) pat='tibco.flogo3-*' ;;
+    *) echo "Error: FLOGO_MAJOR must be 2 or 3." >&2; return 1 ;;
+  esac
+  found=$(for dir in "$home_dir/.vscode/extensions" "$home_dir/.vscode-insiders/extensions" "$home_dir/.vscode-server/extensions"; do
+            [ -d "$dir" ] && find "$dir" -mindepth 3 -maxdepth 3 -path "*/$pat/bin/$ext_name" 2>/dev/null
+          done)
+  case $(printf '%s' "$found" | grep -c .) in
+    0) echo "Error: no Flogo ${FLOGO_MAJOR:-2}.x extension found. Install the TIBCO Flogo VS Code extension." >&2; return 1 ;;
+    1) "$found" "$@" ;;
+    *) echo "Error: several Flogo ${FLOGO_MAJOR:-2}.x extensions are installed. Pick one and export FDA=<path>:" >&2
+       printf '%s\n' "$found" | sed 's/^/  /' >&2; return 1 ;;
+  esac
 }
 ```
 
@@ -287,15 +292,18 @@ source ~/.zshrc   # or: source ~/.bashrc
 PowerShell aliases cannot accept arguments, so define `fda` as a **function**. Add to your PowerShell profile (`$PROFILE`):
 
 ```powershell
+# fda …                       -> Flogo 2.x CLI
+# $env:FLOGO_MAJOR = '3'      -> Flogo 3.x CLI
+# $env:FDA = '<path>'         -> always use that flogodesign-cli.exe
 function fda {
-  $cli = Get-ChildItem "$env:USERPROFILE\.vscode\extensions\tibco.flogo-*\bin\flogodesign-cli.exe" -ErrorAction SilentlyContinue |
-         Sort-Object LastWriteTime -Descending | Select-Object -First 1
-  if (-not $cli) {
-    $cli = Get-ChildItem "$env:USERPROFILE\.vscode-insiders\extensions\tibco.flogo-*\bin\flogodesign-cli.exe" -ErrorAction SilentlyContinue |
-           Sort-Object LastWriteTime -Descending | Select-Object -First 1
-  }
-  if (-not $cli) { Write-Error "flogodesign-cli not found. Install the TIBCO Flogo VS Code extension."; return }
-  & $cli.FullName @args
+  if ($env:FDA) { & $env:FDA @args; return }
+  $pat = if ($env:FLOGO_MAJOR -eq '3') { 'tibco.flogo3-*' } else { 'tibco.flogo-2.*' }
+  $hits = @(foreach ($root in '.vscode', '.vscode-insiders', '.vscode-server') {
+    Get-ChildItem "$env:USERPROFILE\$root\extensions\$pat\bin\flogodesign-cli.exe" -ErrorAction SilentlyContinue
+  })
+  if ($hits.Count -eq 0) { Write-Error "No Flogo extension matching $pat found. Install the TIBCO Flogo VS Code extension."; return }
+  if ($hits.Count -gt 1) { Write-Error ("Several Flogo extensions match $pat. Set `$env:FDA to one of:`n  " + ($hits.FullName -join "`n  ")); return }
+  & $hits[0].FullName @args
 }
 ```
 
@@ -309,7 +317,8 @@ New-Item -Type File -Path $PROFILE -Force   # only if it doesn't exist yet
 ### Verify
 
 ```bash
-fda version
+fda version                  # Flogo 2.x CLI
+FLOGO_MAJOR=3 fda version    # Flogo 3.x CLI (PowerShell: $env:FLOGO_MAJOR = '3'; fda version)
 ```
 
 ---

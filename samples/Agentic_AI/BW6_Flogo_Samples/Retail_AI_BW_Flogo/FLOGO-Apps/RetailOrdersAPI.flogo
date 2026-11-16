@@ -1,0 +1,2905 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/tibco/flogo-general/src/app/General/activity/log",
+    "github.com/tibco/flogo-general/src/app/General/activity/httpresponse",
+    "github.com/project-flogo/contrib/activity/actreturn",
+    "github.com/tibco/flogo-general/src/app/General/activity/mapper",
+    "github.com/project-flogo/flow/activity/subflow",
+    "github.com/tibco/flogo-general/src/app/General/trigger/rest",
+    "github.com/tibco/flogo-mcp/src/app/MCP/trigger/mcpserver",
+    "github.com/project-flogo/contrib/function/coerce",
+    "github.com/project-flogo/contrib/function/array",
+    "github.com/project-flogo/contrib/function/string",
+    "github.com/project-flogo/contrib/function/datetime",
+    "act_default_actreturn github.com/project-flogo/contrib/activity/actreturn",
+    "git.tibco.com/git/product/ipaas/wi-contrib.git/function/utility"
+  ],
+  "name": "RetailOrdersAPI",
+  "description": "Flogo modernization of BW6 Retail.Orders.API: REST API + MCP server for the same operations",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#rest",
+      "name": "tibco-wi-rest",
+      "description": "order service",
+      "settings": {
+        "port": "=$property[\"REST_PORT\"]",
+        "APISpecUpdate": true,
+        "swagger": "spec://28d7be5c-13b4-47fa-b5f3-306e708c4c9f",
+        "swaggerVersion": "v3",
+        "authenticationType": "None",
+        "username": "",
+        "password": "",
+        "apiVersion": "1.0",
+        "secureConnection": false,
+        "serverKey": "",
+        "caCertificate": "",
+        "readHeaderTimeout": 0,
+        "readTimeout": 0,
+        "maxRequestBodySize": 15
+      },
+      "id": "order_service",
+      "handlers": [
+        {
+          "description": "Flow for api/orders/return-authorizations POST",
+          "settings": {
+            "APISpecPath": "/api/orders/return-authorizations",
+            "Method": "POST",
+            "reqType": "application/json",
+            "Path": "/api/orders/return-authorizations",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:create_return_authorization_POST"
+            },
+            "input": {
+              "body": "=$.body"
+            },
+            "output": {
+              "code": "=$.code",
+              "responseBody": "=$.responseBody"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": true,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              },
+              "responseCodesSchema": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseType\":{\"type\":\"string\"},\"responseSchema\":{\"type\":\"string\"}},\"required\":[\"code\",\"responseType\",\"responseSchema\"]}}",
+                "fe_metadata": "[{\"code\":200,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"approvalRequired\\\":{\\\"type\\\":\\\"boolean\\\"},\\\"tool\\\":{\\\"type\\\":\\\"string\\\"},\\\"arguments\\\":{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"orderId\\\":{\\\"type\\\":\\\"string\\\"}}},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":202,\"responseType\":\"string\"},{\"code\":400,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":403,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":404,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":409,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":422,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":500,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"}]"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              },
+              "body": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"orderId\":{\"type\":\"string\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"orderId\":{\"type\":\"string\"}}}"
+              },
+              "multipartForm": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{}}",
+                "fe_metadata": "[]"
+              }
+            }
+          },
+          "name": "create_return_authorization_POST"
+        },
+        {
+          "description": "Flow for api/orders/returns/eligibility GET",
+          "settings": {
+            "APISpecPath": "/api/orders/returns/eligibility",
+            "Method": "GET",
+            "reqType": "application/json",
+            "Path": "/api/orders/returns/eligibility",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:check_return_eligibility_GET"
+            },
+            "input": {
+              "body": "=$.body",
+              "queryParams": "=$.queryParams"
+            },
+            "output": {
+              "code": "=$.code",
+              "responseBody": "=$.responseBody"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": true,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              },
+              "responseCodesSchema": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseType\":{\"type\":\"string\"},\"responseSchema\":{\"type\":\"string\"}},\"required\":[\"code\",\"responseType\",\"responseSchema\"]}}",
+                "fe_metadata": "[{\"code\":200,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"orderId\\\":{\\\"type\\\":\\\"string\\\"},\\\"sku\\\":{\\\"type\\\":\\\"string\\\"},\\\"productName\\\":{\\\"type\\\":\\\"string\\\"},\\\"purchaseDate\\\":{\\\"type\\\":\\\"string\\\"},\\\"ageDays\\\":{\\\"type\\\":\\\"integer\\\",\\\"format\\\":\\\"int32\\\"},\\\"returnWindowDays\\\":{\\\"type\\\":\\\"integer\\\",\\\"format\\\":\\\"int32\\\"},\\\"eligible\\\":{\\\"type\\\":\\\"boolean\\\"},\\\"loyaltyTier\\\":{\\\"type\\\":\\\"string\\\"},\\\"reason\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":400,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":403,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":404,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":409,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":422,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":500,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"}]"
+              }
+            },
+            "output": {
+              "queryParams": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"orderId\":{\"type\":\"string\"}},\"required\":[\"orderId\"]}",
+                "fe_metadata": "[{\"parameterName\":\"orderId\",\"repeating\":\"false\",\"type\":\"string\",\"required\":\"true\"}]"
+              },
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              },
+              "multipartForm": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{}}",
+                "fe_metadata": "[]"
+              }
+            }
+          },
+          "name": "check_return_eligibility_GET"
+        },
+        {
+          "description": "Flow for api/orders/{orderId} GET",
+          "settings": {
+            "APISpecPath": "/api/orders/{orderId}",
+            "Method": "GET",
+            "reqType": "application/json",
+            "Path": "/api/orders/{orderId}",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:lookup_order_GET"
+            },
+            "input": {
+              "body": "=$.body",
+              "pathParams": "=$.pathParams"
+            },
+            "output": {
+              "code": "=$.code",
+              "responseBody": "=$.responseBody"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": true,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              },
+              "responseCodesSchema": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseType\":{\"type\":\"string\"},\"responseSchema\":{\"type\":\"string\"}},\"required\":[\"code\",\"responseType\",\"responseSchema\"]}}",
+                "fe_metadata": "[{\"code\":200,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"orderId\\\":{\\\"type\\\":\\\"string\\\"},\\\"customerId\\\":{\\\"type\\\":\\\"string\\\"},\\\"sku\\\":{\\\"type\\\":\\\"string\\\"},\\\"purchaseDate\\\":{\\\"type\\\":\\\"string\\\"},\\\"channel\\\":{\\\"type\\\":\\\"string\\\"},\\\"storeId\\\":{\\\"type\\\":\\\"string\\\"},\\\"product\\\":{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"sku\\\":{\\\"type\\\":\\\"string\\\"},\\\"name\\\":{\\\"type\\\":\\\"string\\\"},\\\"brand\\\":{\\\"type\\\":\\\"string\\\"},\\\"category\\\":{\\\"type\\\":\\\"string\\\"},\\\"price\\\":{\\\"type\\\":\\\"integer\\\",\\\"format\\\":\\\"int32\\\"},\\\"description\\\":{\\\"type\\\":\\\"string\\\"}}},\\\"customer\\\":{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"customerId\\\":{\\\"type\\\":\\\"string\\\"},\\\"loyaltyTier\\\":{\\\"type\\\":\\\"string\\\"},\\\"preferredStoreId\\\":{\\\"type\\\":\\\"string\\\"}}}}}\"},{\"code\":400,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":403,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":404,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":409,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":422,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":500,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"}]"
+              }
+            },
+            "output": {
+              "pathParams": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"orderId\":{\"type\":\"string\"}},\"required\":[\"orderId\"]}",
+                "fe_metadata": "[{\"parameterName\":\"orderId\",\"type\":\"string\",\"required\":true}]"
+              },
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              },
+              "multipartForm": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{}}",
+                "fe_metadata": "[]"
+              }
+            }
+          },
+          "name": "lookup_order_GET"
+        }
+      ]
+    },
+    {
+      "ref": "#mcpserver",
+      "name": "flogo-mcp-mcpsever",
+      "description": "MCP server for Retail.Orders.API",
+      "settings": {
+        "serverName": "Retail.Orders.API",
+        "serverVersion": "1.0.0",
+        "serverType": "HTTP",
+        "serverPort": "=$property[\"MCP_PORT\"]",
+        "statelessServer": false,
+        "serverEndpointPath": "/mcp",
+        "enableTLS": false,
+        "serverCertificate": "",
+        "serverPrivateKey": "",
+        "authType": "None",
+        "authToken": "",
+        "oauthIssuer": "",
+        "oauthJWKSURL": "",
+        "oauthAudience": "",
+        "oauthAuthorizationServers": "",
+        "oauthRequiredScopes": "",
+        "oauthResourceURL": ""
+      },
+      "id": "mcp_server",
+      "handlers": [
+        {
+          "description": "MCP tool lookup_order: calls lookup_order_GET and returns its body",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "lookup_order",
+            "handlerDescription": "getOrder",
+            "toolTitle": "",
+            "readOnlyToolHint": true,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:mcp_lookup_order"
+            },
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "reply": {
+              "response": {
+                "type": "json",
+                "value": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}",
+                "fe_metadata": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}"
+              }
+            },
+            "output": {
+              "arguments": {
+                "type": "json",
+                "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"orderId\": {\"type\": \"string\"}}, \"required\": [\"orderId\"]}",
+                "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"orderId\": {\"type\": \"string\"}}, \"required\": [\"orderId\"]}"
+              }
+            }
+          },
+          "name": "mcp_lookup_order"
+        },
+        {
+          "description": "MCP tool check_return_eligibility: calls check_return_eligibility_GET and returns its body",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "check_return_eligibility",
+            "handlerDescription": "getOrder",
+            "toolTitle": "",
+            "readOnlyToolHint": true,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:mcp_check_return_eligibility"
+            },
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "reply": {
+              "response": {
+                "type": "json",
+                "value": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}",
+                "fe_metadata": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}"
+              }
+            },
+            "output": {
+              "arguments": {
+                "type": "json",
+                "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"orderId\": {\"type\": \"string\"}}, \"required\": [\"orderId\"]}",
+                "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"orderId\": {\"type\": \"string\"}}, \"required\": [\"orderId\"]}"
+              }
+            }
+          },
+          "name": "mcp_check_return_eligibility"
+        },
+        {
+          "description": "MCP tool create_return_authorization: calls create_return_authorization_POST and returns its body",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "create_return_authorization",
+            "handlerDescription": "postOrder",
+            "toolTitle": "",
+            "readOnlyToolHint": false,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:mcp_create_return_authorization"
+            },
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "reply": {
+              "response": {
+                "type": "json",
+                "value": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}",
+                "fe_metadata": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}"
+              }
+            },
+            "output": {
+              "arguments": {
+                "type": "json",
+                "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"orderId\": {\"type\": \"string\"}}}",
+                "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"orderId\": {\"type\": \"string\"}}}"
+              }
+            }
+          },
+          "name": "mcp_create_return_authorization"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:create_return_authorization_POST",
+      "data": {
+        "name": "create_return_authorization_POST",
+        "description": "Flow for api/orders/return-authorizations POST",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Log_API",
+            "type": "label",
+            "label": "StartActivity to Log_API"
+          },
+          {
+            "id": 2,
+            "from": "Log_API",
+            "to": "ConfigureHTTPResponse",
+            "type": "label",
+            "label": "Log_API to ConfigureHTTPResponse"
+          },
+          {
+            "id": 3,
+            "from": "ConfigureHTTPResponse",
+            "to": "Return",
+            "type": "label",
+            "label": "ConfigureHTTPResponse to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "Log_API",
+            "name": "Log_API",
+            "description": "Log API Call for api/orders/return-authorizations POST",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "Log API call for create_return_authorization_POST",
+                "logLevel": "",
+                "loggerName": "",
+                "fieldPrefix": "",
+                "dynamicLogFields": {
+                  "mapping": {}
+                }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "ConfigureHTTPResponse",
+            "name": "ConfigureHTTPResponse",
+            "description": "Configure HTTP Response Activity",
+            "activity": {
+              "ref": "#httpresponse",
+              "input": {
+                "trigger": "order_service",
+                "responsecode": "200",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "approvalRequired": true,
+                      "tool": "create_return_authorization",
+                      "arguments": {
+                        "orderId": "=$flow.body.orderId"
+                      },
+                      "message": "This operation changes retail state and must be approved through the agent approval flow."
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://CreateReturnBody"
+                },
+                "output": {
+                  "response": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"approvalRequired\":{\"type\":\"boolean\"},\"tool\":{\"type\":\"string\"},\"arguments\":{\"type\":\"object\",\"properties\":{\"orderId\":{\"type\":\"string\"}}},\"message\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"approvalRequired\":{\"type\":\"boolean\"},\"tool\":{\"type\":\"string\"},\"arguments\":{\"type\":\"object\",\"properties\":{\"orderId\":{\"type\":\"string\"}}},\"message\":{\"type\":\"string\"}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Reply to API Call for api/orders/return-authorizations POST",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[ConfigureHTTPResponse].code",
+                  "responseBody": "=$activity[ConfigureHTTPResponse].response"
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo0NX0sIkxvZ19BUEkiOnsieCI6MjUwLCJ5Ijo0NX0sIkNvbmZpZ3VyZUhUVFBSZXNwb25zZSI6eyJ4Ijo0NTAsInkiOjQ1fSwiUmV0dXJuIjp7IngiOjY1MCwieSI6NDV9fQ==",
+        "metadata": {
+          "input": [
+            {
+              "name": "body",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"orderId\":{\"type\":\"string\"}}"
+              }
+            },
+            {
+              "name": "multipartFormData",
+              "type": "object"
+            },
+            {
+              "name": "requestURI",
+              "type": "string"
+            },
+            {
+              "name": "method",
+              "type": "string"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "responseBody",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"orderId\":{\"type\":\"string\"}}},\"multipartFormData\":{\"type\":\"object\",\"properties\":{}},\"requestURI\":{\"type\":\"string\"},\"method\":{\"type\":\"string\"}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:check_return_eligibility_GET",
+      "data": {
+        "name": "check_return_eligibility_GET",
+        "description": "Flow for api/orders/returns/eligibility GET",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Log_API",
+            "type": "label",
+            "label": "StartActivity to Log_API"
+          },
+          {
+            "id": 2,
+            "from": "Log_API",
+            "to": "BadRequest",
+            "type": "expression",
+            "label": "Log_API to BadRequest",
+            "value": "coerce.toString($flow.queryParams.orderId) == \"\""
+          },
+          {
+            "id": 3,
+            "from": "Log_API",
+            "to": "ReferenceData",
+            "type": "expression",
+            "label": "Log_API to ReferenceData",
+            "value": "coerce.toString($flow.queryParams.orderId) != \"\""
+          },
+          {
+            "id": 4,
+            "from": "ReferenceData",
+            "to": "FindOrder",
+            "type": "label",
+            "label": "ReferenceData to FindOrder"
+          },
+          {
+            "id": 5,
+            "from": "FindOrder",
+            "to": "NotFound",
+            "type": "expression",
+            "label": "FindOrder to NotFound",
+            "value": "array.count($activity[FindOrder].output.matches) == 0"
+          },
+          {
+            "id": 6,
+            "from": "FindOrder",
+            "to": "FindProduct",
+            "type": "expression",
+            "label": "FindOrder to FindProduct",
+            "value": "array.count($activity[FindOrder].output.matches) > 0"
+          },
+          {
+            "id": 7,
+            "from": "FindProduct",
+            "to": "FindCustomer",
+            "type": "label",
+            "label": "FindProduct to FindCustomer"
+          },
+          {
+            "id": 8,
+            "from": "FindCustomer",
+            "to": "ReturnWindow",
+            "type": "label",
+            "label": "FindCustomer to ReturnWindow"
+          },
+          {
+            "id": 9,
+            "from": "ReturnWindow",
+            "to": "ConfigureHTTPResponse",
+            "type": "label",
+            "label": "ReturnWindow to ConfigureHTTPResponse"
+          },
+          {
+            "id": 10,
+            "from": "ConfigureHTTPResponse",
+            "to": "Return",
+            "type": "label",
+            "label": "ConfigureHTTPResponse to Return"
+          },
+          {
+            "id": 11,
+            "from": "BadRequest",
+            "to": "ReturnBadRequest",
+            "type": "label",
+            "label": "BadRequest to ReturnBadRequest"
+          },
+          {
+            "id": 12,
+            "from": "NotFound",
+            "to": "ReturnNotFound",
+            "type": "label",
+            "label": "NotFound to ReturnNotFound"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "Log_API",
+            "name": "Log_API",
+            "description": "Log API Call for api/orders/returns/eligibility GET",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "Log API call for check_return_eligibility_GET",
+                "logLevel": "",
+                "loggerName": "",
+                "fieldPrefix": "",
+                "dynamicLogFields": {
+                  "mapping": {}
+                }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "BadRequest",
+            "name": "BadRequest",
+            "description": "HTTP 400 response",
+            "activity": {
+              "ref": "#httpresponse",
+              "input": {
+                "trigger": "order_service",
+                "responsecode": "400",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "error": "invalid_request",
+                      "message": "orderId is required"
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://ErrorBody"
+                },
+                "output": {
+                  "response": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"error\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"error\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "ReferenceData",
+            "name": "ReferenceData",
+            "description": "Embedded orders, products and customers (BW JsonParser literals)",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "orders": [
+                      {
+                        "orderId": "ORD-1001",
+                        "customerId": "CUST-001",
+                        "sku": "RUN-PEG-001",
+                        "purchaseDate": "2026-04-20",
+                        "pricePaid": 119,
+                        "channel": "store",
+                        "storeId": "SFO-001"
+                      },
+                      {
+                        "orderId": "ORD-1002",
+                        "customerId": "CUST-001",
+                        "sku": "FIT-WATCH-330",
+                        "purchaseDate": "2026-04-10",
+                        "pricePaid": 199,
+                        "channel": "online",
+                        "storeId": "WEB"
+                      },
+                      {
+                        "orderId": "ORD-1003",
+                        "customerId": "CUST-002",
+                        "sku": "JKT-RAIN-210",
+                        "purchaseDate": "2026-03-28",
+                        "pricePaid": 139,
+                        "channel": "store",
+                        "storeId": "OAK-002"
+                      },
+                      {
+                        "orderId": "ORD-1004",
+                        "customerId": "CUST-003",
+                        "sku": "ELC-EARBUD-808",
+                        "purchaseDate": "2026-05-02",
+                        "pricePaid": 109,
+                        "channel": "online",
+                        "storeId": "WEB"
+                      },
+                      {
+                        "orderId": "ORD-1005",
+                        "customerId": "CUST-004",
+                        "sku": "BAG-DAY-502",
+                        "purchaseDate": "2026-04-01",
+                        "pricePaid": 89,
+                        "channel": "store",
+                        "storeId": "SJC-003"
+                      }
+                    ],
+                    "products": [
+                      {
+                        "sku": "RUN-PEG-001",
+                        "name": "AeroStride Running Shoe",
+                        "brand": "Northstar",
+                        "category": "Footwear",
+                        "price": 129,
+                        "description": "Neutral daily running shoe with breathable mesh, cushioned foam, and reflective accents.",
+                        "attributes": {
+                          "color": "Blue",
+                          "gender": "Unisex",
+                          "use": "Road running",
+                          "returnWindowDays": 30,
+                          "warrantyMonths": 6
+                        }
+                      },
+                      {
+                        "sku": "RUN-TRAIL-024",
+                        "name": "RidgeGrip Trail Shoe",
+                        "brand": "SummitLab",
+                        "category": "Footwear",
+                        "price": 148,
+                        "description": "Trail running shoe with aggressive lugs, rock plate protection, and water-resistant upper.",
+                        "attributes": {
+                          "color": "Graphite",
+                          "gender": "Unisex",
+                          "use": "Trail running",
+                          "returnWindowDays": 30,
+                          "warrantyMonths": 6
+                        }
+                      },
+                      {
+                        "sku": "JKT-RAIN-210",
+                        "name": "CloudShield Rain Jacket",
+                        "brand": "HarborLine",
+                        "category": "Outerwear",
+                        "price": 139,
+                        "description": "Packable waterproof jacket with sealed seams, adjustable hood, and underarm vents.",
+                        "attributes": {
+                          "color": "Forest",
+                          "gender": "Unisex",
+                          "use": "Commuting and hiking",
+                          "returnWindowDays": 15,
+                          "warrantyMonths": 12
+                        }
+                      },
+                      {
+                        "sku": "JKT-SOFT-118",
+                        "name": "ThermaFlex Softshell Jacket",
+                        "brand": "SummitLab",
+                        "category": "Outerwear",
+                        "price": 159,
+                        "description": "Stretch softshell jacket with light fleece lining, wind resistance, and zippered hand pockets.",
+                        "attributes": {
+                          "color": "Black",
+                          "gender": "Unisex",
+                          "use": "Layering and travel",
+                          "returnWindowDays": 45,
+                          "warrantyMonths": 12
+                        }
+                      },
+                      {
+                        "sku": "BAG-DAY-502",
+                        "name": "MetroLite Daypack",
+                        "brand": "CivicCarry",
+                        "category": "Bags",
+                        "price": 89,
+                        "description": "Twenty-liter commuter backpack with laptop sleeve, water bottle pockets, and weather-resistant fabric.",
+                        "attributes": {
+                          "color": "Navy",
+                          "capacityLiters": 20,
+                          "use": "Commuting",
+                          "returnWindowDays": 45,
+                          "warrantyMonths": 24
+                        }
+                      },
+                      {
+                        "sku": "FIT-WATCH-330",
+                        "name": "PulseTrack Sport Watch",
+                        "brand": "Northstar",
+                        "category": "Electronics",
+                        "price": 199,
+                        "description": "GPS sport watch with wrist heart-rate tracking, sleep insights, and five-day battery life.",
+                        "attributes": {
+                          "color": "Black",
+                          "batteryDays": 5,
+                          "use": "Fitness tracking",
+                          "returnWindowDays": 14,
+                          "warrantyMonths": 12
+                        }
+                      },
+                      {
+                        "sku": "YGA-MAT-014",
+                        "name": "GripFlow Yoga Mat",
+                        "brand": "BalanceWorks",
+                        "category": "Fitness",
+                        "price": 58,
+                        "description": "Non-slip yoga mat made with dense natural rubber and alignment markers.",
+                        "attributes": {
+                          "color": "Sage",
+                          "thicknessMm": 5,
+                          "use": "Yoga and stretching",
+                          "returnWindowDays": 30,
+                          "warrantyMonths": 3
+                        }
+                      },
+                      {
+                        "sku": "BOT-INS-071",
+                        "name": "SummitSip Insulated Bottle",
+                        "brand": "HarborLine",
+                        "category": "Accessories",
+                        "price": 34,
+                        "description": "Twenty-four ounce stainless bottle that keeps drinks cold for 24 hours and hot for 12 hours.",
+                        "attributes": {
+                          "color": "Copper",
+                          "capacityOz": 24,
+                          "use": "Hydration",
+                          "returnWindowDays": 30,
+                          "warrantyMonths": 6
+                        }
+                      },
+                      {
+                        "sku": "ELC-EARBUD-808",
+                        "name": "ClearRun Wireless Earbuds",
+                        "brand": "CivicCarry",
+                        "category": "Electronics",
+                        "price": 119,
+                        "description": "Sweat-resistant wireless earbuds with transparency mode, compact charging case, and secure fit tips.",
+                        "attributes": {
+                          "color": "White",
+                          "batteryHours": 8,
+                          "use": "Running and commuting",
+                          "returnWindowDays": 14,
+                          "warrantyMonths": 12
+                        }
+                      },
+                      {
+                        "sku": "JKT-FLEECE-077",
+                        "name": "CanyonGrid Fleece Pullover",
+                        "brand": "Northstar",
+                        "category": "Outerwear",
+                        "price": 96,
+                        "description": "Warm grid-fleece pullover with quarter zip, breathable panels, and recycled polyester.",
+                        "attributes": {
+                          "color": "Burgundy",
+                          "gender": "Unisex",
+                          "use": "Casual layering",
+                          "returnWindowDays": 45,
+                          "warrantyMonths": 12
+                        }
+                      }
+                    ],
+                    "customers": [
+                      {
+                        "customerId": "CUST-001",
+                        "name": "Avery Chen",
+                        "loyaltyTier": "Gold",
+                        "preferredStoreId": "SFO-001",
+                        "preferences": [
+                          "running",
+                          "lightweight gear",
+                          "blue"
+                        ]
+                      },
+                      {
+                        "customerId": "CUST-002",
+                        "name": "Jordan Lee",
+                        "loyaltyTier": "Silver",
+                        "preferredStoreId": "OAK-002",
+                        "preferences": [
+                          "hiking",
+                          "waterproof outerwear"
+                        ]
+                      },
+                      {
+                        "customerId": "CUST-003",
+                        "name": "Priya Shah",
+                        "loyaltyTier": "Member",
+                        "preferredStoreId": "SFO-001",
+                        "preferences": [
+                          "fitness electronics",
+                          "commuting"
+                        ]
+                      },
+                      {
+                        "customerId": "CUST-004",
+                        "name": "Marcus Reed",
+                        "loyaltyTier": "Platinum",
+                        "preferredStoreId": "SJC-003",
+                        "preferences": [
+                          "travel",
+                          "bags",
+                          "hydration"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"orders\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"orderId\": {\n            \"type\": \"string\"\n          },\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"purchaseDate\": {\n            \"type\": \"string\"\n          },\n          \"pricePaid\": {\n            \"type\": \"integer\"\n          },\n          \"channel\": {\n            \"type\": \"string\"\n          },\n          \"storeId\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    },\n    \"products\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"brand\": {\n            \"type\": \"string\"\n          },\n          \"category\": {\n            \"type\": \"string\"\n          },\n          \"price\": {\n            \"type\": \"integer\"\n          },\n          \"description\": {\n            \"type\": \"string\"\n          },\n          \"attributes\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"color\": {\n                \"type\": \"string\"\n              },\n              \"gender\": {\n                \"type\": \"string\"\n              },\n              \"use\": {\n                \"type\": \"string\"\n              },\n              \"returnWindowDays\": {\n                \"type\": \"integer\"\n              },\n              \"warrantyMonths\": {\n                \"type\": \"integer\"\n              },\n              \"capacityLiters\": {\n                \"type\": \"integer\"\n              },\n              \"batteryDays\": {\n                \"type\": \"integer\"\n              },\n              \"thicknessMm\": {\n                \"type\": \"integer\"\n              },\n              \"capacityOz\": {\n                \"type\": \"integer\"\n              },\n              \"batteryHours\": {\n                \"type\": \"integer\"\n              }\n            }\n          }\n        }\n      }\n    },\n    \"customers\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"loyaltyTier\": {\n            \"type\": \"string\"\n          },\n          \"preferredStoreId\": {\n            \"type\": \"string\"\n          },\n          \"preferences\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"orders\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"orderId\": {\n            \"type\": \"string\"\n          },\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"purchaseDate\": {\n            \"type\": \"string\"\n          },\n          \"pricePaid\": {\n            \"type\": \"integer\"\n          },\n          \"channel\": {\n            \"type\": \"string\"\n          },\n          \"storeId\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    },\n    \"products\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"brand\": {\n            \"type\": \"string\"\n          },\n          \"category\": {\n            \"type\": \"string\"\n          },\n          \"price\": {\n            \"type\": \"integer\"\n          },\n          \"description\": {\n            \"type\": \"string\"\n          },\n          \"attributes\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"color\": {\n                \"type\": \"string\"\n              },\n              \"gender\": {\n                \"type\": \"string\"\n              },\n              \"use\": {\n                \"type\": \"string\"\n              },\n              \"returnWindowDays\": {\n                \"type\": \"integer\"\n              },\n              \"warrantyMonths\": {\n                \"type\": \"integer\"\n              },\n              \"capacityLiters\": {\n                \"type\": \"integer\"\n              },\n              \"batteryDays\": {\n                \"type\": \"integer\"\n              },\n              \"thicknessMm\": {\n                \"type\": \"integer\"\n              },\n              \"capacityOz\": {\n                \"type\": \"integer\"\n              },\n              \"batteryHours\": {\n                \"type\": \"integer\"\n              }\n            }\n          }\n        }\n      }\n    },\n    \"customers\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"loyaltyTier\": {\n            \"type\": \"string\"\n          },\n          \"preferredStoreId\": {\n            \"type\": \"string\"\n          },\n          \"preferences\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"orders\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"orderId\": {\n            \"type\": \"string\"\n          },\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"purchaseDate\": {\n            \"type\": \"string\"\n          },\n          \"pricePaid\": {\n            \"type\": \"integer\"\n          },\n          \"channel\": {\n            \"type\": \"string\"\n          },\n          \"storeId\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    },\n    \"products\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"brand\": {\n            \"type\": \"string\"\n          },\n          \"category\": {\n            \"type\": \"string\"\n          },\n          \"price\": {\n            \"type\": \"integer\"\n          },\n          \"description\": {\n            \"type\": \"string\"\n          },\n          \"attributes\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"color\": {\n                \"type\": \"string\"\n              },\n              \"gender\": {\n                \"type\": \"string\"\n              },\n              \"use\": {\n                \"type\": \"string\"\n              },\n              \"returnWindowDays\": {\n                \"type\": \"integer\"\n              },\n              \"warrantyMonths\": {\n                \"type\": \"integer\"\n              },\n              \"capacityLiters\": {\n                \"type\": \"integer\"\n              },\n              \"batteryDays\": {\n                \"type\": \"integer\"\n              },\n              \"thicknessMm\": {\n                \"type\": \"integer\"\n              },\n              \"capacityOz\": {\n                \"type\": \"integer\"\n              },\n              \"batteryHours\": {\n                \"type\": \"integer\"\n              }\n            }\n          }\n        }\n      }\n    },\n    \"customers\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"loyaltyTier\": {\n            \"type\": \"string\"\n          },\n          \"preferredStoreId\": {\n            \"type\": \"string\"\n          },\n          \"preferences\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"orders\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"orderId\": {\n            \"type\": \"string\"\n          },\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"purchaseDate\": {\n            \"type\": \"string\"\n          },\n          \"pricePaid\": {\n            \"type\": \"integer\"\n          },\n          \"channel\": {\n            \"type\": \"string\"\n          },\n          \"storeId\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    },\n    \"products\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"brand\": {\n            \"type\": \"string\"\n          },\n          \"category\": {\n            \"type\": \"string\"\n          },\n          \"price\": {\n            \"type\": \"integer\"\n          },\n          \"description\": {\n            \"type\": \"string\"\n          },\n          \"attributes\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"color\": {\n                \"type\": \"string\"\n              },\n              \"gender\": {\n                \"type\": \"string\"\n              },\n              \"use\": {\n                \"type\": \"string\"\n              },\n              \"returnWindowDays\": {\n                \"type\": \"integer\"\n              },\n              \"warrantyMonths\": {\n                \"type\": \"integer\"\n              },\n              \"capacityLiters\": {\n                \"type\": \"integer\"\n              },\n              \"batteryDays\": {\n                \"type\": \"integer\"\n              },\n              \"thicknessMm\": {\n                \"type\": \"integer\"\n              },\n              \"capacityOz\": {\n                \"type\": \"integer\"\n              },\n              \"batteryHours\": {\n                \"type\": \"integer\"\n              }\n            }\n          }\n        }\n      }\n    },\n    \"customers\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"loyaltyTier\": {\n            \"type\": \"string\"\n          },\n          \"preferredStoreId\": {\n            \"type\": \"string\"\n          },\n          \"preferences\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "FindOrder",
+            "name": "FindOrder",
+            "description": "Order with the requested id (BW for-each[orderId = $param])",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "matches": {
+                      "@foreach($activity[ReferenceData].output.orders,o, $loop[o].orderId == $flow.queryParams.orderId)": {
+                        "orderId": "=$loop[o].orderId",
+                        "customerId": "=$loop[o].customerId",
+                        "sku": "=$loop[o].sku",
+                        "purchaseDate": "=$loop[o].purchaseDate",
+                        "pricePaid": "=$loop[o].pricePaid",
+                        "channel": "=$loop[o].channel",
+                        "storeId": "=$loop[o].storeId"
+                      }
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"orderId\": {\n            \"type\": \"string\"\n          },\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"purchaseDate\": {\n            \"type\": \"string\"\n          },\n          \"pricePaid\": {\n            \"type\": \"integer\"\n          },\n          \"channel\": {\n            \"type\": \"string\"\n          },\n          \"storeId\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"orderId\": {\n            \"type\": \"string\"\n          },\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"purchaseDate\": {\n            \"type\": \"string\"\n          },\n          \"pricePaid\": {\n            \"type\": \"integer\"\n          },\n          \"channel\": {\n            \"type\": \"string\"\n          },\n          \"storeId\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"orderId\": {\n            \"type\": \"string\"\n          },\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"purchaseDate\": {\n            \"type\": \"string\"\n          },\n          \"pricePaid\": {\n            \"type\": \"integer\"\n          },\n          \"channel\": {\n            \"type\": \"string\"\n          },\n          \"storeId\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"orderId\": {\n            \"type\": \"string\"\n          },\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"purchaseDate\": {\n            \"type\": \"string\"\n          },\n          \"pricePaid\": {\n            \"type\": \"integer\"\n          },\n          \"channel\": {\n            \"type\": \"string\"\n          },\n          \"storeId\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "NotFound",
+            "name": "NotFound",
+            "description": "HTTP 404 response",
+            "activity": {
+              "ref": "#httpresponse",
+              "input": {
+                "trigger": "order_service",
+                "responsecode": "404",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "error": "order_not_found",
+                      "message": "=string.concat(\"No order found with id \", $flow.queryParams.orderId)"
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://ErrorBody"
+                },
+                "output": {
+                  "response": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"error\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"error\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "FindProduct",
+            "name": "FindProduct",
+            "description": "Product of the order (BW for-each[sku = current()/sku])",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "matches": {
+                      "@foreach($activity[ReferenceData].output.products,p, $loop[p].sku == $activity[FindOrder].output.matches[0].sku)": {
+                        "sku": "=$loop[p].sku",
+                        "name": "=$loop[p].name",
+                        "brand": "=$loop[p].brand",
+                        "category": "=$loop[p].category",
+                        "price": "=$loop[p].price",
+                        "description": "=$loop[p].description",
+                        "attributes": "=$loop[p].attributes"
+                      }
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"brand\": {\n            \"type\": \"string\"\n          },\n          \"category\": {\n            \"type\": \"string\"\n          },\n          \"price\": {\n            \"type\": \"integer\"\n          },\n          \"description\": {\n            \"type\": \"string\"\n          },\n          \"attributes\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"color\": {\n                \"type\": \"string\"\n              },\n              \"gender\": {\n                \"type\": \"string\"\n              },\n              \"use\": {\n                \"type\": \"string\"\n              },\n              \"returnWindowDays\": {\n                \"type\": \"integer\"\n              },\n              \"warrantyMonths\": {\n                \"type\": \"integer\"\n              },\n              \"capacityLiters\": {\n                \"type\": \"integer\"\n              },\n              \"batteryDays\": {\n                \"type\": \"integer\"\n              },\n              \"thicknessMm\": {\n                \"type\": \"integer\"\n              },\n              \"capacityOz\": {\n                \"type\": \"integer\"\n              },\n              \"batteryHours\": {\n                \"type\": \"integer\"\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"brand\": {\n            \"type\": \"string\"\n          },\n          \"category\": {\n            \"type\": \"string\"\n          },\n          \"price\": {\n            \"type\": \"integer\"\n          },\n          \"description\": {\n            \"type\": \"string\"\n          },\n          \"attributes\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"color\": {\n                \"type\": \"string\"\n              },\n              \"gender\": {\n                \"type\": \"string\"\n              },\n              \"use\": {\n                \"type\": \"string\"\n              },\n              \"returnWindowDays\": {\n                \"type\": \"integer\"\n              },\n              \"warrantyMonths\": {\n                \"type\": \"integer\"\n              },\n              \"capacityLiters\": {\n                \"type\": \"integer\"\n              },\n              \"batteryDays\": {\n                \"type\": \"integer\"\n              },\n              \"thicknessMm\": {\n                \"type\": \"integer\"\n              },\n              \"capacityOz\": {\n                \"type\": \"integer\"\n              },\n              \"batteryHours\": {\n                \"type\": \"integer\"\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"brand\": {\n            \"type\": \"string\"\n          },\n          \"category\": {\n            \"type\": \"string\"\n          },\n          \"price\": {\n            \"type\": \"integer\"\n          },\n          \"description\": {\n            \"type\": \"string\"\n          },\n          \"attributes\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"color\": {\n                \"type\": \"string\"\n              },\n              \"gender\": {\n                \"type\": \"string\"\n              },\n              \"use\": {\n                \"type\": \"string\"\n              },\n              \"returnWindowDays\": {\n                \"type\": \"integer\"\n              },\n              \"warrantyMonths\": {\n                \"type\": \"integer\"\n              },\n              \"capacityLiters\": {\n                \"type\": \"integer\"\n              },\n              \"batteryDays\": {\n                \"type\": \"integer\"\n              },\n              \"thicknessMm\": {\n                \"type\": \"integer\"\n              },\n              \"capacityOz\": {\n                \"type\": \"integer\"\n              },\n              \"batteryHours\": {\n                \"type\": \"integer\"\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"brand\": {\n            \"type\": \"string\"\n          },\n          \"category\": {\n            \"type\": \"string\"\n          },\n          \"price\": {\n            \"type\": \"integer\"\n          },\n          \"description\": {\n            \"type\": \"string\"\n          },\n          \"attributes\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"color\": {\n                \"type\": \"string\"\n              },\n              \"gender\": {\n                \"type\": \"string\"\n              },\n              \"use\": {\n                \"type\": \"string\"\n              },\n              \"returnWindowDays\": {\n                \"type\": \"integer\"\n              },\n              \"warrantyMonths\": {\n                \"type\": \"integer\"\n              },\n              \"capacityLiters\": {\n                \"type\": \"integer\"\n              },\n              \"batteryDays\": {\n                \"type\": \"integer\"\n              },\n              \"thicknessMm\": {\n                \"type\": \"integer\"\n              },\n              \"capacityOz\": {\n                \"type\": \"integer\"\n              },\n              \"batteryHours\": {\n                \"type\": \"integer\"\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "FindCustomer",
+            "name": "FindCustomer",
+            "description": "Customer of the order (BW for-each[customerId = current()/customerId])",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "matches": {
+                      "@foreach($activity[ReferenceData].output.customers,c, $loop[c].customerId == $activity[FindOrder].output.matches[0].customerId)": {
+                        "customerId": "=$loop[c].customerId",
+                        "name": "=$loop[c].name",
+                        "loyaltyTier": "=$loop[c].loyaltyTier",
+                        "preferredStoreId": "=$loop[c].preferredStoreId",
+                        "preferences": "=$loop[c].preferences"
+                      }
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"loyaltyTier\": {\n            \"type\": \"string\"\n          },\n          \"preferredStoreId\": {\n            \"type\": \"string\"\n          },\n          \"preferences\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"loyaltyTier\": {\n            \"type\": \"string\"\n          },\n          \"preferredStoreId\": {\n            \"type\": \"string\"\n          },\n          \"preferences\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"loyaltyTier\": {\n            \"type\": \"string\"\n          },\n          \"preferredStoreId\": {\n            \"type\": \"string\"\n          },\n          \"preferences\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"loyaltyTier\": {\n            \"type\": \"string\"\n          },\n          \"preferredStoreId\": {\n            \"type\": \"string\"\n          },\n          \"preferences\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "ReturnWindow",
+            "name": "ReturnWindow",
+            "description": "BW xsl:variables ageDays (days from purchase to 2026-05-10) and returnWindowDays",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "ageDays": "=datetime.diff(datetime.parse($activity[FindOrder].output.matches[0].purchaseDate, \"UTC\"), datetime.parse(\"2026-05-10\", \"UTC\"), \"days\") < 0 ? coerce.toInt(0 - datetime.diff(datetime.parse($activity[FindOrder].output.matches[0].purchaseDate, \"UTC\"), datetime.parse(\"2026-05-10\", \"UTC\"), \"days\")) : coerce.toInt(datetime.diff(datetime.parse($activity[FindOrder].output.matches[0].purchaseDate, \"UTC\"), datetime.parse(\"2026-05-10\", \"UTC\"), \"days\"))",
+                    "returnWindowDays": "=$activity[FindProduct].output.matches[0].attributes.returnWindowDays"
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"ageDays\": {\n      \"type\": \"integer\"\n    },\n    \"returnWindowDays\": {\n      \"type\": \"integer\"\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"ageDays\": {\n      \"type\": \"integer\"\n    },\n    \"returnWindowDays\": {\n      \"type\": \"integer\"\n    }\n  }\n}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"ageDays\": {\n      \"type\": \"integer\"\n    },\n    \"returnWindowDays\": {\n      \"type\": \"integer\"\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"ageDays\": {\n      \"type\": \"integer\"\n    },\n    \"returnWindowDays\": {\n      \"type\": \"integer\"\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "ConfigureHTTPResponse",
+            "name": "ConfigureHTTPResponse",
+            "description": "Configure HTTP Response Activity",
+            "activity": {
+              "ref": "#httpresponse",
+              "input": {
+                "trigger": "order_service",
+                "responsecode": "200",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "orderId": "=$activity[FindOrder].output.matches[0].orderId",
+                      "sku": "=$activity[FindOrder].output.matches[0].sku",
+                      "productName": "=$activity[FindProduct].output.matches[0].name",
+                      "purchaseDate": "=$activity[FindOrder].output.matches[0].purchaseDate",
+                      "ageDays": "=$activity[ReturnWindow].output.ageDays",
+                      "returnWindowDays": "=$activity[ReturnWindow].output.returnWindowDays",
+                      "eligible": "=$activity[ReturnWindow].output.ageDays <= $activity[ReturnWindow].output.returnWindowDays",
+                      "loyaltyTier": "=$activity[FindCustomer].output.matches[0].loyaltyTier",
+                      "reason": "=$activity[ReturnWindow].output.ageDays <= $activity[ReturnWindow].output.returnWindowDays ? string.concat(\"The item is within the \", coerce.toString($activity[ReturnWindow].output.returnWindowDays), \" day return window.\") : string.concat(\"The item is \", coerce.toString($activity[ReturnWindow].output.ageDays - $activity[ReturnWindow].output.returnWindowDays), \" days past the \", coerce.toString($activity[ReturnWindow].output.returnWindowDays), \" day return window.\")"
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://ReturnEligibilityBody"
+                },
+                "output": {
+                  "response": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"orderId\":{\"type\":\"string\"},\"sku\":{\"type\":\"string\"},\"productName\":{\"type\":\"string\"},\"purchaseDate\":{\"type\":\"string\"},\"ageDays\":{\"type\":\"integer\",\"format\":\"int32\"},\"returnWindowDays\":{\"type\":\"integer\",\"format\":\"int32\"},\"eligible\":{\"type\":\"boolean\"},\"loyaltyTier\":{\"type\":\"string\"},\"reason\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"orderId\":{\"type\":\"string\"},\"sku\":{\"type\":\"string\"},\"productName\":{\"type\":\"string\"},\"purchaseDate\":{\"type\":\"string\"},\"ageDays\":{\"type\":\"integer\",\"format\":\"int32\"},\"returnWindowDays\":{\"type\":\"integer\",\"format\":\"int32\"},\"eligible\":{\"type\":\"boolean\"},\"loyaltyTier\":{\"type\":\"string\"},\"reason\":{\"type\":\"string\"}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Reply to API Call for api/orders/returns/eligibility GET",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[ConfigureHTTPResponse].code",
+                  "responseBody": "=$activity[ConfigureHTTPResponse].response"
+                }
+              }
+            }
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[BadRequest].code",
+                  "responseBody": "=$activity[BadRequest].response"
+                }
+              }
+            },
+            "id": "ReturnBadRequest",
+            "name": "ReturnBadRequest",
+            "description": "Reply with the branch response"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[NotFound].code",
+                  "responseBody": "=$activity[NotFound].response"
+                }
+              }
+            },
+            "id": "ReturnNotFound",
+            "name": "ReturnNotFound",
+            "description": "Reply with the branch response"
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6NTl9LCJMb2dfQVBJIjp7IngiOjM1MCwieSI6NTB9LCJCYWRSZXF1ZXN0Ijp7IngiOjYwMCwieSI6NTB9LCJSZWZlcmVuY2VEYXRhIjp7IngiOjYwMCwieSI6MjAwfSwiRmluZE9yZGVyIjp7IngiOjg1MCwieSI6MjAwfSwiTm90Rm91bmQiOnsieCI6MTEwMCwieSI6MjAwfSwiRmluZFByb2R1Y3QiOnsieCI6MTEwMCwieSI6MzUwfSwiRmluZEN1c3RvbWVyIjp7IngiOjEzNTAsInkiOjM1MH0sIlJldHVybldpbmRvdyI6eyJ4IjoxNjAwLCJ5IjozNTB9LCJDb25maWd1cmVIVFRQUmVzcG9uc2UiOnsieCI6MTg1MCwieSI6MzUwfSwiUmV0dXJuIjp7IngiOjIxMDAsInkiOjM1MH19",
+        "metadata": {
+          "input": [
+            {
+              "name": "queryParams",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"orderId\":{\"type\":\"string\"}}"
+              }
+            },
+            {
+              "name": "headers",
+              "type": "object"
+            },
+            {
+              "name": "requestURI",
+              "type": "string"
+            },
+            {
+              "name": "method",
+              "type": "string"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "responseBody",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\": \"object\", \"properties\": {\"queryParams\": {\"type\": \"object\", \"properties\": {\"orderId\": {\"type\": \"string\"}}}, \"headers\": {\"type\": \"object\"}, \"requestURI\": {\"type\": \"string\"}, \"method\": {\"type\": \"string\"}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:lookup_order_GET",
+      "data": {
+        "name": "lookup_order_GET",
+        "description": "Flow for api/orders/{orderId} GET",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Log_API",
+            "type": "label",
+            "label": "StartActivity to Log_API"
+          },
+          {
+            "id": 2,
+            "from": "Log_API",
+            "to": "BadRequest",
+            "type": "expression",
+            "label": "Log_API to BadRequest",
+            "value": "coerce.toString($flow.pathParams.orderId) == \"\""
+          },
+          {
+            "id": 3,
+            "from": "Log_API",
+            "to": "ReferenceData",
+            "type": "expression",
+            "label": "Log_API to ReferenceData",
+            "value": "coerce.toString($flow.pathParams.orderId) != \"\""
+          },
+          {
+            "id": 4,
+            "from": "ReferenceData",
+            "to": "FindOrder",
+            "type": "label",
+            "label": "ReferenceData to FindOrder"
+          },
+          {
+            "id": 5,
+            "from": "FindOrder",
+            "to": "NotFound",
+            "type": "expression",
+            "label": "FindOrder to NotFound",
+            "value": "array.count($activity[FindOrder].output.matches) == 0"
+          },
+          {
+            "id": 6,
+            "from": "FindOrder",
+            "to": "FindProduct",
+            "type": "expression",
+            "label": "FindOrder to FindProduct",
+            "value": "array.count($activity[FindOrder].output.matches) > 0"
+          },
+          {
+            "id": 7,
+            "from": "FindProduct",
+            "to": "FindCustomer",
+            "type": "label",
+            "label": "FindProduct to FindCustomer"
+          },
+          {
+            "id": 8,
+            "from": "FindCustomer",
+            "to": "ConfigureHTTPResponse",
+            "type": "label",
+            "label": "FindCustomer to ConfigureHTTPResponse"
+          },
+          {
+            "id": 9,
+            "from": "ConfigureHTTPResponse",
+            "to": "Return",
+            "type": "label",
+            "label": "ConfigureHTTPResponse to Return"
+          },
+          {
+            "id": 10,
+            "from": "BadRequest",
+            "to": "ReturnBadRequest",
+            "type": "label",
+            "label": "BadRequest to ReturnBadRequest"
+          },
+          {
+            "id": 11,
+            "from": "NotFound",
+            "to": "ReturnNotFound",
+            "type": "label",
+            "label": "NotFound to ReturnNotFound"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "Log_API",
+            "name": "Log_API",
+            "description": "Log API Call for api/orders/{orderId} GET",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "Log API call for lookup_order_GET",
+                "logLevel": "",
+                "loggerName": "",
+                "fieldPrefix": "",
+                "dynamicLogFields": {
+                  "mapping": {}
+                }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "BadRequest",
+            "name": "BadRequest",
+            "description": "HTTP 400 response",
+            "activity": {
+              "ref": "#httpresponse",
+              "input": {
+                "trigger": "order_service",
+                "responsecode": "400",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "error": "invalid_request",
+                      "message": "orderId is required"
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://ErrorBody"
+                },
+                "output": {
+                  "response": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"error\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"error\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "ReferenceData",
+            "name": "ReferenceData",
+            "description": "Embedded orders, products and customers (BW JsonParser literals)",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "orders": [
+                      {
+                        "orderId": "ORD-1001",
+                        "customerId": "CUST-001",
+                        "sku": "RUN-PEG-001",
+                        "purchaseDate": "2026-04-20",
+                        "pricePaid": 119,
+                        "channel": "store",
+                        "storeId": "SFO-001"
+                      },
+                      {
+                        "orderId": "ORD-1002",
+                        "customerId": "CUST-001",
+                        "sku": "FIT-WATCH-330",
+                        "purchaseDate": "2026-04-10",
+                        "pricePaid": 199,
+                        "channel": "online",
+                        "storeId": "WEB"
+                      },
+                      {
+                        "orderId": "ORD-1003",
+                        "customerId": "CUST-002",
+                        "sku": "JKT-RAIN-210",
+                        "purchaseDate": "2026-03-28",
+                        "pricePaid": 139,
+                        "channel": "store",
+                        "storeId": "OAK-002"
+                      },
+                      {
+                        "orderId": "ORD-1004",
+                        "customerId": "CUST-003",
+                        "sku": "ELC-EARBUD-808",
+                        "purchaseDate": "2026-05-02",
+                        "pricePaid": 109,
+                        "channel": "online",
+                        "storeId": "WEB"
+                      },
+                      {
+                        "orderId": "ORD-1005",
+                        "customerId": "CUST-004",
+                        "sku": "BAG-DAY-502",
+                        "purchaseDate": "2026-04-01",
+                        "pricePaid": 89,
+                        "channel": "store",
+                        "storeId": "SJC-003"
+                      }
+                    ],
+                    "products": [
+                      {
+                        "sku": "RUN-PEG-001",
+                        "name": "AeroStride Running Shoe",
+                        "brand": "Northstar",
+                        "category": "Footwear",
+                        "price": 129,
+                        "description": "Neutral daily running shoe with breathable mesh, cushioned foam, and reflective accents.",
+                        "attributes": {
+                          "color": "Blue",
+                          "gender": "Unisex",
+                          "use": "Road running",
+                          "returnWindowDays": 30,
+                          "warrantyMonths": 6
+                        }
+                      },
+                      {
+                        "sku": "RUN-TRAIL-024",
+                        "name": "RidgeGrip Trail Shoe",
+                        "brand": "SummitLab",
+                        "category": "Footwear",
+                        "price": 148,
+                        "description": "Trail running shoe with aggressive lugs, rock plate protection, and water-resistant upper.",
+                        "attributes": {
+                          "color": "Graphite",
+                          "gender": "Unisex",
+                          "use": "Trail running",
+                          "returnWindowDays": 30,
+                          "warrantyMonths": 6
+                        }
+                      },
+                      {
+                        "sku": "JKT-RAIN-210",
+                        "name": "CloudShield Rain Jacket",
+                        "brand": "HarborLine",
+                        "category": "Outerwear",
+                        "price": 139,
+                        "description": "Packable waterproof jacket with sealed seams, adjustable hood, and underarm vents.",
+                        "attributes": {
+                          "color": "Forest",
+                          "gender": "Unisex",
+                          "use": "Commuting and hiking",
+                          "returnWindowDays": 45,
+                          "warrantyMonths": 12
+                        }
+                      },
+                      {
+                        "sku": "JKT-SOFT-118",
+                        "name": "ThermaFlex Softshell Jacket",
+                        "brand": "SummitLab",
+                        "category": "Outerwear",
+                        "price": 159,
+                        "description": "Stretch softshell jacket with light fleece lining, wind resistance, and zippered hand pockets.",
+                        "attributes": {
+                          "color": "Black",
+                          "gender": "Unisex",
+                          "use": "Layering and travel",
+                          "returnWindowDays": 45,
+                          "warrantyMonths": 12
+                        }
+                      },
+                      {
+                        "sku": "BAG-DAY-502",
+                        "name": "MetroLite Daypack",
+                        "brand": "CivicCarry",
+                        "category": "Bags",
+                        "price": 89,
+                        "description": "Twenty-liter commuter backpack with laptop sleeve, water bottle pockets, and weather-resistant fabric.",
+                        "attributes": {
+                          "color": "Navy",
+                          "capacityLiters": 20,
+                          "use": "Commuting",
+                          "returnWindowDays": 45,
+                          "warrantyMonths": 24
+                        }
+                      },
+                      {
+                        "sku": "FIT-WATCH-330",
+                        "name": "PulseTrack Sport Watch",
+                        "brand": "Northstar",
+                        "category": "Electronics",
+                        "price": 199,
+                        "description": "GPS sport watch with wrist heart-rate tracking, sleep insights, and five-day battery life.",
+                        "attributes": {
+                          "color": "Black",
+                          "batteryDays": 5,
+                          "use": "Fitness tracking",
+                          "returnWindowDays": 14,
+                          "warrantyMonths": 12
+                        }
+                      },
+                      {
+                        "sku": "YGA-MAT-014",
+                        "name": "GripFlow Yoga Mat",
+                        "brand": "BalanceWorks",
+                        "category": "Fitness",
+                        "price": 58,
+                        "description": "Non-slip yoga mat made with dense natural rubber and alignment markers.",
+                        "attributes": {
+                          "color": "Sage",
+                          "thicknessMm": 5,
+                          "use": "Yoga and stretching",
+                          "returnWindowDays": 30,
+                          "warrantyMonths": 3
+                        }
+                      },
+                      {
+                        "sku": "BOT-INS-071",
+                        "name": "SummitSip Insulated Bottle",
+                        "brand": "HarborLine",
+                        "category": "Accessories",
+                        "price": 34,
+                        "description": "Twenty-four ounce stainless bottle that keeps drinks cold for 24 hours and hot for 12 hours.",
+                        "attributes": {
+                          "color": "Copper",
+                          "capacityOz": 24,
+                          "use": "Hydration",
+                          "returnWindowDays": 30,
+                          "warrantyMonths": 6
+                        }
+                      },
+                      {
+                        "sku": "ELC-EARBUD-808",
+                        "name": "ClearRun Wireless Earbuds",
+                        "brand": "CivicCarry",
+                        "category": "Electronics",
+                        "price": 119,
+                        "description": "Sweat-resistant wireless earbuds with transparency mode, compact charging case, and secure fit tips.",
+                        "attributes": {
+                          "color": "White",
+                          "batteryHours": 8,
+                          "use": "Running and commuting",
+                          "returnWindowDays": 14,
+                          "warrantyMonths": 12
+                        }
+                      },
+                      {
+                        "sku": "JKT-FLEECE-077",
+                        "name": "CanyonGrid Fleece Pullover",
+                        "brand": "Northstar",
+                        "category": "Outerwear",
+                        "price": 96,
+                        "description": "Warm grid-fleece pullover with quarter zip, breathable panels, and recycled polyester.",
+                        "attributes": {
+                          "color": "Burgundy",
+                          "gender": "Unisex",
+                          "use": "Casual layering",
+                          "returnWindowDays": 45,
+                          "warrantyMonths": 12
+                        }
+                      }
+                    ],
+                    "customers": [
+                      {
+                        "customerId": "CUST-001",
+                        "name": "Avery Chen",
+                        "loyaltyTier": "Gold",
+                        "preferredStoreId": "SFO-001",
+                        "preferences": [
+                          "running",
+                          "lightweight gear",
+                          "blue"
+                        ]
+                      },
+                      {
+                        "customerId": "CUST-002",
+                        "name": "Jordan Lee",
+                        "loyaltyTier": "Silver",
+                        "preferredStoreId": "OAK-002",
+                        "preferences": [
+                          "hiking",
+                          "waterproof outerwear"
+                        ]
+                      },
+                      {
+                        "customerId": "CUST-003",
+                        "name": "Priya Shah",
+                        "loyaltyTier": "Member",
+                        "preferredStoreId": "SFO-001",
+                        "preferences": [
+                          "fitness electronics",
+                          "commuting"
+                        ]
+                      },
+                      {
+                        "customerId": "CUST-004",
+                        "name": "Marcus Reed",
+                        "loyaltyTier": "Platinum",
+                        "preferredStoreId": "SJC-003",
+                        "preferences": [
+                          "travel",
+                          "bags",
+                          "hydration"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"orders\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"orderId\": {\n            \"type\": \"string\"\n          },\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"purchaseDate\": {\n            \"type\": \"string\"\n          },\n          \"pricePaid\": {\n            \"type\": \"integer\"\n          },\n          \"channel\": {\n            \"type\": \"string\"\n          },\n          \"storeId\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    },\n    \"products\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"brand\": {\n            \"type\": \"string\"\n          },\n          \"category\": {\n            \"type\": \"string\"\n          },\n          \"price\": {\n            \"type\": \"integer\"\n          },\n          \"description\": {\n            \"type\": \"string\"\n          },\n          \"attributes\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"color\": {\n                \"type\": \"string\"\n              },\n              \"gender\": {\n                \"type\": \"string\"\n              },\n              \"use\": {\n                \"type\": \"string\"\n              },\n              \"returnWindowDays\": {\n                \"type\": \"integer\"\n              },\n              \"warrantyMonths\": {\n                \"type\": \"integer\"\n              },\n              \"capacityLiters\": {\n                \"type\": \"integer\"\n              },\n              \"batteryDays\": {\n                \"type\": \"integer\"\n              },\n              \"thicknessMm\": {\n                \"type\": \"integer\"\n              },\n              \"capacityOz\": {\n                \"type\": \"integer\"\n              },\n              \"batteryHours\": {\n                \"type\": \"integer\"\n              }\n            }\n          }\n        }\n      }\n    },\n    \"customers\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"loyaltyTier\": {\n            \"type\": \"string\"\n          },\n          \"preferredStoreId\": {\n            \"type\": \"string\"\n          },\n          \"preferences\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"orders\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"orderId\": {\n            \"type\": \"string\"\n          },\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"purchaseDate\": {\n            \"type\": \"string\"\n          },\n          \"pricePaid\": {\n            \"type\": \"integer\"\n          },\n          \"channel\": {\n            \"type\": \"string\"\n          },\n          \"storeId\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    },\n    \"products\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"brand\": {\n            \"type\": \"string\"\n          },\n          \"category\": {\n            \"type\": \"string\"\n          },\n          \"price\": {\n            \"type\": \"integer\"\n          },\n          \"description\": {\n            \"type\": \"string\"\n          },\n          \"attributes\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"color\": {\n                \"type\": \"string\"\n              },\n              \"gender\": {\n                \"type\": \"string\"\n              },\n              \"use\": {\n                \"type\": \"string\"\n              },\n              \"returnWindowDays\": {\n                \"type\": \"integer\"\n              },\n              \"warrantyMonths\": {\n                \"type\": \"integer\"\n              },\n              \"capacityLiters\": {\n                \"type\": \"integer\"\n              },\n              \"batteryDays\": {\n                \"type\": \"integer\"\n              },\n              \"thicknessMm\": {\n                \"type\": \"integer\"\n              },\n              \"capacityOz\": {\n                \"type\": \"integer\"\n              },\n              \"batteryHours\": {\n                \"type\": \"integer\"\n              }\n            }\n          }\n        }\n      }\n    },\n    \"customers\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"loyaltyTier\": {\n            \"type\": \"string\"\n          },\n          \"preferredStoreId\": {\n            \"type\": \"string\"\n          },\n          \"preferences\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"orders\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"orderId\": {\n            \"type\": \"string\"\n          },\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"purchaseDate\": {\n            \"type\": \"string\"\n          },\n          \"pricePaid\": {\n            \"type\": \"integer\"\n          },\n          \"channel\": {\n            \"type\": \"string\"\n          },\n          \"storeId\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    },\n    \"products\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"brand\": {\n            \"type\": \"string\"\n          },\n          \"category\": {\n            \"type\": \"string\"\n          },\n          \"price\": {\n            \"type\": \"integer\"\n          },\n          \"description\": {\n            \"type\": \"string\"\n          },\n          \"attributes\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"color\": {\n                \"type\": \"string\"\n              },\n              \"gender\": {\n                \"type\": \"string\"\n              },\n              \"use\": {\n                \"type\": \"string\"\n              },\n              \"returnWindowDays\": {\n                \"type\": \"integer\"\n              },\n              \"warrantyMonths\": {\n                \"type\": \"integer\"\n              },\n              \"capacityLiters\": {\n                \"type\": \"integer\"\n              },\n              \"batteryDays\": {\n                \"type\": \"integer\"\n              },\n              \"thicknessMm\": {\n                \"type\": \"integer\"\n              },\n              \"capacityOz\": {\n                \"type\": \"integer\"\n              },\n              \"batteryHours\": {\n                \"type\": \"integer\"\n              }\n            }\n          }\n        }\n      }\n    },\n    \"customers\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"loyaltyTier\": {\n            \"type\": \"string\"\n          },\n          \"preferredStoreId\": {\n            \"type\": \"string\"\n          },\n          \"preferences\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"orders\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"orderId\": {\n            \"type\": \"string\"\n          },\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"purchaseDate\": {\n            \"type\": \"string\"\n          },\n          \"pricePaid\": {\n            \"type\": \"integer\"\n          },\n          \"channel\": {\n            \"type\": \"string\"\n          },\n          \"storeId\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    },\n    \"products\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"brand\": {\n            \"type\": \"string\"\n          },\n          \"category\": {\n            \"type\": \"string\"\n          },\n          \"price\": {\n            \"type\": \"integer\"\n          },\n          \"description\": {\n            \"type\": \"string\"\n          },\n          \"attributes\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"color\": {\n                \"type\": \"string\"\n              },\n              \"gender\": {\n                \"type\": \"string\"\n              },\n              \"use\": {\n                \"type\": \"string\"\n              },\n              \"returnWindowDays\": {\n                \"type\": \"integer\"\n              },\n              \"warrantyMonths\": {\n                \"type\": \"integer\"\n              },\n              \"capacityLiters\": {\n                \"type\": \"integer\"\n              },\n              \"batteryDays\": {\n                \"type\": \"integer\"\n              },\n              \"thicknessMm\": {\n                \"type\": \"integer\"\n              },\n              \"capacityOz\": {\n                \"type\": \"integer\"\n              },\n              \"batteryHours\": {\n                \"type\": \"integer\"\n              }\n            }\n          }\n        }\n      }\n    },\n    \"customers\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"loyaltyTier\": {\n            \"type\": \"string\"\n          },\n          \"preferredStoreId\": {\n            \"type\": \"string\"\n          },\n          \"preferences\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "FindOrder",
+            "name": "FindOrder",
+            "description": "Order with the requested id (BW for-each[orderId = $param])",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "matches": {
+                      "@foreach($activity[ReferenceData].output.orders,o, $loop[o].orderId == $flow.pathParams.orderId)": {
+                        "orderId": "=$loop[o].orderId",
+                        "customerId": "=$loop[o].customerId",
+                        "sku": "=$loop[o].sku",
+                        "purchaseDate": "=$loop[o].purchaseDate",
+                        "pricePaid": "=$loop[o].pricePaid",
+                        "channel": "=$loop[o].channel",
+                        "storeId": "=$loop[o].storeId"
+                      }
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"orderId\": {\n            \"type\": \"string\"\n          },\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"purchaseDate\": {\n            \"type\": \"string\"\n          },\n          \"pricePaid\": {\n            \"type\": \"integer\"\n          },\n          \"channel\": {\n            \"type\": \"string\"\n          },\n          \"storeId\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"orderId\": {\n            \"type\": \"string\"\n          },\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"purchaseDate\": {\n            \"type\": \"string\"\n          },\n          \"pricePaid\": {\n            \"type\": \"integer\"\n          },\n          \"channel\": {\n            \"type\": \"string\"\n          },\n          \"storeId\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"orderId\": {\n            \"type\": \"string\"\n          },\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"purchaseDate\": {\n            \"type\": \"string\"\n          },\n          \"pricePaid\": {\n            \"type\": \"integer\"\n          },\n          \"channel\": {\n            \"type\": \"string\"\n          },\n          \"storeId\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"orderId\": {\n            \"type\": \"string\"\n          },\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"purchaseDate\": {\n            \"type\": \"string\"\n          },\n          \"pricePaid\": {\n            \"type\": \"integer\"\n          },\n          \"channel\": {\n            \"type\": \"string\"\n          },\n          \"storeId\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "NotFound",
+            "name": "NotFound",
+            "description": "HTTP 404 response",
+            "activity": {
+              "ref": "#httpresponse",
+              "input": {
+                "trigger": "order_service",
+                "responsecode": "404",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "error": "order_not_found",
+                      "message": "=string.concat(\"No order found with id \", $flow.pathParams.orderId)"
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://ErrorBody"
+                },
+                "output": {
+                  "response": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"error\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"error\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "FindProduct",
+            "name": "FindProduct",
+            "description": "Product of the order (BW for-each[sku = current()/sku])",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "matches": {
+                      "@foreach($activity[ReferenceData].output.products,p, $loop[p].sku == $activity[FindOrder].output.matches[0].sku)": {
+                        "sku": "=$loop[p].sku",
+                        "name": "=$loop[p].name",
+                        "brand": "=$loop[p].brand",
+                        "category": "=$loop[p].category",
+                        "price": "=$loop[p].price",
+                        "description": "=$loop[p].description",
+                        "attributes": "=$loop[p].attributes"
+                      }
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"brand\": {\n            \"type\": \"string\"\n          },\n          \"category\": {\n            \"type\": \"string\"\n          },\n          \"price\": {\n            \"type\": \"integer\"\n          },\n          \"description\": {\n            \"type\": \"string\"\n          },\n          \"attributes\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"color\": {\n                \"type\": \"string\"\n              },\n              \"gender\": {\n                \"type\": \"string\"\n              },\n              \"use\": {\n                \"type\": \"string\"\n              },\n              \"returnWindowDays\": {\n                \"type\": \"integer\"\n              },\n              \"warrantyMonths\": {\n                \"type\": \"integer\"\n              },\n              \"capacityLiters\": {\n                \"type\": \"integer\"\n              },\n              \"batteryDays\": {\n                \"type\": \"integer\"\n              },\n              \"thicknessMm\": {\n                \"type\": \"integer\"\n              },\n              \"capacityOz\": {\n                \"type\": \"integer\"\n              },\n              \"batteryHours\": {\n                \"type\": \"integer\"\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"brand\": {\n            \"type\": \"string\"\n          },\n          \"category\": {\n            \"type\": \"string\"\n          },\n          \"price\": {\n            \"type\": \"integer\"\n          },\n          \"description\": {\n            \"type\": \"string\"\n          },\n          \"attributes\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"color\": {\n                \"type\": \"string\"\n              },\n              \"gender\": {\n                \"type\": \"string\"\n              },\n              \"use\": {\n                \"type\": \"string\"\n              },\n              \"returnWindowDays\": {\n                \"type\": \"integer\"\n              },\n              \"warrantyMonths\": {\n                \"type\": \"integer\"\n              },\n              \"capacityLiters\": {\n                \"type\": \"integer\"\n              },\n              \"batteryDays\": {\n                \"type\": \"integer\"\n              },\n              \"thicknessMm\": {\n                \"type\": \"integer\"\n              },\n              \"capacityOz\": {\n                \"type\": \"integer\"\n              },\n              \"batteryHours\": {\n                \"type\": \"integer\"\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"brand\": {\n            \"type\": \"string\"\n          },\n          \"category\": {\n            \"type\": \"string\"\n          },\n          \"price\": {\n            \"type\": \"integer\"\n          },\n          \"description\": {\n            \"type\": \"string\"\n          },\n          \"attributes\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"color\": {\n                \"type\": \"string\"\n              },\n              \"gender\": {\n                \"type\": \"string\"\n              },\n              \"use\": {\n                \"type\": \"string\"\n              },\n              \"returnWindowDays\": {\n                \"type\": \"integer\"\n              },\n              \"warrantyMonths\": {\n                \"type\": \"integer\"\n              },\n              \"capacityLiters\": {\n                \"type\": \"integer\"\n              },\n              \"batteryDays\": {\n                \"type\": \"integer\"\n              },\n              \"thicknessMm\": {\n                \"type\": \"integer\"\n              },\n              \"capacityOz\": {\n                \"type\": \"integer\"\n              },\n              \"batteryHours\": {\n                \"type\": \"integer\"\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"sku\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"brand\": {\n            \"type\": \"string\"\n          },\n          \"category\": {\n            \"type\": \"string\"\n          },\n          \"price\": {\n            \"type\": \"integer\"\n          },\n          \"description\": {\n            \"type\": \"string\"\n          },\n          \"attributes\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"color\": {\n                \"type\": \"string\"\n              },\n              \"gender\": {\n                \"type\": \"string\"\n              },\n              \"use\": {\n                \"type\": \"string\"\n              },\n              \"returnWindowDays\": {\n                \"type\": \"integer\"\n              },\n              \"warrantyMonths\": {\n                \"type\": \"integer\"\n              },\n              \"capacityLiters\": {\n                \"type\": \"integer\"\n              },\n              \"batteryDays\": {\n                \"type\": \"integer\"\n              },\n              \"thicknessMm\": {\n                \"type\": \"integer\"\n              },\n              \"capacityOz\": {\n                \"type\": \"integer\"\n              },\n              \"batteryHours\": {\n                \"type\": \"integer\"\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "FindCustomer",
+            "name": "FindCustomer",
+            "description": "Customer of the order (BW for-each[customerId = current()/customerId])",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "matches": {
+                      "@foreach($activity[ReferenceData].output.customers,c, $loop[c].customerId == $activity[FindOrder].output.matches[0].customerId)": {
+                        "customerId": "=$loop[c].customerId",
+                        "name": "=$loop[c].name",
+                        "loyaltyTier": "=$loop[c].loyaltyTier",
+                        "preferredStoreId": "=$loop[c].preferredStoreId",
+                        "preferences": "=$loop[c].preferences"
+                      }
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"loyaltyTier\": {\n            \"type\": \"string\"\n          },\n          \"preferredStoreId\": {\n            \"type\": \"string\"\n          },\n          \"preferences\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"loyaltyTier\": {\n            \"type\": \"string\"\n          },\n          \"preferredStoreId\": {\n            \"type\": \"string\"\n          },\n          \"preferences\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"loyaltyTier\": {\n            \"type\": \"string\"\n          },\n          \"preferredStoreId\": {\n            \"type\": \"string\"\n          },\n          \"preferences\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"customerId\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"loyaltyTier\": {\n            \"type\": \"string\"\n          },\n          \"preferredStoreId\": {\n            \"type\": \"string\"\n          },\n          \"preferences\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "ConfigureHTTPResponse",
+            "name": "ConfigureHTTPResponse",
+            "description": "Configure HTTP Response Activity",
+            "activity": {
+              "ref": "#httpresponse",
+              "input": {
+                "trigger": "order_service",
+                "responsecode": "200",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "orderId": "=$activity[FindOrder].output.matches[0].orderId",
+                      "customerId": "=$activity[FindOrder].output.matches[0].customerId",
+                      "sku": "=$activity[FindOrder].output.matches[0].sku",
+                      "purchaseDate": "=$activity[FindOrder].output.matches[0].purchaseDate",
+                      "channel": "=$activity[FindOrder].output.matches[0].channel",
+                      "storeId": "=$activity[FindOrder].output.matches[0].storeId",
+                      "product": {
+                        "sku": "=$activity[FindProduct].output.matches[0].sku",
+                        "name": "=$activity[FindProduct].output.matches[0].name",
+                        "brand": "=$activity[FindProduct].output.matches[0].brand",
+                        "category": "=$activity[FindProduct].output.matches[0].category",
+                        "price": "=$activity[FindProduct].output.matches[0].price",
+                        "description": "=$activity[FindProduct].output.matches[0].description"
+                      },
+                      "customer": {
+                        "customerId": "=$activity[FindCustomer].output.matches[0].customerId",
+                        "loyaltyTier": "=$activity[FindCustomer].output.matches[0].loyaltyTier",
+                        "preferredStoreId": "=$activity[FindCustomer].output.matches[0].preferredStoreId"
+                      }
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://LookupOrderBody"
+                },
+                "output": {
+                  "response": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"orderId\":{\"type\":\"string\"},\"customerId\":{\"type\":\"string\"},\"sku\":{\"type\":\"string\"},\"purchaseDate\":{\"type\":\"string\"},\"channel\":{\"type\":\"string\"},\"storeId\":{\"type\":\"string\"},\"product\":{\"type\":\"object\",\"properties\":{\"sku\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"brand\":{\"type\":\"string\"},\"category\":{\"type\":\"string\"},\"price\":{\"type\":\"integer\",\"format\":\"int32\"},\"description\":{\"type\":\"string\"}}},\"customer\":{\"type\":\"object\",\"properties\":{\"customerId\":{\"type\":\"string\"},\"loyaltyTier\":{\"type\":\"string\"},\"preferredStoreId\":{\"type\":\"string\"}}}}}}}",
+                    "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"orderId\":{\"type\":\"string\"},\"customerId\":{\"type\":\"string\"},\"sku\":{\"type\":\"string\"},\"purchaseDate\":{\"type\":\"string\"},\"channel\":{\"type\":\"string\"},\"storeId\":{\"type\":\"string\"},\"product\":{\"type\":\"object\",\"properties\":{\"sku\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"brand\":{\"type\":\"string\"},\"category\":{\"type\":\"string\"},\"price\":{\"type\":\"integer\",\"format\":\"int32\"},\"description\":{\"type\":\"string\"}}},\"customer\":{\"type\":\"object\",\"properties\":{\"customerId\":{\"type\":\"string\"},\"loyaltyTier\":{\"type\":\"string\"},\"preferredStoreId\":{\"type\":\"string\"}}}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Reply to API Call for api/orders/{orderId} GET",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[ConfigureHTTPResponse].code",
+                  "responseBody": "=$activity[ConfigureHTTPResponse].response"
+                }
+              }
+            }
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[BadRequest].code",
+                  "responseBody": "=$activity[BadRequest].response"
+                }
+              }
+            },
+            "id": "ReturnBadRequest",
+            "name": "ReturnBadRequest",
+            "description": "Reply with the branch response"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[NotFound].code",
+                  "responseBody": "=$activity[NotFound].response"
+                }
+              }
+            },
+            "id": "ReturnNotFound",
+            "name": "ReturnNotFound",
+            "description": "Reply with the branch response"
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6NTl9LCJMb2dfQVBJIjp7IngiOjM1MCwieSI6NTB9LCJCYWRSZXF1ZXN0Ijp7IngiOjYwMCwieSI6NTB9LCJSZWZlcmVuY2VEYXRhIjp7IngiOjYwMCwieSI6MjAwfSwiRmluZE9yZGVyIjp7IngiOjg1MCwieSI6MjAwfSwiTm90Rm91bmQiOnsieCI6MTEwMCwieSI6MjAwfSwiRmluZFByb2R1Y3QiOnsieCI6MTEwMCwieSI6MzUwfSwiRmluZEN1c3RvbWVyIjp7IngiOjEzNTAsInkiOjM1MH0sIkNvbmZpZ3VyZUhUVFBSZXNwb25zZSI6eyJ4IjoxNjAwLCJ5IjozNTB9LCJSZXR1cm4iOnsieCI6MTg1MCwieSI6MzUwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "pathParams",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"orderId\":{\"type\":\"string\"}}"
+              }
+            },
+            {
+              "name": "multipartFormData",
+              "type": "object"
+            },
+            {
+              "name": "requestURI",
+              "type": "string"
+            },
+            {
+              "name": "method",
+              "type": "string"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "responseBody",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"order_service\",\"properties\":{\"pathParams\":{\"type\":\"object\",\"properties\":{\"orderId\":{\"type\":\"string\"}},\"required\":[\"orderId\"]},\"multipartFormData\":{\"type\":\"object\"},\"requestURI\":{\"type\":\"string\",\"required\":false},\"method\":{\"type\":\"string\",\"required\":false}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:mcp_lookup_order",
+      "data": {
+        "name": "mcp_lookup_order",
+        "description": "MCP tool lookup_order: calls lookup_order_GET and returns its body",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "CallOperation",
+            "type": "label",
+            "label": "StartActivity to CallOperation"
+          },
+          {
+            "id": 2,
+            "from": "CallOperation",
+            "to": "Return",
+            "type": "label",
+            "label": "CallOperation to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "CallOperation",
+            "name": "CallOperation",
+            "description": "Run lookup_order_GET (the REST operation)",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#subflow",
+              "settings": {
+                "flowURI": "res://flow:lookup_order_GET",
+                "detached": false,
+                "execTimeout": 0,
+                "transactional": false,
+                "transactionConnection": ""
+              },
+              "input": {
+                "input": {
+                  "mapping": {}
+                },
+                "pathParams": "=$flow.arguments"
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"title\":\"order_service\",\"properties\":{\"pathParams\":{\"type\":\"object\",\"properties\":{\"orderId\":{\"type\":\"string\"}},\"required\":[\"orderId\"]},\"multipartFormData\":{\"type\":\"object\"},\"requestURI\":{\"type\":\"string\",\"required\":false},\"method\":{\"type\":\"string\",\"required\":false}}}",
+                    "fe_metadata": "{\"type\":\"object\",\"title\":\"order_service\",\"properties\":{\"pathParams\":{\"type\":\"object\",\"properties\":{\"orderId\":{\"type\":\"string\"}},\"required\":[\"orderId\"]},\"multipartFormData\":{\"type\":\"object\"},\"requestURI\":{\"type\":\"string\",\"required\":false},\"method\":{\"type\":\"string\",\"required\":false}}}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Return the REST body as the tool result",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=utility.renderJSON($activity[CallOperation].responseBody.body, false)",
+                      "error": "=$activity[CallOperation].code >= 400 ? utility.renderJSON($activity[CallOperation].responseBody.body, false) : \"\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo0NX0sIkNhbGxPcGVyYXRpb24iOnsieCI6MjUwLCJ5Ijo0NX0sIlJldHVybiI6eyJ4Ijo0NTAsInkiOjQ1fX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"mcp_server\",\"properties\":{\"arguments\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:mcp_check_return_eligibility",
+      "data": {
+        "name": "mcp_check_return_eligibility",
+        "description": "MCP tool check_return_eligibility: calls check_return_eligibility_GET and returns its body",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "CallOperation",
+            "type": "label",
+            "label": "StartActivity to CallOperation"
+          },
+          {
+            "id": 2,
+            "from": "CallOperation",
+            "to": "Return",
+            "type": "label",
+            "label": "CallOperation to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "CallOperation",
+            "name": "CallOperation",
+            "description": "Run check_return_eligibility_GET (the REST operation)",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#subflow",
+              "settings": {
+                "flowURI": "res://flow:check_return_eligibility_GET",
+                "detached": false,
+                "execTimeout": 0,
+                "transactional": false,
+                "transactionConnection": ""
+              },
+              "input": {
+                "input": {
+                  "mapping": {}
+                },
+                "queryParams": "=$flow.arguments"
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"type\": \"object\", \"properties\": {\"queryParams\": {\"type\": \"object\", \"properties\": {\"orderId\": {\"type\": \"string\"}}}, \"headers\": {\"type\": \"object\"}, \"requestURI\": {\"type\": \"string\"}, \"method\": {\"type\": \"string\"}}}",
+                    "fe_metadata": "{\"type\": \"object\", \"properties\": {\"queryParams\": {\"type\": \"object\", \"properties\": {\"orderId\": {\"type\": \"string\"}}}, \"headers\": {\"type\": \"object\"}, \"requestURI\": {\"type\": \"string\"}, \"method\": {\"type\": \"string\"}}}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Return the REST body as the tool result",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=utility.renderJSON($activity[CallOperation].responseBody.body, false)",
+                      "error": "=$activity[CallOperation].code >= 400 ? utility.renderJSON($activity[CallOperation].responseBody.body, false) : \"\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo0NX0sIkNhbGxPcGVyYXRpb24iOnsieCI6MjUwLCJ5Ijo0NX0sIlJldHVybiI6eyJ4Ijo0NTAsInkiOjQ1fX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"mcp_server\",\"properties\":{\"arguments\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:mcp_create_return_authorization",
+      "data": {
+        "name": "mcp_create_return_authorization",
+        "description": "MCP tool create_return_authorization: calls create_return_authorization_POST and returns its body",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "CallOperation",
+            "type": "label",
+            "label": "StartActivity to CallOperation"
+          },
+          {
+            "id": 2,
+            "from": "CallOperation",
+            "to": "Return",
+            "type": "label",
+            "label": "CallOperation to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "CallOperation",
+            "name": "CallOperation",
+            "description": "Run create_return_authorization_POST (the REST operation)",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#subflow",
+              "settings": {
+                "flowURI": "res://flow:create_return_authorization_POST",
+                "detached": false,
+                "execTimeout": 0,
+                "transactional": false,
+                "transactionConnection": ""
+              },
+              "input": {
+                "input": {
+                  "mapping": {}
+                },
+                "body": "=$flow.arguments"
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"orderId\":{\"type\":\"string\"}}},\"multipartFormData\":{\"type\":\"object\",\"properties\":{}},\"requestURI\":{\"type\":\"string\"},\"method\":{\"type\":\"string\"}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"orderId\":{\"type\":\"string\"}}},\"multipartFormData\":{\"type\":\"object\",\"properties\":{}},\"requestURI\":{\"type\":\"string\"},\"method\":{\"type\":\"string\"}}}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Return the REST body as the tool result",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=utility.renderJSON($activity[CallOperation].responseBody.body, false)",
+                      "error": "=$activity[CallOperation].code >= 400 ? utility.renderJSON($activity[CallOperation].responseBody.body, false) : \"\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo0NX0sIkNhbGxPcGVyYXRpb24iOnsieCI6MjUwLCJ5Ijo0NX0sIlJldHVybiI6eyJ4Ijo0NTAsInkiOjQ1fX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object"
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"mcp_server\",\"properties\":{\"arguments\":{\"type\":\"object\",\"properties\":{}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "REST_PORT",
+      "type": "float64",
+      "value": 18081
+    },
+    {
+      "name": "MCP_PORT",
+      "type": "string",
+      "value": "19181"
+    }
+  ],
+  "schemas": {
+    "ErrorBody": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"error\": {\n          \"type\": \"string\"\n        },\n        \"message\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"error\": {\n          \"type\": \"string\"\n        },\n        \"message\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}"
+    },
+    "LookupOrderBody": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"orderId\": {\n          \"type\": \"string\"\n        },\n        \"customerId\": {\n          \"type\": \"string\"\n        },\n        \"sku\": {\n          \"type\": \"string\"\n        },\n        \"purchaseDate\": {\n          \"type\": \"string\"\n        },\n        \"channel\": {\n          \"type\": \"string\"\n        },\n        \"storeId\": {\n          \"type\": \"string\"\n        },\n        \"product\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"sku\": {\n              \"type\": \"string\"\n            },\n            \"name\": {\n              \"type\": \"string\"\n            },\n            \"brand\": {\n              \"type\": \"string\"\n            },\n            \"category\": {\n              \"type\": \"string\"\n            },\n            \"price\": {\n              \"type\": \"integer\",\n              \"format\": \"int32\"\n            },\n            \"description\": {\n              \"type\": \"string\"\n            }\n          }\n        },\n        \"customer\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"customerId\": {\n              \"type\": \"string\"\n            },\n            \"loyaltyTier\": {\n              \"type\": \"string\"\n            },\n            \"preferredStoreId\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"orderId\": {\n          \"type\": \"string\"\n        },\n        \"customerId\": {\n          \"type\": \"string\"\n        },\n        \"sku\": {\n          \"type\": \"string\"\n        },\n        \"purchaseDate\": {\n          \"type\": \"string\"\n        },\n        \"channel\": {\n          \"type\": \"string\"\n        },\n        \"storeId\": {\n          \"type\": \"string\"\n        },\n        \"product\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"sku\": {\n              \"type\": \"string\"\n            },\n            \"name\": {\n              \"type\": \"string\"\n            },\n            \"brand\": {\n              \"type\": \"string\"\n            },\n            \"category\": {\n              \"type\": \"string\"\n            },\n            \"price\": {\n              \"type\": \"integer\",\n              \"format\": \"int32\"\n            },\n            \"description\": {\n              \"type\": \"string\"\n            }\n          }\n        },\n        \"customer\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"customerId\": {\n              \"type\": \"string\"\n            },\n            \"loyaltyTier\": {\n              \"type\": \"string\"\n            },\n            \"preferredStoreId\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    }\n  }\n}"
+    },
+    "ReturnEligibilityBody": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"orderId\": {\n          \"type\": \"string\"\n        },\n        \"sku\": {\n          \"type\": \"string\"\n        },\n        \"productName\": {\n          \"type\": \"string\"\n        },\n        \"purchaseDate\": {\n          \"type\": \"string\"\n        },\n        \"ageDays\": {\n          \"type\": \"integer\",\n          \"format\": \"int32\"\n        },\n        \"returnWindowDays\": {\n          \"type\": \"integer\",\n          \"format\": \"int32\"\n        },\n        \"eligible\": {\n          \"type\": \"boolean\"\n        },\n        \"loyaltyTier\": {\n          \"type\": \"string\"\n        },\n        \"reason\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"orderId\": {\n          \"type\": \"string\"\n        },\n        \"sku\": {\n          \"type\": \"string\"\n        },\n        \"productName\": {\n          \"type\": \"string\"\n        },\n        \"purchaseDate\": {\n          \"type\": \"string\"\n        },\n        \"ageDays\": {\n          \"type\": \"integer\",\n          \"format\": \"int32\"\n        },\n        \"returnWindowDays\": {\n          \"type\": \"integer\",\n          \"format\": \"int32\"\n        },\n        \"eligible\": {\n          \"type\": \"boolean\"\n        },\n        \"loyaltyTier\": {\n          \"type\": \"string\"\n        },\n        \"reason\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}"
+    },
+    "CreateReturnBody": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"approvalRequired\": {\n          \"type\": \"boolean\"\n        },\n        \"tool\": {\n          \"type\": \"string\"\n        },\n        \"arguments\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"orderId\": {\n              \"type\": \"string\"\n            }\n          }\n        },\n        \"message\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"approvalRequired\": {\n          \"type\": \"boolean\"\n        },\n        \"tool\": {\n          \"type\": \"string\"\n        },\n        \"arguments\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"orderId\": {\n              \"type\": \"string\"\n            }\n          }\n        },\n        \"message\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}"
+    }
+  },
+  "specs": {
+    "28d7be5c-13b4-47fa-b5f3-306e708c4c9f": {
+      "id": "28d7be5c-13b4-47fa-b5f3-306e708c4c9f",
+      "name": "BW6Spec",
+      "type": "OpenAPI",
+      "version": "1.0.0",
+      "content": "eyJvcGVuYXBpIjoiMy4wLjAiLCJpbmZvIjp7InZlcnNpb24iOiIxLjAiLCJ0aXRsZSI6Im9yZGVyIHNlcnZpY2UiLCJkZXNjcmlwdGlvbiI6Im9yZGVyIHNlcnZpY2UifSwic2VydmVycyI6W3sidXJsIjoiaHR0cDovL2xvY2FsaG9zdDoxOTA4MS8ifV0sInBhdGhzIjp7Ii9hcGkvb3JkZXJzL3JldHVybi1hdXRob3JpemF0aW9ucyI6eyJwb3N0Ijp7InN1bW1hcnkiOiJwb3N0T3JkZXIiLCJkZXNjcmlwdGlvbiI6InBvc3RPcmRlciIsIm9wZXJhdGlvbklkIjoiY3JlYXRlX3JldHVybl9hdXRob3JpemF0aW9uIiwicGFyYW1ldGVycyI6W10sInJlcXVlc3RCb2R5Ijp7InJlcXVpcmVkIjp0cnVlLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7Im9yZGVySWQiOnsidHlwZSI6InN0cmluZyJ9fX19fX0sInJlc3BvbnNlcyI6eyIyMDAiOnsiZGVzY3JpcHRpb24iOiJhIFBvc3RPcmRlckF1dGhSZXNwb25zZUVsZW1lbnQgdG8gYmUgcmV0dXJuZWQiLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImFwcHJvdmFsUmVxdWlyZWQiOnsidHlwZSI6ImJvb2xlYW4ifSwidG9vbCI6eyJ0eXBlIjoic3RyaW5nIn0sImFyZ3VtZW50cyI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJvcmRlcklkIjp7InR5cGUiOiJzdHJpbmcifX19LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmcifX19fX19LCIyMDIiOnsiZGVzY3JpcHRpb24iOiJBY2NlcHRlZCIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6InN0cmluZyJ9fX19LCI0MDAiOnsiZGVzY3JpcHRpb24iOiJJbnZhbGlkIG9yIG1pc3NpbmcgaW5wdXQiLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImVycm9yIjp7InR5cGUiOiJzdHJpbmcifSwibWVzc2FnZSI6eyJ0eXBlIjoic3RyaW5nIn19fX19fSwiNDAzIjp7ImRlc2NyaXB0aW9uIjoiTm90IGFsbG93ZWQiLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImVycm9yIjp7InR5cGUiOiJzdHJpbmcifSwibWVzc2FnZSI6eyJ0eXBlIjoic3RyaW5nIn19fX19fSwiNDA0Ijp7ImRlc2NyaXB0aW9uIjoiUmVxdWVzdGVkIGl0ZW0gbm90IGZvdW5kIiwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJlcnJvciI6eyJ0eXBlIjoic3RyaW5nIn0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX0sIjQwOSI6eyJkZXNjcmlwdGlvbiI6IkNvbmZsaWN0IHdpdGggdGhlIGN1cnJlbnQgc3RhdGUiLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImVycm9yIjp7InR5cGUiOiJzdHJpbmcifSwibWVzc2FnZSI6eyJ0eXBlIjoic3RyaW5nIn19fX19fSwiNDIyIjp7ImRlc2NyaXB0aW9uIjoiUmVxdWVzdCB1bmRlcnN0b29kIGJ1dCBjYW5ub3QgYmUgcHJvY2Vzc2VkIiwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJlcnJvciI6eyJ0eXBlIjoic3RyaW5nIn0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX0sIjUwMCI6eyJkZXNjcmlwdGlvbiI6IlVuZXhwZWN0ZWQgZXJyb3IiLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImVycm9yIjp7InR5cGUiOiJzdHJpbmcifSwibWVzc2FnZSI6eyJ0eXBlIjoic3RyaW5nIn19fX19fX19fSwiL2FwaS9vcmRlcnMvcmV0dXJucy9lbGlnaWJpbGl0eSI6eyJnZXQiOnsic3VtbWFyeSI6ImdldE9yZGVyIiwiZGVzY3JpcHRpb24iOiJnZXRPcmRlciIsIm9wZXJhdGlvbklkIjoiY2hlY2tfcmV0dXJuX2VsaWdpYmlsaXR5IiwicGFyYW1ldGVycyI6W3sibmFtZSI6Im9yZGVySWQiLCJpbiI6InF1ZXJ5IiwiZGVzY3JpcHRpb24iOiIiLCJzY2hlbWEiOnsidHlwZSI6InN0cmluZyJ9LCJyZXF1aXJlZCI6dHJ1ZX1dLCJyZXNwb25zZXMiOnsiMjAwIjp7ImRlc2NyaXB0aW9uIjoiYSBHZXRPcmRlclJldHVyblJlc3BvbnNlRWxlbWVudCB0byBiZSByZXR1cm5lZCIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsib3JkZXJJZCI6eyJ0eXBlIjoic3RyaW5nIn0sInNrdSI6eyJ0eXBlIjoic3RyaW5nIn0sInByb2R1Y3ROYW1lIjp7InR5cGUiOiJzdHJpbmcifSwicHVyY2hhc2VEYXRlIjp7InR5cGUiOiJzdHJpbmcifSwiYWdlRGF5cyI6eyJ0eXBlIjoiaW50ZWdlciIsImZvcm1hdCI6ImludDMyIn0sInJldHVybldpbmRvd0RheXMiOnsidHlwZSI6ImludGVnZXIiLCJmb3JtYXQiOiJpbnQzMiJ9LCJlbGlnaWJsZSI6eyJ0eXBlIjoiYm9vbGVhbiJ9LCJsb3lhbHR5VGllciI6eyJ0eXBlIjoic3RyaW5nIn0sInJlYXNvbiI6eyJ0eXBlIjoic3RyaW5nIn19fX19fSwiNDAwIjp7ImRlc2NyaXB0aW9uIjoiSW52YWxpZCBvciBtaXNzaW5nIGlucHV0IiwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJlcnJvciI6eyJ0eXBlIjoic3RyaW5nIn0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX0sIjQwMyI6eyJkZXNjcmlwdGlvbiI6Ik5vdCBhbGxvd2VkIiwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJlcnJvciI6eyJ0eXBlIjoic3RyaW5nIn0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX0sIjQwNCI6eyJkZXNjcmlwdGlvbiI6IlJlcXVlc3RlZCBpdGVtIG5vdCBmb3VuZCIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiZXJyb3IiOnsidHlwZSI6InN0cmluZyJ9LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmcifX19fX19LCI0MDkiOnsiZGVzY3JpcHRpb24iOiJDb25mbGljdCB3aXRoIHRoZSBjdXJyZW50IHN0YXRlIiwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJlcnJvciI6eyJ0eXBlIjoic3RyaW5nIn0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX0sIjQyMiI6eyJkZXNjcmlwdGlvbiI6IlJlcXVlc3QgdW5kZXJzdG9vZCBidXQgY2Fubm90IGJlIHByb2Nlc3NlZCIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiZXJyb3IiOnsidHlwZSI6InN0cmluZyJ9LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmcifX19fX19LCI1MDAiOnsiZGVzY3JpcHRpb24iOiJVbmV4cGVjdGVkIGVycm9yIiwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJlcnJvciI6eyJ0eXBlIjoic3RyaW5nIn0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX19fX0sIi9hcGkvb3JkZXJzL3tvcmRlcklkfSI6eyJnZXQiOnsic3VtbWFyeSI6ImdldE9yZGVyIiwiZGVzY3JpcHRpb24iOiJnZXRPcmRlciIsIm9wZXJhdGlvbklkIjoibG9va3VwX29yZGVyIiwicGFyYW1ldGVycyI6W3sibmFtZSI6Im9yZGVySWQiLCJpbiI6InBhdGgiLCJkZXNjcmlwdGlvbiI6IiIsInNjaGVtYSI6eyJ0eXBlIjoic3RyaW5nIn0sInJlcXVpcmVkIjp0cnVlfV0sInJlc3BvbnNlcyI6eyIyMDAiOnsiZGVzY3JpcHRpb24iOiJhIEdldE9yZGVyUmVzcG9uc2VFbGVtZW50IHRvIGJlIHJldHVybmVkIiwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJvcmRlcklkIjp7InR5cGUiOiJzdHJpbmcifSwiY3VzdG9tZXJJZCI6eyJ0eXBlIjoic3RyaW5nIn0sInNrdSI6eyJ0eXBlIjoic3RyaW5nIn0sInB1cmNoYXNlRGF0ZSI6eyJ0eXBlIjoic3RyaW5nIn0sImNoYW5uZWwiOnsidHlwZSI6InN0cmluZyJ9LCJzdG9yZUlkIjp7InR5cGUiOiJzdHJpbmcifSwicHJvZHVjdCI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJza3UiOnsidHlwZSI6InN0cmluZyJ9LCJuYW1lIjp7InR5cGUiOiJzdHJpbmcifSwiYnJhbmQiOnsidHlwZSI6InN0cmluZyJ9LCJjYXRlZ29yeSI6eyJ0eXBlIjoic3RyaW5nIn0sInByaWNlIjp7InR5cGUiOiJpbnRlZ2VyIiwiZm9ybWF0IjoiaW50MzIifSwiZGVzY3JpcHRpb24iOnsidHlwZSI6InN0cmluZyJ9fX0sImN1c3RvbWVyIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImN1c3RvbWVySWQiOnsidHlwZSI6InN0cmluZyJ9LCJsb3lhbHR5VGllciI6eyJ0eXBlIjoic3RyaW5nIn0sInByZWZlcnJlZFN0b3JlSWQiOnsidHlwZSI6InN0cmluZyJ9fX19fX19fSwiNDAwIjp7ImRlc2NyaXB0aW9uIjoiSW52YWxpZCBvciBtaXNzaW5nIGlucHV0IiwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJlcnJvciI6eyJ0eXBlIjoic3RyaW5nIn0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX0sIjQwMyI6eyJkZXNjcmlwdGlvbiI6Ik5vdCBhbGxvd2VkIiwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJlcnJvciI6eyJ0eXBlIjoic3RyaW5nIn0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX0sIjQwNCI6eyJkZXNjcmlwdGlvbiI6IlJlcXVlc3RlZCBpdGVtIG5vdCBmb3VuZCIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiZXJyb3IiOnsidHlwZSI6InN0cmluZyJ9LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmcifX19fX19LCI0MDkiOnsiZGVzY3JpcHRpb24iOiJDb25mbGljdCB3aXRoIHRoZSBjdXJyZW50IHN0YXRlIiwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJlcnJvciI6eyJ0eXBlIjoic3RyaW5nIn0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX0sIjQyMiI6eyJkZXNjcmlwdGlvbiI6IlJlcXVlc3QgdW5kZXJzdG9vZCBidXQgY2Fubm90IGJlIHByb2Nlc3NlZCIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiZXJyb3IiOnsidHlwZSI6InN0cmluZyJ9LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmcifX19fX19LCI1MDAiOnsiZGVzY3JpcHRpb24iOiJVbmV4cGVjdGVkIGVycm9yIiwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJlcnJvciI6eyJ0eXBlIjoic3RyaW5nIn0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX19fX19LCJjb21wb25lbnRzIjp7InNjaGVtYXMiOnsicHJvZHVjdCI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJza3UiOnsidHlwZSI6InN0cmluZyJ9LCJuYW1lIjp7InR5cGUiOiJzdHJpbmcifSwiYnJhbmQiOnsidHlwZSI6InN0cmluZyJ9LCJjYXRlZ29yeSI6eyJ0eXBlIjoic3RyaW5nIn0sInByaWNlIjp7InR5cGUiOiJpbnRlZ2VyIiwiZm9ybWF0IjoiaW50MzIifSwiZGVzY3JpcHRpb24iOnsidHlwZSI6InN0cmluZyJ9fX0sIlBvc3RPcmRlckF1dGhSZXNwb25zZUVsZW1lbnQiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiYXBwcm92YWxSZXF1aXJlZCI6eyJ0eXBlIjoiYm9vbGVhbiJ9LCJ0b29sIjp7InR5cGUiOiJzdHJpbmcifSwiYXJndW1lbnRzIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7Im9yZGVySWQiOnsidHlwZSI6InN0cmluZyJ9fX0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX0sIlBvc3RPcmRlckF1dGhSZXF1ZXN0RWxlbWVudCI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJvcmRlcklkIjp7InR5cGUiOiJzdHJpbmcifX19LCJHZXRPcmRlclJldHVyblJlc3BvbnNlRWxlbWVudCI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJvcmRlcklkIjp7InR5cGUiOiJzdHJpbmcifSwic2t1Ijp7InR5cGUiOiJzdHJpbmcifSwicHJvZHVjdE5hbWUiOnsidHlwZSI6InN0cmluZyJ9LCJwdXJjaGFzZURhdGUiOnsidHlwZSI6InN0cmluZyJ9LCJhZ2VEYXlzIjp7InR5cGUiOiJpbnRlZ2VyIiwiZm9ybWF0IjoiaW50MzIifSwicmV0dXJuV2luZG93RGF5cyI6eyJ0eXBlIjoiaW50ZWdlciIsImZvcm1hdCI6ImludDMyIn0sImVsaWdpYmxlIjp7InR5cGUiOiJib29sZWFuIn0sImxveWFsdHlUaWVyIjp7InR5cGUiOiJzdHJpbmcifSwicmVhc29uIjp7InR5cGUiOiJzdHJpbmcifX19LCJhcmd1bWVudHMiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsib3JkZXJJZCI6eyJ0eXBlIjoic3RyaW5nIn19fSwiR2V0T3JkZXJSZXNwb25zZUVsZW1lbnQiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsib3JkZXJJZCI6eyJ0eXBlIjoic3RyaW5nIn0sImN1c3RvbWVySWQiOnsidHlwZSI6InN0cmluZyJ9LCJza3UiOnsidHlwZSI6InN0cmluZyJ9LCJwdXJjaGFzZURhdGUiOnsidHlwZSI6InN0cmluZyJ9LCJjaGFubmVsIjp7InR5cGUiOiJzdHJpbmcifSwic3RvcmVJZCI6eyJ0eXBlIjoic3RyaW5nIn0sInByb2R1Y3QiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsic2t1Ijp7InR5cGUiOiJzdHJpbmcifSwibmFtZSI6eyJ0eXBlIjoic3RyaW5nIn0sImJyYW5kIjp7InR5cGUiOiJzdHJpbmcifSwiY2F0ZWdvcnkiOnsidHlwZSI6InN0cmluZyJ9LCJwcmljZSI6eyJ0eXBlIjoiaW50ZWdlciIsImZvcm1hdCI6ImludDMyIn0sImRlc2NyaXB0aW9uIjp7InR5cGUiOiJzdHJpbmcifX19LCJjdXN0b21lciI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJjdXN0b21lcklkIjp7InR5cGUiOiJzdHJpbmcifSwibG95YWx0eVRpZXIiOnsidHlwZSI6InN0cmluZyJ9LCJwcmVmZXJyZWRTdG9yZUlkIjp7InR5cGUiOiJzdHJpbmcifX19fX0sImN1c3RvbWVyIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImN1c3RvbWVySWQiOnsidHlwZSI6InN0cmluZyJ9LCJsb3lhbHR5VGllciI6eyJ0eXBlIjoic3RyaW5nIn0sInByZWZlcnJlZFN0b3JlSWQiOnsidHlwZSI6InN0cmluZyJ9fX0sIkVycm9yUmVzcG9uc2UiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiZXJyb3IiOnsidHlwZSI6InN0cmluZyJ9LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmcifX19fX19"
+    }
+  },
+  "connections": {},
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTgiLCJ0YWciOiIxLjYuMTgtYjU5MSIsIm5hbWUiOiJUSUJDTyBGbG9nbyBDb25uZWN0b3IgZm9yIEdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuNCIsInRhZyI6IjEuMC40LWIwMiIsIm5hbWUiOiJUSUJDTyBGbG9nb8KuIENvbm5lY3RvciBmb3IgTW9kZWwgQ29udGV4dCBQcm90b2NvbCAoTUNQKSIsInMzbG9jYXRpb24iOiJUaWJjby9NQ1AiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
+  "metadata": {
+    "endpoints": [
+      {
+        "protocol": "http",
+        "port": "18081",
+        "spec": {
+          "name": "RetailOrdersAPI",
+          "version": "1.0.0"
+        },
+        "title": "order_service",
+        "swagger": {
+          "openapi": "3.0.0",
+          "info": {
+            "title": "RetailOrdersAPI",
+            "version": "1.0.0",
+            "description": "order service"
+          },
+          "paths": {
+            "/api/orders/return-authorizations": {
+              "post": {
+                "summary": "create_return_authorization_POST",
+                "operationId": "post_api_orders_return-authorizations",
+                "parameters": [],
+                "responses": {
+                  "200": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema1"
+                        }
+                      }
+                    }
+                  },
+                  "202": {
+                    "description": "",
+                    "content": {
+                      "text/plain": {
+                        "schema": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "400": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "403": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "404": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "409": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "422": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "500": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  }
+                },
+                "description": "Flow for api/orders/return-authorizations POST",
+                "requestBody": {
+                  "description": "",
+                  "required": false,
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/schema3"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/api/orders/returns/eligibility": {
+              "get": {
+                "summary": "check_return_eligibility_GET",
+                "operationId": "get_api_orders_returns_eligibility",
+                "parameters": [
+                  {
+                    "name": "orderId",
+                    "in": "query",
+                    "description": "Request parameter",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema4"
+                        }
+                      }
+                    }
+                  },
+                  "400": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "403": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "404": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "409": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "422": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "500": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  }
+                },
+                "description": "Flow for api/orders/returns/eligibility GET"
+              }
+            },
+            "/api/orders/{orderId}": {
+              "get": {
+                "summary": "lookup_order_GET",
+                "operationId": "get_api_orders_orderId",
+                "parameters": [
+                  {
+                    "name": "orderId",
+                    "in": "path",
+                    "description": "Request parameter",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema5"
+                        }
+                      }
+                    }
+                  },
+                  "400": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "403": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "404": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "409": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "422": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "500": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  }
+                },
+                "description": "Flow for api/orders/{orderId} GET"
+              }
+            }
+          },
+          "components": {
+            "schemas": {
+              "schema1": {
+                "type": "object",
+                "properties": {
+                  "approvalRequired": {
+                    "type": "boolean"
+                  },
+                  "tool": {
+                    "type": "string"
+                  },
+                  "arguments": {
+                    "type": "object",
+                    "properties": {
+                      "orderId": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              },
+              "schema2": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              },
+              "schema3": {
+                "type": "object",
+                "properties": {
+                  "orderId": {
+                    "type": "string"
+                  }
+                }
+              },
+              "schema4": {
+                "type": "object",
+                "properties": {
+                  "orderId": {
+                    "type": "string"
+                  },
+                  "sku": {
+                    "type": "string"
+                  },
+                  "productName": {
+                    "type": "string"
+                  },
+                  "purchaseDate": {
+                    "type": "string"
+                  },
+                  "ageDays": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "returnWindowDays": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "eligible": {
+                    "type": "boolean"
+                  },
+                  "loyaltyTier": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                }
+              },
+              "schema5": {
+                "type": "object",
+                "properties": {
+                  "orderId": {
+                    "type": "string"
+                  },
+                  "customerId": {
+                    "type": "string"
+                  },
+                  "sku": {
+                    "type": "string"
+                  },
+                  "purchaseDate": {
+                    "type": "string"
+                  },
+                  "channel": {
+                    "type": "string"
+                  },
+                  "storeId": {
+                    "type": "string"
+                  },
+                  "product": {
+                    "type": "object",
+                    "properties": {
+                      "sku": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "brand": {
+                        "type": "string"
+                      },
+                      "category": {
+                        "type": "string"
+                      },
+                      "price": {
+                        "type": "integer",
+                        "format": "int32"
+                      },
+                      "description": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "customer": {
+                    "type": "object",
+                    "properties": {
+                      "customerId": {
+                        "type": "string"
+                      },
+                      "loyaltyTier": {
+                        "type": "string"
+                      },
+                      "preferredStoreId": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "protocol": "http",
+        "port": "19181",
+        "title": "mcp_server",
+        "type": "public"
+      }
+    ],
+    "flogoVersion": "2.26.9"
+  }
+}

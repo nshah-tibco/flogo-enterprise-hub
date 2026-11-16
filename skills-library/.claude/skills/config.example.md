@@ -82,6 +82,35 @@ Password: <your-app-password>
 
 ---
 
+## AWS Connection and SQS
+
+*Read by: fda — apps with an AWS connection (`fda lct aws`) and the SQS activities/trigger.*
+
+| Key | Value | Read by |
+|---|---|---|
+| AWS_CONNECTION_NAME | `<aws-connection-name>` | fda (AWS / SQS apps) |
+| AWS_REGION | `<aws-region>` | fda (AWS / SQS apps) |
+| AWS_ACCESS_KEY_ID | `<aws-access-key-id>` | fda (AWS / SQS apps) |
+| AWS_SECRET_ACCESS_KEY | `<aws-secret-access-key>` | fda (AWS / SQS apps) |
+| AWS_USE_ASSUME_ROLE | `<true-or-false>` | fda (AWS / SQS apps) |
+| AWS_ROLE_ARN | `<aws-role-arn>` | fda (AWS / SQS apps) |
+| AWS_ROLE_SESSION_NAME | `<role-session-name>` | fda (AWS / SQS apps) |
+| SQS_QUEUE_URL | `<sqs-queue-url>` | fda (AWS / SQS apps) |
+
+## SQL Server Database
+
+*Read by: fda — apps with a `con_sqlserver` connection.*
+
+| Key | Value | Read by |
+|---|---|---|
+| SQLSERVER_HOST | `<sqlserver-host>` | fda (SQL Server apps) |
+| SQLSERVER_PORT | `1433` | fda (SQL Server apps) |
+| SQLSERVER_DATABASE | `<database-name>` | fda (SQL Server apps) |
+| SQLSERVER_USER | `<sqlserver-user>` | fda (SQL Server apps) |
+| SQLSERVER_PASSWORD | `<sqlserver-password>` | fda (SQL Server apps) |
+
+---
+
 ## Agentic AI Use Cases (skill: `agentic-ai-use-case-builder`)
 
 | Key | Value | Read by |

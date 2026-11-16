@@ -118,7 +118,7 @@ def check_platform():
             "install Git for Windows (https://git-scm.com/download/win) and run the skills from Git Bash")
 
 def find_fda():
-    """Same lookup as _rebuild/fda_common.py / AGENT.md: env FDA > `fda` on PATH > newest tibco.flogo-* extension."""
+    """Non-interactive lookup (AGENT.md asks the user instead): env FDA > `fda` on PATH > newest Flogo 2.x tibco.flogo-* extension."""
     if os.environ.get("FDA"): return os.environ["FDA"], ""
     p = shutil.which("fda")
     if p: return p, ""

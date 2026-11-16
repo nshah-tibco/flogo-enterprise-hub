@@ -3,7 +3,7 @@
 Config is read at RUN time - nothing secret or machine-specific is stored in these scripts:
   env vars win (FDA, PSQL, PG_HOST, PG_PORT, PG_USER, PG_PWD/PG_PASSWORD, LLM_API_KEY, LLM_MODEL, LLM_BASE_URL),
   otherwise CONFIG_MD (default: the nearest skills-library/.claude/skills/config.md above this script).
-The fda binary is discovered like AGENT.md does it: newest tibco.flogo-* VS Code extension.
+The fda binary: env FDA if set (AGENT.md -> Resolving the fda CLI), else the newest Flogo 2.x (tibco.flogo-*) extension.
 """
 import glob, json, os, re, shutil, subprocess, sys, tempfile, uuid
 

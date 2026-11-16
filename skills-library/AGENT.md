@@ -58,7 +58,7 @@ It prints the exact install hint for anything missing and exits non-zero if a bl
 - **Apple Silicon (M-series) Macs:** expected to work; not yet verified by the maintainers. The installation guide doesn't state macOS ARM support for the VS Code extension. It does ship a `darwin_arm64` Flogo App Build CLI, and on ARM64 Macs a Dev Container must run as `linux/amd64` with Rosetta emulation. The connector guide says TIBCO EMS is not supported on ARM machines.
 - Use native paths in `config.md` (`C:\…` on Windows) — the Python scripts pass them straight to `subprocess`.
 
-You are a software integration developer that uses TIBCO Flogo to build integration applications (`.flogo` files).
+You are a software integration developer that uses TIBCO Flogo to build integration applications (`.flogo` files for Flogo 2.x, `<App>/app.fgmd` project folders for Flogo 3.x).
 
 Use the `fda` (Flogo Design Assistant) command line tool to create and modify these applications.
 The available skills under `.claude/skills/` document how to use the relevant CLIs and provide step-by-step recipes for common patterns.
@@ -67,40 +67,75 @@ The available skills under `.claude/skills/` document how to use the relevant CL
 
 ## Resolving the `fda` CLI
 
-The `fda` binary (`flogodesign-cli`) ships inside the TIBCO Flogo VS Code extension. Its path changes with every extension update, so **always discover it dynamically** before running any `fda` command:
+When the user says **`fda`**, **`flogodesign-cli`**, **"the Flogo CLI"**, or **"the design CLI"**, they mean the `flogodesign-cli` binary bundled inside a TIBCO Flogo VS Code extension (`flogodesign-cli.exe` on Windows). `fda` is only shorthand — there is no `fda` binary on disk. Use a bundled binary; do not download or install another copy.
+
+Order of operations: **decide the Flogo version → resolve that version's CLI → report its version → use the `fda` skill** (`.claude/skills/fda/SKILL.md`, both versions) for everything else.
+
+### Never hardcode an extension folder
+
+Extension folder names carry a version and build number and change on every update:
+
+| Flogo | Extension folder |
+|---|---|
+| 2.x | `tibco.flogo-2.<minor>.<patch>-<build>` (e.g. `tibco.flogo-2.26.9-3611`) |
+| 3.x | `tibco.flogo3-<version>-<build>-<branch>` (e.g. `tibco.flogo3-3.0.2-tech-preview-3969`) |
+
+A user may have **any number** of Flogo extensions, of either major version, installed side by side. Always discover the candidates at the time of use — never reuse a path baked into a file or remembered from an earlier conversation.
+
+### Step 1: Decide the Flogo major version (2.x or 3.x)
+
+Settle the target version **before** discovery, so you only ever search one version's extensions:
+
+- **The user names the version** ("Flogo2 app", "Flogo 3.x app") → use it. Do not ask.
+- **Modifying an existing app** → detect it from the files. Do not ask. A folder containing `app.fgmd` is 3.x; a single `<name>.flogo` file is 2.x.
+- **Creating a new app and the version is not stated** ("create a Flogo app") → **ask the user: Flogo 2.x or Flogo 3.x?** before running any command. Ask for every new app request that doesn't state it, even later in the same session — an earlier app's version is not a default for the next one.
+- **The user sets a standing default** ("always use Flogo3") → follow it until they change it.
+
+### Step 2: Discover that version's CLI
+
+If the user has exported `FDA` (a full path to a `flogodesign-cli` binary), that is their explicit choice — use it and skip the scan. Otherwise list the candidates **for the chosen version only** (never mix 2.x and 3.x in one list) across the VS Code roots — standard, Insiders, Remote/WSL:
 
 ```bash
-# 1. Check if fda is already on PATH (user may have set up an alias/function)
-which fda 2>/dev/null
-
-# 2. If not found, discover the latest version dynamically
+FLOGO_MAJOR=2            # or 3 — from step 1
 HOME_DIR="${HOME:-$USERPROFILE}"
-EXT_NAME="flogodesign-cli"
-
-# Windows (Git Bash / msys / cygwin): binary has .exe extension
-if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
-  EXT_NAME="flogodesign-cli.exe"
-fi
-
-# Search across VS Code variants (standard, Insiders, Remote/WSL)
-for dir in "$HOME_DIR/.vscode/extensions" \
-           "$HOME_DIR/.vscode-insiders/extensions" \
-           "$HOME_DIR/.vscode-server/extensions"; do
-  FDA_PATH=$(ls -td "$dir/tibco.flogo-"*/bin/"$EXT_NAME" 2>/dev/null | head -1)
-  [ -n "$FDA_PATH" ] && break
+EXT_NAME=flogodesign-cli
+# Windows (Git Bash / msys / cygwin): use the .exe (the extension also ships a Linux build with no suffix)
+[[ "$OSTYPE" == msys* || "$OSTYPE" == cygwin* || "$OSTYPE" == win32 ]] && EXT_NAME=flogodesign-cli.exe
+case "$FLOGO_MAJOR" in 2) PAT='tibco.flogo-2.*' ;; 3) PAT='tibco.flogo3-*' ;; esac
+for dir in "$HOME_DIR/.vscode/extensions" "$HOME_DIR/.vscode-insiders/extensions" "$HOME_DIR/.vscode-server/extensions"; do
+  [ -d "$dir" ] && find "$dir" -mindepth 3 -maxdepth 3 -path "*/$PAT/bin/$EXT_NAME" 2>/dev/null
 done
-
-# 3. Use the discovered path (quote it — the path may contain special characters)
-"$FDA_PATH" version
 ```
 
-**Never hardcode the extension folder name** (e.g. `tibco.flogo-2.26.6-2851`). The glob `tibco.flogo-*/bin/flogodesign-cli*` with `-td` (sort by newest) always resolves to the latest installed version.
+### Step 3: Choose among the candidates
 
-If neither `which fda` nor the dynamic scan finds the binary, ask the user to install the TIBCO Flogo VS Code extension.
+- **Exactly one match** → use it (`FDA=<that path>`), and mention which one you picked.
+- **More than one match** → **stop and ask the user to choose.** List every candidate with its extension folder name (the version/build is the distinguishing part) and full path. Do not guess, and do not silently pick the newest by mtime — a newer folder is not necessarily the one the user is working against.
+- **No match** → tell the user no Flogo extension of that version was found, and don't invent a path. Offer the cross-type option: the other version's CLI can create the app with `--flogo-type` (`-T 2x` / `-T 2` for 2.x; `-T 3x` / `-T 3` for 3.x). Use it only if they agree. If neither version is installed, ask the user to install the TIBCO Flogo VS Code extension.
+
+Once the user picks, reuse that path for the rest of the session **for that Flogo version** without re-asking. If the user later works on an app of the other version, run discovery for that version. If a later command fails because the path no longer exists, re-run discovery and ask again.
+
+### Report the resolved CLI
+
+Once a binary is resolved — auto-selected or chosen by the user — print its path and run `version` before doing any other work, once per session:
+
+```bash
+echo "$FDA"; "$FDA" version     # quote it — the path may contain special characters
+```
+
+This prints e.g. `Flogo Design CLI Version: 0.9.5`. Report that version together with the extension folder it came from, so it is unambiguous which CLI is being used.
+
+### Don't confuse it with its siblings
+
+The same `bin` folder ships other binaries that are **not** interchangeable: `flogo-vscode-cli`, `flogo-dbservice-cli`, `flogo-sap-cli`. Each has a Windows `.exe` and a Linux/macOS build with no suffix — on Windows, use the `.exe`.
+
+### Scripts in this repo
+
+The Python drivers (`agentic-ai-use-case-builder/templates/preflight.py`, `templates/_rebuild/fda_common.py`) can't ask, so they use env `FDA` when set and otherwise the newest **2.x** extension. To pin the exact CLI you resolved above (or to use a 3.x one), export it first: `export FDA="<path>"`.
 
 ### Setting up a persistent `fda` alias
 
-Add the function below to your shell startup file so `fda` is available in every terminal session:
+Add the function below to your shell startup file so `fda` is available in every terminal session. It follows the same rules: `FDA` pins one binary; otherwise it uses the only installed extension of the version in `FLOGO_MAJOR` (default `2`), and if several are installed it lists them and asks you to set `FDA`.
 
 | OS | Shell | File |
 |---|---|---|
@@ -112,44 +147,52 @@ Add the function below to your shell startup file so `fda` is available in every
 **Bash / Zsh function** (add to `~/.bashrc` or `~/.zshrc`):
 
 ```bash
+# fda …                → Flogo 2.x CLI
+# FLOGO_MAJOR=3 fda …  → Flogo 3.x CLI
+# export FDA=<path>    → always use that flogodesign-cli
 fda() {
-  local cmd="" home_dir="${HOME:-$USERPROFILE}" ext_name="flogodesign-cli"
-  if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
-    ext_name="flogodesign-cli.exe"
-  fi
-  for dir in "$home_dir/.vscode/extensions" \
-             "$home_dir/.vscode-insiders/extensions" \
-             "$home_dir/.vscode-server/extensions"; do
-    cmd=$(ls -td "$dir/tibco.flogo-"*/bin/"$ext_name" 2>/dev/null | head -1)
-    [ -n "$cmd" ] && break
-  done
-  if [ -z "$cmd" ]; then
-    echo "Error: flogodesign-cli not found. Install the TIBCO Flogo VS Code extension." >&2
-    return 1
-  fi
-  "$cmd" "$@"
+  if [ -n "$FDA" ]; then "$FDA" "$@"; return; fi
+  local home_dir="${HOME:-$USERPROFILE}" ext_name="flogodesign-cli" pat found dir
+  [[ "$OSTYPE" == msys* || "$OSTYPE" == cygwin* || "$OSTYPE" == win32 ]] && ext_name="flogodesign-cli.exe"
+  case "${FLOGO_MAJOR:-2}" in
+    2) pat='tibco.flogo-2.*' ;;
+    3) pat='tibco.flogo3-*' ;;
+    *) echo "Error: FLOGO_MAJOR must be 2 or 3." >&2; return 1 ;;
+  esac
+  found=$(for dir in "$home_dir/.vscode/extensions" "$home_dir/.vscode-insiders/extensions" "$home_dir/.vscode-server/extensions"; do
+            [ -d "$dir" ] && find "$dir" -mindepth 3 -maxdepth 3 -path "*/$pat/bin/$ext_name" 2>/dev/null
+          done)
+  case $(printf '%s' "$found" | grep -c .) in
+    0) echo "Error: no Flogo ${FLOGO_MAJOR:-2}.x extension found. Install the TIBCO Flogo VS Code extension." >&2; return 1 ;;
+    1) "$found" "$@" ;;
+    *) echo "Error: several Flogo ${FLOGO_MAJOR:-2}.x extensions are installed. Pick one and export FDA=<path>:" >&2
+       printf '%s\n' "$found" | sed 's/^/  /' >&2; return 1 ;;
+  esac
 }
 ```
 
 **PowerShell function** (add to `$PROFILE`):
 
 ```powershell
+# fda …                       -> Flogo 2.x CLI
+# $env:FLOGO_MAJOR = '3'      -> Flogo 3.x CLI
+# $env:FDA = '<path>'         -> always use that flogodesign-cli.exe
 function fda {
-  $cli = Get-ChildItem "$env:USERPROFILE\.vscode\extensions\tibco.flogo-*\bin\flogodesign-cli.exe" -ErrorAction SilentlyContinue |
-         Sort-Object LastWriteTime -Descending | Select-Object -First 1
-  if (-not $cli) {
-    $cli = Get-ChildItem "$env:USERPROFILE\.vscode-insiders\extensions\tibco.flogo-*\bin\flogodesign-cli.exe" -ErrorAction SilentlyContinue |
-           Sort-Object LastWriteTime -Descending | Select-Object -First 1
-  }
-  if (-not $cli) { Write-Error "flogodesign-cli not found. Install the TIBCO Flogo VS Code extension."; return }
-  & $cli.FullName @args
+  if ($env:FDA) { & $env:FDA @args; return }
+  $pat = if ($env:FLOGO_MAJOR -eq '3') { 'tibco.flogo3-*' } else { 'tibco.flogo-2.*' }
+  $hits = @(foreach ($root in '.vscode', '.vscode-insiders', '.vscode-server') {
+    Get-ChildItem "$env:USERPROFILE\$root\extensions\$pat\bin\flogodesign-cli.exe" -ErrorAction SilentlyContinue
+  })
+  if ($hits.Count -eq 0) { Write-Error "No Flogo extension matching $pat found. Install the TIBCO Flogo VS Code extension."; return }
+  if ($hits.Count -gt 1) { Write-Error ("Several Flogo extensions match $pat. Set `$env:FDA to one of:`n  " + ($hits.FullName -join "`n  ")); return }
+  & $hits[0].FullName @args
 }
 ```
 
 ## Project conventions
 
 - Always work with Flogo applications inside the apps folder named by `FLOGO_APPS_DIR` in `config.md` — resolved **relative to `config.md`** (default `../../Flogo_Apps` → `skills-library/Flogo_Apps/`, the one physical folder that is identical whether the repo root or `skills-library/` is the open workspace). Do not create apps at the `skills-library/` root or the repo root.
-- Always pass `-f <FLOGO_APPS_DIR>/<AppName>.flogo` on every `fda` command to target the correct file.
+- Always pass `-f` on every `fda` command to target the correct app: `-f <FLOGO_APPS_DIR>/<AppName>.flogo` (2.x) or `-f <FLOGO_APPS_DIR>/<AppName>` (3.x; `create-project` takes `-f <FLOGO_APPS_DIR>/<AppName>/app.fgmd`).
 - To build applications, use the `flogobuild` CLI with the build context configured in `config.md` (`FLOGOBUILD_CONTEXT_NAME`).
 - To deploy applications, use the `tibcop` (TIBCO Platform CLI) with the `flogo` topic and the platform credentials configured in `config.md` (`CP_URL`, `TIBCOP_TOKEN`, `DATAPLANE_NAME`).
 
