@@ -179,13 +179,17 @@ def fix(app):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("apps", nargs="+")
-    ap.add_argument("--fix", action="store_true")
+    ap.add_argument("apps", nargs="+", help="REQUIRED. .flogo app(s) to check (close them in the designer first)")
+    ap.add_argument("--fix", action="store_true", help="re-store links in designer-safe order via fda (needs $FDA)")
     ap.add_argument("--designer-js", action="store_true", help="also run the installed designer's own code (node)")
     ap.add_argument("--designer-js-path", help="appEditor.js to use (default: the extension that ships $FDA)")
     a = ap.parse_args()
     rc = 0
     for app in a.apps:
+        if not os.path.isfile(app) or not app.endswith(".flogo"):
+            print(f"{app}: not an existing .flogo app")
+            rc |= 2
+            continue
         bad = check(app)
         if bad and a.fix:
             fix(app)

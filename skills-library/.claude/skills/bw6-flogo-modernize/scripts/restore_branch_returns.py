@@ -46,7 +46,7 @@ def dead_end_responses(app):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("apps", nargs="+")
+    ap.add_argument("apps", nargs="+", help="REQUIRED. modernized .flogo app(s), closed in the designer")
     ap.add_argument("--dry-run", action="store_true", help="only list what would be added")
     a = ap.parse_args()
     rc = 0

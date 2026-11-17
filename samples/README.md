@@ -64,7 +64,7 @@ TIBCO BusinessWorks 6 + Flogo "Better Together" samples — they need a BW6 runt
 
 | Sample | Industry |
 |---|---|
-| [Retail — BW & Flogo, Better Together](./Agentic_AI/BW6_Flogo_Samples/Retail_AI_BW_Flogo/) *(BW6)* | Retail & Consumer Goods |
+| [Retail — BW & Flogo, Better Together](./Agentic_AI/BW6_Flogo_Samples/Retail_Store_Assistant/) *(BW6)* | Retail & Consumer Goods |
 
 ---
 

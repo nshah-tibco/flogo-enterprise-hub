@@ -8,8 +8,8 @@ description: >
   steps. Use when the user gives a BW6 project/module path and asks to rebuild, re-implement, modernize or
   "convert" it in Flogo, or asks how a BW6 process maps to Flogo. Say "modernize", never "migrate".
 metadata:
-  version: "0.6.0"
-  last-updated-date: "2026-11-16"
+  version: "0.7.0"
+  last-updated-date: "2026-11-17"
 ---
 
 # Modernize a BW6 REST app as a Flogo app
@@ -17,7 +17,8 @@ metadata:
 **Wording:** this is *modernization* (BW6 and Flogo run side by side; the Flogo app is a modern equivalent),
 never "migration" — in code, docs, READMEs and replies. Human overview: [README.md](README.md).
 
-**Input:** the path of one BW6 module folder (the one holding `META-INF/module.bwm`). **Output:**
+**Input:** the path of one BW6 module folder (the one holding `META-INF/module.bwm`) — see
+[Required inputs](#required-inputs--check-them-ask-never-guess). **Output:**
 `<FLOGO_APPS_DIR>/<AppName>.flogo` exposing the same REST operations and MCP tools, an approved plan, a parity
 report against the BW6 app, and a hand-over with the manual run steps.
 
@@ -57,22 +58,60 @@ Read [`references/gotchas.md`](references/gotchas.md) before building — every 
 | Secrets | `SECRET:` (encrypted) only for fields the contribution declares as **password** (DB connections, LLM connections). A plain-string key field (e.g. the openAI extension's apiKey) gets a placeholder property and the real value at run time via `FLOGO_APP_PROPS_ENV=auto <PROPERTY>=<value>`. Passwords never go on a command line |
 | Changes | `fda` only; never hand-edit a `.flogo` and never write one that is open in the designer |
 
+## Required inputs — check them, ask, never guess
+
+Nothing in this skill is specific to one BW6 workspace: every module name, path, port, model, store name and
+credential comes from the user, from `config.md`, or from the BW6 sources. Before step 1, check each input below.
+**If a REQUIRED input is missing or ambiguous, or a conditional one applies and is unanswered, STOP and ask** —
+one message with all open questions, each with your recommended default. Never invent a value (URL, credential,
+model, store name, module choice). User-facing version: README.md → *What you need to provide*.
+
+| Input | Required? | Default / source | How to check |
+|---|---|---|---|
+| **BW6 module folder(s)** (holds `META-INF/module.bwm`; a `<Name>.application` with exactly one app module also works) | **yes** | — | `analyze_bw6.py <path> --list` lists the modules at/below a path with their REST operation count and the palettes that need extra inputs |
+| **Target apps folder** | **yes** | `FLOGO_APPS_DIR` in `.claude/skills/config.md` (relative to config.md); the scaffold reads it when `--apps-dir` is omitted | config.md exists and sets it |
+| **Which modules, in which order** | **yes**, when the path holds more than one module | propose: skip shared modules (0 REST operations), simplest first (fewest operations, no JDBC/AI), callers last | `--list` output |
+| `fda` CLI | **yes** | `$FDA`, resolved as in `AGENT.md` (ask when several 2.x extensions are installed) | `"$FDA" version` |
+| Flogo app name | no | module name without dots (`--app-name`); `--rename OLD=NEW` drops brand/customer names from everything generated | letters, digits, `_` |
+| Ports | no | REST = BW HTTP port **+1000** (`--port-offset`), MCP = REST **+100** (`--mcp-port-offset`), browser-blocked ports skipped; `--bw-port` when BW's port is property-bound without a default | the plan shows them |
+| MCP exposure | no — **ask** when the module has no MCP configuration | `explicit` (only BW-configured tools); `--mcp all` exposes every operation (may include admin/write ones) | plan section 1 |
+| MCP endpoint path | no | `/mcp` (`--mcp-path`) | — |
+| Error reply format | no | JSON `{error, message}`, or the API's own `ErrorResponse` schema when it declares one; codes 400/403/404/409/422/500, more with `--error-codes` | plan section 9 |
+| **Database** (host/port/db, user, password; same DB as BW or a copy; may tests write/reset) | **only when the module uses JDBC** | host/port/database from the BW JDBC URL; user + password from the user (BW's password is obfuscated); password via env var, never on a command line | `--list` says `JDBC`; plan section 5 |
+| **LLM provider / model / API key** | **only when the module uses AI/RAG palettes** | `LLM_Provider` / `LLM_Model` from config.md; key supplied at run time (`FLOGO_APP_PROPS_ENV=auto <PROPERTY>=<key>`), never stored in the `.flogo` | `--list` says `AI/RAG` |
+| **Vector store name** | **only for RAG** | propose `<AppName>Docs`; must be identical in every app that shares the store (e.g. an ingest and a query module) | — |
+| **Called services** (base URL, auth) | **only when the module calls other services** | stored as app properties | `--list` / plan section 9 |
+| **Running BW6 instance**: base URL (+ BW MCP endpoint when the module has MCP tools) | for parity (step 6) | none — without it the app is built and gated, and the hand-over says parity was **not run** | `parity_check.py` refuses placeholder URLs |
+| Build and run, or generate only | no | generate only (build only when asked) | — |
+| AI orchestrator `.flogo` that uses the BW tools | no | — | only for step 7 |
+
+**Stop and ask when** (batch these; offer the recommended default):
+- the path does not exist, or `analyze_bw6.py` exits 2 (no `module.bwm`, several modules, an `.application` with
+  several modules) — show the candidates it printed and ask which modules, in which order;
+- `config.md` or its `FLOGO_APPS_DIR` is missing (offer `cp config.example.md config.md`);
+- `$FDA` is unset or several Flogo 2.x extensions are installed (`AGENT.md`);
+- the module uses JDBC and the database, user/password or "may tests write" decision is unknown;
+- the module uses AI/RAG and the LLM provider/model, the key handling or the vector store name is not decided;
+- the module calls other services and their base URLs/auth are unknown;
+- the module has no MCP configuration (explicit vs `--mcp all`);
+- it is unknown whether a BW6 instance is running for parity (ask for its base URL, or confirm parity is skipped).
+The plan (step 2, section 9) repeats the open module-specific questions; ask them again there if still open.
+
 ## Workflow
 
 ### 0. Collect the inputs
-Ask only for what you can't find. Required: the **BW6 module path**. Then, as the plan shows they are needed:
-Flogo app name (default: module name without dots), whether the **BW6 app is running** and its base URL / MCP
-endpoint (for parity), **database** to use + credentials (BW's password is obfuscated and can't be reused) and
-whether tests may write fixture rows or run destructive operations, **LLM / vector store** choices for AI
-palettes, **called services** (base URLs, auth), MCP exposure (explicit vs all), whether to **build and run**
-or only generate, and an **AI orchestrator** `.flogo` if the tools must be proven end to end. Full list:
-README.md → *Inputs*.
+Check every row of *Required inputs* above. `python -I -X utf8 scripts/analyze_bw6.py <path> --list` shows which
+modules a path holds and which of them need DB / LLM / called-service inputs. Ask in one batch, then continue.
 
 ### 1. Analyze the BW6 module
 ```bash
 python -I -X utf8 scripts/analyze_bw6.py <bw6-module-dir> --out <work>/analysis \
-    [--port-offset 1000] [--mcp-port-offset 100] [--bw-port <port>] [--error-codes 401:Unauthorized,...]
+    [--port-offset 1000] [--mcp-port-offset 100] [--bw-port <port>] [--error-codes 401:Unauthorized,...] \
+    [--rename OLD=NEW]
 ```
+Exit code 2 = the path is not exactly one BW6 module: the message names the expected `META-INF/module.bwm` and
+lists the candidate module folders it found — ask the user which (see *Required inputs*). A module with no REST
+binding (shared module) is analyzed with a warning; there is nothing to scaffold for it.
 Writes `<Module>.bw6spec.json` (operations, params, MCP tools, shared resources, module properties with
 substvar values, per-operation activities with **decoded XSLT**, literals, XSLT constructs/functions used,
 BPEL constructs such as fault handlers/loops/outbound calls, dead activities, and a `warnings` list of every
@@ -104,17 +143,27 @@ See `examples/operations_logic.py`.
 
 ### 4. Build the Flogo app (fda only)
 ```bash
-python -I -X utf8 scripts/scaffold_flogo_app.py --analysis <work>/analysis --module <Module_slug> \
-    --app-name <AppName> --apps-dir <FLOGO_APPS_DIR> --work <work> [--mcp explicit|all] [--force]
+python -I -X utf8 scripts/scaffold_flogo_app.py --analysis <work>/analysis --work <work> \
+    [--module <Module_slug>] [--app-name <AppName>] [--apps-dir <FLOGO_APPS_DIR>] [--mcp explicit|all] \
+    [--mcp-path /mcp] [--force]
 ```
+Defaults: `--module` = the only spec in `--analysis`, `--app-name` = the plan's app name, `--apps-dir` =
+`FLOGO_APPS_DIR` from config.md. Pass the values the user approved in the plan. The scaffold checks its inputs
+(spec present, REST operations, app name, apps folder, `$FDA`) before it creates or deletes anything.
 Generic part: project, spec, `cas` skeleton, port properties, the query/path-parameter fixes, the MCP trigger
 and `mcp_<tool>` flows; `plan.json` records the spec path. Then write `<work>/<app>_logic.py` with
 [`scripts/flogo_logic_lib.py`](scripts/flogo_logic_lib.py), translating each operation's decoded XSLT
-(**mappings**: README.md → *How mappings are handled*). Worked examples:
+(**mappings**: README.md → *How mappings are handled*). Take every environment value (DB user, hosts, model,
+store name, directories) from the user's answers or app properties — never from the examples. Worked examples
+(they contain sample-specific names, data and defaults on purpose; copy the pattern, not the values):
 [`promotions`](examples/promotions_logic.py) (lookup), [`orders`](examples/orders_logic.py) (joins, variables,
 dates), [`inventory`](examples/inventory_logic.py) (several outcomes, body lookups, dead code skipped),
 [`operations`](examples/operations_logic.py) (SQL Server reads/writes, role check, branch join),
-[`policy`](examples/policy_logic.py) (RAG with a user extension, subflows, an iterator).
+[`policy`](examples/policy_logic.py) (RAG with a user extension, subflows, an iterator),
+[`gas_cylinder`](examples/gas_cylinder_logic.py) (hardcoded XML data, top-level JSON array reply),
+[`gas_docs_ingestion`](examples/gas_docs_ingestion_logic.py) (multipart file upload, binary write, MCP over multipart),
+[`gas_docs_query`](examples/gas_docs_query_logic.py) (RAG with images: LLM Client for text, Invoke REST + json.jq for vision),
+[`gas_ops_orchestrator_build`](examples/gas_ops_orchestrator_build.py) (an AI orchestrator over the Flogo MCP tools, no BW source).
 `Logic.finish()` re-stores links in designer-safe order, runs `fda cm` (accepted failures:
 `FOREACH_SCOPE_UNDEFINED` from a filtered `@foreach`; with subflows also `RESOLVER_UNKNOWN` for `$iteration` and
 `ACTIVITY_OUTPUT_LEAF_UNKNOWN` for subflow/extension outputs) and the **designer-load gate**; it must end with
@@ -131,9 +180,10 @@ on macOS/Linux `kill <pid>`. If `-o` misbehaves, see gotchas F12.
 
 ### 6. Verify parity
 ```bash
-python -I -X utf8 scripts/parity_check.py <work>/cases.json --report <work>/parity_report.md
+python -I -X utf8 scripts/parity_check.py <work>/cases.json --report <work>/parity_report.md [--timeout 60]
 ```
-Done = **0 MISMATCH**. MATCH = identical; EQUIVALENT = only null-vs-absent; IMPROVED = BW failed (5xx /
+It refuses a cases file whose BW/Flogo URLs are missing or placeholders: get the BW base URL from the user. No
+BW6 instance available → skip this step and state in the hand-over that parity was not run. Done = **0 MISMATCH**. MATCH = identical; EQUIVALENT = only null-vs-absent; IMPROVED = BW failed (5xx /
 non-JSON) and Flogo answered a JSON error (a JSON 4xx from BW is compared normally); SEMANTIC = outputs that
 cannot be identical (LLM answers, vector ids/scores): same status + shape + declared facts; ACCEPTED = a
 deliberate difference declared with `"accept": "<why>"`.
@@ -170,8 +220,10 @@ Apps in `Flogo_Apps/` are gitignored; scrub secrets before copying one into `sam
 After every module you modernize, before calling it done:
 
 1. Fold any new pattern into the shared scripts (`analyze_bw6.py`, `scaffold_flogo_app.py`, `flogo_logic_lib.py`,
-   `modernization_plan.py`), not only into that module's logic script. No sample-specific names, paths, ports or
-   data in `scripts/` or in instruction text.
+   `modernization_plan.py`), not only into that module's logic script. No sample-specific names, paths, ports,
+   hosts, models, store names or data in `scripts/`, SKILL.md, README.md or `references/`: make it an argument
+   with a documented default (or a config.md value) and add it to *Required inputs* when the user must supply it.
+   Sample-specific values belong only in `examples/`, and examples take paths, users and keys as arguments/env.
 2. In `references/bw6-to-flogo-patterns.md` (and the status maps in `modernization_plan.py`), mark a pattern
    **verified** only after a parity run proved it.
 3. Add every new trap to `references/gotchas.md` (symptom, cause, fix).
@@ -192,8 +244,13 @@ After every module you modernize, before calling it done:
 | MCP tools (explicit), tool descriptions and input schemas identical to BW, MCP not-found calls | **verified** |
 | BW AI-plugin RAG (chunk/ingest/query) -> OpenAI vector store via the repo-local `extensions/openAI` + Agentic AI LLM Client; static resource lookups; subflows incl. an iterator; MCP resource tools | **verified** (RAG ops = SEMANTIC parity) |
 | AI orchestrator rewired to the Flogo MCP tools (BW stopped) | **verified** (all scenarios answered from Flogo tools) |
-| Other JDBC databases, outbound REST calls (`invoke`), fault handlers, module properties, headers, non-200 success codes, non-JSON bodies | **planned** — the plan flags them with the intended workaround; verify with parity before relying on it |
+| Hardcoded XML data (ParseXml over a literal), top-level JSON array replies, API-declared error schema, MCP tools with path + body arguments | **verified** (`examples/gas_cylinder_logic.py`: 12 MATCH / 6 IMPROVED / 2 ACCEPTED; agent 3/3) |
+| multipart/form-data uploads (files byte-for-byte, names via an extra field), File write Binary, MCP tool over a multipart operation, OpenAI vector store ingest | **verified** (`examples/gas_docs_ingestion_logic.py`; BW side failed - see its header) |
+| RAG answers with images: vector search + LLM Client (text) / Invoke REST to the OpenAI chat API with images (json.jq request) | **verified** (`examples/gas_docs_query_logic.py`: grounded citations, PNG + JPEG labels read, SEMANTIC vs BW) |
+| Other JDBC databases, BW outbound REST calls (`invoke`; Invoke REST itself is verified), fault handlers, module properties, headers, non-200 success codes, non-JSON bodies | **planned** — the plan flags them with the intended workaround; verify with parity before relying on it |
 | Non-REST starters (JMS, timers, file pollers), SOAP bindings, event handlers, compensation, Swagger 2.0 descriptors, several HTTP connectors per module | **not supported** — flagged in the plan as *unsupported* / *decide* |
 
-The verified rows come from modernizing the five REST modules of the `Retail_AI_BW_Flogo` sample
-(`examples/`).
+The verified rows come from the modules rebuilt in `examples/` (the BW6 sample workspaces under
+`samples/Agentic_AI/BW6_Flogo_Samples/`). Analysis and planning were also exercised on other BW6 modules (REST and
+SOAP samples, a Kafka-to-DB app); one of them (a REST module whose descriptor omits the binding's basePath) was
+scaffolded end to end with `cm` and the designer gate passing.

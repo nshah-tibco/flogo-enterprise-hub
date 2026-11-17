@@ -1,0 +1,9 @@
+{
+  "command": "npx",
+  "args": [
+    "mcp-remote",
+    "http://localhost:16100/mcp",
+    "--allow-http"
+  ],
+  "env": {}
+}

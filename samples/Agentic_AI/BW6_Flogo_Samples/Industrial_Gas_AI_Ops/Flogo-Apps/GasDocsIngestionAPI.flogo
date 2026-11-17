@@ -1,0 +1,1319 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/tibco/flogo-general/src/app/General/activity/log",
+    "github.com/tibco/flogo-general/src/app/General/activity/httpresponse",
+    "github.com/project-flogo/contrib/activity/actreturn",
+    "github.com/project-flogo/flow/activity/subflow",
+    "github.com/tibco/flogo-general/src/app/General/activity/mapper",
+    "github.com/TIBCOSoftware/flogo-enterprise-hub/extensions/openAI/activity/vectorStoreList",
+    "github.com/TIBCOSoftware/flogo-enterprise-hub/extensions/openAI/activity/vectorStoreCreate",
+    "github.com/tibco/flogo-files/src/app/File/activity/write",
+    "github.com/TIBCOSoftware/flogo-enterprise-hub/extensions/openAI/activity/fileUpload",
+    "github.com/tibco/flogo-general/src/app/General/trigger/rest",
+    "github.com/tibco/flogo-mcp/src/app/MCP/trigger/mcpserver",
+    "github.com/project-flogo/contrib/function/array",
+    "github.com/project-flogo/contrib/function/coerce",
+    "github.com/project-flogo/contrib/function/string",
+    "git.tibco.com/git/product/ipaas/wi-contrib.git/function/utility",
+    "github.com/project-flogo/contrib/function/json"
+  ],
+  "name": "GasDocsIngestionAPI",
+  "description": "Flogo modernization of BW6 RAG_Industrial_Gas_Ingestion: REST API + MCP server for the same operations",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#rest",
+      "name": "tibco-wi-rest",
+      "description": "upload service",
+      "settings": {
+        "port": "=$property[\"REST_PORT\"]",
+        "APISpecUpdate": true,
+        "swagger": "spec://09eac7fa-6fcb-4617-9ea0-41b9b8a57b6d",
+        "swaggerVersion": "v3",
+        "authenticationType": "None",
+        "username": "",
+        "password": "",
+        "apiVersion": "1.0",
+        "secureConnection": false,
+        "serverKey": "",
+        "caCertificate": "",
+        "readHeaderTimeout": 0,
+        "readTimeout": 0,
+        "maxRequestBodySize": 15
+      },
+      "id": "upload_service",
+      "handlers": [
+        {
+          "description": "Flow for upload POST",
+          "settings": {
+            "APISpecPath": "/upload",
+            "Method": "POST",
+            "reqType": "multipart/form-data",
+            "Path": "/upload",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:post_upload_POST"
+            },
+            "input": {
+              "body": "=$.body",
+              "multipartFormData": "=$.multipartFormData"
+            },
+            "output": {
+              "code": "=$.code",
+              "responseBody": "=$.responseBody"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": true,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              },
+              "responseCodesSchema": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseType\":{\"type\":\"string\"},\"responseSchema\":{\"type\":\"string\"}},\"required\":[\"code\",\"responseType\",\"responseSchema\"]}}",
+                "fe_metadata": "[{\"code\":200,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"required\\\":[\\\"filePath\\\"],\\\"properties\\\":{\\\"filePath\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":400,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":403,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":404,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":409,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":422,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":500,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"}]"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              },
+              "multipartFormData": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"files\":{\"type\":\"any\"},\"fileNames\":{\"type\":\"string\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"files\":{\"type\":\"any\"},\"fileNames\":{\"type\":\"string\"}}}"
+              },
+              "multipartForm": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"type\":{\"type\":\"string\"}}}}",
+                "fe_metadata": "[{\"name\":\"files\",\"type\":\"string\"}]"
+              }
+            }
+          },
+          "name": "post_upload_POST"
+        }
+      ]
+    },
+    {
+      "ref": "#mcpserver",
+      "name": "flogo-mcp-mcpsever",
+      "description": "MCP server for RAG_Industrial_Gas_Ingestion",
+      "settings": {
+        "serverName": "RAG_Industrial_Gas_Ingestion",
+        "serverVersion": "1.0.0",
+        "serverType": "HTTP",
+        "serverPort": "=$property[\"MCP_PORT\"]",
+        "statelessServer": false,
+        "serverEndpointPath": "/mcp",
+        "enableTLS": false,
+        "serverCertificate": "",
+        "serverPrivateKey": "",
+        "authType": "None",
+        "authToken": "",
+        "oauthIssuer": "",
+        "oauthJWKSURL": "",
+        "oauthAudience": "",
+        "oauthAuthorizationServers": "",
+        "oauthRequiredScopes": "",
+        "oauthResourceURL": ""
+      },
+      "id": "mcp_server",
+      "handlers": [
+        {
+          "description": "MCP tool post-upload: calls post_upload_POST and returns its body",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "post-upload",
+            "handlerDescription": "postUpload",
+            "toolTitle": "",
+            "readOnlyToolHint": false,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:mcp_post_upload"
+            },
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "reply": {
+              "response": {
+                "type": "json",
+                "value": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}",
+                "fe_metadata": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}"
+              }
+            },
+            "output": {
+              "arguments": {
+                "type": "json",
+                "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"required\": [\"files\"], \"properties\": {\"files\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}, \"description\": \"file contents, base64-encoded\"}, \"fileNames\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}, \"description\": \"original file names, same order\"}}}",
+                "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"required\": [\"files\"], \"properties\": {\"files\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}, \"description\": \"file contents, base64-encoded\"}, \"fileNames\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}, \"description\": \"original file names, same order\"}}}"
+              }
+            }
+          },
+          "name": "mcp_post_upload"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:post_upload_POST",
+      "data": {
+        "name": "post_upload_POST",
+        "description": "Flow for upload POST",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Log_API",
+            "type": "label",
+            "label": "StartActivity to Log_API"
+          },
+          {
+            "id": 2,
+            "from": "Log_API",
+            "to": "BadRequest",
+            "type": "expression",
+            "label": "Log_API to BadRequest",
+            "value": "array.count($flow.multipartFormData.files) == 0"
+          },
+          {
+            "id": 3,
+            "from": "BadRequest",
+            "to": "ReturnBadRequest",
+            "type": "label",
+            "label": "BadRequest to ReturnBadRequest"
+          },
+          {
+            "id": 4,
+            "from": "Log_API",
+            "to": "GetStore",
+            "type": "expression",
+            "label": "Log_API to GetStore",
+            "value": "array.count($flow.multipartFormData.files) > 0"
+          },
+          {
+            "id": 5,
+            "from": "GetStore",
+            "to": "AddFiles",
+            "type": "label",
+            "label": "GetStore to AddFiles"
+          },
+          {
+            "id": 6,
+            "from": "AddFiles",
+            "to": "ConfigureHTTPResponse",
+            "type": "label",
+            "label": "AddFiles to ConfigureHTTPResponse"
+          },
+          {
+            "id": 7,
+            "from": "ConfigureHTTPResponse",
+            "to": "Return",
+            "type": "label",
+            "label": "ConfigureHTTPResponse to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "Log_API",
+            "name": "Log_API",
+            "description": "Log API Call for upload POST",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"upload files=\", coerce.toString(array.count($flow.multipartFormData.files)))",
+                "logLevel": "",
+                "loggerName": "",
+                "fieldPrefix": "",
+                "dynamicLogFields": {
+                  "mapping": {}
+                }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "BadRequest",
+            "name": "BadRequest",
+            "description": "HTTP 400 response",
+            "activity": {
+              "ref": "#httpresponse",
+              "input": {
+                "trigger": "upload_service",
+                "responsecode": "400",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "error": "invalid_request",
+                      "message": "files is required (multipart form field 'files')"
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://ErrorBody"
+                },
+                "output": {
+                  "response": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"error\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"error\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "ReturnBadRequest",
+            "name": "ReturnBadRequest",
+            "description": "Reply 400",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[BadRequest].code",
+                  "responseBody": "=$activity[BadRequest].response"
+                }
+              }
+            }
+          },
+          {
+            "id": "GetStore",
+            "name": "GetStore",
+            "description": "Resolve the vector store",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#subflow",
+              "settings": {
+                "flowURI": "res://flow:ResolveStore",
+                "detached": false,
+                "execTimeout": 0,
+                "transactional": false,
+                "transactionConnection": ""
+              },
+              "input": {
+                "input": {
+                  "mapping": {}
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"type\": \"object\", \"properties\": {}}",
+                    "fe_metadata": "{\"type\": \"object\", \"properties\": {}}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\"type\": \"object\", \"properties\": {\"storeId\": {\"type\": \"string\"}}}",
+                    "fe_metadata": "{\"type\": \"object\", \"properties\": {\"storeId\": {\"type\": \"string\"}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "AddFiles",
+            "name": "AddFiles",
+            "description": "Write + upload each file",
+            "type": "iterator",
+            "settings": {
+              "iterate": "=$flow.multipartFormData.files",
+              "accumulate": true,
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#subflow",
+              "settings": {
+                "flowURI": "res://flow:AddFile",
+                "detached": false,
+                "execTimeout": 0,
+                "transactional": false,
+                "transactionConnection": ""
+              },
+              "input": {
+                "input": {
+                  "mapping": {}
+                },
+                "content": "=$iteration[value]",
+                "index": "=$iteration[index]",
+                "names": "=$flow.multipartFormData.fileNames",
+                "storeId": "=$activity[GetStore].storeId"
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"type\": \"object\", \"properties\": {\"content\": {\"type\": \"any\"}, \"index\": {\"type\": \"integer\"}, \"names\": {\"type\": \"string\"}, \"storeId\": {\"type\": \"string\"}}}",
+                    "fe_metadata": "{\"type\": \"object\", \"properties\": {\"content\": {\"type\": \"any\"}, \"index\": {\"type\": \"integer\"}, \"names\": {\"type\": \"string\"}, \"storeId\": {\"type\": \"string\"}}}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\"type\": \"object\", \"properties\": {\"fileName\": {\"type\": \"string\"}, \"fileId\": {\"type\": \"string\"}}}",
+                    "fe_metadata": "{\"type\": \"object\", \"properties\": {\"fileName\": {\"type\": \"string\"}, \"fileId\": {\"type\": \"string\"}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "ConfigureHTTPResponse",
+            "name": "ConfigureHTTPResponse",
+            "description": "Configure HTTP Response Activity",
+            "activity": {
+              "ref": "#httpresponse",
+              "input": {
+                "trigger": "upload_service",
+                "responsecode": "200",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "filePath": "=string.concat(\"Files uploaded to vector store successfully from the location : \", $property[\"DOCS_DIR\"])"
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://FileDataBody"
+                },
+                "output": {
+                  "response": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"required\":[\"filePath\"],\"properties\":{\"filePath\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"required\":[\"filePath\"],\"properties\":{\"filePath\":{\"type\":\"string\"}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Reply to API Call for upload POST",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[ConfigureHTTPResponse].code",
+                  "responseBody": "=$activity[ConfigureHTTPResponse].response"
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6NTl9LCJMb2dfQVBJIjp7IngiOjM1MCwieSI6NTB9LCJCYWRSZXF1ZXN0Ijp7IngiOjYwMCwieSI6NTB9LCJSZXR1cm5CYWRSZXF1ZXN0Ijp7IngiOjg1MCwieSI6NTB9LCJHZXRTdG9yZSI6eyJ4Ijo2MDAsInkiOjIwMH0sIkFkZEZpbGVzIjp7IngiOjg1MCwieSI6MjAwfSwiQ29uZmlndXJlSFRUUFJlc3BvbnNlIjp7IngiOjExMDAsInkiOjIwMH0sIlJldHVybiI6eyJ4IjoxMzUwLCJ5IjoyMDB9fQ==",
+        "metadata": {
+          "input": [
+            {
+              "name": "multipartFormData",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"files\":{\"type\":\"any\"},\"fileNames\":{\"type\":\"string\"}}"
+              }
+            },
+            {
+              "name": "requestURI",
+              "type": "string"
+            },
+            {
+              "name": "method",
+              "type": "string"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "responseBody",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\": \"object\", \"properties\": {\"multipartFormData\": {\"type\": \"object\", \"properties\": {\"files\": {\"type\": \"any\"}, \"fileNames\": {\"type\": \"string\"}}}, \"requestURI\": {\"type\": \"string\"}, \"method\": {\"type\": \"string\"}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:mcp_post_upload",
+      "data": {
+        "name": "mcp_post_upload",
+        "description": "MCP tool post-upload: calls post_upload_POST and returns its body",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Form",
+            "type": "label",
+            "label": "StartActivity to Form"
+          },
+          {
+            "id": 2,
+            "from": "Form",
+            "to": "CallOperation",
+            "type": "label",
+            "label": "Form to CallOperation"
+          },
+          {
+            "id": 3,
+            "from": "CallOperation",
+            "to": "Return",
+            "type": "label",
+            "label": "CallOperation to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "Form",
+            "name": "Form",
+            "description": "Tool arguments -> the operation's multipart form",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "files": "=$flow.arguments.files",
+                    "fileNames": "=coerce.toString($flow.arguments.fileNames) != \"\" ? utility.renderJSON($flow.arguments.fileNames, false) : \"\""
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"files\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"fileNames\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"files\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"fileNames\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"files\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"fileNames\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"files\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"fileNames\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "CallOperation",
+            "name": "CallOperation",
+            "description": "Run post_upload_POST (the REST operation)",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#subflow",
+              "settings": {
+                "flowURI": "res://flow:post_upload_POST",
+                "detached": false,
+                "execTimeout": 0,
+                "transactional": false,
+                "transactionConnection": ""
+              },
+              "input": {
+                "input": {
+                  "mapping": {}
+                },
+                "multipartFormData": "=$activity[Form].output"
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"type\": \"object\", \"properties\": {\"multipartFormData\": {\"type\": \"object\", \"properties\": {\"files\": {\"type\": \"any\"}, \"fileNames\": {\"type\": \"string\"}}}, \"requestURI\": {\"type\": \"string\"}, \"method\": {\"type\": \"string\"}}}",
+                    "fe_metadata": "{\"type\": \"object\", \"properties\": {\"multipartFormData\": {\"type\": \"object\", \"properties\": {\"files\": {\"type\": \"any\"}, \"fileNames\": {\"type\": \"string\"}}}, \"requestURI\": {\"type\": \"string\"}, \"method\": {\"type\": \"string\"}}}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Return the REST body as the tool result",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=utility.renderJSON($activity[CallOperation].responseBody.body, false)",
+                      "error": "=$activity[CallOperation].code >= 400 ? utility.renderJSON($activity[CallOperation].responseBody.body, false) : \"\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6NTl9LCJGb3JtIjp7IngiOjM1MCwieSI6NTB9LCJDYWxsT3BlcmF0aW9uIjp7IngiOjYwMCwieSI6NTB9LCJSZXR1cm4iOnsieCI6ODUwLCJ5Ijo1MH19",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"files\":{\"type\":\"array\",\"items\":{\"type\":\"string\"},\"description\":\"file contents, base64-encoded\"},\"fileNames\":{\"type\":\"array\",\"items\":{\"type\":\"string\"},\"description\":\"original file names, same order\"}}"
+              }
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\": \"object\", \"properties\": {\"arguments\": {\"type\": \"object\", \"required\": [\"files\"], \"properties\": {\"files\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}, \"description\": \"file contents, base64-encoded\"}, \"fileNames\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}, \"description\": \"original file names, same order\"}}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:ResolveStore",
+      "data": {
+        "name": "ResolveStore",
+        "description": "The vector store named $property[VECTOR_STORE_NAME] (created on first use)",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "ListStores",
+            "type": "label",
+            "label": "StartActivity to ListStores"
+          },
+          {
+            "id": 2,
+            "from": "ListStores",
+            "to": "FindStore",
+            "type": "label",
+            "label": "ListStores to FindStore"
+          },
+          {
+            "id": 3,
+            "from": "FindStore",
+            "to": "ReturnExisting",
+            "type": "expression",
+            "label": "FindStore to ReturnExisting",
+            "value": "array.count($activity[FindStore].output.matches) > 0"
+          },
+          {
+            "id": 4,
+            "from": "FindStore",
+            "to": "CreateStore",
+            "type": "expression",
+            "label": "FindStore to CreateStore",
+            "value": "array.count($activity[FindStore].output.matches) == 0"
+          },
+          {
+            "id": 5,
+            "from": "CreateStore",
+            "to": "ReturnCreated",
+            "type": "label",
+            "label": "CreateStore to ReturnCreated"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "ListStores",
+            "name": "ListStores",
+            "description": "List the account's vector stores",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#vectorStoreList",
+              "settings": {
+                "endPointURL": "=$property[\"OPENAI_API_ENDPOINT_URL\"]",
+                "apiKey": "=$property[\"OPENAI_API_KEY\"]"
+              },
+              "input": {
+                "limit": 100,
+                "order": "",
+                "after": "",
+                "before": "",
+                "timeoutSeconds": 60
+              },
+              "schemas": {
+                "output": {
+                  "vectorStores": {
+                    "type": "json",
+                    "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\"}, \"name\": {\"type\": \"string\"}}}}",
+                    "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\"}, \"name\": {\"type\": \"string\"}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "FindStore",
+            "name": "FindStore",
+            "description": "The store with the configured name",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "matches": {
+                      "@foreach($activity[ListStores].vectorStores,s, $loop[s].name == $property[\"VECTOR_STORE_NAME\"])": {
+                        "id": "=$loop[s].id",
+                        "name": "=$loop[s].name"
+                      }
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"id\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"id\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"id\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"id\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "ReturnExisting",
+            "name": "ReturnExisting",
+            "description": "Return the subflow outputs",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "storeId": "=$activity[FindStore].output.matches[0].id"
+                }
+              }
+            }
+          },
+          {
+            "id": "CreateStore",
+            "name": "CreateStore",
+            "description": "First use: create the store",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#vectorStoreCreate",
+              "settings": {
+                "endPointURL": "=$property[\"OPENAI_API_ENDPOINT_URL\"]",
+                "apiKey": "=$property[\"OPENAI_API_KEY\"]"
+              },
+              "input": {
+                "name": "=$property[\"VECTOR_STORE_NAME\"]",
+                "description": "Industrial gas safety data sheets, manuals and certificates",
+                "expiresAfterDays": 0,
+                "maxChunkSizeTokens": 800,
+                "chunkOverlapTokens": 400,
+                "timeoutSeconds": 60,
+                "fileIds": {
+                  "mapping": []
+                },
+                "metadata": {
+                  "mapping": []
+                }
+              }
+            }
+          },
+          {
+            "id": "ReturnCreated",
+            "name": "ReturnCreated",
+            "description": "Return the subflow outputs",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "storeId": "=$activity[CreateStore].id"
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6NTl9LCJMaXN0U3RvcmVzIjp7IngiOjM1MCwieSI6NTB9LCJGaW5kU3RvcmUiOnsieCI6NjAwLCJ5Ijo1MH0sIlJldHVybkV4aXN0aW5nIjp7IngiOjg1MCwieSI6NTB9LCJDcmVhdGVTdG9yZSI6eyJ4Ijo4NTAsInkiOjIwMH0sIlJldHVybkNyZWF0ZWQiOnsieCI6MTEwMCwieSI6MjAwfX0=",
+        "metadata": {
+          "input": [],
+          "output": [
+            {
+              "name": "storeId",
+              "type": "string"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\": \"object\", \"properties\": {}}",
+            "output": "{\"type\": \"object\", \"properties\": {\"storeId\": {\"type\": \"string\"}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:AddFile",
+      "data": {
+        "name": "AddFile",
+        "description": "Write one uploaded file and upload it into the vector store",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Name",
+            "type": "label",
+            "label": "StartActivity to Name"
+          },
+          {
+            "id": 2,
+            "from": "Name",
+            "to": "WriteFile",
+            "type": "label",
+            "label": "Name to WriteFile"
+          },
+          {
+            "id": 3,
+            "from": "WriteFile",
+            "to": "FileAttributes",
+            "type": "label",
+            "label": "WriteFile to FileAttributes"
+          },
+          {
+            "id": 4,
+            "from": "FileAttributes",
+            "to": "UploadFile",
+            "type": "label",
+            "label": "FileAttributes to UploadFile"
+          },
+          {
+            "id": 5,
+            "from": "UploadFile",
+            "to": "ReturnFile",
+            "type": "label",
+            "label": "UploadFile to ReturnFile"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "Name",
+            "name": "Name",
+            "description": "Original file name from fileNames (the trigger drops it), else upload-<n>.txt",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "fileName": "=coerce.toString($flow.names) != \"\" && array.count(coerce.toArray($flow.names)) > $flow.index ? coerce.toString(array.get(coerce.toArray($flow.names), $flow.index)) : string.concat(\"upload-\", coerce.toString($flow.index + 1), \".txt\")"
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"fileName\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"fileName\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"fileName\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"fileName\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "WriteFile",
+            "name": "WriteFile",
+            "description": "Write the uploaded bytes (fileUpload reads a path)",
+            "activity": {
+              "ref": "#write",
+              "input": {
+                "writeAs": "Binary",
+                "createNonExistingDir": true,
+                "compress": "None",
+                "input": {
+                  "mapping": {
+                    "fileName": "=string.concat($property[\"DOCS_DIR\"], \"/\", $activity[Name].output.fileName)",
+                    "overwrite": true,
+                    "binaryContent": "=string.replaceAll(utility.renderJSON($flow.content, false), \"\\\"\", \"\")"
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"properties\":{\"fileName\":{\"type\":\"string\"},\"overwrite\":{\"type\":\"boolean\"},\"binaryContent\":{\"type\":\"string\"}},\"required\":[\"fileName\",\"overwrite\",\"binaryContent\"],\"type\":\"object\"}",
+                    "fe_metadata": "{\"properties\":{\"fileName\":{\"type\":\"string\"},\"overwrite\":{\"type\":\"boolean\"},\"binaryContent\":{\"type\":\"string\"}},\"required\":[\"fileName\",\"overwrite\",\"binaryContent\"],\"type\":\"object\"}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\"properties\":{\"fileMetadata\":{\"properties\":{\"fullPath\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"size\":{\"type\":\"number\"},\"mode\":{\"type\":\"string\"},\"modTime\":{\"type\":\"string\",\"format\":\"date-time\"},\"isDir\":{\"type\":\"boolean\"}},\"type\":\"object\"}},\"type\":\"object\"}",
+                    "fe_metadata": "{\"properties\":{\"fileMetadata\":{\"properties\":{\"fullPath\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"size\":{\"type\":\"number\"},\"mode\":{\"type\":\"string\"},\"modTime\":{\"type\":\"string\",\"format\":\"date-time\"},\"isDir\":{\"type\":\"boolean\"}},\"type\":\"object\"}},\"type\":\"object\"}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "FileAttributes",
+            "name": "FileAttributes",
+            "description": "Metadata stored with the file (search returns it)",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "fileName": "=$activity[Name].output.fileName",
+                    "source": "upload"
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"fileName\": {\n      \"type\": \"string\"\n    },\n    \"source\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"fileName\": {\n      \"type\": \"string\"\n    },\n    \"source\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"fileName\": {\n      \"type\": \"string\"\n    },\n    \"source\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"fileName\": {\n      \"type\": \"string\"\n    },\n    \"source\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "UploadFile",
+            "name": "UploadFile",
+            "description": "Upload into the store (OpenAI chunks and embeds it)",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#fileUpload",
+              "settings": {
+                "endPointURL": "=$property[\"OPENAI_API_ENDPOINT_URL\"]",
+                "apiKey": "=$property[\"OPENAI_API_KEY\"]",
+                "operation": "Upload new file",
+                "purpose": "assistants",
+                "maxChunkSizeTokens": 800,
+                "chunkOverlapTokens": 400,
+                "timeoutSeconds": 300
+              },
+              "input": {
+                "filename": "=string.concat($property[\"DOCS_DIR\"], \"/\", $activity[Name].output.fileName)",
+                "fileId": "",
+                "vectorStoreID": "=$flow.storeId",
+                "fileAttributes": "=json.jq($activity[FileAttributes].output, \"to_entries | map({key: .key, value: (.value | tostring)}) | .[]\")"
+              }
+            }
+          },
+          {
+            "id": "ReturnFile",
+            "name": "ReturnFile",
+            "description": "Return the subflow outputs",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "fileName": "=$activity[Name].output.fileName",
+                  "fileId": "=$activity[UploadFile].id"
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo0NX0sIk5hbWUiOnsieCI6MjUwLCJ5Ijo0NX0sIldyaXRlRmlsZSI6eyJ4Ijo0NTAsInkiOjQ1fSwiRmlsZUF0dHJpYnV0ZXMiOnsieCI6NjUwLCJ5Ijo0NX0sIlVwbG9hZEZpbGUiOnsieCI6MjUwLCJ5IjoxOTV9LCJSZXR1cm5GaWxlIjp7IngiOjQ1MCwieSI6MTk1fX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "content",
+              "type": "any"
+            },
+            {
+              "name": "index",
+              "type": "integer"
+            },
+            {
+              "name": "names",
+              "type": "string"
+            },
+            {
+              "name": "storeId",
+              "type": "string"
+            }
+          ],
+          "output": [
+            {
+              "name": "fileName",
+              "type": "string"
+            },
+            {
+              "name": "fileId",
+              "type": "string"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\": \"object\", \"properties\": {\"content\": {\"type\": \"any\"}, \"index\": {\"type\": \"integer\"}, \"names\": {\"type\": \"string\"}, \"storeId\": {\"type\": \"string\"}}}",
+            "output": "{\"type\": \"object\", \"properties\": {\"fileName\": {\"type\": \"string\"}, \"fileId\": {\"type\": \"string\"}}}"
+          }
+        }
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "MCP_PORT",
+      "type": "string",
+      "value": "6100"
+    },
+    {
+      "name": "OPENAI_API_ENDPOINT_URL",
+      "type": "string",
+      "value": "https://api.openai.com/v1"
+    },
+    {
+      "name": "VECTOR_STORE_NAME",
+      "type": "string",
+      "value": "IndustrialGasDocs"
+    },
+    {
+      "name": "DOCS_DIR",
+      "type": "string",
+      "value": "gas_docs"
+    },
+    {
+      "name": "REST_PORT",
+      "type": "float64",
+      "value": 6001
+    },
+    {
+      "name": "OPENAI_API_KEY",
+      "type": "string",
+      "value": "YOUR_OPENAI_API_KEY"
+    }
+  ],
+  "schemas": {
+    "ErrorBody": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"error\": {\n          \"type\": \"string\"\n        },\n        \"message\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"error\": {\n          \"type\": \"string\"\n        },\n        \"message\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}"
+    },
+    "FileDataBody": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"required\": [\n        \"filePath\"\n      ],\n      \"properties\": {\n        \"filePath\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"required\": [\n        \"filePath\"\n      ],\n      \"properties\": {\n        \"filePath\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}"
+    }
+  },
+  "specs": {
+    "09eac7fa-6fcb-4617-9ea0-41b9b8a57b6d": {
+      "id": "09eac7fa-6fcb-4617-9ea0-41b9b8a57b6d",
+      "name": "BW6Spec",
+      "type": "OpenAPI",
+      "version": "1.0.0",
+      "content": "eyJvcGVuYXBpIjoiMy4wLjAiLCJpbmZvIjp7InZlcnNpb24iOiIxLjAiLCJ0aXRsZSI6InVwbG9hZCBzZXJ2aWNlIiwiZGVzY3JpcHRpb24iOiJ1cGxvYWQgc2VydmljZSJ9LCJzZXJ2ZXJzIjpbeyJ1cmwiOiJodHRwOi8vbG9jYWxob3N0OjYwMDAvIn1dLCJwYXRocyI6eyIvdXBsb2FkIjp7InBvc3QiOnsic3VtbWFyeSI6InBvc3RVcGxvYWQiLCJkZXNjcmlwdGlvbiI6InBvc3RVcGxvYWQiLCJvcGVyYXRpb25JZCI6InBvc3RfdXBsb2FkIiwicGFyYW1ldGVycyI6W10sInJlcXVlc3RCb2R5Ijp7InJlcXVpcmVkIjp0cnVlLCJjb250ZW50Ijp7Im11bHRpcGFydC9mb3JtLWRhdGEiOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImZpbGVzIjp7InR5cGUiOiJhcnJheSIsIml0ZW1zIjp7InR5cGUiOiJzdHJpbmciLCJmb3JtYXQiOiJiaW5hcnkiLCJ1bmlxdWVJdGVtcyI6ZmFsc2V9fX19fX19LCJyZXNwb25zZXMiOnsiMjAwIjp7ImRlc2NyaXB0aW9uIjoiYSBGaWxlRGF0YSB0byBiZSByZXR1cm5lZCIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInJlcXVpcmVkIjpbImZpbGVQYXRoIl0sInByb3BlcnRpZXMiOnsiZmlsZVBhdGgiOnsidHlwZSI6InN0cmluZyJ9fX19fX0sIjQwMCI6eyJkZXNjcmlwdGlvbiI6IkludmFsaWQgb3IgbWlzc2luZyBpbnB1dCIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiZXJyb3IiOnsidHlwZSI6InN0cmluZyJ9LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmcifX19fX19LCI0MDMiOnsiZGVzY3JpcHRpb24iOiJOb3QgYWxsb3dlZCIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiZXJyb3IiOnsidHlwZSI6InN0cmluZyJ9LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmcifX19fX19LCI0MDQiOnsiZGVzY3JpcHRpb24iOiJSZXF1ZXN0ZWQgaXRlbSBub3QgZm91bmQiLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImVycm9yIjp7InR5cGUiOiJzdHJpbmcifSwibWVzc2FnZSI6eyJ0eXBlIjoic3RyaW5nIn19fX19fSwiNDA5Ijp7ImRlc2NyaXB0aW9uIjoiQ29uZmxpY3Qgd2l0aCB0aGUgY3VycmVudCBzdGF0ZSIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiZXJyb3IiOnsidHlwZSI6InN0cmluZyJ9LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmcifX19fX19LCI0MjIiOnsiZGVzY3JpcHRpb24iOiJSZXF1ZXN0IHVuZGVyc3Rvb2QgYnV0IGNhbm5vdCBiZSBwcm9jZXNzZWQiLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImVycm9yIjp7InR5cGUiOiJzdHJpbmcifSwibWVzc2FnZSI6eyJ0eXBlIjoic3RyaW5nIn19fX19fSwiNTAwIjp7ImRlc2NyaXB0aW9uIjoiVW5leHBlY3RlZCBlcnJvciIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiZXJyb3IiOnsidHlwZSI6InN0cmluZyJ9LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmcifX19fX19fX19fSwiY29tcG9uZW50cyI6eyJzY2hlbWFzIjp7InVwbG9hZFBvc3RGb3JtIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImZpbGVzIjp7InR5cGUiOiJhcnJheSIsIml0ZW1zIjp7InR5cGUiOiJzdHJpbmciLCJmb3JtYXQiOiJiaW5hcnkiLCJ1bmlxdWVJdGVtcyI6ZmFsc2V9fX19LCJGaWxlRGF0YSI6eyJ0eXBlIjoib2JqZWN0IiwicmVxdWlyZWQiOlsiZmlsZVBhdGgiXSwicHJvcGVydGllcyI6eyJmaWxlUGF0aCI6eyJ0eXBlIjoic3RyaW5nIn19fSwiRXJyb3JSZXNwb25zZSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJlcnJvciI6eyJ0eXBlIjoic3RyaW5nIn0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX0="
+    }
+  },
+  "connections": {},
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTgiLCJ0YWciOiIxLjYuMTgtYjU5MSIsIm5hbWUiOiJUSUJDTyBGbG9nbyBDb25uZWN0b3IgZm9yIEdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuNCIsInRhZyI6IjEuMC40LWIwMiIsIm5hbWUiOiJUSUJDTyBGbG9nb8KuIENvbm5lY3RvciBmb3IgTW9kZWwgQ29udGV4dCBQcm90b2NvbCAoTUNQKSIsInMzbG9jYXRpb24iOiJUaWJjby9NQ1AiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfSx7InJlZiI6ImdpdGh1Yi5jb20vVElCQ09Tb2Z0d2FyZS9mbG9nby1lbnRlcnByaXNlLWh1Yi9leHRlbnNpb25zL29wZW5BSSIsImlkIjoib3BlbkFJIiwidmVyc2lvbiI6IjEuMC4xIiwidGFnIjoiMS4wLjEiLCJuYW1lIjoiT3BlbkFJIiwiczNsb2NhdGlvbiI6IntVU0VSSUR9L29wZW5BSSIsImlzVXNlckV4dGVuc2lvbiI6dHJ1ZX0seyJyZWYiOiJnaXRodWIuY29tL3RpYmNvL2Zsb2dvLWZpbGVzL3NyYy9hcHAvRmlsZSIsImlkIjoiRmlsZSIsInZlcnNpb24iOiIxLjAuMCIsInRhZyI6IjEuMC4wLWIxNCIsIm5hbWUiOiJUSUJDTyBGbG9nbyBDb25uZWN0b3IgZm9yIEZpbGUiLCJzM2xvY2F0aW9uIjoiVGliY28vRmlsZSIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9XQ==",
+  "metadata": {
+    "endpoints": [
+      {
+        "protocol": "http",
+        "port": "6000",
+        "spec": {
+          "name": "GasDocsIngestionAPI",
+          "version": "1.0.0"
+        },
+        "title": "upload_service",
+        "swagger": {
+          "openapi": "3.0.0",
+          "info": {
+            "title": "GasDocsIngestionAPI",
+            "version": "1.0.0",
+            "description": "upload service"
+          },
+          "paths": {
+            "/upload": {
+              "post": {
+                "summary": "post_upload_POST",
+                "operationId": "post_upload",
+                "parameters": [],
+                "responses": {
+                  "200": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema1"
+                        }
+                      }
+                    }
+                  },
+                  "400": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "403": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "404": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "409": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "422": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "500": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  }
+                },
+                "description": "Flow for upload POST",
+                "requestBody": {
+                  "description": "",
+                  "required": false,
+                  "content": {
+                    "multipart/form-data": {
+                      "schema": {
+                        "type": "object",
+                        "properties": {
+                          "files": {
+                            "type": "string",
+                            "format": "binary"
+                          },
+                          "fileNames": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "components": {
+            "schemas": {
+              "schema1": {
+                "type": "object",
+                "required": [
+                  "filePath"
+                ],
+                "properties": {
+                  "filePath": {
+                    "type": "string"
+                  }
+                }
+              },
+              "schema2": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "protocol": "http",
+        "port": "6100",
+        "title": "mcp_server",
+        "type": "public"
+      }
+    ],
+    "flogoVersion": "2.26.9"
+  }
+}

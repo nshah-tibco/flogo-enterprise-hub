@@ -1,0 +1,20 @@
+INDUSTRIAL GAS - STANDARD OPERATING PROCEDURE: GAS CYLINDER DISPATCH
+Document ID: IG-SOP-OPS-020   Revision: 2   Effective date: 2026-06-01
+Applies to: Houston Yard A, Houston Yard B, Dallas Distribution Center
+NOTE: FICTIONAL DOCUMENT CREATED FOR DEMO PURPOSES ONLY. NOT FOR OPERATIONAL USE.
+
+1. Purpose. This SOP describes the checks a yard operator must complete before an Industrial Gas gas cylinder is dispatched to a customer site. It covers Nitrogen, Argon, Oxygen and Hydrogen cylinders managed in the Smart Cylinder Operations system.
+
+2. Cylinder status values. Each cylinder in the Smart Cylinder Operations system has one of these statuses: "Available" (full, certified and ready to dispatch), "Reserved" (allocated to a confirmed customer order), "In-Transit" (loaded and on its way to a customer), "Empty" (returned and awaiting refill) or "Quarantine" (failed a check or certification expired). Only cylinders with status "Available" or "Reserved" may be dispatched.
+
+3. Pre-dispatch checklist. Before dispatch, the operator must confirm: (a) the cylinder ID label is readable and matches the order; (b) the cylinder certification expiry date is at least 30 days in the future; (c) the cylinder pressure is at least 95% of the nominal filling pressure (for example at least 190 bar for a 200 bar Argon cylinder, and at least 171 bar for a 180 bar Nitrogen cylinder); (d) the valve protection cap is fitted and the valve outlet is sealed with a tamper-evident seal; (e) the correct hazard label (GHS and transport class) is attached.
+
+4. Gas-specific dispatch rules. Hydrogen cylinders additionally require a leak test and an operator with a valid Hydrogen Handling Certificate. Medical Grade Oxygen cylinders require a batch release by the Qualified Person before dispatch to hospitals. Cryo-Grade Nitrogen destined for food customers must be shipped with its E941 Certificate of Conformity.
+
+5. Loading and transport. Cylinders must be loaded upright and secured in the vehicle with straps or racks. Flammable gases (Hydrogen) and oxidising gases (Oxygen) must be separated in the vehicle by a partition or by at least 1 metre. Vehicles must carry the correct placards and a fire extinguisher of at least 2 kg.
+
+6. System update. When the cylinder leaves the yard, the operator records the dispatch in the Smart Cylinder Operations system with the destination (for example "Customer Site Houston North" or "Fab Plant 4 - Bay 2"). The system then changes the cylinder status to "In-Transit" and records the dispatch timestamp.
+
+7. Service levels. Standard dispatch within the Houston area is completed within 24 hours of order confirmation. Priority dispatch for hospital Medical Oxygen orders is completed within 4 hours.
+
+8. Revision history. Revision 2 (2026-06-01) added the pressure acceptance threshold in section 3 and the vehicle segregation rules in section 5.

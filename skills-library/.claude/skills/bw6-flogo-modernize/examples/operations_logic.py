@@ -21,7 +21,7 @@ lower case, BW's JDBC driver in SQL Server's upper case (CONVERT also keeps NULL
 BW quirks reproduced on purpose (parity): the INSERTs store '1' for sku/order_id/promotion_id and the APPROVER's
 name as product_name; result_json.toolName is the tool name only for reserve_inventory, otherwise the status.
 
-Usage: SQL_PASSWORD=<password> python operations_logic.py <work>/plan.json <sql-user>
+Usage: SQL_PASSWORD=<password> [SQL_HOST=<db-host>] python operations_logic.py <work>/plan.json <sql-user>
 (the password comes from the environment, not the command line, so it never shows in the process list; it is
 stored encrypted as SECRET: in the connection)
 """
@@ -32,12 +32,16 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts"))
 from flogo_logic_lib import Logic, negate  # noqa: E402
 
-L = Logic(sys.argv[1])
-SQL_USER, SQL_PASSWORD = sys.argv[2], os.environ.get("SQL_PASSWORD") or sys.exit("set SQL_PASSWORD")
+L = Logic(sys.argv[1] if len(sys.argv) > 1 else None)   # <work>/plan.json from scaffold_flogo_app.py
+SQL_USER = sys.argv[2] if len(sys.argv) > 2 else sys.exit("usage: SQL_PASSWORD=<password> python operations_logic.py "
+                                                          "<work>/plan.json <sql-user>  (the database user is required)")
+SQL_PASSWORD = os.environ.get("SQL_PASSWORD") or sys.exit("set SQL_PASSWORD (the database password; BW's is obfuscated)")
 spec = L.spec or json.load(open(os.path.join(L.work, "analysis", "Retail_Operations_API.bw6spec.json"), encoding="utf-8"))
 jdbc = next(r for r in spec["sharedResources"] if r["kind"] == "jdbcResource")["settings"]
-# the BW URL says 127.0.0.1; this demo's SQL Server container answers on localhost - use the host your DB listens on
-DB = L.db_connection("RetailOpsDB", jdbc["dbURL"].replace("127.0.0.1", "localhost"), SQL_USER, SQL_PASSWORD)
+# the BW URL says 127.0.0.1; this demo's SQL Server container answers on localhost. SQL_HOST overrides the host
+# for a database somewhere else (default: localhost, as in the parity runs)
+DB = L.db_connection("RetailOpsDB", jdbc["dbURL"].replace("127.0.0.1", os.environ.get("SQL_HOST", "localhost")),
+                     SQL_USER, SQL_PASSWORD)
 
 AP, OP, CV, CD = (L.flow("post_api_approve"), L.flow("get_api_operations"), L.flow("get_api_conversations_GET"),
                   L.flow("get_api_conversations_conversationId"))

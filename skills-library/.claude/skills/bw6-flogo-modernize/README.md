@@ -28,22 +28,46 @@ The agent follows [SKILL.md](SKILL.md). This README is for the people who use it
 
 It is called *modernization*, not migration, because BW6 keeps running until the Flogo app has proven itself.
 
-## Inputs
+## What you need to provide
 
-| Input | Required | Why |
-|---|---|---|
-| BW6 **module folder** (the one with `META-INF/module.bwm`) | yes | the source of truth |
-| Flogo version | fixed: 2.x | this skill targets Flogo 2.x |
-| Flogo **app name** | no (default: module name without dots) | file and app name |
-| **Ports** | no (default: BW port +1000 for REST, +100 more for MCP) | runs next to BW6 without clashes |
-| BW6 app **running**, its base URL and BW **MCP endpoint** | for verification | parity test calls both apps |
-| **MCP exposure**: only BW's configured tools, or every operation | asked when it matters | BW exposes every operation of a module without MCP configuration; that can include admin/write operations |
-| **Database** (same as BW6 or a copy), **user/password** | when the module uses JDBC | BW stores its password obfuscated; it can't be reused |
-| Whether tests may **write** tagged fixture rows (deleted afterwards) or run **destructive** operations | when the module writes | parity of write operations |
-| **LLM / vector store** choices and API key | when the module uses BW AI/RAG palettes | e.g. OpenAI vector store + model |
-| **Called services**: base URLs and auth | when the module calls other services | outbound REST calls |
-| **Build and run**, or generate only | asked | builds need `flogobuild` and Go |
-| An **AI orchestrator** `.flogo` | optional | prove the agent works with the Flogo tools |
+The skill is generic: nothing in it is tied to one BW6 workspace. Module names, paths, ports, models, store names
+and credentials come from you, from `config.md`, or from the BW6 sources.
+
+| Input | Required? | Default if you don't say | Notes |
+|---|---|---|---|
+| **BW6 module folder** — the folder with `META-INF/module.bwm` (the BW Studio project named like the module, e.g. `Acme.Orders.API`). A `<Name>.application` folder with one application module also works | **yes** | — | Several modules? Give the workspace folder; the agent lists them and asks which |
+| **Target apps folder** | **yes** | `FLOGO_APPS_DIR` in `skills-library/.claude/skills/config.md` | Set it once in `config.md` (copy `config.example.md`) |
+| **Which modules, in which order** | **yes**, if you give more than one | shared modules skipped, simplest first, callers last | — |
+| Flogo **app name** | no | module name without dots | `--rename OLD=NEW` removes a brand/customer name from everything generated |
+| **Ports** | no | BW HTTP port +1000 for REST, +100 more for MCP; ports browsers block are skipped | `--port-offset`, `--mcp-port-offset`; `--bw-port` if BW's port can't be read |
+| **MCP exposure** | no (asked when BW has no MCP configuration) | only the operations BW exposes as MCP tools | "every operation" can include admin/write operations |
+| MCP endpoint path | no | `/mcp` | — |
+| **Error reply format** | no | JSON `{error, message}` (or your API's own `ErrorResponse` schema) with 400/403/404/409/422/500 | more codes with `--error-codes 401:Unauthorized,...` |
+| **Database**: host/port/database, user, password; same DB as BW6 or a copy; may tests write/reset | only if the module uses **JDBC** | host/port/database from BW's JDBC URL | BW stores its password obfuscated, so you supply it (via an environment variable) |
+| **LLM** provider, model and API key | only if the module uses **AI/RAG** palettes | `LLM_Provider` / `LLM_Model` from `config.md` | the key is supplied when you run the app, never stored in the `.flogo` |
+| **Vector store name** | only for **RAG** | proposed `<AppName>Docs` | must be the same in every app that shares the store |
+| **Called services**: base URLs and auth | only if the module calls other services | — | stored as app properties |
+| **Running BW6 app**: base URL (+ BW MCP endpoint if it has MCP tools) | for the parity test | — | without it the app is built and checked, but not proven equal to BW6 |
+| **Build and run**, or generate only | no | generate only | builds need `flogobuild` and Go |
+| An **AI orchestrator** `.flogo` | no | — | proves an agent works with the Flogo tools |
+
+### What the agent will ask you if missing
+
+The agent checks these before it analyzes anything and asks all open questions in one message, each with a
+recommended default. It doesn't guess.
+
+- **Where is the BW6 module?** If the path has no `META-INF/module.bwm`, or holds several modules, it shows the
+  modules it found and asks which ones, in which order.
+- **Where should the Flogo app go?** If `FLOGO_APPS_DIR` isn't set in `config.md`.
+- **Which `fda`?** If several Flogo 2.x VS Code extensions are installed.
+- **Database details**: if the module uses JDBC. Which database, user and password, and whether the tests may
+  write and reset data.
+- **LLM and vector store**: if the module uses AI/RAG. Provider and model, how you supply the API key, and the
+  store name.
+- **Called services**: base URLs and auth for services the module calls.
+- **MCP exposure**: if BW has no MCP configuration for the module, whether to expose every operation.
+- **Is BW6 running?** Its base URL (and MCP endpoint) for the side-by-side test, or confirm that parity is skipped.
+- **Approve the plan.** Nothing is built until you reply *approve*.
 
 **Tools needed:**
 
@@ -121,19 +145,20 @@ the plan, so you see them before anything is built.
 - **REST modules only.**
   - Not supported, and flagged in the plan: SOAP bindings, JMS/EMS/Kafka/timer/file-poller starters, event
     handlers and compensation.
-  - Swagger 2.0 descriptors must be converted to OpenAPI 3 first.
+  - Swagger 2.0 descriptors must be converted to OpenAPI 3 first, and a REST binding with no OpenAPI JSON
+    descriptor at all (only WSDL/XSD, as in older BWCE samples) needs one exported or written first.
   - A module with several HTTP connectors gets one Flogo REST trigger.
 - **Databases.** The SQL helpers are verified for **SQL Server**. Other databases (PostgreSQL, MySQL, Oracle,
   DB2) use the same pattern but are *planned*: verify them with parity.
-- **Planned, not yet verified:** outbound REST calls (`invoke`), fault handlers (`catch` / `catchAll`), header
+- **Planned, not yet verified:** BW outbound REST calls (`invoke`), fault handlers (`catch` / `catchAll`), header
   parameters, success codes other than 200, non-JSON bodies, module properties beyond ports and connections.
   The plan lists them with the intended workaround.
 - **Java code.** Java invoke steps are skipped when the analyzer proves nothing reads their result. Otherwise
   they have to be rewritten with mapping functions or as a Flogo Go extension, which is your decision.
 - **Business logic is per app.** The generic scripts build everything except the per-operation logic. The
-  agent writes that as a short Python script using the library, guided by the decoded XSLT and the 5 worked
-  examples.
-- **Parity needs BW running.** Without it, the app is built and gated but not proven equal.
+  agent writes that as a short Python script using the library, guided by the decoded XSLT and the worked
+  examples in `examples/` (sample-specific by design: the agent copies their patterns, not their values).
+- **Parity needs BW running.** Without it, the app is built and gated but not proven equal; the hand-over says so.
 - **Flogo 2.x designer quirks** that the runtime and `fda cm` don't catch are enforced by the library and
   listed in [gotchas](references/gotchas.md). Most important: the designer deletes activities on open when
   links are stored out of order (F37, filed as FLOGO-20730). Every build ends with a designer-load gate that
@@ -151,14 +176,16 @@ the plan, so you see them before anything is built.
 - "Use `--mcp all` for `<module>`: the agents call every operation of it."
 - "Modernize all REST modules under `<workspace>` one by one, starting with the simplest, and rewire
   `<orchestrator.flogo>` to the new Flogo MCP servers."
+- "List the BW6 modules under `<workspace>` and tell me what you need from me for each." (the agent runs
+  `analyze_bw6.py <workspace> --list`)
 - "Generate the hand-over for `<app>.flogo`: what was built and how I run it."
 
 ## Files
 
 | File | Purpose |
 |---|---|
-| `SKILL.md` | the agent's procedure: inputs, both approval gates, commands, conventions, status |
-| `scripts/analyze_bw6.py` | BW6 module → spec, Flogo-ready OpenAPI, report, gap warnings |
+| `SKILL.md` | the agent's procedure: required inputs and when to ask, both approval gates, commands, conventions, status |
+| `scripts/analyze_bw6.py` | BW6 module → spec, Flogo-ready OpenAPI, report, gap warnings; `--list` shows the modules under a folder |
 | `scripts/modernization_plan.py` | spec → plan for approval |
 | `scripts/scaffold_flogo_app.py` | generic part of the app (project, REST trigger, MCP trigger and tool flows, ports) |
 | `scripts/flogo_logic_lib.py` | library for the per-app logic (mappings, branches, SQL, subflows, RAG, LLM, link order + gates) |
@@ -167,7 +194,7 @@ the plan, so you see them before anything is built.
 | `scripts/restore_branch_returns.py` | repairs branch Returns lost when an app was opened in the designer |
 | `scripts/rewire_orchestrator.py` | copy of an AI orchestrator pointed at the Flogo MCP servers |
 | `scripts/handover_summary.py` | final summary + manual run steps |
-| `scripts/extend_fda_catalog.py`, `scripts/fdalib.py` | user-extension activities for fda; fda wrapper |
-| `examples/*_logic.py` | 5 worked examples (lookup, joins/dates, several outcomes, SQL writes, RAG) |
+| `scripts/extend_fda_catalog.py`, `scripts/fdalib.py` | user-extension activities for fda; fda wrapper + `config.md` reader |
+| `examples/*_logic.py`, `examples/gas_ops_orchestrator_build.py` | worked examples from the repo's BW6 samples (lookup, joins/dates, several outcomes, SQL writes, RAG, XML data + arrays, multipart upload, RAG with images; an AI orchestrator over the Flogo MCP tools). Sample-specific names and data on purpose; paths, users and keys are arguments or environment variables |
 | `references/bw6-to-flogo-patterns.md` | BW6 → Flogo patterns with verified/planned status |
 | `references/gotchas.md` | every trap found so far: symptom, cause, fix |

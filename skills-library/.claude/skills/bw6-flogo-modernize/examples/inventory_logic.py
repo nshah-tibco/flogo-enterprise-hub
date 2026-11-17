@@ -23,7 +23,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts"))
 from flogo_logic_lib import Logic  # noqa: E402
 
-L = Logic(sys.argv[1])
+L = Logic(sys.argv[1] if len(sys.argv) > 1 else None)   # <work>/plan.json from scaffold_flogo_app.py
 G, C, R = L.flow("get_product"), L.flow("check_inventory"), L.flow("reserve_inventory")
 T = L.flow("get_api_inventory_tools")
 TG = L.flow("post_api_inventory_tools_get_product")

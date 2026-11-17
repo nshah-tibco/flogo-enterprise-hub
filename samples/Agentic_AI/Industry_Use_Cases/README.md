@@ -117,7 +117,7 @@ TIBCO BusinessWorks 6 + Flogo "Better Together" samples are kept under [`BW6_Flo
 
 | Sample | Industry | Description | Ports | Database | Status |
 |---|---|---|---|---|---|
-| [Retail — BW & Flogo, Better Together](../BW6_Flogo_Samples/Retail_AI_BW_Flogo/) | Retail & Consumer Goods | Retail assistant where **BW6 apps expose domain REST/MCP** and a Flogo **REST** orchestrator drives the LLM. | Flogo REST `:18085` `/api/query` · BW6 MCP `:18000` | *(inside BW6 apps)* | 🏛️ BW6 |
+| [Retail — BW & Flogo, Better Together](../BW6_Flogo_Samples/Retail_Store_Assistant/) | Retail & Consumer Goods | Retail assistant where **BW6 apps expose domain REST/MCP** and a Flogo **REST** orchestrator drives the LLM. | Flogo REST `:18085` `/api/query` · BW6 MCP `:18000` | *(inside BW6 apps)* | 🏛️ BW6 |
 
 ---
 

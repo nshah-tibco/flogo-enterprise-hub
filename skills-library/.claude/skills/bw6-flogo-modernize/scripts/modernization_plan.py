@@ -17,6 +17,7 @@ Usage:
 Standard library only.
 """
 import argparse
+import glob
 import json
 import os
 import re
@@ -90,14 +91,23 @@ def table(rows, header):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("spec")
+    ap.add_argument("spec", help="REQUIRED. <Module>.bw6spec.json written by analyze_bw6.py (step 1)")
     ap.add_argument("--app-name", help="Flogo app name (default: the module name without dots)")
     ap.add_argument("--mcp", choices=("explicit", "all"), default="explicit",
                     help="explicit: only operations configured as MCP tools in BW; all: every operation (BW's default "
                          "for modules without MCP configuration)")
-    ap.add_argument("--out")
+    ap.add_argument("--out", help="plan file to write (default: <Module>.plan.md next to the spec)")
     a = ap.parse_args()
-    spec = json.load(open(a.spec, encoding="utf-8"))
+    if not os.path.isfile(a.spec):
+        near = sorted(glob.glob(os.path.join(os.path.dirname(os.path.abspath(a.spec)), "*.bw6spec.json")))
+        sys.exit(f"error: {a.spec} not found. Run step 1 first: python analyze_bw6.py <bw6-module-dir> --out "
+                 f"<work>/analysis, then pass <work>/analysis/<Module>.bw6spec.json"
+                 + (f". Specs in that folder: {', '.join(near)}" if near else ""))
+    try:
+        spec = json.load(open(a.spec, encoding="utf-8"))
+        spec["module"], spec["operations"], spec["http"], spec["mcp"]  # noqa: B018  (shape check)
+    except (ValueError, KeyError, TypeError) as e:
+        sys.exit(f"error: {a.spec} is not an analyze_bw6.py spec ({type(e).__name__}: {e}); re-run analyze_bw6.py")
     module = spec["module"]
     app = a.app_name or flogo_app_name(module)
     ops = spec["operations"]
@@ -244,6 +254,23 @@ def main():
             asks.append(f"Database for `{r['name']}`: same database as BW or a copy? User/password for the Flogo app "
                         "(BW's is obfuscated). May the tests write tagged fixture rows (deleted afterwards) and run "
                         "destructive operations (resets)?")
+    types = {x.get("type") or "" for o in ops for x in (o.get("implementation") or {}).get("activities", [])}
+    if any(r["kind"] == "ragResource" for r in spec["sharedResources"]) or any(re.search(r"(?i)\.rag\.|llm|genai", t) for t in types):
+        asks.append("AI / RAG: LLM provider and model (default: `LLM_Provider` / `LLM_Model` in config.md), how the API "
+                    "key is supplied (default: env var at run time - never stored in the .flogo), and the vector store "
+                    "name (must be the same in every app that shares the store).")
+    if any(r["kind"] == "httpClientResource" for r in spec["sharedResources"]) or \
+            any(t == "bpws:invoke" or re.search(r"(?i)sendHTTPRequest|restjson\.Rest$", t) for t in types):
+        asks.append("Called services: base URL and authentication of every service this module calls (stored as app "
+                    "properties).")
+    oas = re.sub(r"\.bw6spec\.json$", ".openapi.json", os.path.abspath(a.spec))
+    err = {}
+    if os.path.isfile(oas):
+        err = (json.load(open(oas, encoding="utf-8")).get("components", {}).get("schemas", {})
+               .get("ErrorResponse", {}).get("properties", {}))
+    if err:
+        asks.append(f"Error replies: JSON `{{{', '.join(err)}}}` with HTTP {', '.join(spec.get('errorCodes', []))}. "
+                    "Other codes the API needs (e.g. 401, 429)? (re-run analyze_bw6.py with --error-codes)")
     asks += [f"{w['item']}: {w['workaround']}" for w in warnings if w["status"] == "decide"
              and "credentials" not in w["item"]]
     asks.append("Should I build and run the app (flogobuild) after generating it, or only generate the .flogo?")

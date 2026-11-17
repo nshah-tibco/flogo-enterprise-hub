@@ -10,8 +10,8 @@ The source app is never modified. The copy gets:
 Every LLM Client / AI Agent activity in the app is rewired. Every change goes through fda; nothing is hand-edited.
 
 Usage:
-  python rewire_orchestrator.py --source <orchestrator.flogo> --out <copy.flogo> [--port <free port>] \
-      --flogo-mcp <Name>=http://localhost:<MCP_PORT>/mcp [--flogo-mcp ...] [--bw-mcp <connection name>] \
+  python rewire_orchestrator.py --source <orchestrator.flogo> --out <copy.flogo> [--port <free port>]
+      --flogo-mcp <Name>=http://localhost:<MCP_PORT>/mcp [--flogo-mcp ...] [--bw-mcp <connection name>]
       [--flogo-only] [--api-key <key>]
 
 Requires the BW (unless --flogo-only) and Flogo MCP servers to be running (tool lists are read live).
@@ -82,12 +82,13 @@ def encrypt(plain):
 def main():
     global FDA
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--source", required=True)
-    ap.add_argument("--out", required=True)
+    ap.add_argument("--source", required=True, help="REQUIRED. the AI orchestrator .flogo (never modified)")
+    ap.add_argument("--out", required=True, help="REQUIRED. the rewired copy to write, e.g. <FLOGO_APPS_DIR>/<Orch>Modernized.flogo")
     ap.add_argument("--port", type=int, help="listening port of the copy (must differ from the source's when both run)")
     ap.add_argument("--trigger", help="trigger id to move to --port when the app has several listening triggers")
     ap.add_argument("--bw-mcp", help="name of the source's BW MCP connection when it has several MCP connections")
-    ap.add_argument("--flogo-mcp", action="append", default=[], metavar="NAME=URL")
+    ap.add_argument("--flogo-mcp", action="append", default=[], metavar="NAME=URL",
+                    help="REQUIRED, repeatable. connection name = MCP endpoint of a running modernized Flogo app")
     ap.add_argument("--api-key", help="LLM API key; stored encrypted (SECRET:) as a password property. Keep the copy out of git")
     ap.add_argument("--api-key-property", help="app property holding the LLM API key (default: read from the LLM "
                                                "activity's apiKey mapping)")
@@ -100,9 +101,14 @@ def main():
         sys.exit("set --fda or $FDA to the flogodesign-cli binary")
     if os.path.abspath(a.source) == os.path.abspath(a.out):
         sys.exit("--out must differ from --source; the source orchestrator is never modified")
+    if not os.path.isfile(a.source) or not a.source.endswith(".flogo"):
+        sys.exit(f"error: --source {a.source}: not an existing .flogo (the AI orchestrator app to copy)")
+    bad = [s for s in a.flogo_mcp if not re.match(r"[A-Za-z][\w-]*=https?://\S+$", s)]
+    if bad or not a.flogo_mcp:
+        sys.exit("error: give each modernized Flogo MCP server as --flogo-mcp <ConnectionName>=http://<host>:<MCP_PORT>"
+                 "<path> (the MCP endpoint of a RUNNING Flogo app)" + (f"; malformed: {', '.join(bad)}" if bad else ""))
 
-    shutil.copyfile(a.source, a.out)
-    app = json.load(open(a.out, encoding="utf-8"))
+    app = json.load(open(a.source, encoding="utf-8"))   # read only; checks below run before anything is written
     mcp_conns = {cid: c for cid, c in app.get("connections", {}).items() if c.get("ref", "").endswith("mcpserverconfig")}
     if a.bw_mcp:
         mcp_conns = {cid: c for cid, c in mcp_conns.items() if c.get("name") == a.bw_mcp}
@@ -121,6 +127,7 @@ def main():
     if not tasks:
         sys.exit("no LLM Client / AI Agent activity found")
 
+    shutil.copyfile(a.source, a.out)   # byte copy of the source; the copy is then changed only through fda
     served = {}
     new_ids = []
     for spec in a.flogo_mcp:

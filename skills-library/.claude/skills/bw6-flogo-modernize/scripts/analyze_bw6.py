@@ -12,9 +12,17 @@ Reads (never writes) a BW6 module folder -- the one holding META-INF/module.bwm 
   <out>/<Module>.report.md      a human-readable summary with a modernization checklist.
 
 Usage:
-  python analyze_bw6.py <bw6-module-dir> [--out <dir>] [--port-offset 1000]
+  python analyze_bw6.py <bw6-module-dir> --out <work>/analysis [--port-offset 1000] [--mcp-port-offset 100]
+                        [--bw-port <port>] [--rename OLD=NEW ...] [--error-codes CODE:TEXT,...]
+  python analyze_bw6.py <folder> --list          list the BW6 modules at/below a folder (workspace, .application)
 
-Standard library only. Exits 2 when the folder is not a BW6 module.
+Input (required): ONE BW6 module folder - the folder that holds META-INF/module.bwm (BW Studio: the project
+named like the module, e.g. Acme.Orders.API, not Acme.Orders.API.application). Also accepted: the module's
+META-INF folder or its module.bwm file, and a <Name>.application folder whose META-INF/TIBCO.xml lists exactly
+one application module that sits next to it. A workspace folder holding several modules is rejected with the
+list of candidates: analyze them one at a time.
+
+Standard library only. Exits 2 when the input is not (or does not resolve to exactly one) BW6 module.
 """
 import argparse
 import copy
@@ -35,6 +43,8 @@ ACTIVITY_MAP = {
     "bw.generalactivities.parsexml": ("act_general_xmltojson", "medium", "XML parse"),
     "parsexml": ("act_general_xmltojson", "medium", "XML parse"),
     "bw.generalactivities.sleep": ("act_general_sleep", "easy", "Sleep"),
+    "bw.generalactivities.timer": ("Timer trigger (process starter)", "medium", "Timer starter"),
+    "bw.file.filepoller": ("File poller trigger (process starter)", "medium", "File poller starter"),
     "bw.jdbc.JDBCQuery": ("act_<db>_query", "medium", "SQL query via the matching Flogo DB connector"),
     "bw.jdbc.update": ("act_<db>_insert/update/delete", "medium", "SQL update via the matching Flogo DB connector"),
     "bw.jdbc.SQLDirect": ("act_<db>_query (SQL direct)", "medium", "Direct SQL"),
@@ -49,6 +59,13 @@ ACTIVITY_MAP = {
     "bw.rag.query": ("openAI vectorSearch + Agentic AI LLM Client answer (verified) - or REST to the vector DB + LLM",
                      "hard", "RAG query"),
     "accumulateend": ("iterator / @foreach mapping", "medium", "BW accumulate loop"),
+    "bw.file.write": ("act_file_write (File connector)", "easy", "Write file"),
+    "bw.file.read": ("act_file_read (File connector)", "easy", "Read file"),
+    "bw.file.list": ("act_file_list (File connector)", "easy", "List files"),
+    "bw.file.create": ("act_file_create (File connector)", "easy", "Create file/directory"),
+    "bw.file.remove": ("act_file_remove (File connector)", "easy", "Remove file"),
+    "bw.file.rename": ("act_file_rename (File connector)", "easy", "Rename/move file"),
+    "bw.file.copy": ("act_file_copy (File connector)", "easy", "Copy file"),
     "bwassign": ("mapper", "easy", "Assign"),
 }
 
@@ -371,7 +388,7 @@ def parse_process(bwp_path):
             elif t == "scope" and el.get("group") and el.get("group") != "iterate":
                 key = "group:" + el.get("group")
             elif t == "invoke" and el.get("partnerLink"):
-                key = "invoke (outbound call)"
+                key = "invoke (service call)"
             elif t == "activityExtension":
                 ty = next((x.get("activityTypeID") for x in el.iter() if x.get("activityTypeID")), "") or ""
                 if re.search(r"(?i)callprocess|subprocess", ty):
@@ -457,6 +474,27 @@ ERROR_CODES = (("400", "Invalid or missing input"), ("403", "Not allowed"), ("40
                ("500", "Unexpected error"))
 
 
+# Ports Chrome/Edge/Firefox refuse to connect to ("unsafe ports": fetch fails with "Failed to fetch", no request is sent).
+# BW 5000 + offset 1000 = 6000 (X11) is the common trap. Chromium net/base/port_util.cc kRestrictedPorts.
+BROWSER_UNSAFE_PORTS = {1, 7, 9, 11, 13, 15, 17, 19, 20, 21, 22, 23, 25, 37, 42, 43, 53, 69, 77, 79, 87, 95, 101, 102,
+                        103, 104, 109, 110, 111, 113, 115, 117, 119, 123, 135, 137, 139, 143, 161, 179, 389, 427, 465,
+                        512, 513, 514, 515, 526, 530, 531, 532, 540, 548, 554, 556, 563, 587, 601, 636, 989, 990, 993,
+                        995, 1719, 1720, 1723, 2049, 3659, 4045, 4190, 5060, 5061, 6000, 6566, 6665, 6666, 6667, 6668,
+                        6669, 6679, 6697, 10080}
+
+
+def browser_safe_port(port, label=None):
+    """Move a port off the browser-blocked list (next free number up); warn when a label is given."""
+    if port is None or port not in BROWSER_UNSAFE_PORTS:
+        return port
+    new = port
+    while new in BROWSER_UNSAFE_PORTS:
+        new += 1
+    if label:
+        print(f"warning: {label} port {port} is blocked by web browsers (unsafe port); using {new} instead", file=sys.stderr)
+    return new
+
+
 def flogo_openapi(module_dir, ops, http_port, offset, error_codes=ERROR_CODES, flavours=None):
     files = sorted({o["openapiFile"] for o in ops if o.get("openapiFile")})
     merged = None
@@ -480,6 +518,16 @@ def flogo_openapi(module_dir, ops, http_port, offset, error_codes=ERROR_CODES, f
     used = set()
     for o in ops:
         item = merged["paths"].get(o["path"], {}).get(o["method"].lower())
+        base = (o.get("basePath") or "/").rstrip("/")
+        if item is None and base and o["path"].startswith(base + "/"):
+            # the descriptor lists the path without the binding's basePath: serve the full BW path in Flogo
+            short = o["path"][len(base):]
+            item = merged["paths"].get(short, {}).get(o["method"].lower())
+            if item is not None:
+                merged["paths"].setdefault(o["path"], {})[o["method"].lower()] = merged["paths"][short].pop(o["method"].lower())
+                if not merged["paths"][short]:
+                    del merged["paths"][short]
+                o["basePathMerged"] = True
         if item is None:
             continue
         base = slug(o["mcp"]["name"] if o["mcp"]["explicit"] else f"{o['method'].lower()}_{o['path']}")
@@ -503,8 +551,29 @@ def flogo_openapi(module_dir, ops, http_port, offset, error_codes=ERROR_CODES, f
         "type": "object",
         "properties": {"error": {"type": "string"}, "message": {"type": "string"}}})
     if http_port:
-        merged["servers"] = [{"url": f"http://localhost:{int(http_port) + offset}/"}]
+        merged["servers"] = [{"url": f"http://localhost:{browser_safe_port(int(http_port) + offset, None)}/"}]
     return merged, renames
+
+
+PATH_KEYS = {"moduleDir", "file", "openapiFile", "process"}  # real paths into the BW module: never renamed
+
+
+def apply_renames(value, rules, key=None):
+    """Apply --rename rules ('OLD=NEW' literal, 're:PATTERN=REPL' regex) to every string value (not to dict keys,
+    not to the PATH_KEYS values that point at real files)."""
+    if isinstance(value, dict):
+        return {k: (v if k in PATH_KEYS else apply_renames(v, rules, k)) for k, v in value.items()}
+    if isinstance(value, list):
+        return [apply_renames(v, rules, key) for v in value]
+    if isinstance(value, str):
+        for r in rules:
+            if r.startswith("re:"):
+                pat, _, repl = r[3:].rpartition("=")
+                value = re.sub(pat, repl, value)
+            else:
+                old, _, new = r.partition("=")
+                value = value.replace(old, new)
+    return value
 
 
 def gap_warnings(spec, openapi):
@@ -530,9 +599,15 @@ def gap_warnings(spec, openapi):
     for o in ops:
         name = o.get("flogoFlow") or o.get("nickname")
         if not o.get("flogoFlow"):
-            add("Operation", f"{o['method']} {o['path']} has no matching path in the OpenAPI descriptor",
-                "the scaffold cannot create its flow", "fix/regenerate the BW service descriptor, then re-analyze", "decide")
-        if o.get("basePath") not in (None, "", "/"):
+            if not o.get("openapiFile"):
+                add("Operation", f"{o['method']} {o['path']}: the REST binding has no OpenAPI (JSON) service descriptor",
+                    "the scaffold builds flows from an OpenAPI 3 document",
+                    "export/generate the OpenAPI (Swagger) JSON for the REST service in BW Studio (or write one from the "
+                    "binding's XSD schemas), add it under Service Descriptors, re-analyze", "decide")
+            else:
+                add("Operation", f"{o['method']} {o['path']} has no matching path in the OpenAPI descriptor",
+                    "the scaffold cannot create its flow", "fix/regenerate the BW service descriptor, then re-analyze", "decide")
+        if o.get("basePath") not in (None, "", "/") and not o.get("basePathMerged"):
             add("Operation", f"{name}: binding basePath {o['basePath']}", "Flogo paths come from the descriptor only",
                 "prefix the paths in the Flogo-ready OpenAPI before scaffolding", "manual")
         if any(p["in"] == "header" for p in o["params"]):
@@ -547,7 +622,10 @@ def gap_warnings(spec, openapi):
                 "catchAll": ("fault handler", "error branch / flow error handler reading $error", "manual"),
                 "throw": ("explicit fault", "JSON error reply (400/403/404/409/422) on that branch", "manual"),
                 "rethrow": ("re-thrown fault", "JSON 500 error reply", "manual"),
-                "invoke (outbound call)": ("calls another service", "act_general_rest / act_http_client to the same URL (property for the base URL)", "manual"),
+                "invoke (service call)": ("calls a service: another process of this module (see 'not reached' processes) "
+                                          "or an external REST/SOAP service",
+                                          "internal process -> Logic.subflow + Logic.call; external REST -> act_general_rest "
+                                          "with the base URL as an app property", "manual"),
                 "call process": ("sub-process call", "Logic.subflow + Logic.call (act_default_subflow)", "manual"),
                 "iterate group": ("loop", "Logic.subflow + Logic.call(iterate=...) or a @foreach mapping", "manual"),
                 "forEach": ("loop", "Logic.subflow + Logic.call(iterate=...) or a @foreach mapping", "manual"),
@@ -609,14 +687,130 @@ def gap_warnings(spec, openapi):
     return W
 
 
+# ----------------------------------------------------------------------------------------------
+# input resolution: which folder is the BW6 module? (fail fast, name the expected file, list candidates)
+# ----------------------------------------------------------------------------------------------
+SKIP_DIRS = {".git", ".metadata", "node_modules", "target", "bin", ".settings", ".flogodesign", "__pycache__"}
+
+
+def is_module(path):
+    return os.path.isfile(os.path.join(path, "META-INF", "module.bwm"))
+
+
+def find_modules(root, max_depth=5):
+    """Every BW6 module folder (holding META-INF/module.bwm) at or below root, sorted."""
+    root = os.path.abspath(root)
+    base = root.rstrip("\\/").count(os.sep)
+    found = []
+    for dirpath, dirnames, _ in os.walk(root):
+        if is_module(dirpath):
+            found.append(dirpath)
+            dirnames[:] = []          # a module does not nest other modules
+            continue
+        if dirpath.count(os.sep) - base >= max_depth:
+            dirnames[:] = []
+        dirnames[:] = sorted(d for d in dirnames if d not in SKIP_DIRS)
+    return sorted(found)
+
+
+def manifest(module_dir):
+    """META-INF/MANIFEST.MF as {header: value}, continuation lines (leading space) unfolded."""
+    p = os.path.join(module_dir, "META-INF", "MANIFEST.MF")
+    if not os.path.isfile(p):
+        return {}
+    text = re.sub(r"\r?\n ", "", read(p))
+    return {k.strip(): v.strip() for k, _, v in (ln.partition(":") for ln in text.splitlines()) if v}
+
+
+def module_summary(module_dir):
+    """One line for candidate lists: kind, REST operation count, palettes that need extra inputs."""
+    mf = manifest(module_dir)
+    kind = "shared module" if "TIBCO-BW-SharedModule" in mf else "application module"
+    palettes = sorted(set(re.findall(r"name=(bw\.[\w.]+)", mf.get("Require-Capability", ""))))
+    try:
+        n_ops = len(parse_module(module_dir)[0])
+    except (ET.ParseError, OSError):
+        n_ops = "?"
+    needs = [label for key, label in (("jdbc", "JDBC -> DB details"), ("rag", "AI/RAG -> LLM + vector store"),
+                                      ("httpclient", "calls other services -> base URLs"))
+             if any(key in p for p in palettes)]
+    return f"{kind}, {n_ops} REST operation(s)" + (f"; {', '.join(needs)}" if needs else "")
+
+
+def application_modules(app_dir):
+    """Modules a <Name>.application lists in META-INF/TIBCO.xml -> [(symbolicName, technologyType, folder|None)].
+    BW Studio keeps them as sibling projects of the .application folder."""
+    p = os.path.join(app_dir, "META-INF", "TIBCO.xml")
+    root = ET.fromstring(read(p).encode("utf-8"))
+    out = []
+    parent = os.path.dirname(os.path.abspath(app_dir).rstrip("\\/"))
+    siblings = find_modules(parent, max_depth=1)
+    for m in root.iter():
+        if local(m.tag) != "module":
+            continue
+        name = next((c.text or "" for c in m if local(c.tag) == "symbolicName"), "").strip()
+        ttype = next((c.text or "" for c in m if local(c.tag) == "technologyType"), "").strip()
+        folder = next((s for s in siblings if os.path.basename(s) == name
+                       or manifest(s).get("Bundle-SymbolicName", "").split(";")[0].strip() == name), None)
+        if name:
+            out.append((name, ttype, folder))
+    return out
+
+
+def resolve_module_dir(path):
+    """(module_dir, None) when path is - or unambiguously names - one BW6 module; else (None, error text)."""
+    p = os.path.abspath(path)
+    expect = "expected a BW6 module folder: the folder that holds META-INF/module.bwm"
+    if not os.path.exists(p):
+        return None, f"{p} does not exist ({expect})"
+    if os.path.isfile(p):
+        if os.path.basename(p) == "module.bwm" and os.path.basename(os.path.dirname(p)) == "META-INF":
+            return os.path.dirname(os.path.dirname(p)), None
+        if os.path.basename(p) == "TIBCO.xml":
+            p = os.path.dirname(os.path.dirname(p))
+        else:
+            return None, f"{p} is a file ({expect})"
+    if is_module(p):
+        return p, None
+    if os.path.basename(p) == "META-INF" and os.path.isfile(os.path.join(p, "module.bwm")):
+        return os.path.dirname(p), None
+    if os.path.isfile(os.path.join(p, "META-INF", "TIBCO.xml")):  # a <Name>.application project
+        mods = application_modules(p)
+        app_mods = [m for m in mods if m[1] != "bw-sharedmodule"]
+        found = [m for m in app_mods if m[2]]
+        if len(found) == 1 and len(app_mods) == 1:
+            print(f"note: {os.path.basename(p)} is a BW application; analyzing its module {found[0][2]}", file=sys.stderr)
+            return found[0][2], None
+        lines = [f"  - {n} ({t or '?'}): " + (f"{f}  [{module_summary(f)}]" if f else "folder not found next to the "
+                                                 "application - pass its path") for n, t, f in mods]
+        return None, (f"{p} is a BW application (META-INF/TIBCO.xml), not a module; {expect}. It lists "
+                      f"{len(mods)} module(s):\n" + "\n".join(lines) + "\nRe-run with the module folder to modernize.")
+    cands = find_modules(p)
+    if not cands:
+        return None, (f"no BW6 module found at or below {p}: {expect} (missing {os.path.join(p, 'META-INF', 'module.bwm')}). "
+                      "Point at the module project folder of your BW Studio workspace.")
+    return None, (f"{p} is not a BW6 module (no META-INF/module.bwm); {len(cands)} module folder(s) found below it:\n"
+                  + "\n".join(f"  - {c}  [{module_summary(c)}]" for c in cands)
+                  + "\nAnalyze one module per run: re-run with one of these folders (ask the user which ones, and in "
+                    "which order, when that is not clear).")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("module_dir")
-    ap.add_argument("--out", default=None, help="output folder (default: ./<Module>_modernize)")
+    ap.add_argument("module_dir", metavar="bw6-module-dir",
+                    help="REQUIRED. BW6 module folder (holds META-INF/module.bwm); with --list any folder to search")
+    ap.add_argument("--list", action="store_true",
+                    help="only list the BW6 modules at/below the folder (kind, REST operations, palettes that need "
+                         "extra inputs) and exit - use it to pick the modules and their order")
+    ap.add_argument("--out", default=None, help="output folder, e.g. <work>/analysis (default: ./<Module>_modernize)")
     ap.add_argument("--port-offset", type=int, default=1000, help="added to the BW HTTP port (default 1000)")
     ap.add_argument("--mcp-port-offset", type=int, default=100, help="Flogo MCP port = Flogo REST port + this (default 100)")
     ap.add_argument("--bw-port", type=int, help="BW HTTP port when the connector's port can't be read (property-bound "
                                                  "without a default, or several connectors)")
+    ap.add_argument("--rename", action="append", default=[], metavar="OLD=NEW",
+                    help="replace text in everything the analysis writes (titles, descriptions, tool texts, literals, data, "
+                         "module name) - e.g. to drop a customer/brand name; 're:<regex>=<replacement>' for a regular "
+                         "expression. Real file paths are never renamed. Repeatable, applied in order")
     ap.add_argument("--error-codes", default="", metavar="CODE:TEXT,...",
                     help="extra error responses to declare on every operation, e.g. 401:Unauthorized,429:Too many requests "
                          f"(always declared: {', '.join(c for c, _ in ERROR_CODES)})")
@@ -624,15 +818,33 @@ def main():
     extra = [tuple(x.split(":", 1)) for x in a.error_codes.split(",") if ":" in x]
     error_codes = tuple(ERROR_CODES) + tuple((c.strip(), t.strip()) for c, t in extra if c.strip() not in dict(ERROR_CODES))
 
-    module_dir = os.path.abspath(a.module_dir)
-    if not os.path.exists(os.path.join(module_dir, "META-INF", "module.bwm")):
-        print(f"error: {module_dir} is not a BW6 module (no META-INF/module.bwm)", file=sys.stderr)
+    if a.list:
+        root = os.path.abspath(a.module_dir)
+        if not os.path.isdir(root):
+            print(f"error: {root} is not a folder", file=sys.stderr)
+            return 2
+        mods = find_modules(root)
+        if os.path.isfile(os.path.join(root, "META-INF", "TIBCO.xml")) and not mods:
+            mods = [f for _, _, f in application_modules(root) if f]
+        for m in mods:
+            print(f"{m}  [{module_summary(m)}]")
+        if not mods:
+            print(f"error: no BW6 module (META-INF/module.bwm) found at or below {root}", file=sys.stderr)
+            return 2
+        return 0
+
+    module_dir, problem = resolve_module_dir(a.module_dir)
+    if problem:
+        print(f"error: {problem}", file=sys.stderr)
         return 2
     module = os.path.basename(module_dir.rstrip("\\/"))
     out = os.path.abspath(a.out or f"{slug(module)}_modernize")
     os.makedirs(out, exist_ok=True)
 
     ops, module_props, components, other_bindings, references = parse_module(module_dir)
+    if not ops:
+        print(f"warning: {module} has no REST service binding ({module_summary(module_dir)}) - nothing for the scaffold "
+              "to build (shared module, or non-REST starters only: see the report)", file=sys.stderr)
     substvars = parse_substvars(module_dir)
     for mp in module_props:
         mp.update(substvars.get(mp["name"], {}))
@@ -640,9 +852,19 @@ def main():
         if not any(mp["name"] == name for mp in module_props):
             module_props.append({"name": name, **v})
     resources = parse_resources(module_dir)
+
+    def prop_default(name):
+        mp = next((m for m in module_props if m["name"] == name or m["name"].split("/")[-1] == name.split("/")[-1]), {})
+        vals = mp.get("profiles") or {}
+        return vals.get("default", next(iter(vals.values()), None))
+
     for r in resources:
         if r["kind"] == "jdbcResource":
-            r["database"] = jdbc_kind(r["settings"])
+            resolved = dict(r["settings"])
+            for k in ("dbURL", "jdbcDriver"):
+                if not resolved.get(k) and r.get("propertyBound", {}).get(k):
+                    resolved[k] = prop_default(r["propertyBound"][k]) or ""
+            r["database"] = jdbc_kind(resolved)
     http_conns = [r for r in resources if r["kind"] == "httpConnResource"]
 
     def conn_port(r):
@@ -651,6 +873,8 @@ def main():
         if v and v.isdigit():
             return int(v)
         prop = r.get("propertyBound", {}).get("port")
+        if prop == "BW.CLOUD.PORT":
+            return 8080  # BWCE built-in: the container's HTTP port (default 8080)
         if prop:
             mp = next((m for m in module_props if m["name"] == prop), {})
             for val in (mp.get("profiles") or {}).values():
@@ -689,6 +913,10 @@ def main():
                 "activityTypes": sorted({a["type"] for b in br for a in b["activities"] if a.get("type")})}
                for rel, br in processes.items() if rel not in reached]
 
+    # Flogo ports: BW port + offsets, moved off the browser-blocked list (demo pages call these from a browser)
+    flogo_rest_port = browser_safe_port(int(http_port) + a.port_offset, "Flogo REST") if http_port else None
+    flogo_mcp_port = (browser_safe_port(int(http_port) + a.port_offset + a.mcp_port_offset, "Flogo MCP")
+                      if http_port else None)   # from the unmoved REST port, so a moved REST port does not move it
     flavours = {}
     spec_openapi, renames = flogo_openapi(module_dir, ops, http_port, a.port_offset, error_codes, flavours)
 
@@ -706,7 +934,7 @@ def main():
     spec = {
         "module": module,
         "moduleDir": module_dir,
-        "http": {"bwPort": http_port, "flogoPort": int(http_port) + a.port_offset if http_port else None,
+        "http": {"bwPort": http_port, "flogoPort": flogo_rest_port,
                  "connectors": [{"name": r["name"], "port": conn_port(r), "boundTo": r.get("propertyBound", {}).get("port")}
                                 for r in http_conns]},
         "mcp": {"tools": [o["mcp"]["name"] for o in ops if o["mcp"]["explicit"] and o["mcp"]["kind"] == "tool"],
@@ -715,7 +943,7 @@ def main():
                 # those; a module with none exposes every operation under its nickname.
                 "implicitTools": ([] if any(o["mcp"]["explicit"] for o in ops)
                                   else [o["mcp"]["name"] for o in ops]),
-                "flogoPort": int(http_port) + a.port_offset + a.mcp_port_offset if http_port else None},
+                "flogoPort": flogo_mcp_port},
         "operations": ops,
         "operationIdRenames": renames,
         "moduleProperties": module_props,
@@ -730,6 +958,12 @@ def main():
         "errorCodes": [c for c, _ in error_codes],
     }
     spec["warnings"] = gap_warnings(spec, spec_openapi)
+    if a.rename:
+        spec = apply_renames(spec, a.rename)
+        spec_openapi = apply_renames(spec_openapi, a.rename) if spec_openapi else spec_openapi
+        spec["renamesApplied"] = len(a.rename)  # the rules themselves may contain the name being removed
+        module = spec["module"]
+        ops, resources, activity_plan = spec["operations"], spec["sharedResources"], spec["activityPlan"]
     base = os.path.join(out, slug(module))
     with open(base + ".bw6spec.json", "w", encoding="utf-8") as f:
         json.dump(spec, f, indent=1)

@@ -1,0 +1,18 @@
+INDUSTRIAL GAS - SAFETY DATA SHEET AND STORAGE GUIDE
+Product: Argon 5.0 (Compressed Gas)
+Document ID: IG-SDS-ARG-002   Revision: 5   Effective date: 2026-01-15
+NOTE: FICTIONAL DOCUMENT CREATED FOR DEMO PURPOSES ONLY. NOT FOR OPERATIONAL USE.
+
+1. Product identification. Industrial Gas Argon 5.0 (Ar) is a high-purity inert gas with a minimum purity of 99.999%. It is used for TIG and MIG welding shielding, semiconductor processing, metal heat treatment and laboratory analysis. Argon 5.0 is supplied in 50 L steel cylinders. Typical Industrial Gas cylinder IDs for this product start with the prefix CYL-ARG, for example CYL-ARG-9082.
+
+2. Pressure limits for Argon cylinders. The nominal filling pressure of an Industrial Gas Argon 5.0 cylinder is 200 bar at 15 degrees C. The maximum allowable working pressure of the cylinder is 230 bar and the cylinder test pressure is 300 bar. Argon cylinders must never be refilled or pressurised above 200 bar at 15 degrees C. Pressure rises by about 0.6 bar for every 1 degree C increase in temperature, so cylinders must not be heated. A regulator rated for at least 230 bar inlet pressure must be used; low-pressure regulators must never be connected directly to an Argon cylinder.
+
+3. Storage requirements for Argon cylinders. Argon cylinders must be stored: (a) upright and secured with chains or straps at two-thirds of their height; (b) in a dry, well-ventilated area, preferably outdoors under a roof or in a dedicated gas store; (c) at temperatures between -20 degrees C and +50 degrees C; (d) away from heat sources, direct sunlight and electrical circuits; (e) with the valve closed and the valve protection cap fitted; (f) separated into full and empty groups, with empty cylinders clearly marked "EMPTY". Argon is not flammable, so it may be stored next to Nitrogen and other inert gases, but it must be at least 3 metres from flammable gases such as Hydrogen unless a fire-rated wall separates them.
+
+4. Main hazards of Argon. Argon is non-toxic and non-flammable but is an asphyxiant that is heavier than air (relative density 1.38). Leaking Argon accumulates in low points such as pits, trenches and basements, where it can create an oxygen-deficient atmosphere without warning. Areas below ground level where Argon is used must have oxygen monitoring with an alarm at 19.5% O2.
+
+5. Handling Argon cylinders. Move Argon cylinders only with a suitable cylinder trolley, never by rolling them on their base or lifting them by the valve or cap. Wear safety shoes and gloves when handling cylinders. Open the cylinder valve slowly, and close it after use and before disconnecting the regulator.
+
+6. Certification of Argon cylinders. Each Argon cylinder carries a periodic inspection stamp. Argon cylinders must be re-tested every 10 years under ISO 18119, and a cylinder whose certification date has expired must not be filled or dispatched. For example, cylinder CYL-ARG-9082 has a certification valid until 2026-12-31.
+
+7. Revision history. Revision 5 (2026-01-15) updated the maximum allowable working pressure and the storage separation distances from flammable gases.

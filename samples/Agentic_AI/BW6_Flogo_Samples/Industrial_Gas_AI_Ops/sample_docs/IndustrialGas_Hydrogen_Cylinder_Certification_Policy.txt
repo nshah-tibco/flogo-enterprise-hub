@@ -1,0 +1,20 @@
+INDUSTRIAL GAS - HYDROGEN CYLINDER CERTIFICATION AND COMPLIANCE POLICY
+Product: Hydrogen, Ultra-Pure 6.0 (Compressed Gas)
+Document ID: IG-POL-HYD-011   Revision: 3   Effective date: 2026-05-20
+NOTE: FICTIONAL DOCUMENT CREATED FOR DEMO PURPOSES ONLY. NOT FOR OPERATIONAL USE.
+
+1. Scope. This policy defines the certifications required before any Industrial Gas Hydrogen (H2) cylinder can be filled, stored at a yard or dispatched to a customer. It applies to Ultra-Pure Hydrogen 6.0 (minimum purity 99.9999%) supplied in 50 L cylinders at a nominal filling pressure of 220 bar. Typical Industrial Gas cylinder IDs for this product start with the prefix CYL-HYD, for example CYL-HYD-7730.
+
+2. Required certifications for Hydrogen cylinders. Every Hydrogen cylinder must hold all of the following valid certifications: (a) Transportable Pressure Equipment certification (TPED, Pi mark) or DOT-3AA marking for North American service; (b) a periodic inspection and hydrostatic test certificate under ISO 6406, renewed every 10 years; (c) Hydrogen embrittlement compatibility certification of the cylinder steel under ISO 11114-4; (d) a valve certificate under ISO 10297 for a Hydrogen-specific valve with a left-hand thread outlet (CGA 350 in North America); (e) a batch Certificate of Analysis confirming purity of 99.9999% with oxygen below 1 ppm and moisture below 2 ppm.
+
+3. Certification expiry rule. A Hydrogen cylinder whose periodic inspection certificate has expired, or will expire within 30 days, must not be filled or dispatched. The yard system must mark it "Quarantine - Recertification Due". For example, cylinder CYL-HYD-7730 is certified until 2027-03-31.
+
+4. ATEX and site requirements. Hydrogen is extremely flammable (flammable range 4% to 75% in air) and burns with an almost invisible flame. Yards storing Hydrogen cylinders must be classified as ATEX Zone 2 around the storage area. They must use only certified explosion-proof (Ex) electrical equipment and must keep Hydrogen at least 3 metres from Oxygen and other oxidising gases, or separate them with a fire-rated wall at least 2 metres high.
+
+5. Personnel certification. Only operators holding a valid Industrial Gas Hydrogen Handling Certificate (renewed every 2 years) may connect, disconnect or dispatch Hydrogen cylinders. Drivers transporting Hydrogen must hold an ADR (Europe) or HazMat (US) certificate for Class 2.1 flammable gases.
+
+6. Leak testing before dispatch. Before a Hydrogen cylinder is released for dispatch, the valve and outlet must be leak-tested with a certified Hydrogen detector or leak-detection fluid. Any reading above 10% of the lower explosive limit (0.4% H2) means the cylinder must be quarantined.
+
+7. Records. Certification records for each Hydrogen cylinder (cylinder ID, test dates, certificate numbers and the operator who approved the release) must be kept for at least 10 years and be available for audit.
+
+8. Revision history. Revision 3 (2026-05-20) added the 30-day expiry rule in section 3 and the leak-test threshold in section 6.

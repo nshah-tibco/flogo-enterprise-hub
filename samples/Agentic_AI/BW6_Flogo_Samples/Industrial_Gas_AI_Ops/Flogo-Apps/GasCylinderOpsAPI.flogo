@@ -1,0 +1,1831 @@
+{
+  "imports": [
+    "tr_rest github.com/tibco/flogo-general/src/app/General/trigger/rest",
+    "github.com/project-flogo/flow",
+    "act_default_noop github.com/project-flogo/contrib/activity/noop",
+    "act_general_log github.com/tibco/flogo-general/src/app/General/activity/log",
+    "act_general_httpresponse github.com/tibco/flogo-general/src/app/General/activity/httpresponse",
+    "act_default_actreturn github.com/project-flogo/contrib/activity/actreturn",
+    "tr_mcpserver github.com/tibco/flogo-mcp/src/app/MCP/trigger/mcpserver",
+    "act_default_subflow github.com/project-flogo/flow/activity/subflow",
+    "git.tibco.com/git/product/ipaas/wi-contrib.git/function/utility",
+    "github.com/project-flogo/contrib/function/string",
+    "github.com/project-flogo/contrib/function/coerce",
+    "act_general_mapper github.com/tibco/flogo-general/src/app/General/activity/mapper",
+    "github.com/project-flogo/contrib/function/datetime",
+    "github.com/project-flogo/contrib/function/array"
+  ],
+  "name": "GasCylinderOpsAPI",
+  "description": "Flogo modernization of BW6 industrial_gas_smart_cylinder: REST API + MCP server for the same operations",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "settings": {
+        "port": "=$property[\"REST_PORT\"]",
+        "APISpecUpdate": true,
+        "swagger": "spec://bb9bc808-cabd-4315-8e97-2771a5feb089",
+        "swaggerVersion": "v3",
+        "authenticationType": "None",
+        "username": "",
+        "password": "",
+        "apiVersion": "1.0.0",
+        "secureConnection": false,
+        "serverKey": "",
+        "caCertificate": "",
+        "readHeaderTimeout": 0,
+        "readTimeout": 0,
+        "maxRequestBodySize": 15
+      },
+      "id": "Industrial_Gas_Smart_Cylinder_Operations_API",
+      "name": "Industrial_Gas_Smart_Cylinder_Operations_API",
+      "description": "Spec-Driven Development Contract for TIBCO BusinessWorks 6. Exposes cylinder inventory management endpoints designed to be auto-discovered by MCP Servers and queried by AI Agents.\n",
+      "ref": "#tr_rest",
+      "handlers": [
+        {
+          "settings": {
+            "APISpecPath": "/api/v1/cylinders/{id}",
+            "Method": "GET",
+            "reqType": "application/json",
+            "Path": "/api/v1/cylinders/{id}",
+            "OutputValidation": false
+          },
+          "action": {
+            "input": {
+              "body": "=$.body",
+              "pathParams": "=$.pathParams"
+            },
+            "output": {
+              "code": "=$.code",
+              "responseBody": "=$.responseBody"
+            },
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:getCylinderStatus_GET"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": true,
+            "data": {},
+            "responseBody": {},
+            "responseCodesSchema": {},
+            "message": ""
+          },
+          "schemas": {
+            "output": {
+              "pathParams": {
+                "type": "json",
+                "value": "{\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"string\"}},\"required\":[\"id\"]}"
+              },
+              "queryParams": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              },
+              "headers": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              }
+            },
+            "reply": {
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              },
+              "responseCodesSchema": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseType\":{\"type\":\"string\"},\"responseSchema\":{\"type\":\"string\"}}}}",
+                "fe_metadata": "[{\"code\":200,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"required\\\":[\\\"cylinderId\\\",\\\"gasType\\\",\\\"purityGrade\\\",\\\"pressureBar\\\",\\\"location\\\",\\\"status\\\"],\\\"properties\\\":{\\\"cylinderId\\\":{\\\"type\\\":\\\"string\\\",\\\"description\\\":\\\"Barcode/Serial number\\\"},\\\"gasType\\\":{\\\"type\\\":\\\"string\\\",\\\"description\\\":\\\"Industrial gas classification\\\"},\\\"purityGrade\\\":{\\\"type\\\":\\\"string\\\",\\\"description\\\":\\\"Gas purity spec level (e.g. 5.0 for semiconductor grade)\\\"},\\\"pressureBar\\\":{\\\"type\\\":\\\"integer\\\",\\\"description\\\":\\\"Current fill pressure in bars\\\"},\\\"volumeLiters\\\":{\\\"type\\\":\\\"integer\\\",\\\"description\\\":\\\"Tank water volume capacity\\\"},\\\"location\\\":{\\\"type\\\":\\\"string\\\",\\\"description\\\":\\\"Current depot or yard identifier\\\"},\\\"status\\\":{\\\"type\\\":\\\"string\\\",\\\"enum\\\":[\\\"Available\\\",\\\"Reserved\\\",\\\"In-Transit\\\",\\\"Maintenance\\\"],\\\"description\\\":\\\"Operational status\\\"},\\\"certExpiryDate\\\":{\\\"type\\\":\\\"string\\\",\\\"format\\\":\\\"date\\\",\\\"description\\\":\\\"Safety inspection expiration date\\\"}}}\"},{\"code\":400,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"code\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":403,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"code\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":404,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"code\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":409,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"code\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":422,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"code\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":500,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"code\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"}]"
+              }
+            }
+          },
+          "name": "getCylinderStatus_GET",
+          "description": "Handler for api/v1/cylinders/{id} GET"
+        },
+        {
+          "settings": {
+            "APISpecPath": "/api/v1/cylinders/{id}/dispatch",
+            "Method": "POST",
+            "reqType": "application/json",
+            "Path": "/api/v1/cylinders/{id}/dispatch",
+            "OutputValidation": false
+          },
+          "action": {
+            "input": {
+              "body": "=$.body",
+              "pathParams": "=$.pathParams"
+            },
+            "output": {
+              "code": "=$.code",
+              "responseBody": "=$.responseBody"
+            },
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:dispatchCylinder_POST"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": true,
+            "data": {},
+            "responseBody": {},
+            "responseCodesSchema": {},
+            "message": ""
+          },
+          "schemas": {
+            "output": {
+              "pathParams": {
+                "type": "json",
+                "value": "{\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"string\"}},\"required\":[\"id\"]}"
+              },
+              "queryParams": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              },
+              "headers": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              },
+              "body": {
+                "type": "json",
+                "value": "{\n  \"type\": \"object\",\n  \"required\": [\n    \"destination\"\n  ],\n  \"properties\": {\n    \"destination\": {\n      \"type\": \"string\",\n      \"description\": \"Facility or customer plant name\",\n      \"example\": \"Fab Plant 4 - Bay 2\"\n    }\n  }\n}",
+                "fe_metadata": "{\n  \"type\": \"object\",\n  \"required\": [\n    \"destination\"\n  ],\n  \"properties\": {\n    \"destination\": {\n      \"type\": \"string\",\n      \"description\": \"Facility or customer plant name\",\n      \"example\": \"Fab Plant 4 - Bay 2\"\n    }\n  }\n}"
+              }
+            },
+            "reply": {
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              },
+              "responseCodesSchema": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseType\":{\"type\":\"string\"},\"responseSchema\":{\"type\":\"string\"}}}}",
+                "fe_metadata": "[{\"code\":200,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"cylinderId\\\":{\\\"type\\\":\\\"string\\\"},\\\"status\\\":{\\\"type\\\":\\\"string\\\"},\\\"destination\\\":{\\\"type\\\":\\\"string\\\"},\\\"updatedAt\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":400,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"code\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":403,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"code\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":404,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"code\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":409,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"code\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":422,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"code\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":500,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"code\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"}]"
+              }
+            }
+          },
+          "name": "dispatchCylinder_POST",
+          "description": "Handler for api/v1/cylinders/{id}/dispatch POST"
+        },
+        {
+          "settings": {
+            "APISpecPath": "/api/v1/cylinders/search",
+            "Method": "GET",
+            "reqType": "application/json",
+            "Path": "/api/v1/cylinders/search",
+            "OutputValidation": false
+          },
+          "action": {
+            "input": {
+              "body": "=$.body",
+              "queryParams": "=$.queryParams"
+            },
+            "output": {
+              "code": "=$.code",
+              "responseBody": "=$.responseBody"
+            },
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:searchGasStock_GET"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": true,
+            "data": {},
+            "responseBody": {},
+            "responseCodesSchema": {},
+            "message": ""
+          },
+          "schemas": {
+            "output": {
+              "pathParams": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              },
+              "queryParams": {
+                "type": "json",
+                "value": "{\"type\": \"object\", \"properties\": {\"gasType\": {\"type\": \"string\"}, \"location\": {\"type\": \"string\"}}}",
+                "fe_metadata": "[\n  {\n    \"parameterName\": \"gasType\",\n    \"type\": \"string\",\n    \"repeating\": \"false\",\n    \"required\": \"false\"\n  },\n  {\n    \"parameterName\": \"location\",\n    \"type\": \"string\",\n    \"repeating\": \"false\",\n    \"required\": \"false\"\n  }\n]"
+              },
+              "headers": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              }
+            },
+            "reply": {
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              },
+              "responseCodesSchema": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseType\":{\"type\":\"string\"},\"responseSchema\":{\"type\":\"string\"}}}}",
+                "fe_metadata": "[{\"code\":200,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"array\\\",\\\"items\\\":{\\\"type\\\":\\\"object\\\",\\\"required\\\":[\\\"cylinderId\\\",\\\"gasType\\\",\\\"purityGrade\\\",\\\"pressureBar\\\",\\\"location\\\",\\\"status\\\"],\\\"properties\\\":{\\\"cylinderId\\\":{\\\"type\\\":\\\"string\\\",\\\"description\\\":\\\"Barcode/Serial number\\\"},\\\"gasType\\\":{\\\"type\\\":\\\"string\\\",\\\"description\\\":\\\"Industrial gas classification\\\"},\\\"purityGrade\\\":{\\\"type\\\":\\\"string\\\",\\\"description\\\":\\\"Gas purity spec level (e.g. 5.0 for semiconductor grade)\\\"},\\\"pressureBar\\\":{\\\"type\\\":\\\"integer\\\",\\\"description\\\":\\\"Current fill pressure in bars\\\"},\\\"volumeLiters\\\":{\\\"type\\\":\\\"integer\\\",\\\"description\\\":\\\"Tank water volume capacity\\\"},\\\"location\\\":{\\\"type\\\":\\\"string\\\",\\\"description\\\":\\\"Current depot or yard identifier\\\"},\\\"status\\\":{\\\"type\\\":\\\"string\\\",\\\"enum\\\":[\\\"Available\\\",\\\"Reserved\\\",\\\"In-Transit\\\",\\\"Maintenance\\\"],\\\"description\\\":\\\"Operational status\\\"},\\\"certExpiryDate\\\":{\\\"type\\\":\\\"string\\\",\\\"format\\\":\\\"date\\\",\\\"description\\\":\\\"Safety inspection expiration date\\\"}}}}\"},{\"code\":400,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"code\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":403,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"code\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":404,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"code\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":409,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"code\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":422,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"code\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":500,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"code\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"}]"
+              }
+            }
+          },
+          "name": "searchGasStock_GET",
+          "description": "Handler for api/v1/cylinders/search GET"
+        }
+      ]
+    },
+    {
+      "settings": {
+        "serverName": "industrial_gas_smart_cylinder",
+        "serverVersion": "1.0.0",
+        "serverType": "HTTP",
+        "serverPort": "=$property[\"MCP_PORT\"]",
+        "statelessServer": false,
+        "serverEndpointPath": "/mcp",
+        "enableTLS": false,
+        "serverCertificate": "",
+        "serverPrivateKey": "",
+        "authType": "None",
+        "authToken": "",
+        "oauthIssuer": "",
+        "oauthJWKSURL": "",
+        "oauthAudience": "",
+        "oauthAuthorizationServers": "",
+        "oauthRequiredScopes": "",
+        "oauthResourceURL": ""
+      },
+      "id": "mcp_server",
+      "name": "mcp_server",
+      "description": "MCP server for industrial_gas_smart_cylinder",
+      "ref": "#tr_mcpserver",
+      "handlers": [
+        {
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "getCylinderStatus",
+            "handlerDescription": "Retrieve detailed telemetry, pressure level, and safety certification date for a specific cylinder ID.",
+            "toolTitle": "",
+            "readOnlyToolHint": true,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            },
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:mcp_getCylinderStatus"
+            }
+          },
+          "reply": {
+            "response": {
+              "type": "json",
+              "value": "{}",
+              "fe_metadata": "{}"
+            },
+            "outputSchema": "",
+            "structuredContent": {}
+          },
+          "name": "mcp_getCylinderStatus",
+          "description": "MCP tool getCylinderStatus",
+          "schemas": {
+            "output": {
+              "arguments": {
+                "type": "json",
+                "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\"}}, \"required\": [\"id\"]}",
+                "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\"}}, \"required\": [\"id\"]}"
+              }
+            },
+            "reply": {
+              "response": {
+                "type": "json",
+                "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"data\": {\"type\": \"string\"}, \"error\": {\"type\": \"string\"}}}",
+                "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"data\": {\"type\": \"string\"}, \"error\": {\"type\": \"string\"}}}"
+              }
+            }
+          }
+        },
+        {
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "dispatchCylinder",
+            "handlerDescription": "Updates cylinder status from Available to In-Transit for customer order fulfillment.",
+            "toolTitle": "",
+            "readOnlyToolHint": true,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            },
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:mcp_dispatchCylinder"
+            }
+          },
+          "reply": {
+            "response": {
+              "type": "json",
+              "value": "{}",
+              "fe_metadata": "{}"
+            },
+            "outputSchema": "",
+            "structuredContent": {}
+          },
+          "name": "mcp_dispatchCylinder",
+          "description": "MCP tool dispatchCylinder",
+          "schemas": {
+            "output": {
+              "arguments": {
+                "type": "json",
+                "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\"}, \"destination\": {\"type\": \"string\", \"description\": \"Facility or customer plant name\", \"example\": \"Fab Plant 4 - Bay 2\"}}, \"required\": [\"id\", \"destination\"]}",
+                "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\"}, \"destination\": {\"type\": \"string\", \"description\": \"Facility or customer plant name\", \"example\": \"Fab Plant 4 - Bay 2\"}}, \"required\": [\"id\", \"destination\"]}"
+              }
+            },
+            "reply": {
+              "response": {
+                "type": "json",
+                "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"data\": {\"type\": \"string\"}, \"error\": {\"type\": \"string\"}}}",
+                "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"data\": {\"type\": \"string\"}, \"error\": {\"type\": \"string\"}}}"
+              }
+            }
+          }
+        },
+        {
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "searchGasStock",
+            "handlerDescription": "Search for available gas cylinders by gas type, purity, or yard location.",
+            "toolTitle": "",
+            "readOnlyToolHint": true,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            },
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:mcp_searchGasStock"
+            }
+          },
+          "reply": {
+            "response": {
+              "type": "json",
+              "value": "{}",
+              "fe_metadata": "{}"
+            },
+            "outputSchema": "",
+            "structuredContent": {}
+          },
+          "name": "mcp_searchGasStock",
+          "description": "MCP tool searchGasStock",
+          "schemas": {
+            "output": {
+              "arguments": {
+                "type": "json",
+                "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"gasType\": {\"type\": \"string\"}, \"location\": {\"type\": \"string\"}}}",
+                "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"gasType\": {\"type\": \"string\"}, \"location\": {\"type\": \"string\"}}}"
+              }
+            },
+            "reply": {
+              "response": {
+                "type": "json",
+                "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"data\": {\"type\": \"string\"}, \"error\": {\"type\": \"string\"}}}",
+                "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"data\": {\"type\": \"string\"}, \"error\": {\"type\": \"string\"}}}"
+              }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:getCylinderStatus_GET",
+      "data": {
+        "name": "getCylinderStatus_GET",
+        "description": "Flow for api/v1/cylinders/{id} GET",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Log_API",
+            "type": "label",
+            "label": "StartActivity to Log_API"
+          },
+          {
+            "id": 2,
+            "from": "Log_API",
+            "to": "BadRequest",
+            "type": "expression",
+            "label": "Log_API to BadRequest",
+            "value": "coerce.toString($flow.pathParams.id) == \"\""
+          },
+          {
+            "id": 3,
+            "from": "Log_API",
+            "to": "CylinderData",
+            "type": "expression",
+            "label": "Log_API to CylinderData",
+            "value": "coerce.toString($flow.pathParams.id) != \"\""
+          },
+          {
+            "id": 4,
+            "from": "BadRequest",
+            "to": "ReturnBadRequest",
+            "type": "label",
+            "label": "BadRequest to ReturnBadRequest"
+          },
+          {
+            "id": 5,
+            "from": "CylinderData",
+            "to": "FindCylinder",
+            "type": "label",
+            "label": "CylinderData to FindCylinder"
+          },
+          {
+            "id": 6,
+            "from": "FindCylinder",
+            "to": "NotFound",
+            "type": "expression",
+            "label": "FindCylinder to NotFound",
+            "value": "array.count($activity[FindCylinder].output.matches) == 0"
+          },
+          {
+            "id": 7,
+            "from": "FindCylinder",
+            "to": "ConfigureHTTPResponse",
+            "type": "expression",
+            "label": "FindCylinder to ConfigureHTTPResponse",
+            "value": "array.count($activity[FindCylinder].output.matches) > 0"
+          },
+          {
+            "id": 8,
+            "from": "NotFound",
+            "to": "ReturnNotFound",
+            "type": "label",
+            "label": "NotFound to ReturnNotFound"
+          },
+          {
+            "id": 9,
+            "from": "ConfigureHTTPResponse",
+            "to": "Return",
+            "type": "label",
+            "label": "ConfigureHTTPResponse to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#act_default_noop"
+            }
+          },
+          {
+            "activity": {
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"getCylinderStatus id=\", coerce.toString($flow.pathParams.id))",
+                "logLevel": "",
+                "loggerName": "",
+                "fieldPrefix": "",
+                "dynamicLogFields": {}
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "ref": "#act_general_log"
+            },
+            "id": "Log_API",
+            "name": "Log_API",
+            "description": "Log API Call for api/v1/cylinders/{id} GET"
+          },
+          {
+            "activity": {
+              "input": {
+                "trigger": "Industrial_Gas_Smart_Cylinder_Operations_API",
+                "responsecode": "200",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "cylinderId": "=$activity[FindCylinder].output.matches[0].cylinderId",
+                      "gasType": "=$activity[FindCylinder].output.matches[0].gasType",
+                      "purityGrade": "=$activity[FindCylinder].output.matches[0].purityGrade",
+                      "pressureBar": "=$activity[FindCylinder].output.matches[0].pressureBar",
+                      "volumeLiters": "=$activity[FindCylinder].output.matches[0].volumeLiters",
+                      "location": "=$activity[FindCylinder].output.matches[0].location",
+                      "status": "=$activity[FindCylinder].output.matches[0].status",
+                      "certExpiryDate": "=$activity[FindCylinder].output.matches[0].certExpiryDate"
+                    }
+                  }
+                }
+              },
+              "ref": "#act_general_httpresponse",
+              "schemas": {
+                "input": {
+                  "input": "schema://CylinderBody"
+                }
+              }
+            },
+            "id": "ConfigureHTTPResponse",
+            "name": "ConfigureHTTPResponse",
+            "description": "Configure HTTP Response Activity"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[ConfigureHTTPResponse].code",
+                  "responseBody": "=$activity[ConfigureHTTPResponse].response"
+                }
+              }
+            },
+            "id": "Return",
+            "name": "Return",
+            "description": "Reply to API Call for api/v1/cylinders/{id} GET"
+          },
+          {
+            "activity": {
+              "input": {
+                "input": {
+                  "mapping": {
+                    "cylinders": [
+                      {
+                        "cylinderId": "CYL-ARG-9082",
+                        "gasType": "Argon",
+                        "purityGrade": "5.0 (99.999%)",
+                        "pressureBar": 200,
+                        "volumeLiters": 50,
+                        "location": "Houston Yard B",
+                        "status": "Available",
+                        "certExpiryDate": "2026-12-31"
+                      },
+                      {
+                        "cylinderId": "CYL-NIT-4011",
+                        "gasType": "Nitrogen",
+                        "purityGrade": "Cryo-Grade (99.99%)",
+                        "pressureBar": 180,
+                        "volumeLiters": 50,
+                        "location": "Houston Yard A",
+                        "status": "Available",
+                        "certExpiryDate": "2026-11-15"
+                      },
+                      {
+                        "cylinderId": "CYL-OXY-1022",
+                        "gasType": "Oxygen",
+                        "purityGrade": "Medical Grade (99.5%)",
+                        "pressureBar": 150,
+                        "volumeLiters": 40,
+                        "location": "Dallas Distribution Center",
+                        "status": "Reserved",
+                        "certExpiryDate": "2026-09-30"
+                      },
+                      {
+                        "cylinderId": "CYL-HYD-7730",
+                        "gasType": "Hydrogen",
+                        "purityGrade": "Ultra-Pure (99.9999%)",
+                        "pressureBar": 220,
+                        "volumeLiters": 50,
+                        "location": "Houston Yard B",
+                        "status": "In-Transit",
+                        "certExpiryDate": "2027-03-31"
+                      }
+                    ]
+                  }
+                }
+              },
+              "ref": "#act_general_mapper",
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"cylinders\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"cylinderId\": {\n            \"type\": \"string\",\n            \"description\": \"Barcode/Serial number\"\n          },\n          \"gasType\": {\n            \"type\": \"string\",\n            \"description\": \"Industrial gas classification\"\n          },\n          \"purityGrade\": {\n            \"type\": \"string\",\n            \"description\": \"Gas purity spec level (e.g. 5.0 for semiconductor grade)\"\n          },\n          \"pressureBar\": {\n            \"type\": \"integer\",\n            \"description\": \"Current fill pressure in bars\"\n          },\n          \"volumeLiters\": {\n            \"type\": \"integer\",\n            \"description\": \"Tank water volume capacity\"\n          },\n          \"location\": {\n            \"type\": \"string\",\n            \"description\": \"Current depot or yard identifier\"\n          },\n          \"status\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Available\",\n              \"Reserved\",\n              \"In-Transit\",\n              \"Maintenance\"\n            ],\n            \"description\": \"Operational status\"\n          },\n          \"certExpiryDate\": {\n            \"type\": \"string\",\n            \"format\": \"date\",\n            \"description\": \"Safety inspection expiration date\"\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"cylinders\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"cylinderId\": {\n            \"type\": \"string\",\n            \"description\": \"Barcode/Serial number\"\n          },\n          \"gasType\": {\n            \"type\": \"string\",\n            \"description\": \"Industrial gas classification\"\n          },\n          \"purityGrade\": {\n            \"type\": \"string\",\n            \"description\": \"Gas purity spec level (e.g. 5.0 for semiconductor grade)\"\n          },\n          \"pressureBar\": {\n            \"type\": \"integer\",\n            \"description\": \"Current fill pressure in bars\"\n          },\n          \"volumeLiters\": {\n            \"type\": \"integer\",\n            \"description\": \"Tank water volume capacity\"\n          },\n          \"location\": {\n            \"type\": \"string\",\n            \"description\": \"Current depot or yard identifier\"\n          },\n          \"status\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Available\",\n              \"Reserved\",\n              \"In-Transit\",\n              \"Maintenance\"\n            ],\n            \"description\": \"Operational status\"\n          },\n          \"certExpiryDate\": {\n            \"type\": \"string\",\n            \"format\": \"date\",\n            \"description\": \"Safety inspection expiration date\"\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                }
+              }
+            },
+            "id": "CylinderData",
+            "name": "CylinderData",
+            "description": "Embedded cylinder list (BW ParseXml2 literal)"
+          },
+          {
+            "activity": {
+              "input": {
+                "input": {
+                  "mapping": {
+                    "matches": {
+                      "@foreach($activity[CylinderData].output.cylinders, c, $loop[c].cylinderId == $flow.pathParams.id)": {
+                        "cylinderId": "=$loop[c].cylinderId",
+                        "gasType": "=$loop[c].gasType",
+                        "purityGrade": "=$loop[c].purityGrade",
+                        "pressureBar": "=$loop[c].pressureBar",
+                        "volumeLiters": "=$loop[c].volumeLiters",
+                        "location": "=$loop[c].location",
+                        "status": "=$loop[c].status",
+                        "certExpiryDate": "=$loop[c].certExpiryDate"
+                      }
+                    }
+                  }
+                }
+              },
+              "ref": "#act_general_mapper",
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"cylinderId\": {\n            \"type\": \"string\",\n            \"description\": \"Barcode/Serial number\"\n          },\n          \"gasType\": {\n            \"type\": \"string\",\n            \"description\": \"Industrial gas classification\"\n          },\n          \"purityGrade\": {\n            \"type\": \"string\",\n            \"description\": \"Gas purity spec level (e.g. 5.0 for semiconductor grade)\"\n          },\n          \"pressureBar\": {\n            \"type\": \"integer\",\n            \"description\": \"Current fill pressure in bars\"\n          },\n          \"volumeLiters\": {\n            \"type\": \"integer\",\n            \"description\": \"Tank water volume capacity\"\n          },\n          \"location\": {\n            \"type\": \"string\",\n            \"description\": \"Current depot or yard identifier\"\n          },\n          \"status\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Available\",\n              \"Reserved\",\n              \"In-Transit\",\n              \"Maintenance\"\n            ],\n            \"description\": \"Operational status\"\n          },\n          \"certExpiryDate\": {\n            \"type\": \"string\",\n            \"format\": \"date\",\n            \"description\": \"Safety inspection expiration date\"\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"cylinderId\": {\n            \"type\": \"string\",\n            \"description\": \"Barcode/Serial number\"\n          },\n          \"gasType\": {\n            \"type\": \"string\",\n            \"description\": \"Industrial gas classification\"\n          },\n          \"purityGrade\": {\n            \"type\": \"string\",\n            \"description\": \"Gas purity spec level (e.g. 5.0 for semiconductor grade)\"\n          },\n          \"pressureBar\": {\n            \"type\": \"integer\",\n            \"description\": \"Current fill pressure in bars\"\n          },\n          \"volumeLiters\": {\n            \"type\": \"integer\",\n            \"description\": \"Tank water volume capacity\"\n          },\n          \"location\": {\n            \"type\": \"string\",\n            \"description\": \"Current depot or yard identifier\"\n          },\n          \"status\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Available\",\n              \"Reserved\",\n              \"In-Transit\",\n              \"Maintenance\"\n            ],\n            \"description\": \"Operational status\"\n          },\n          \"certExpiryDate\": {\n            \"type\": \"string\",\n            \"format\": \"date\",\n            \"description\": \"Safety inspection expiration date\"\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                }
+              }
+            },
+            "id": "FindCylinder",
+            "name": "FindCylinder",
+            "description": "Select matching items (BW for-each with predicate)"
+          },
+          {
+            "activity": {
+              "input": {
+                "trigger": "Industrial_Gas_Smart_Cylinder_Operations_API",
+                "responsecode": "400",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "code": "invalid_request",
+                      "message": "id is required"
+                    }
+                  }
+                }
+              },
+              "ref": "#act_general_httpresponse",
+              "schemas": {
+                "input": {
+                  "input": "schema://ErrorBody"
+                }
+              }
+            },
+            "id": "BadRequest",
+            "name": "BadRequest",
+            "description": "HTTP 400 response"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[BadRequest].code",
+                  "responseBody": "=$activity[BadRequest].response"
+                }
+              }
+            },
+            "id": "ReturnBadRequest",
+            "name": "ReturnBadRequest",
+            "description": "Reply 400"
+          },
+          {
+            "activity": {
+              "input": {
+                "trigger": "Industrial_Gas_Smart_Cylinder_Operations_API",
+                "responsecode": "404",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "code": "cylinder_not_found",
+                      "message": "=string.concat(\"No cylinder found with id \", $flow.pathParams.id)"
+                    }
+                  }
+                }
+              },
+              "ref": "#act_general_httpresponse",
+              "schemas": {
+                "input": {
+                  "input": "schema://ErrorBody"
+                }
+              }
+            },
+            "id": "NotFound",
+            "name": "NotFound",
+            "description": "HTTP 404 response"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[NotFound].code",
+                  "responseBody": "=$activity[NotFound].response"
+                }
+              }
+            },
+            "id": "ReturnNotFound",
+            "name": "ReturnNotFound",
+            "description": "Reply 404"
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6NTl9LCJMb2dfQVBJIjp7IngiOjM1MCwieSI6NTB9LCJDb25maWd1cmVIVFRQUmVzcG9uc2UiOnsieCI6MTEwMCwieSI6MjAwfSwiUmV0dXJuIjp7IngiOjEzNTAsInkiOjIwMH0sIkN5bGluZGVyRGF0YSI6eyJ4Ijo2MDAsInkiOjUwfSwiRmluZEN5bGluZGVyIjp7IngiOjg1MCwieSI6NTB9LCJCYWRSZXF1ZXN0Ijp7IngiOjYwMCwieSI6MjAwfSwiUmV0dXJuQmFkUmVxdWVzdCI6eyJ4Ijo4NTAsInkiOjIwMH0sIk5vdEZvdW5kIjp7IngiOjExMDAsInkiOjUwfSwiUmV0dXJuTm90Rm91bmQiOnsieCI6MTM1MCwieSI6NTB9fQ==",
+        "metadata": {
+          "input": [
+            {
+              "name": "pathParams",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"id\":{\"type\":\"string\"}}"
+              }
+            },
+            {
+              "name": "multipartFormData",
+              "type": "object"
+            },
+            {
+              "name": "requestURI",
+              "type": "string"
+            },
+            {
+              "name": "method",
+              "type": "string"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "integer"
+            },
+            {
+              "name": "responseBody",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\":\"object\",\"title\":\"Industrial_Gas_Smart_Cylinder_Operations_API\",\"properties\":{\"pathParams\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"string\"}},\"required\":[\"id\"]},\"multipartFormData\":{\"type\":\"object\"},\"requestURI\":{\"type\":\"string\",\"required\":false},\"method\":{\"type\":\"string\",\"required\":false}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:dispatchCylinder_POST",
+      "data": {
+        "name": "dispatchCylinder_POST",
+        "description": "Flow for api/v1/cylinders/{id}/dispatch POST",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Log_API",
+            "type": "label",
+            "label": "StartActivity to Log_API"
+          },
+          {
+            "id": 2,
+            "from": "Log_API",
+            "to": "BadRequest",
+            "type": "expression",
+            "label": "Log_API to BadRequest",
+            "value": "coerce.toString($flow.pathParams.id) == \"\" || coerce.toString($flow.body.destination) == \"\""
+          },
+          {
+            "id": 3,
+            "from": "Log_API",
+            "to": "CylinderData",
+            "type": "expression",
+            "label": "Log_API to CylinderData",
+            "value": "coerce.toString($flow.pathParams.id) != \"\" && coerce.toString($flow.body.destination) != \"\""
+          },
+          {
+            "id": 4,
+            "from": "BadRequest",
+            "to": "ReturnBadRequest",
+            "type": "label",
+            "label": "BadRequest to ReturnBadRequest"
+          },
+          {
+            "id": 5,
+            "from": "CylinderData",
+            "to": "FindCylinder",
+            "type": "label",
+            "label": "CylinderData to FindCylinder"
+          },
+          {
+            "id": 6,
+            "from": "FindCylinder",
+            "to": "NotFound",
+            "type": "expression",
+            "label": "FindCylinder to NotFound",
+            "value": "array.count($activity[FindCylinder].output.matches) == 0"
+          },
+          {
+            "id": 7,
+            "from": "FindCylinder",
+            "to": "ConfigureHTTPResponse",
+            "type": "expression",
+            "label": "FindCylinder to ConfigureHTTPResponse",
+            "value": "array.count($activity[FindCylinder].output.matches) > 0"
+          },
+          {
+            "id": 8,
+            "from": "NotFound",
+            "to": "ReturnNotFound",
+            "type": "label",
+            "label": "NotFound to ReturnNotFound"
+          },
+          {
+            "id": 9,
+            "from": "ConfigureHTTPResponse",
+            "to": "Return",
+            "type": "label",
+            "label": "ConfigureHTTPResponse to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#act_default_noop"
+            }
+          },
+          {
+            "activity": {
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"dispatchCylinder id=\", coerce.toString($flow.pathParams.id))",
+                "logLevel": "",
+                "loggerName": "",
+                "fieldPrefix": "",
+                "dynamicLogFields": {}
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "ref": "#act_general_log"
+            },
+            "id": "Log_API",
+            "name": "Log_API",
+            "description": "Log API Call for api/v1/cylinders/{id}/dispatch POST"
+          },
+          {
+            "activity": {
+              "input": {
+                "trigger": "Industrial_Gas_Smart_Cylinder_Operations_API",
+                "responsecode": "200",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "cylinderId": "=$activity[FindCylinder].output.matches[0].cylinderId",
+                      "status": "In Transit",
+                      "destination": "=$flow.body.destination",
+                      "updatedAt": "=datetime.currentDate()"
+                    }
+                  }
+                }
+              },
+              "ref": "#act_general_httpresponse",
+              "schemas": {
+                "input": {
+                  "input": "schema://DispatchBody"
+                }
+              }
+            },
+            "id": "ConfigureHTTPResponse",
+            "name": "ConfigureHTTPResponse",
+            "description": "Configure HTTP Response Activity"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[ConfigureHTTPResponse].code",
+                  "responseBody": "=$activity[ConfigureHTTPResponse].response"
+                }
+              }
+            },
+            "id": "Return",
+            "name": "Return",
+            "description": "Reply to API Call for api/v1/cylinders/{id}/dispatch POST"
+          },
+          {
+            "activity": {
+              "input": {
+                "input": {
+                  "mapping": {
+                    "cylinders": [
+                      {
+                        "cylinderId": "CYL-ARG-9082",
+                        "gasType": "Argon",
+                        "purityGrade": "5.0 (99.999%)",
+                        "pressureBar": 200,
+                        "volumeLiters": 50,
+                        "location": "Houston Yard B",
+                        "status": "Available",
+                        "certExpiryDate": "2026-12-31"
+                      },
+                      {
+                        "cylinderId": "CYL-NIT-4011",
+                        "gasType": "Nitrogen",
+                        "purityGrade": "Cryo-Grade (99.99%)",
+                        "pressureBar": 180,
+                        "volumeLiters": 50,
+                        "location": "Houston Yard A",
+                        "status": "Available",
+                        "certExpiryDate": "2026-11-15"
+                      },
+                      {
+                        "cylinderId": "CYL-OXY-1022",
+                        "gasType": "Oxygen",
+                        "purityGrade": "Medical Grade (99.5%)",
+                        "pressureBar": 150,
+                        "volumeLiters": 40,
+                        "location": "Dallas Distribution Center",
+                        "status": "Reserved",
+                        "certExpiryDate": "2026-09-30"
+                      },
+                      {
+                        "cylinderId": "CYL-HYD-7730",
+                        "gasType": "Hydrogen",
+                        "purityGrade": "Ultra-Pure (99.9999%)",
+                        "pressureBar": 220,
+                        "volumeLiters": 50,
+                        "location": "Houston Yard B",
+                        "status": "In-Transit",
+                        "certExpiryDate": "2027-03-31"
+                      }
+                    ]
+                  }
+                }
+              },
+              "ref": "#act_general_mapper",
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"cylinders\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"cylinderId\": {\n            \"type\": \"string\",\n            \"description\": \"Barcode/Serial number\"\n          },\n          \"gasType\": {\n            \"type\": \"string\",\n            \"description\": \"Industrial gas classification\"\n          },\n          \"purityGrade\": {\n            \"type\": \"string\",\n            \"description\": \"Gas purity spec level (e.g. 5.0 for semiconductor grade)\"\n          },\n          \"pressureBar\": {\n            \"type\": \"integer\",\n            \"description\": \"Current fill pressure in bars\"\n          },\n          \"volumeLiters\": {\n            \"type\": \"integer\",\n            \"description\": \"Tank water volume capacity\"\n          },\n          \"location\": {\n            \"type\": \"string\",\n            \"description\": \"Current depot or yard identifier\"\n          },\n          \"status\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Available\",\n              \"Reserved\",\n              \"In-Transit\",\n              \"Maintenance\"\n            ],\n            \"description\": \"Operational status\"\n          },\n          \"certExpiryDate\": {\n            \"type\": \"string\",\n            \"format\": \"date\",\n            \"description\": \"Safety inspection expiration date\"\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"cylinders\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"cylinderId\": {\n            \"type\": \"string\",\n            \"description\": \"Barcode/Serial number\"\n          },\n          \"gasType\": {\n            \"type\": \"string\",\n            \"description\": \"Industrial gas classification\"\n          },\n          \"purityGrade\": {\n            \"type\": \"string\",\n            \"description\": \"Gas purity spec level (e.g. 5.0 for semiconductor grade)\"\n          },\n          \"pressureBar\": {\n            \"type\": \"integer\",\n            \"description\": \"Current fill pressure in bars\"\n          },\n          \"volumeLiters\": {\n            \"type\": \"integer\",\n            \"description\": \"Tank water volume capacity\"\n          },\n          \"location\": {\n            \"type\": \"string\",\n            \"description\": \"Current depot or yard identifier\"\n          },\n          \"status\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Available\",\n              \"Reserved\",\n              \"In-Transit\",\n              \"Maintenance\"\n            ],\n            \"description\": \"Operational status\"\n          },\n          \"certExpiryDate\": {\n            \"type\": \"string\",\n            \"format\": \"date\",\n            \"description\": \"Safety inspection expiration date\"\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                }
+              }
+            },
+            "id": "CylinderData",
+            "name": "CylinderData",
+            "description": "Embedded cylinder list (BW Copy_1_ParseXml literal)"
+          },
+          {
+            "activity": {
+              "input": {
+                "input": {
+                  "mapping": {
+                    "matches": {
+                      "@foreach($activity[CylinderData].output.cylinders, c, $loop[c].cylinderId == $flow.pathParams.id)": {
+                        "cylinderId": "=$loop[c].cylinderId",
+                        "gasType": "=$loop[c].gasType",
+                        "purityGrade": "=$loop[c].purityGrade",
+                        "pressureBar": "=$loop[c].pressureBar",
+                        "volumeLiters": "=$loop[c].volumeLiters",
+                        "location": "=$loop[c].location",
+                        "status": "=$loop[c].status",
+                        "certExpiryDate": "=$loop[c].certExpiryDate"
+                      }
+                    }
+                  }
+                }
+              },
+              "ref": "#act_general_mapper",
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"cylinderId\": {\n            \"type\": \"string\",\n            \"description\": \"Barcode/Serial number\"\n          },\n          \"gasType\": {\n            \"type\": \"string\",\n            \"description\": \"Industrial gas classification\"\n          },\n          \"purityGrade\": {\n            \"type\": \"string\",\n            \"description\": \"Gas purity spec level (e.g. 5.0 for semiconductor grade)\"\n          },\n          \"pressureBar\": {\n            \"type\": \"integer\",\n            \"description\": \"Current fill pressure in bars\"\n          },\n          \"volumeLiters\": {\n            \"type\": \"integer\",\n            \"description\": \"Tank water volume capacity\"\n          },\n          \"location\": {\n            \"type\": \"string\",\n            \"description\": \"Current depot or yard identifier\"\n          },\n          \"status\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Available\",\n              \"Reserved\",\n              \"In-Transit\",\n              \"Maintenance\"\n            ],\n            \"description\": \"Operational status\"\n          },\n          \"certExpiryDate\": {\n            \"type\": \"string\",\n            \"format\": \"date\",\n            \"description\": \"Safety inspection expiration date\"\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"cylinderId\": {\n            \"type\": \"string\",\n            \"description\": \"Barcode/Serial number\"\n          },\n          \"gasType\": {\n            \"type\": \"string\",\n            \"description\": \"Industrial gas classification\"\n          },\n          \"purityGrade\": {\n            \"type\": \"string\",\n            \"description\": \"Gas purity spec level (e.g. 5.0 for semiconductor grade)\"\n          },\n          \"pressureBar\": {\n            \"type\": \"integer\",\n            \"description\": \"Current fill pressure in bars\"\n          },\n          \"volumeLiters\": {\n            \"type\": \"integer\",\n            \"description\": \"Tank water volume capacity\"\n          },\n          \"location\": {\n            \"type\": \"string\",\n            \"description\": \"Current depot or yard identifier\"\n          },\n          \"status\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Available\",\n              \"Reserved\",\n              \"In-Transit\",\n              \"Maintenance\"\n            ],\n            \"description\": \"Operational status\"\n          },\n          \"certExpiryDate\": {\n            \"type\": \"string\",\n            \"format\": \"date\",\n            \"description\": \"Safety inspection expiration date\"\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                }
+              }
+            },
+            "id": "FindCylinder",
+            "name": "FindCylinder",
+            "description": "Select matching items (BW for-each with predicate)"
+          },
+          {
+            "activity": {
+              "input": {
+                "trigger": "Industrial_Gas_Smart_Cylinder_Operations_API",
+                "responsecode": "400",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "code": "invalid_request",
+                      "message": "id, destination are required"
+                    }
+                  }
+                }
+              },
+              "ref": "#act_general_httpresponse",
+              "schemas": {
+                "input": {
+                  "input": "schema://ErrorBody"
+                }
+              }
+            },
+            "id": "BadRequest",
+            "name": "BadRequest",
+            "description": "HTTP 400 response"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[BadRequest].code",
+                  "responseBody": "=$activity[BadRequest].response"
+                }
+              }
+            },
+            "id": "ReturnBadRequest",
+            "name": "ReturnBadRequest",
+            "description": "Reply 400"
+          },
+          {
+            "activity": {
+              "input": {
+                "trigger": "Industrial_Gas_Smart_Cylinder_Operations_API",
+                "responsecode": "404",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "code": "cylinder_not_found",
+                      "message": "=string.concat(\"No cylinder found with id \", $flow.pathParams.id)"
+                    }
+                  }
+                }
+              },
+              "ref": "#act_general_httpresponse",
+              "schemas": {
+                "input": {
+                  "input": "schema://ErrorBody"
+                }
+              }
+            },
+            "id": "NotFound",
+            "name": "NotFound",
+            "description": "HTTP 404 response"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[NotFound].code",
+                  "responseBody": "=$activity[NotFound].response"
+                }
+              }
+            },
+            "id": "ReturnNotFound",
+            "name": "ReturnNotFound",
+            "description": "Reply 404"
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6NTl9LCJMb2dfQVBJIjp7IngiOjM1MCwieSI6NTB9LCJDb25maWd1cmVIVFRQUmVzcG9uc2UiOnsieCI6MTEwMCwieSI6MjAwfSwiUmV0dXJuIjp7IngiOjEzNTAsInkiOjIwMH0sIkN5bGluZGVyRGF0YSI6eyJ4Ijo2MDAsInkiOjUwfSwiRmluZEN5bGluZGVyIjp7IngiOjg1MCwieSI6NTB9LCJCYWRSZXF1ZXN0Ijp7IngiOjYwMCwieSI6MjAwfSwiUmV0dXJuQmFkUmVxdWVzdCI6eyJ4Ijo4NTAsInkiOjIwMH0sIk5vdEZvdW5kIjp7IngiOjExMDAsInkiOjUwfSwiUmV0dXJuTm90Rm91bmQiOnsieCI6MTM1MCwieSI6NTB9fQ==",
+        "metadata": {
+          "input": [
+            {
+              "name": "pathParams",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"id\":{\"type\":\"string\"}}"
+              }
+            },
+            {
+              "name": "body",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"destination\":{\"type\":\"string\",\"description\":\"Facility or customer plant name\",\"example\":\"Fab Plant 4 - Bay 2\"}}"
+              }
+            },
+            {
+              "name": "headers",
+              "type": "object"
+            },
+            {
+              "name": "requestURI",
+              "type": "string"
+            },
+            {
+              "name": "method",
+              "type": "string"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "integer"
+            },
+            {
+              "name": "responseBody",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\": \"object\", \"properties\": {\"pathParams\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\"}}}, \"body\": {\"type\": \"object\", \"required\": [\"destination\"], \"properties\": {\"destination\": {\"type\": \"string\", \"description\": \"Facility or customer plant name\", \"example\": \"Fab Plant 4 - Bay 2\"}}}, \"headers\": {\"type\": \"object\"}, \"requestURI\": {\"type\": \"string\"}, \"method\": {\"type\": \"string\"}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:searchGasStock_GET",
+      "data": {
+        "name": "searchGasStock_GET",
+        "description": "Flow for api/v1/cylinders/search GET",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Log_API",
+            "type": "label",
+            "label": "StartActivity to Log_API"
+          },
+          {
+            "id": 2,
+            "from": "Log_API",
+            "to": "CylinderData",
+            "type": "label",
+            "label": "Log_API to CylinderData"
+          },
+          {
+            "id": 3,
+            "from": "CylinderData",
+            "to": "FindCylinder",
+            "type": "label",
+            "label": "CylinderData to FindCylinder"
+          },
+          {
+            "id": 4,
+            "from": "FindCylinder",
+            "to": "ConfigureHTTPResponse",
+            "type": "label",
+            "label": "FindCylinder to ConfigureHTTPResponse"
+          },
+          {
+            "id": 5,
+            "from": "ConfigureHTTPResponse",
+            "to": "Return",
+            "type": "label",
+            "label": "ConfigureHTTPResponse to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#act_default_noop"
+            }
+          },
+          {
+            "activity": {
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"searchGasStock \", coerce.toString($flow.queryParams))",
+                "logLevel": "",
+                "loggerName": "",
+                "fieldPrefix": "",
+                "dynamicLogFields": {}
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "ref": "#act_general_log"
+            },
+            "id": "Log_API",
+            "name": "Log_API",
+            "description": "Log API Call for api/v1/cylinders/search GET"
+          },
+          {
+            "activity": {
+              "input": {
+                "trigger": "Industrial_Gas_Smart_Cylinder_Operations_API",
+                "responsecode": "200",
+                "input": {
+                  "mapping": {
+                    "body": "=array.count($activity[FindCylinder].output.matches) > 0 ? $activity[FindCylinder].output.matches : coerce.toArray(\"[]\")"
+                  }
+                }
+              },
+              "ref": "#act_general_httpresponse",
+              "schemas": {
+                "input": {
+                  "input": "schema://CylinderList"
+                }
+              }
+            },
+            "id": "ConfigureHTTPResponse",
+            "name": "ConfigureHTTPResponse",
+            "description": "Configure HTTP Response Activity"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[ConfigureHTTPResponse].code",
+                  "responseBody": "=$activity[ConfigureHTTPResponse].response"
+                }
+              }
+            },
+            "id": "Return",
+            "name": "Return",
+            "description": "Reply to API Call for api/v1/cylinders/search GET"
+          },
+          {
+            "activity": {
+              "input": {
+                "input": {
+                  "mapping": {
+                    "cylinders": [
+                      {
+                        "cylinderId": "CYL-ARG-9082",
+                        "gasType": "Argon",
+                        "purityGrade": "5.0 (99.999%)",
+                        "pressureBar": 200,
+                        "volumeLiters": 50,
+                        "location": "Houston Yard B",
+                        "status": "Available",
+                        "certExpiryDate": "2026-12-31"
+                      },
+                      {
+                        "cylinderId": "CYL-NIT-4011",
+                        "gasType": "Nitrogen",
+                        "purityGrade": "Cryo-Grade (99.99%)",
+                        "pressureBar": 180,
+                        "volumeLiters": 50,
+                        "location": "Houston Yard A",
+                        "status": "Available",
+                        "certExpiryDate": "2026-11-15"
+                      },
+                      {
+                        "cylinderId": "CYL-OXY-1022",
+                        "gasType": "Oxygen",
+                        "purityGrade": "Medical Grade (99.5%)",
+                        "pressureBar": 150,
+                        "volumeLiters": 40,
+                        "location": "Dallas Distribution Center",
+                        "status": "Reserved",
+                        "certExpiryDate": "2026-09-30"
+                      },
+                      {
+                        "cylinderId": "CYL-HYD-7730",
+                        "gasType": "Hydrogen",
+                        "purityGrade": "Ultra-Pure (99.9999%)",
+                        "pressureBar": 220,
+                        "volumeLiters": 50,
+                        "location": "Houston Yard B",
+                        "status": "In-Transit",
+                        "certExpiryDate": "2027-03-31"
+                      }
+                    ]
+                  }
+                }
+              },
+              "ref": "#act_general_mapper",
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"cylinders\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"cylinderId\": {\n            \"type\": \"string\",\n            \"description\": \"Barcode/Serial number\"\n          },\n          \"gasType\": {\n            \"type\": \"string\",\n            \"description\": \"Industrial gas classification\"\n          },\n          \"purityGrade\": {\n            \"type\": \"string\",\n            \"description\": \"Gas purity spec level (e.g. 5.0 for semiconductor grade)\"\n          },\n          \"pressureBar\": {\n            \"type\": \"integer\",\n            \"description\": \"Current fill pressure in bars\"\n          },\n          \"volumeLiters\": {\n            \"type\": \"integer\",\n            \"description\": \"Tank water volume capacity\"\n          },\n          \"location\": {\n            \"type\": \"string\",\n            \"description\": \"Current depot or yard identifier\"\n          },\n          \"status\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Available\",\n              \"Reserved\",\n              \"In-Transit\",\n              \"Maintenance\"\n            ],\n            \"description\": \"Operational status\"\n          },\n          \"certExpiryDate\": {\n            \"type\": \"string\",\n            \"format\": \"date\",\n            \"description\": \"Safety inspection expiration date\"\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"cylinders\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"cylinderId\": {\n            \"type\": \"string\",\n            \"description\": \"Barcode/Serial number\"\n          },\n          \"gasType\": {\n            \"type\": \"string\",\n            \"description\": \"Industrial gas classification\"\n          },\n          \"purityGrade\": {\n            \"type\": \"string\",\n            \"description\": \"Gas purity spec level (e.g. 5.0 for semiconductor grade)\"\n          },\n          \"pressureBar\": {\n            \"type\": \"integer\",\n            \"description\": \"Current fill pressure in bars\"\n          },\n          \"volumeLiters\": {\n            \"type\": \"integer\",\n            \"description\": \"Tank water volume capacity\"\n          },\n          \"location\": {\n            \"type\": \"string\",\n            \"description\": \"Current depot or yard identifier\"\n          },\n          \"status\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Available\",\n              \"Reserved\",\n              \"In-Transit\",\n              \"Maintenance\"\n            ],\n            \"description\": \"Operational status\"\n          },\n          \"certExpiryDate\": {\n            \"type\": \"string\",\n            \"format\": \"date\",\n            \"description\": \"Safety inspection expiration date\"\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                }
+              }
+            },
+            "id": "CylinderData",
+            "name": "CylinderData",
+            "description": "Embedded cylinder list (BW ParseXml literal)"
+          },
+          {
+            "activity": {
+              "input": {
+                "input": {
+                  "mapping": {
+                    "matches": {
+                      "@foreach($activity[CylinderData].output.cylinders, c, $loop[c].gasType == $flow.queryParams.gasType && $loop[c].location == $flow.queryParams.location)": {
+                        "cylinderId": "=$loop[c].cylinderId",
+                        "gasType": "=$loop[c].gasType",
+                        "purityGrade": "=$loop[c].purityGrade",
+                        "pressureBar": "=$loop[c].pressureBar",
+                        "volumeLiters": "=$loop[c].volumeLiters",
+                        "location": "=$loop[c].location",
+                        "status": "=$loop[c].status",
+                        "certExpiryDate": "=$loop[c].certExpiryDate"
+                      }
+                    }
+                  }
+                }
+              },
+              "ref": "#act_general_mapper",
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"cylinderId\": {\n            \"type\": \"string\",\n            \"description\": \"Barcode/Serial number\"\n          },\n          \"gasType\": {\n            \"type\": \"string\",\n            \"description\": \"Industrial gas classification\"\n          },\n          \"purityGrade\": {\n            \"type\": \"string\",\n            \"description\": \"Gas purity spec level (e.g. 5.0 for semiconductor grade)\"\n          },\n          \"pressureBar\": {\n            \"type\": \"integer\",\n            \"description\": \"Current fill pressure in bars\"\n          },\n          \"volumeLiters\": {\n            \"type\": \"integer\",\n            \"description\": \"Tank water volume capacity\"\n          },\n          \"location\": {\n            \"type\": \"string\",\n            \"description\": \"Current depot or yard identifier\"\n          },\n          \"status\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Available\",\n              \"Reserved\",\n              \"In-Transit\",\n              \"Maintenance\"\n            ],\n            \"description\": \"Operational status\"\n          },\n          \"certExpiryDate\": {\n            \"type\": \"string\",\n            \"format\": \"date\",\n            \"description\": \"Safety inspection expiration date\"\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"cylinderId\": {\n            \"type\": \"string\",\n            \"description\": \"Barcode/Serial number\"\n          },\n          \"gasType\": {\n            \"type\": \"string\",\n            \"description\": \"Industrial gas classification\"\n          },\n          \"purityGrade\": {\n            \"type\": \"string\",\n            \"description\": \"Gas purity spec level (e.g. 5.0 for semiconductor grade)\"\n          },\n          \"pressureBar\": {\n            \"type\": \"integer\",\n            \"description\": \"Current fill pressure in bars\"\n          },\n          \"volumeLiters\": {\n            \"type\": \"integer\",\n            \"description\": \"Tank water volume capacity\"\n          },\n          \"location\": {\n            \"type\": \"string\",\n            \"description\": \"Current depot or yard identifier\"\n          },\n          \"status\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Available\",\n              \"Reserved\",\n              \"In-Transit\",\n              \"Maintenance\"\n            ],\n            \"description\": \"Operational status\"\n          },\n          \"certExpiryDate\": {\n            \"type\": \"string\",\n            \"format\": \"date\",\n            \"description\": \"Safety inspection expiration date\"\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                }
+              }
+            },
+            "id": "FindCylinder",
+            "name": "FindCylinder",
+            "description": "Select matching items (BW for-each with predicate)"
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6NTl9LCJMb2dfQVBJIjp7IngiOjM1MCwieSI6NTB9LCJDb25maWd1cmVIVFRQUmVzcG9uc2UiOnsieCI6MTEwMCwieSI6NTB9LCJSZXR1cm4iOnsieCI6MTM1MCwieSI6NTB9LCJDeWxpbmRlckRhdGEiOnsieCI6NjAwLCJ5Ijo1MH0sIkZpbmRDeWxpbmRlciI6eyJ4Ijo4NTAsInkiOjUwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "queryParams",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"gasType\":{\"type\":\"string\"},\"location\":{\"type\":\"string\"}}"
+              }
+            },
+            {
+              "name": "headers",
+              "type": "object"
+            },
+            {
+              "name": "requestURI",
+              "type": "string"
+            },
+            {
+              "name": "method",
+              "type": "string"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "integer"
+            },
+            {
+              "name": "responseBody",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\": \"object\", \"properties\": {\"queryParams\": {\"type\": \"object\", \"properties\": {\"gasType\": {\"type\": \"string\"}, \"location\": {\"type\": \"string\"}}}, \"headers\": {\"type\": \"object\"}, \"requestURI\": {\"type\": \"string\"}, \"method\": {\"type\": \"string\"}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:mcp_getCylinderStatus",
+      "data": {
+        "name": "mcp_getCylinderStatus",
+        "description": "MCP tool getCylinderStatus: calls getCylinderStatus_GET and returns its body",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "CallOperation",
+            "type": "label",
+            "label": "StartActivity to CallOperation"
+          },
+          {
+            "id": 2,
+            "from": "CallOperation",
+            "to": "Return",
+            "type": "label",
+            "label": "CallOperation to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#act_default_noop"
+            }
+          },
+          {
+            "activity": {
+              "input": {
+                "input": {},
+                "pathParams": "=$flow.arguments"
+              },
+              "settings": {
+                "flowURI": "res://flow:getCylinderStatus_GET",
+                "detached": false,
+                "execTimeout": 0,
+                "transactional": false,
+                "transactionConnection": ""
+              },
+              "ref": "#act_default_subflow"
+            },
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "id": "CallOperation",
+            "name": "CallOperation",
+            "description": "Run getCylinderStatus_GET (the REST operation)"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=utility.renderJSON($activity[CallOperation].responseBody.body, false)",
+                      "error": "=$activity[CallOperation].code >= 400 ? utility.renderJSON($activity[CallOperation].responseBody.body, false) : \"\""
+                    }
+                  }
+                }
+              }
+            },
+            "id": "Return",
+            "name": "Return",
+            "description": "Return the REST body as the tool result"
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo0NX0sIkNhbGxPcGVyYXRpb24iOnsieCI6MjUwLCJ5Ijo0NX0sIlJldHVybiI6eyJ4Ijo0NTAsInkiOjQ1fX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"id\":{\"type\":\"string\"}}"
+              }
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\": \"object\", \"properties\": {\"arguments\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\"}}, \"required\": [\"id\"]}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:mcp_dispatchCylinder",
+      "data": {
+        "name": "mcp_dispatchCylinder",
+        "description": "MCP tool dispatchCylinder: calls dispatchCylinder_POST and returns its body",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "CallOperation",
+            "type": "label",
+            "label": "StartActivity to CallOperation"
+          },
+          {
+            "id": 2,
+            "from": "CallOperation",
+            "to": "Return",
+            "type": "label",
+            "label": "CallOperation to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#act_default_noop"
+            }
+          },
+          {
+            "activity": {
+              "input": {
+                "input": {},
+                "pathParams": "=$flow.arguments",
+                "body": "=$flow.arguments"
+              },
+              "settings": {
+                "flowURI": "res://flow:dispatchCylinder_POST",
+                "detached": false,
+                "execTimeout": 0,
+                "transactional": false,
+                "transactionConnection": ""
+              },
+              "ref": "#act_default_subflow"
+            },
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "id": "CallOperation",
+            "name": "CallOperation",
+            "description": "Run dispatchCylinder_POST (the REST operation)"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=utility.renderJSON($activity[CallOperation].responseBody.body, false)",
+                      "error": "=$activity[CallOperation].code >= 400 ? utility.renderJSON($activity[CallOperation].responseBody.body, false) : \"\""
+                    }
+                  }
+                }
+              }
+            },
+            "id": "Return",
+            "name": "Return",
+            "description": "Return the REST body as the tool result"
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo0NX0sIkNhbGxPcGVyYXRpb24iOnsieCI6MjUwLCJ5Ijo0NX0sIlJldHVybiI6eyJ4Ijo0NTAsInkiOjQ1fX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"id\":{\"type\":\"string\"},\"destination\":{\"type\":\"string\",\"description\":\"Facility or customer plant name\",\"example\":\"Fab Plant 4 - Bay 2\"}}"
+              }
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\": \"object\", \"properties\": {\"arguments\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\"}, \"destination\": {\"type\": \"string\", \"description\": \"Facility or customer plant name\", \"example\": \"Fab Plant 4 - Bay 2\"}}, \"required\": [\"id\", \"destination\"]}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:mcp_searchGasStock",
+      "data": {
+        "name": "mcp_searchGasStock",
+        "description": "MCP tool searchGasStock: calls searchGasStock_GET and returns its body",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "CallOperation",
+            "type": "label",
+            "label": "StartActivity to CallOperation"
+          },
+          {
+            "id": 2,
+            "from": "CallOperation",
+            "to": "Return",
+            "type": "label",
+            "label": "CallOperation to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#act_default_noop"
+            }
+          },
+          {
+            "activity": {
+              "input": {
+                "input": {},
+                "queryParams": "=$flow.arguments"
+              },
+              "settings": {
+                "flowURI": "res://flow:searchGasStock_GET",
+                "detached": false,
+                "execTimeout": 0,
+                "transactional": false,
+                "transactionConnection": ""
+              },
+              "ref": "#act_default_subflow"
+            },
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "id": "CallOperation",
+            "name": "CallOperation",
+            "description": "Run searchGasStock_GET (the REST operation)"
+          },
+          {
+            "activity": {
+              "input": {
+                "mappings": []
+              },
+              "ref": "#act_default_actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=utility.renderJSON($activity[CallOperation].responseBody.body, false)",
+                      "error": "=$activity[CallOperation].code >= 400 ? utility.renderJSON($activity[CallOperation].responseBody.body, false) : \"\""
+                    }
+                  }
+                }
+              }
+            },
+            "id": "Return",
+            "name": "Return",
+            "description": "Return the REST body as the tool result"
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo0NX0sIkNhbGxPcGVyYXRpb24iOnsieCI6MjUwLCJ5Ijo0NX0sIlJldHVybiI6eyJ4Ijo0NTAsInkiOjQ1fX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"gasType\":{\"type\":\"string\"},\"location\":{\"type\":\"string\"}}"
+              }
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\": \"object\", \"properties\": {\"arguments\": {\"type\": \"object\", \"properties\": {\"gasType\": {\"type\": \"string\"}, \"location\": {\"type\": \"string\"}}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "REST_PORT",
+      "type": "float64",
+      "value": 16000
+    },
+    {
+      "name": "MCP_PORT",
+      "type": "string",
+      "value": "16100"
+    }
+  ],
+  "connections": {},
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTgiLCJ0YWciOiIxLjYuMTgtYjU5MSIsIm5hbWUiOiJUSUJDTyBGbG9nbyBDb25uZWN0b3IgZm9yIEdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuNCIsInRhZyI6IjEuMC40LWIwMiIsIm5hbWUiOiJUSUJDTyBGbG9nb8KuIENvbm5lY3RvciBmb3IgTW9kZWwgQ29udGV4dCBQcm90b2NvbCAoTUNQKSIsInMzbG9jYXRpb24iOiJUaWJjby9NQ1AiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
+  "metadata": {
+    "endpoints": [],
+    "flogoVersion": "2.26.9"
+  },
+  "specs": {
+    "bb9bc808-cabd-4315-8e97-2771a5feb089": {
+      "id": "bb9bc808-cabd-4315-8e97-2771a5feb089",
+      "name": "BW6Spec",
+      "type": "OpenAPI",
+      "version": "1.0.0",
+      "content": "eyJvcGVuYXBpIjoiMy4wLjMiLCJpbmZvIjp7InRpdGxlIjoiSW5kdXN0cmlhbCBHYXMgU21hcnQgQ3lsaW5kZXIgT3BlcmF0aW9ucyBBUEkiLCJkZXNjcmlwdGlvbiI6IlNwZWMtRHJpdmVuIERldmVsb3BtZW50IENvbnRyYWN0IGZvciBUSUJDTyBCdXNpbmVzc1dvcmtzIDYuIEV4cG9zZXMgY3lsaW5kZXIgaW52ZW50b3J5IG1hbmFnZW1lbnQgZW5kcG9pbnRzIGRlc2lnbmVkIHRvIGJlIGF1dG8tZGlzY292ZXJlZCBieSBNQ1AgU2VydmVycyBhbmQgcXVlcmllZCBieSBBSSBBZ2VudHMuXG4iLCJ2ZXJzaW9uIjoiMS4wLjAiLCJjb250YWN0Ijp7Im5hbWUiOiJQcm9kdWN0IE1hbmFnZW1lbnQgVGVhbSIsImVtYWlsIjoiZGVtb0BpbmR1c3RyaWFsZ2FzLWRlbW8uaW50ZXJuYWwifX0sInNlcnZlcnMiOlt7InVybCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MTYwMDAvIn1dLCJwYXRocyI6eyIvYXBpL3YxL2N5bGluZGVycy97aWR9Ijp7ImdldCI6eyJzdW1tYXJ5IjoiR2V0IEN5bGluZGVyIERldGFpbHMiLCJkZXNjcmlwdGlvbiI6IlJldHJpZXZlIGRldGFpbGVkIHRlbGVtZXRyeSwgcHJlc3N1cmUgbGV2ZWwsIGFuZCBzYWZldHkgY2VydGlmaWNhdGlvbiBkYXRlIGZvciBhIHNwZWNpZmljIGN5bGluZGVyIElELiIsIm9wZXJhdGlvbklkIjoiZ2V0Q3lsaW5kZXJTdGF0dXMiLCJ4LW1jcC10b29sLW5hbWUiOiJnZXRfY3lsaW5kZXJfc3RhdHVzIiwieC1tY3AtZGVzY3JpcHRpb24iOiJSZXRyaWV2ZXMgcmVhbC10aW1lIHByZXNzdXJlLCBwdXJpdHksIGFuZCBsb2NhdGlvbiBvZiBhbiBpbmR1c3RyaWFsIGdhcyBjeWxpbmRlciBieSBJRC4iLCJwYXJhbWV0ZXJzIjpbeyJuYW1lIjoiaWQiLCJpbiI6InBhdGgiLCJyZXF1aXJlZCI6dHJ1ZSwiZGVzY3JpcHRpb24iOiJVbmlxdWUgY3lsaW5kZXIgYmFyY29kZSBpZGVudGlmaWVyIiwic2NoZW1hIjp7InR5cGUiOiJzdHJpbmciLCJleGFtcGxlIjoiQ1lMLUFSRy05MDgyIn19XSwicmVzcG9uc2VzIjp7IjIwMCI6eyJkZXNjcmlwdGlvbiI6IkN5bGluZGVyIGRldGFpbHMgcmV0cmlldmVkIHN1Y2Nlc3NmdWxseS4iLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJyZXF1aXJlZCI6WyJjeWxpbmRlcklkIiwiZ2FzVHlwZSIsInB1cml0eUdyYWRlIiwicHJlc3N1cmVCYXIiLCJsb2NhdGlvbiIsInN0YXR1cyJdLCJwcm9wZXJ0aWVzIjp7ImN5bGluZGVySWQiOnsidHlwZSI6InN0cmluZyIsImRlc2NyaXB0aW9uIjoiQmFyY29kZS9TZXJpYWwgbnVtYmVyIn0sImdhc1R5cGUiOnsidHlwZSI6InN0cmluZyIsImRlc2NyaXB0aW9uIjoiSW5kdXN0cmlhbCBnYXMgY2xhc3NpZmljYXRpb24ifSwicHVyaXR5R3JhZGUiOnsidHlwZSI6InN0cmluZyIsImRlc2NyaXB0aW9uIjoiR2FzIHB1cml0eSBzcGVjIGxldmVsIChlLmcuIDUuMCBmb3Igc2VtaWNvbmR1Y3RvciBncmFkZSkifSwicHJlc3N1cmVCYXIiOnsidHlwZSI6ImludGVnZXIiLCJkZXNjcmlwdGlvbiI6IkN1cnJlbnQgZmlsbCBwcmVzc3VyZSBpbiBiYXJzIn0sInZvbHVtZUxpdGVycyI6eyJ0eXBlIjoiaW50ZWdlciIsImRlc2NyaXB0aW9uIjoiVGFuayB3YXRlciB2b2x1bWUgY2FwYWNpdHkifSwibG9jYXRpb24iOnsidHlwZSI6InN0cmluZyIsImRlc2NyaXB0aW9uIjoiQ3VycmVudCBkZXBvdCBvciB5YXJkIGlkZW50aWZpZXIifSwic3RhdHVzIjp7InR5cGUiOiJzdHJpbmciLCJlbnVtIjpbIkF2YWlsYWJsZSIsIlJlc2VydmVkIiwiSW4tVHJhbnNpdCIsIk1haW50ZW5hbmNlIl0sImRlc2NyaXB0aW9uIjoiT3BlcmF0aW9uYWwgc3RhdHVzIn0sImNlcnRFeHBpcnlEYXRlIjp7InR5cGUiOiJzdHJpbmciLCJmb3JtYXQiOiJkYXRlIiwiZGVzY3JpcHRpb24iOiJTYWZldHkgaW5zcGVjdGlvbiBleHBpcmF0aW9uIGRhdGUifX19fX19LCI0MDAiOnsiZGVzY3JpcHRpb24iOiJJbnZhbGlkIG9yIG1pc3NpbmcgaW5wdXQiLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImNvZGUiOnsidHlwZSI6InN0cmluZyJ9LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmcifX19fX19LCI0MDMiOnsiZGVzY3JpcHRpb24iOiJOb3QgYWxsb3dlZCIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiY29kZSI6eyJ0eXBlIjoic3RyaW5nIn0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX0sIjQwNCI6eyJkZXNjcmlwdGlvbiI6IkN5bGluZGVyIElEIG5vdCBmb3VuZC4iLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImNvZGUiOnsidHlwZSI6InN0cmluZyJ9LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmcifX19fX19LCI0MDkiOnsiZGVzY3JpcHRpb24iOiJDb25mbGljdCB3aXRoIHRoZSBjdXJyZW50IHN0YXRlIiwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJjb2RlIjp7InR5cGUiOiJzdHJpbmcifSwibWVzc2FnZSI6eyJ0eXBlIjoic3RyaW5nIn19fX19fSwiNDIyIjp7ImRlc2NyaXB0aW9uIjoiUmVxdWVzdCB1bmRlcnN0b29kIGJ1dCBjYW5ub3QgYmUgcHJvY2Vzc2VkIiwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJjb2RlIjp7InR5cGUiOiJzdHJpbmcifSwibWVzc2FnZSI6eyJ0eXBlIjoic3RyaW5nIn19fX19fSwiNTAwIjp7ImRlc2NyaXB0aW9uIjoiVW5leHBlY3RlZCBlcnJvciIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiY29kZSI6eyJ0eXBlIjoic3RyaW5nIn0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX19fX0sIi9hcGkvdjEvY3lsaW5kZXJzL3tpZH0vZGlzcGF0Y2giOnsicG9zdCI6eyJzdW1tYXJ5IjoiRGlzcGF0Y2ggR2FzIEN5bGluZGVyIiwiZGVzY3JpcHRpb24iOiJVcGRhdGVzIGN5bGluZGVyIHN0YXR1cyBmcm9tIEF2YWlsYWJsZSB0byBJbi1UcmFuc2l0IGZvciBjdXN0b21lciBvcmRlciBmdWxmaWxsbWVudC4iLCJvcGVyYXRpb25JZCI6ImRpc3BhdGNoQ3lsaW5kZXIiLCJ4LW1jcC10b29sLW5hbWUiOiJkaXNwYXRjaF9jeWxpbmRlciIsIngtbWNwLWRlc2NyaXB0aW9uIjoiRGlzcGF0Y2hlcyBhIGN5bGluZGVyIHRvIGEgY3VzdG9tZXIgbG9jYXRpb24gYW5kIHVwZGF0ZXMgaW50ZXJuYWwgQlcgaW52ZW50b3J5IHN0YXR1cy4iLCJwYXJhbWV0ZXJzIjpbeyJuYW1lIjoiaWQiLCJpbiI6InBhdGgiLCJyZXF1aXJlZCI6dHJ1ZSwiZGVzY3JpcHRpb24iOiJVbmlxdWUgY3lsaW5kZXIgYmFyY29kZSBpZGVudGlmaWVyIiwic2NoZW1hIjp7InR5cGUiOiJzdHJpbmciLCJleGFtcGxlIjoiQ1lMLUFSRy05MDgyIn19XSwicmVxdWVzdEJvZHkiOnsicmVxdWlyZWQiOnRydWUsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInJlcXVpcmVkIjpbImRlc3RpbmF0aW9uIl0sInByb3BlcnRpZXMiOnsiZGVzdGluYXRpb24iOnsidHlwZSI6InN0cmluZyIsImRlc2NyaXB0aW9uIjoiRmFjaWxpdHkgb3IgY3VzdG9tZXIgcGxhbnQgbmFtZSIsImV4YW1wbGUiOiJGYWIgUGxhbnQgNCAtIEJheSAyIn19fX19fSwicmVzcG9uc2VzIjp7IjIwMCI6eyJkZXNjcmlwdGlvbiI6IkRpc3BhdGNoIHN0YXR1cyB1cGRhdGVkIHN1Y2Nlc3NmdWxseS4iLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImN5bGluZGVySWQiOnsidHlwZSI6InN0cmluZyJ9LCJzdGF0dXMiOnsidHlwZSI6InN0cmluZyJ9LCJkZXN0aW5hdGlvbiI6eyJ0eXBlIjoic3RyaW5nIn0sInVwZGF0ZWRBdCI6eyJ0eXBlIjoic3RyaW5nIn19fSwiZXhhbXBsZSI6eyJjeWxpbmRlcklkIjoiQ1lMLUFSRy05MDgyIiwic3RhdHVzIjoiSW4tVHJhbnNpdCIsImRlc3RpbmF0aW9uIjoiRmFiIFBsYW50IDQgLSBCYXkgMiIsInVwZGF0ZWRBdCI6IjIwMjYtMDctMjRUMTA6NDg6MDBaIn19fX0sIjQwMCI6eyJkZXNjcmlwdGlvbiI6IkludmFsaWQgb3IgbWlzc2luZyBpbnB1dCIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiY29kZSI6eyJ0eXBlIjoic3RyaW5nIn0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX0sIjQwMyI6eyJkZXNjcmlwdGlvbiI6Ik5vdCBhbGxvd2VkIiwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJjb2RlIjp7InR5cGUiOiJzdHJpbmcifSwibWVzc2FnZSI6eyJ0eXBlIjoic3RyaW5nIn19fX19fSwiNDA0Ijp7ImRlc2NyaXB0aW9uIjoiUmVxdWVzdGVkIGl0ZW0gbm90IGZvdW5kIiwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJjb2RlIjp7InR5cGUiOiJzdHJpbmcifSwibWVzc2FnZSI6eyJ0eXBlIjoic3RyaW5nIn19fX19fSwiNDA5Ijp7ImRlc2NyaXB0aW9uIjoiQ29uZmxpY3Qgd2l0aCB0aGUgY3VycmVudCBzdGF0ZSIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiY29kZSI6eyJ0eXBlIjoic3RyaW5nIn0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX0sIjQyMiI6eyJkZXNjcmlwdGlvbiI6IlJlcXVlc3QgdW5kZXJzdG9vZCBidXQgY2Fubm90IGJlIHByb2Nlc3NlZCIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiY29kZSI6eyJ0eXBlIjoic3RyaW5nIn0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX0sIjUwMCI6eyJkZXNjcmlwdGlvbiI6IlVuZXhwZWN0ZWQgZXJyb3IiLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImNvZGUiOnsidHlwZSI6InN0cmluZyJ9LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmcifX19fX19fX19LCIvYXBpL3YxL2N5bGluZGVycy9zZWFyY2giOnsiZ2V0Ijp7InN1bW1hcnkiOiJTZWFyY2ggR2FzIEN5bGluZGVycyIsImRlc2NyaXB0aW9uIjoiU2VhcmNoIGZvciBhdmFpbGFibGUgZ2FzIGN5bGluZGVycyBieSBnYXMgdHlwZSwgcHVyaXR5LCBvciB5YXJkIGxvY2F0aW9uLiIsIm9wZXJhdGlvbklkIjoic2VhcmNoR2FzU3RvY2siLCJ4LW1jcC10b29sLW5hbWUiOiJzZWFyY2hfZ2FzX3N0b2NrIiwieC1tY3AtZGVzY3JpcHRpb24iOiJTZWFyY2hlcyBhdmFpbGFibGUgZ2FzIGN5bGluZGVycyBieSBnYXMgdHlwZSAoZS5nLiwgQXJnb24sIE5pdHJvZ2VuKSBhbmQgeWFyZCBsb2NhdGlvbi4iLCJwYXJhbWV0ZXJzIjpbeyJuYW1lIjoiZ2FzVHlwZSIsImluIjoicXVlcnkiLCJkZXNjcmlwdGlvbiI6IlR5cGUgb2YgZ2FzIChlLmcuLCBBcmdvbiwgTml0cm9nZW4sIE94eWdlbiwgSHlkcm9nZW4pIiwicmVxdWlyZWQiOmZhbHNlLCJzY2hlbWEiOnsidHlwZSI6InN0cmluZyIsImV4YW1wbGUiOiJBcmdvbiJ9fSx7Im5hbWUiOiJsb2NhdGlvbiIsImluIjoicXVlcnkiLCJkZXNjcmlwdGlvbiI6IlN0b3JhZ2UgeWFyZCBvciBodWIgbG9jYXRpb24iLCJyZXF1aXJlZCI6ZmFsc2UsInNjaGVtYSI6eyJ0eXBlIjoic3RyaW5nIiwiZXhhbXBsZSI6IkhvdXN0b24gWWFyZCBCIn19XSwicmVzcG9uc2VzIjp7IjIwMCI6eyJkZXNjcmlwdGlvbiI6Ikxpc3Qgb2YgbWF0Y2hpbmcgY3lsaW5kZXJzIHJldHJpZXZlZCBzdWNjZXNzZnVsbHkuIiwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoiYXJyYXkiLCJpdGVtcyI6eyJ0eXBlIjoib2JqZWN0IiwicmVxdWlyZWQiOlsiY3lsaW5kZXJJZCIsImdhc1R5cGUiLCJwdXJpdHlHcmFkZSIsInByZXNzdXJlQmFyIiwibG9jYXRpb24iLCJzdGF0dXMiXSwicHJvcGVydGllcyI6eyJjeWxpbmRlcklkIjp7InR5cGUiOiJzdHJpbmciLCJkZXNjcmlwdGlvbiI6IkJhcmNvZGUvU2VyaWFsIG51bWJlciJ9LCJnYXNUeXBlIjp7InR5cGUiOiJzdHJpbmciLCJkZXNjcmlwdGlvbiI6IkluZHVzdHJpYWwgZ2FzIGNsYXNzaWZpY2F0aW9uIn0sInB1cml0eUdyYWRlIjp7InR5cGUiOiJzdHJpbmciLCJkZXNjcmlwdGlvbiI6IkdhcyBwdXJpdHkgc3BlYyBsZXZlbCAoZS5nLiA1LjAgZm9yIHNlbWljb25kdWN0b3IgZ3JhZGUpIn0sInByZXNzdXJlQmFyIjp7InR5cGUiOiJpbnRlZ2VyIiwiZGVzY3JpcHRpb24iOiJDdXJyZW50IGZpbGwgcHJlc3N1cmUgaW4gYmFycyJ9LCJ2b2x1bWVMaXRlcnMiOnsidHlwZSI6ImludGVnZXIiLCJkZXNjcmlwdGlvbiI6IlRhbmsgd2F0ZXIgdm9sdW1lIGNhcGFjaXR5In0sImxvY2F0aW9uIjp7InR5cGUiOiJzdHJpbmciLCJkZXNjcmlwdGlvbiI6IkN1cnJlbnQgZGVwb3Qgb3IgeWFyZCBpZGVudGlmaWVyIn0sInN0YXR1cyI6eyJ0eXBlIjoic3RyaW5nIiwiZW51bSI6WyJBdmFpbGFibGUiLCJSZXNlcnZlZCIsIkluLVRyYW5zaXQiLCJNYWludGVuYW5jZSJdLCJkZXNjcmlwdGlvbiI6Ik9wZXJhdGlvbmFsIHN0YXR1cyJ9LCJjZXJ0RXhwaXJ5RGF0ZSI6eyJ0eXBlIjoic3RyaW5nIiwiZm9ybWF0IjoiZGF0ZSIsImRlc2NyaXB0aW9uIjoiU2FmZXR5IGluc3BlY3Rpb24gZXhwaXJhdGlvbiBkYXRlIn19fX0sImV4YW1wbGUiOlt7ImN5bGluZGVySWQiOiJDWUwtQVJHLTkwODIiLCJnYXNUeXBlIjoiQXJnb24iLCJwdXJpdHlHcmFkZSI6IjUuMCAoOTkuOTk5JSkiLCJwcmVzc3VyZUJhciI6MjAwLCJ2b2x1bWVMaXRlcnMiOjUwLCJsb2NhdGlvbiI6IkhvdXN0b24gWWFyZCBCIiwic3RhdHVzIjoiQXZhaWxhYmxlIiwiY2VydEV4cGlyeURhdGUiOiIyMDI2LTEyLTMxIn1dfX19LCI0MDAiOnsiZGVzY3JpcHRpb24iOiJJbnZhbGlkIG9yIG1pc3NpbmcgaW5wdXQiLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImNvZGUiOnsidHlwZSI6InN0cmluZyJ9LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmcifX19fX19LCI0MDMiOnsiZGVzY3JpcHRpb24iOiJOb3QgYWxsb3dlZCIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiY29kZSI6eyJ0eXBlIjoic3RyaW5nIn0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX0sIjQwNCI6eyJkZXNjcmlwdGlvbiI6IlJlcXVlc3RlZCBpdGVtIG5vdCBmb3VuZCIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiY29kZSI6eyJ0eXBlIjoic3RyaW5nIn0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX0sIjQwOSI6eyJkZXNjcmlwdGlvbiI6IkNvbmZsaWN0IHdpdGggdGhlIGN1cnJlbnQgc3RhdGUiLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImNvZGUiOnsidHlwZSI6InN0cmluZyJ9LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmcifX19fX19LCI0MjIiOnsiZGVzY3JpcHRpb24iOiJSZXF1ZXN0IHVuZGVyc3Rvb2QgYnV0IGNhbm5vdCBiZSBwcm9jZXNzZWQiLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImNvZGUiOnsidHlwZSI6InN0cmluZyJ9LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmcifX19fX19LCI1MDAiOnsiZGVzY3JpcHRpb24iOiJVbmV4cGVjdGVkIGVycm9yIiwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJjb2RlIjp7InR5cGUiOiJzdHJpbmcifSwibWVzc2FnZSI6eyJ0eXBlIjoic3RyaW5nIn19fX19fX19fX0sImNvbXBvbmVudHMiOnsic2NoZW1hcyI6eyJDeWxpbmRlciI6eyJ0eXBlIjoib2JqZWN0IiwicmVxdWlyZWQiOlsiY3lsaW5kZXJJZCIsImdhc1R5cGUiLCJwdXJpdHlHcmFkZSIsInByZXNzdXJlQmFyIiwibG9jYXRpb24iLCJzdGF0dXMiXSwicHJvcGVydGllcyI6eyJjeWxpbmRlcklkIjp7InR5cGUiOiJzdHJpbmciLCJkZXNjcmlwdGlvbiI6IkJhcmNvZGUvU2VyaWFsIG51bWJlciJ9LCJnYXNUeXBlIjp7InR5cGUiOiJzdHJpbmciLCJkZXNjcmlwdGlvbiI6IkluZHVzdHJpYWwgZ2FzIGNsYXNzaWZpY2F0aW9uIn0sInB1cml0eUdyYWRlIjp7InR5cGUiOiJzdHJpbmciLCJkZXNjcmlwdGlvbiI6IkdhcyBwdXJpdHkgc3BlYyBsZXZlbCAoZS5nLiA1LjAgZm9yIHNlbWljb25kdWN0b3IgZ3JhZGUpIn0sInByZXNzdXJlQmFyIjp7InR5cGUiOiJpbnRlZ2VyIiwiZGVzY3JpcHRpb24iOiJDdXJyZW50IGZpbGwgcHJlc3N1cmUgaW4gYmFycyJ9LCJ2b2x1bWVMaXRlcnMiOnsidHlwZSI6ImludGVnZXIiLCJkZXNjcmlwdGlvbiI6IlRhbmsgd2F0ZXIgdm9sdW1lIGNhcGFjaXR5In0sImxvY2F0aW9uIjp7InR5cGUiOiJzdHJpbmciLCJkZXNjcmlwdGlvbiI6IkN1cnJlbnQgZGVwb3Qgb3IgeWFyZCBpZGVudGlmaWVyIn0sInN0YXR1cyI6eyJ0eXBlIjoic3RyaW5nIiwiZW51bSI6WyJBdmFpbGFibGUiLCJSZXNlcnZlZCIsIkluLVRyYW5zaXQiLCJNYWludGVuYW5jZSJdLCJkZXNjcmlwdGlvbiI6Ik9wZXJhdGlvbmFsIHN0YXR1cyJ9LCJjZXJ0RXhwaXJ5RGF0ZSI6eyJ0eXBlIjoic3RyaW5nIiwiZm9ybWF0IjoiZGF0ZSIsImRlc2NyaXB0aW9uIjoiU2FmZXR5IGluc3BlY3Rpb24gZXhwaXJhdGlvbiBkYXRlIn19fSwiRXJyb3JSZXNwb25zZSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJjb2RlIjp7InR5cGUiOiJzdHJpbmcifSwibWVzc2FnZSI6eyJ0eXBlIjoic3RyaW5nIn19fX19fQ=="
+    }
+  },
+  "schemas": {
+    "ErrorBody": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"code\": {\n          \"type\": \"string\"\n        },\n        \"message\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"code\": {\n          \"type\": \"string\"\n        },\n        \"message\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}"
+    },
+    "CylinderBody": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"required\": [\n        \"cylinderId\",\n        \"gasType\",\n        \"purityGrade\",\n        \"pressureBar\",\n        \"location\",\n        \"status\"\n      ],\n      \"properties\": {\n        \"cylinderId\": {\n          \"type\": \"string\",\n          \"description\": \"Barcode/Serial number\"\n        },\n        \"gasType\": {\n          \"type\": \"string\",\n          \"description\": \"Industrial gas classification\"\n        },\n        \"purityGrade\": {\n          \"type\": \"string\",\n          \"description\": \"Gas purity spec level (e.g. 5.0 for semiconductor grade)\"\n        },\n        \"pressureBar\": {\n          \"type\": \"integer\",\n          \"description\": \"Current fill pressure in bars\"\n        },\n        \"volumeLiters\": {\n          \"type\": \"integer\",\n          \"description\": \"Tank water volume capacity\"\n        },\n        \"location\": {\n          \"type\": \"string\",\n          \"description\": \"Current depot or yard identifier\"\n        },\n        \"status\": {\n          \"type\": \"string\",\n          \"enum\": [\n            \"Available\",\n            \"Reserved\",\n            \"In-Transit\",\n            \"Maintenance\"\n          ],\n          \"description\": \"Operational status\"\n        },\n        \"certExpiryDate\": {\n          \"type\": \"string\",\n          \"format\": \"date\",\n          \"description\": \"Safety inspection expiration date\"\n        }\n      }\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"required\": [\n        \"cylinderId\",\n        \"gasType\",\n        \"purityGrade\",\n        \"pressureBar\",\n        \"location\",\n        \"status\"\n      ],\n      \"properties\": {\n        \"cylinderId\": {\n          \"type\": \"string\",\n          \"description\": \"Barcode/Serial number\"\n        },\n        \"gasType\": {\n          \"type\": \"string\",\n          \"description\": \"Industrial gas classification\"\n        },\n        \"purityGrade\": {\n          \"type\": \"string\",\n          \"description\": \"Gas purity spec level (e.g. 5.0 for semiconductor grade)\"\n        },\n        \"pressureBar\": {\n          \"type\": \"integer\",\n          \"description\": \"Current fill pressure in bars\"\n        },\n        \"volumeLiters\": {\n          \"type\": \"integer\",\n          \"description\": \"Tank water volume capacity\"\n        },\n        \"location\": {\n          \"type\": \"string\",\n          \"description\": \"Current depot or yard identifier\"\n        },\n        \"status\": {\n          \"type\": \"string\",\n          \"enum\": [\n            \"Available\",\n            \"Reserved\",\n            \"In-Transit\",\n            \"Maintenance\"\n          ],\n          \"description\": \"Operational status\"\n        },\n        \"certExpiryDate\": {\n          \"type\": \"string\",\n          \"format\": \"date\",\n          \"description\": \"Safety inspection expiration date\"\n        }\n      }\n    }\n  }\n}"
+    },
+    "DispatchBody": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"cylinderId\": {\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"type\": \"string\"\n        },\n        \"destination\": {\n          \"type\": \"string\"\n        },\n        \"updatedAt\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"cylinderId\": {\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"type\": \"string\"\n        },\n        \"destination\": {\n          \"type\": \"string\"\n        },\n        \"updatedAt\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}"
+    },
+    "CylinderList": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"required\": [\n          \"cylinderId\",\n          \"gasType\",\n          \"purityGrade\",\n          \"pressureBar\",\n          \"location\",\n          \"status\"\n        ],\n        \"properties\": {\n          \"cylinderId\": {\n            \"type\": \"string\",\n            \"description\": \"Barcode/Serial number\"\n          },\n          \"gasType\": {\n            \"type\": \"string\",\n            \"description\": \"Industrial gas classification\"\n          },\n          \"purityGrade\": {\n            \"type\": \"string\",\n            \"description\": \"Gas purity spec level (e.g. 5.0 for semiconductor grade)\"\n          },\n          \"pressureBar\": {\n            \"type\": \"integer\",\n            \"description\": \"Current fill pressure in bars\"\n          },\n          \"volumeLiters\": {\n            \"type\": \"integer\",\n            \"description\": \"Tank water volume capacity\"\n          },\n          \"location\": {\n            \"type\": \"string\",\n            \"description\": \"Current depot or yard identifier\"\n          },\n          \"status\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Available\",\n              \"Reserved\",\n              \"In-Transit\",\n              \"Maintenance\"\n            ],\n            \"description\": \"Operational status\"\n          },\n          \"certExpiryDate\": {\n            \"type\": \"string\",\n            \"format\": \"date\",\n            \"description\": \"Safety inspection expiration date\"\n          }\n        }\n      }\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"required\": [\n          \"cylinderId\",\n          \"gasType\",\n          \"purityGrade\",\n          \"pressureBar\",\n          \"location\",\n          \"status\"\n        ],\n        \"properties\": {\n          \"cylinderId\": {\n            \"type\": \"string\",\n            \"description\": \"Barcode/Serial number\"\n          },\n          \"gasType\": {\n            \"type\": \"string\",\n            \"description\": \"Industrial gas classification\"\n          },\n          \"purityGrade\": {\n            \"type\": \"string\",\n            \"description\": \"Gas purity spec level (e.g. 5.0 for semiconductor grade)\"\n          },\n          \"pressureBar\": {\n            \"type\": \"integer\",\n            \"description\": \"Current fill pressure in bars\"\n          },\n          \"volumeLiters\": {\n            \"type\": \"integer\",\n            \"description\": \"Tank water volume capacity\"\n          },\n          \"location\": {\n            \"type\": \"string\",\n            \"description\": \"Current depot or yard identifier\"\n          },\n          \"status\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Available\",\n              \"Reserved\",\n              \"In-Transit\",\n              \"Maintenance\"\n            ],\n            \"description\": \"Operational status\"\n          },\n          \"certExpiryDate\": {\n            \"type\": \"string\",\n            \"format\": \"date\",\n            \"description\": \"Safety inspection expiration date\"\n          }\n        }\n      }\n    }\n  }\n}"
+    }
+  }
+}

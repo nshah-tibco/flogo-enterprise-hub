@@ -1,0 +1,73 @@
+{
+  "openapi" : "3.0.0",
+  "info" : {
+    "version" : "1.0",
+    "title" : "RAGImgQuery service",
+    "description" : "RAGImgQuery service"
+  },
+  "servers" : [ {
+    "url" : "http://localhost:7312/"
+  } ],
+  "paths" : {
+    "/ragimgquery" : {
+      "post" : {
+        "summary" : "postRAGImgQuery",
+        "description" : "postRAGImgQuery",
+        "operationId" : "post-ragimgquery",
+        "parameters" : [ ],
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ragimgqueryPostForm"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "a ResponseElement to be returned",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ResponseElement"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "ragimgqueryPostForm" : {
+        "type" : "object",
+        "required" : [ "question" ],
+        "properties" : {
+          "question" : {
+            "type" : "string"
+          },
+          "imageInput" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "binary",
+              "uniqueItems" : false
+            }
+          }
+        }
+      },
+      "ResponseElement" : {
+        "type" : "object",
+        "required" : [ "answer" ],
+        "properties" : {
+          "answer" : {
+            "type" : "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema elementFormDefault="qualified" targetNamespace="/api/v1/T1785253943787Converted/JsonSchema" xmlns:tns="/api/v1/T1785253943787Converted/JsonSchema" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="inline_response_200" type="tns:inline_response_200"/>
+    <xs:complexType name="inline_response_200">
+        <xs:sequence>
+            <xs:element minOccurs="0" name="cylinderId" type="xs:string"/>
+            <xs:element minOccurs="0" name="status" type="xs:string"/>
+            <xs:element minOccurs="0" name="destination" type="xs:string"/>
+            <xs:element minOccurs="0" name="updatedAt" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="CylinderArray" type="tns:CylinderArray"/>
+    <xs:complexType name="CylinderArray">
+        <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="Cylinder" type="tns:Cylinder"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="Cylinder" type="tns:Cylinder"/>
+    <xs:complexType name="Cylinder">
+        <xs:sequence>
+            <xs:element name="cylinderId" type="xs:string"/>
+            <xs:element name="gasType" type="xs:string"/>
+            <xs:element name="purityGrade" type="xs:string"/>
+            <xs:element name="pressureBar" type="xs:integer"/>
+            <xs:element minOccurs="0" name="volumeLiters" type="xs:integer"/>
+            <xs:element name="location" type="xs:string"/>
+            <xs:element name="status">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="Available"/>
+                        <xs:enumeration value="Reserved"/>
+                        <xs:enumeration value="In-Transit"/>
+                        <xs:enumeration value="Maintenance"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element minOccurs="0" name="certExpiryDate" type="xs:date"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="id_dispatch_body" type="tns:id_dispatch_body"/>
+    <xs:complexType name="id_dispatch_body">
+        <xs:sequence>
+            <xs:element name="destination" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="ErrorResponse" type="tns:ErrorResponse"/>
+    <xs:complexType name="ErrorResponse">
+        <xs:sequence>
+            <xs:element minOccurs="0" name="code" type="xs:string"/>
+            <xs:element minOccurs="0" name="message" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

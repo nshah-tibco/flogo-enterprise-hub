@@ -31,7 +31,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts"))
 from flogo_logic_lib import Logic  # noqa: E402
 
-L = Logic(sys.argv[1])
+L = Logic(sys.argv[1] if len(sys.argv) > 1 else None)   # <work>/plan.json from scaffold_flogo_app.py
 LS, BYID, RD = L.flow("list_policy_resources"), L.flow("get_api_policy_resources_id"), L.flow("read_policy_resource")
 ING, UPL, QRY = L.flow("post_api_ingest"), L.flow("post_api_upload"), L.flow("post_api_policy_query")
 count = lambda act: f"array.count($activity[{act}].output.matches)"

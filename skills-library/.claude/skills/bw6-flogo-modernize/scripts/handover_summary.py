@@ -61,14 +61,20 @@ def parity_lines(path):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("app")
-    ap.add_argument("--spec")
-    ap.add_argument("--parity", action="append", default=[])
-    ap.add_argument("--context", help="flogobuild build context name (config.md FLOGOBUILD_CONTEXT_NAME)")
+    ap.add_argument("app", help="REQUIRED. the built <FLOGO_APPS_DIR>/<AppName>.flogo")
+    ap.add_argument("--spec", help="<Module>.bw6spec.json from analyze_bw6.py (adds the plan's open items)")
+    ap.add_argument("--parity", action="append", default=[], help="parity report(s) from parity_check.py --report")
+    ap.add_argument("--context", help="flogobuild build context name (FLOGOBUILD_CONTEXT_NAME in config.md; check it with flogobuild list-context)")
     ap.add_argument("--extensions-dir", help="repo-local user extensions folder, if the app uses one")
-    ap.add_argument("--out")
+    ap.add_argument("--out", help="summary file (default: <AppName>.handover.md next to the app)")
     a = ap.parse_args()
     app_path = os.path.abspath(a.app)
+    missing = [f"{what} {p}" for what, p in [("app", a.app)] + ([("--spec", a.spec)] if a.spec else [])
+               + [("--parity", p) for p in a.parity] if not os.path.isfile(p)]
+    if missing:
+        sys.exit("error: not found: " + "; ".join(missing))
+    if not app_path.endswith(".flogo"):
+        sys.exit(f"error: {a.app} is not a .flogo app")
     app = json.load(open(app_path, encoding="utf-8"))
     spec = json.load(open(a.spec, encoding="utf-8")) if a.spec else None
     name = app.get("name") or os.path.splitext(os.path.basename(app_path))[0]
@@ -85,14 +91,15 @@ def main():
         port_ref = (t.get("settings") or {}).get("port") or (t.get("settings") or {}).get("serverPort") or ""
         m = re.search(r'\$property\["([^"]+)"\]', str(port_ref))
         port = pval.get(m.group(1)) if m else port_ref
-        kind = {"#rest": "REST", "#mcpserver": "MCP server"}.get(t["ref"], t["ref"])
+        ref = t["ref"].lstrip("#").removeprefix("tr_")   # fda writes #tr_rest, the designer saves #rest
+        kind = {"rest": "REST", "mcpserver": "MCP server"}.get(ref, t["ref"])
         L.append(f"- Trigger `{t['id']}` ({kind}) on port {port}" + (f" (app property `{m.group(1)}`)" if m else "")
                  + f", {len(t.get('handlers', []))} handler(s)")
         for h in t.get("handlers", []):
             s = h.get("settings") or {}
-            if t["ref"] == "#rest":
+            if ref == "rest":
                 endpoints.append((s.get("Method"), s.get("Path"), h["action"]["settings"].get("flowURI", "").split(":")[-1], port))
-            elif t["ref"] == "#mcpserver":
+            elif ref == "mcpserver":
                 tools.append((s.get("handlerName"), s.get("handlerType"), port, (t.get("settings") or {}).get("serverEndpointPath", "/mcp")))
     sub = [f for f in flows if f not in {e[2] for e in endpoints} and not f.startswith("mcp_")]
     L += [f"- Flows: {len(flows)} ({len(endpoints)} REST operations, {sum(1 for f in flows if f.startswith('mcp_'))} MCP tool "

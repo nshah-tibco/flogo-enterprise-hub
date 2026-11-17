@@ -68,6 +68,6 @@ Smart-Supply-Chain-Assistant WebSockets).
 
 | Sample | Ports | Status |
 |---|---|---|
-| `BW6_Flogo_Samples/Retail_AI_BW_Flogo` | 9500, 18000, 18085 | moved to `samples/Agentic_AI/BW6_Flogo_Samples/`; not migrated (the "Better Together" BW6 + Flogo showcase) |
+| `BW6_Flogo_Samples/Retail_Store_Assistant` | 9500, 18000, 18085 | moved to `samples/Agentic_AI/BW6_Flogo_Samples/`; not migrated (the "Better Together" BW6 + Flogo showcase) |
 
 These ports stay taken.

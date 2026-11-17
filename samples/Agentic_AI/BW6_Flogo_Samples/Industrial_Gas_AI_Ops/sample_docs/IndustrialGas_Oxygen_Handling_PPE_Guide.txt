@@ -1,0 +1,20 @@
+INDUSTRIAL GAS - OXYGEN CYLINDER HANDLING AND PPE GUIDE
+Product: Oxygen, Medical Grade (Compressed Gas)
+Document ID: IG-GDE-OXY-006   Revision: 4   Effective date: 2026-02-10
+NOTE: FICTIONAL DOCUMENT CREATED FOR DEMO PURPOSES ONLY. NOT FOR OPERATIONAL USE.
+
+1. Product identification. Industrial Gas Medical Grade Oxygen (O2) has a minimum purity of 99.5% and complies with the European Pharmacopoeia and USP monographs for medical oxygen. It is supplied in 40 L steel cylinders at a nominal filling pressure of 150 bar. Typical Industrial Gas cylinder IDs for this product start with the prefix CYL-OXY, for example CYL-OXY-1022.
+
+2. Main hazards of Oxygen. Oxygen is not flammable itself but is a strong oxidiser: it makes other materials ignite more easily and burn much more intensely. Oil, grease and many plastics can ignite spontaneously in contact with high-pressure Oxygen. Clothing that has been soaked in Oxygen (for example after a leak) stays highly flammable for at least 15 minutes and can be set on fire by a single spark.
+
+3. PPE required when handling Oxygen cylinders. Operators handling Oxygen cylinders must wear: (a) safety glasses with side shields, or a face shield when connecting or disconnecting regulators; (b) clean, oil-free and grease-free leather or cut-resistant gloves - gloves contaminated with oil or grease must never be used with Oxygen; (c) safety shoes with steel toe caps; (d) flame-resistant cotton or wool work clothing - synthetic clothing such as nylon or polyester must be avoided because it melts and burns intensely in Oxygen-enriched air. Hands must be free of hand cream and oils before touching Oxygen valves.
+
+4. Oxygen-clean rules. Never use oil, grease or any lubricant on Oxygen cylinder valves, regulators or fittings. Use only regulators and hoses marked "for Oxygen use" and cleaned for Oxygen service. Never use PTFE tape on Oxygen connections unless it is certified for Oxygen service.
+
+5. Opening an Oxygen cylinder valve. Stand to the side of the regulator, never in front of the gauge face. Open the Oxygen cylinder valve slowly (a quarter turn first) to avoid adiabatic compression heating, which can ignite the regulator seat. Never use a wrench on a hand-wheel valve.
+
+6. Oxygen enrichment. An atmosphere with more than 23.5% oxygen is considered Oxygen-enriched and presents a serious fire hazard. Rooms where Oxygen cylinders are used or stored must be well ventilated. Smoking, open flames and sparks are strictly prohibited within 5 metres of Oxygen cylinders, and "NO SMOKING - OXYGEN" signs must be displayed.
+
+7. Storage of Oxygen cylinders. Store Oxygen cylinders upright and secured, in a well-ventilated area below 50 degrees C, at least 3 metres from flammable gases such as Hydrogen and Acetylene or behind a fire-rated wall. Medical Grade Oxygen cylinders reserved for hospital delivery must be stored in a separate, clearly marked area and must not be mixed with industrial stock.
+
+8. Revision history. Revision 4 (2026-02-10) expanded the PPE requirements in section 3 and added the Oxygen-enrichment threshold.

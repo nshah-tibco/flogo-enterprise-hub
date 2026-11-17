@@ -1,0 +1,1571 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/tibco/flogo-general/src/app/General/activity/log",
+    "github.com/tibco/flogo-general/src/app/General/activity/httpresponse",
+    "github.com/project-flogo/contrib/activity/actreturn",
+    "github.com/project-flogo/flow/activity/subflow",
+    "github.com/TIBCOSoftware/flogo-enterprise-hub/extensions/openAI/activity/vectorSearch",
+    "github.com/tibco/flogo-general/src/app/General/activity/mapper",
+    "github.com/tibco/flogo-ai-agent/src/app/AgenticAI/activity/llmclientactivity",
+    "github.com/tibco/flogo-general/src/app/General/activity/rest",
+    "github.com/TIBCOSoftware/flogo-enterprise-hub/extensions/openAI/activity/vectorStoreList",
+    "github.com/TIBCOSoftware/flogo-enterprise-hub/extensions/openAI/activity/vectorStoreCreate",
+    "rest_1 github.com/tibco/flogo-general/src/app/General/trigger/rest",
+    "github.com/tibco/flogo-mcp/src/app/MCP/trigger/mcpserver",
+    "github.com/project-flogo/contrib/function/coerce",
+    "github.com/project-flogo/contrib/function/string",
+    "github.com/project-flogo/contrib/function/array",
+    "git.tibco.com/git/product/ipaas/wi-contrib.git/function/utility",
+    "github.com/project-flogo/contrib/function/json"
+  ],
+  "name": "GasDocsQueryAPI",
+  "description": "Flogo modernization of BW6 RAG_Industrial_Gas_Query: REST API + MCP server for the same operations",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#rest_1",
+      "name": "tibco-wi-rest",
+      "description": "RAGImgQuery service",
+      "settings": {
+        "port": "=$property[\"REST_PORT\"]",
+        "APISpecUpdate": true,
+        "swagger": "spec://7a4d8d14-2ae6-46b4-b2c2-c3c705cc8351",
+        "swaggerVersion": "v3",
+        "authenticationType": "None",
+        "username": "",
+        "password": "",
+        "apiVersion": "1.0",
+        "secureConnection": false,
+        "serverKey": "",
+        "caCertificate": "",
+        "readHeaderTimeout": 0,
+        "readTimeout": 0,
+        "maxRequestBodySize": 15
+      },
+      "id": "RAGImgQuery_service",
+      "handlers": [
+        {
+          "description": "Flow for ragimgquery POST",
+          "settings": {
+            "APISpecPath": "/ragimgquery",
+            "Method": "POST",
+            "reqType": "multipart/form-data",
+            "Path": "/ragimgquery",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:post_ragimgquery_POST"
+            },
+            "input": {
+              "body": "=$.body",
+              "multipartFormData": "=$.multipartFormData"
+            },
+            "output": {
+              "code": "=$.code",
+              "responseBody": "=$.responseBody"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": true,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              },
+              "responseCodesSchema": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseType\":{\"type\":\"string\"},\"responseSchema\":{\"type\":\"string\"}},\"required\":[\"code\",\"responseType\",\"responseSchema\"]}}",
+                "fe_metadata": "[{\"code\":200,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"required\\\":[\\\"answer\\\"],\\\"properties\\\":{\\\"answer\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":400,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":403,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":404,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":409,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":422,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":500,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"}]"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              },
+              "multipartFormData": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"question\":{\"type\":\"string\"},\"imageInput\":{\"type\":\"any\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"question\":{\"type\":\"string\"},\"imageInput\":{\"type\":\"any\"}}}"
+              },
+              "multipartForm": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"type\":{\"type\":\"string\"}},\"required\":[\"name\",\"type\"]}}",
+                "fe_metadata": "[{\"name\":\"question\",\"type\":\"string\"},{\"name\":\"imageInput\",\"type\":\"string\"}]"
+              }
+            }
+          },
+          "name": "post_ragimgquery_POST"
+        }
+      ]
+    },
+    {
+      "ref": "#mcpserver",
+      "name": "flogo-mcp-mcpsever",
+      "description": "MCP server for RAG_Industrial_Gas_Query",
+      "settings": {
+        "serverName": "RAG_Industrial_Gas_Query",
+        "serverVersion": "1.0.0",
+        "serverType": "HTTP",
+        "serverPort": "=$property[\"MCP_PORT\"]",
+        "statelessServer": false,
+        "serverEndpointPath": "/mcp",
+        "enableTLS": false,
+        "serverCertificate": "",
+        "serverPrivateKey": "",
+        "authType": "None",
+        "authToken": "",
+        "oauthIssuer": "",
+        "oauthJWKSURL": "",
+        "oauthAudience": "",
+        "oauthAuthorizationServers": "",
+        "oauthRequiredScopes": "",
+        "oauthResourceURL": ""
+      },
+      "id": "mcp_server",
+      "handlers": [
+        {
+          "description": "MCP tool post-ragimgquery: calls post_ragimgquery_POST and returns its body",
+          "settings": {
+            "handlerType": "Tool",
+            "resourceUri": "",
+            "handlerName": "post-ragimgquery",
+            "handlerDescription": "postRAGImgQuery",
+            "toolTitle": "",
+            "readOnlyToolHint": false,
+            "destructiveToolHint": false,
+            "idempotentToolHint": false,
+            "openWorldToolHint": true,
+            "scope": ""
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:mcp_post_ragimgquery"
+            },
+            "input": {
+              "arguments": "=$.arguments"
+            },
+            "output": {
+              "response": "=$.response"
+            }
+          },
+          "reply": {
+            "outputSchema": ""
+          },
+          "schemas": {
+            "reply": {
+              "response": {
+                "type": "json",
+                "value": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}",
+                "fe_metadata": "{\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"data\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"audience\": {\r\n      \"type\": \"array\",\r\n      \"items\": {\r\n        \"type\": \"string\"\r\n      }\r\n    },\r\n    \"priority\": {\r\n      \"type\": \"number\"\r\n    },\r\n    \"error\": {\r\n      \"type\": \"string\"\r\n    }\r\n  }\r\n}"
+              }
+            },
+            "output": {
+              "arguments": {
+                "type": "json",
+                "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"required\": [\"question\"], \"properties\": {\"question\": {\"type\": \"string\"}, \"imageInput\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}, \"description\": \"images, base64-encoded (PNG, JPEG, GIF, WEBP)\"}}}",
+                "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"required\": [\"question\"], \"properties\": {\"question\": {\"type\": \"string\"}, \"imageInput\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}, \"description\": \"images, base64-encoded (PNG, JPEG, GIF, WEBP)\"}}}"
+              }
+            }
+          },
+          "name": "mcp_post_ragimgquery"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:post_ragimgquery_POST",
+      "data": {
+        "name": "post_ragimgquery_POST",
+        "description": "Flow for ragimgquery POST",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Log_API",
+            "type": "label",
+            "label": "StartActivity to Log_API"
+          },
+          {
+            "id": 2,
+            "from": "Log_API",
+            "to": "BadRequest",
+            "type": "expression",
+            "label": "Log_API to BadRequest",
+            "value": "coerce.toString($flow.multipartFormData.question) == \"\""
+          },
+          {
+            "id": 3,
+            "from": "BadRequest",
+            "to": "ReturnBadRequest",
+            "type": "label",
+            "label": "BadRequest to ReturnBadRequest"
+          },
+          {
+            "id": 4,
+            "from": "Log_API",
+            "to": "GetStore",
+            "type": "expression",
+            "label": "Log_API to GetStore",
+            "value": "coerce.toString($flow.multipartFormData.question) != \"\""
+          },
+          {
+            "id": 5,
+            "from": "GetStore",
+            "to": "Search",
+            "type": "label",
+            "label": "GetStore to Search"
+          },
+          {
+            "id": 6,
+            "from": "Search",
+            "to": "SearchRows",
+            "type": "label",
+            "label": "Search to SearchRows"
+          },
+          {
+            "id": 7,
+            "from": "SearchRows",
+            "to": "Retrieval",
+            "type": "label",
+            "label": "SearchRows to Retrieval"
+          },
+          {
+            "id": 8,
+            "from": "Retrieval",
+            "to": "ChatInput",
+            "type": "label",
+            "label": "Retrieval to ChatInput"
+          },
+          {
+            "id": 9,
+            "from": "ChatInput",
+            "to": "ImageCheck",
+            "type": "label",
+            "label": "ChatInput to ImageCheck"
+          },
+          {
+            "id": 10,
+            "from": "ImageCheck",
+            "to": "Answer",
+            "type": "expression",
+            "label": "ImageCheck to Answer",
+            "value": "$activity[ImageCheck].output.imageCount == 0"
+          },
+          {
+            "id": 11,
+            "from": "Answer",
+            "to": "ConfigureHTTPResponse",
+            "type": "label",
+            "label": "Answer to ConfigureHTTPResponse"
+          },
+          {
+            "id": 12,
+            "from": "ConfigureHTTPResponse",
+            "to": "Return",
+            "type": "label",
+            "label": "ConfigureHTTPResponse to Return"
+          },
+          {
+            "id": 13,
+            "from": "ImageCheck",
+            "to": "BadImage",
+            "type": "expression",
+            "label": "ImageCheck to BadImage",
+            "value": "$activity[ImageCheck].output.imageCount > 0 && $activity[ImageCheck].output.unsupported > 0"
+          },
+          {
+            "id": 14,
+            "from": "BadImage",
+            "to": "ReturnBadImage",
+            "type": "label",
+            "label": "BadImage to ReturnBadImage"
+          },
+          {
+            "id": 15,
+            "from": "ImageCheck",
+            "to": "ChatRequest",
+            "type": "expression",
+            "label": "ImageCheck to ChatRequest",
+            "value": "$activity[ImageCheck].output.imageCount > 0 && $activity[ImageCheck].output.unsupported == 0"
+          },
+          {
+            "id": 16,
+            "from": "ChatRequest",
+            "to": "AskWithImages",
+            "type": "label",
+            "label": "ChatRequest to AskWithImages"
+          },
+          {
+            "id": 17,
+            "from": "AskWithImages",
+            "to": "ImageAnswer",
+            "type": "label",
+            "label": "AskWithImages to ImageAnswer"
+          },
+          {
+            "id": 18,
+            "from": "ImageAnswer",
+            "to": "ReturnImageAnswer",
+            "type": "label",
+            "label": "ImageAnswer to ReturnImageAnswer"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "Log_API",
+            "name": "Log_API",
+            "description": "Log API Call for ragimgquery POST",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"ragimgquery question=\", coerce.toString($flow.multipartFormData.question))",
+                "logLevel": "",
+                "loggerName": "",
+                "fieldPrefix": "",
+                "dynamicLogFields": {
+                  "mapping": {}
+                }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "BadRequest",
+            "name": "BadRequest",
+            "description": "HTTP 400 response",
+            "activity": {
+              "ref": "#httpresponse",
+              "input": {
+                "trigger": "RAGImgQuery_service",
+                "responsecode": "400",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "error": "invalid_request",
+                      "message": "question is required (multipart form field 'question')"
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://ErrorBody"
+                },
+                "output": {
+                  "response": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"error\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"error\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "ReturnBadRequest",
+            "name": "ReturnBadRequest",
+            "description": "Reply 400",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[BadRequest].code",
+                  "responseBody": "=$activity[BadRequest].response"
+                }
+              }
+            }
+          },
+          {
+            "id": "GetStore",
+            "name": "GetStore",
+            "description": "Resolve the vector store",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#subflow",
+              "settings": {
+                "flowURI": "res://flow:ResolveStore",
+                "detached": false,
+                "execTimeout": 0,
+                "transactional": false,
+                "transactionConnection": ""
+              },
+              "input": {
+                "input": {
+                  "mapping": {}
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"type\": \"object\", \"properties\": {}}",
+                    "fe_metadata": "{\"type\": \"object\", \"properties\": {}}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\"type\": \"object\", \"properties\": {\"storeId\": {\"type\": \"string\"}}}",
+                    "fe_metadata": "{\"type\": \"object\", \"properties\": {\"storeId\": {\"type\": \"string\"}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Search",
+            "name": "Search",
+            "description": "Semantic search in the document store",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#vectorSearch",
+              "settings": {
+                "endPointURL": "=$property[\"OPENAI_API_ENDPOINT_URL\"]",
+                "apiKey": "=$property[\"OPENAI_API_KEY\"]"
+              },
+              "input": {
+                "vectorStoreID": "=$activity[GetStore].storeId",
+                "searchString": "=$flow.multipartFormData.question",
+                "maxNumberOfResults": 5,
+                "rewriteQuery": false,
+                "scoreThreshold": 0,
+                "ranker": ""
+              },
+              "schemas": {
+                "output": {
+                  "searchResultRows": {
+                    "type": "json",
+                    "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"attributes\": {\"type\": \"object\", \"properties\": {\"fileName\": {\"type\": \"object\", \"properties\": {\"OfString\": {\"type\": \"string\"}}}}}, \"content\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"text\": {\"type\": \"string\"}, \"type\": {\"type\": \"string\"}}}}, \"file_id\": {\"type\": \"string\"}, \"filename\": {\"type\": \"string\"}, \"score\": {\"type\": \"number\"}}}}",
+                    "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"attributes\": {\"type\": \"object\", \"properties\": {\"fileName\": {\"type\": \"object\", \"properties\": {\"OfString\": {\"type\": \"string\"}}}}}, \"content\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"text\": {\"type\": \"string\"}, \"type\": {\"type\": \"string\"}}}}, \"file_id\": {\"type\": \"string\"}, \"filename\": {\"type\": \"string\"}, \"score\": {\"type\": \"number\"}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "SearchRows",
+            "name": "SearchRows",
+            "description": "Search results as plain JSON",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "rows": "=coerce.toArray(coerce.toString($activity[Search].searchResultRows))"
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"rows\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"attributes\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"fileName\": {\n                \"type\": \"object\",\n                \"properties\": {\n                  \"OfString\": {\n                    \"type\": \"string\"\n                  }\n                }\n              }\n            }\n          },\n          \"content\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"object\",\n              \"properties\": {\n                \"text\": {\n                  \"type\": \"string\"\n                },\n                \"type\": {\n                  \"type\": \"string\"\n                }\n              }\n            }\n          },\n          \"file_id\": {\n            \"type\": \"string\"\n          },\n          \"filename\": {\n            \"type\": \"string\"\n          },\n          \"score\": {\n            \"type\": \"number\"\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"rows\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"attributes\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"fileName\": {\n                \"type\": \"object\",\n                \"properties\": {\n                  \"OfString\": {\n                    \"type\": \"string\"\n                  }\n                }\n              }\n            }\n          },\n          \"content\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"object\",\n              \"properties\": {\n                \"text\": {\n                  \"type\": \"string\"\n                },\n                \"type\": {\n                  \"type\": \"string\"\n                }\n              }\n            }\n          },\n          \"file_id\": {\n            \"type\": \"string\"\n          },\n          \"filename\": {\n            \"type\": \"string\"\n          },\n          \"score\": {\n            \"type\": \"number\"\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"rows\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"attributes\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"fileName\": {\n                \"type\": \"object\",\n                \"properties\": {\n                  \"OfString\": {\n                    \"type\": \"string\"\n                  }\n                }\n              }\n            }\n          },\n          \"content\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"object\",\n              \"properties\": {\n                \"text\": {\n                  \"type\": \"string\"\n                },\n                \"type\": {\n                  \"type\": \"string\"\n                }\n              }\n            }\n          },\n          \"file_id\": {\n            \"type\": \"string\"\n          },\n          \"filename\": {\n            \"type\": \"string\"\n          },\n          \"score\": {\n            \"type\": \"number\"\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"rows\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"attributes\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"fileName\": {\n                \"type\": \"object\",\n                \"properties\": {\n                  \"OfString\": {\n                    \"type\": \"string\"\n                  }\n                }\n              }\n            }\n          },\n          \"content\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"object\",\n              \"properties\": {\n                \"text\": {\n                  \"type\": \"string\"\n                },\n                \"type\": {\n                  \"type\": \"string\"\n                }\n              }\n            }\n          },\n          \"file_id\": {\n            \"type\": \"string\"\n          },\n          \"filename\": {\n            \"type\": \"string\"\n          },\n          \"score\": {\n            \"type\": \"number\"\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Retrieval",
+            "name": "Retrieval",
+            "description": "Retrieved chunks with their source file names",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "documents": {
+                      "@foreach($activity[SearchRows].output.rows,r)": {
+                        "fileName": "=$loop[r].attributes.fileName.OfString",
+                        "text": "=$loop[r].content[0].text"
+                      }
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"documents\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"fileName\": {\n            \"type\": \"string\"\n          },\n          \"text\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"documents\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"fileName\": {\n            \"type\": \"string\"\n          },\n          \"text\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"documents\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"fileName\": {\n            \"type\": \"string\"\n          },\n          \"text\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"documents\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"fileName\": {\n            \"type\": \"string\"\n          },\n          \"text\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "ChatInput",
+            "name": "ChatInput",
+            "description": "Question, context and images",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "model": "=$property[\"LLM_MODEL\"]",
+                    "system": "You are a helpful assistant providing grounded answers based ONLY on the provided retrieved context documents. Strict Rules: 1. Grounding: Answer the user query using ONLY the provided context. If the context does not contain enough information to answer the question, state clearly: \"I cannot answer this based on the provided documents.\" Do NOT use outside knowledge or make assumptions. 2. Inline Citations: Cite your sources inline directly after the statement using numeric markers like [1], [2], etc., corresponding to the metadata (e.g., filename, page/section) of the retrieved document. 3. Citation Accuracy: Every paragraph and claim must contain inline citations. Never invent or hallucinate source names, page numbers, or citation markers. 4. Sources Section: End your response with a \"Sources\" section listing every cited reference in numerical order with its metadata (e.g., [1] IndustrialGas_Safety_SDS_Argon.txt - Section 1). 5. Consistency: Ensure strict 1-to-1 matching between the inline markers [X] and the numbered list in the Sources section.",
+                    "text": "=string.concat(\"Question: \", $flow.multipartFormData.question, \" | Retrieved context documents (JSON, cite them in this order): \", utility.renderJSON($activity[Retrieval].output.documents, false))",
+                    "images": "=coerce.toArray(utility.renderJSON($flow.multipartFormData.imageInput, false))"
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"model\": {\n      \"type\": \"string\"\n    },\n    \"system\": {\n      \"type\": \"string\"\n    },\n    \"text\": {\n      \"type\": \"string\"\n    },\n    \"images\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"model\": {\n      \"type\": \"string\"\n    },\n    \"system\": {\n      \"type\": \"string\"\n    },\n    \"text\": {\n      \"type\": \"string\"\n    },\n    \"images\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    }\n  }\n}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"model\": {\n      \"type\": \"string\"\n    },\n    \"system\": {\n      \"type\": \"string\"\n    },\n    \"text\": {\n      \"type\": \"string\"\n    },\n    \"images\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"model\": {\n      \"type\": \"string\"\n    },\n    \"system\": {\n      \"type\": \"string\"\n    },\n    \"text\": {\n      \"type\": \"string\"\n    },\n    \"images\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "ImageCheck",
+            "name": "ImageCheck",
+            "description": "How many images, how many of an unsupported type",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "imageCount": "=array.count($activity[ChatInput].output.images)",
+                    "unsupported": "=coerce.toInt(array.get(json.jq($activity[ChatInput].output, '[(.images // [])[] | select((startswith(\"iVBOR\") or startswith(\"/9j/\") or startswith(\"R0lGOD\") or startswith(\"UklGR\")) | not)] | length'), 0))"
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"imageCount\": {\n      \"type\": \"integer\"\n    },\n    \"unsupported\": {\n      \"type\": \"integer\"\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"imageCount\": {\n      \"type\": \"integer\"\n    },\n    \"unsupported\": {\n      \"type\": \"integer\"\n    }\n  }\n}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"imageCount\": {\n      \"type\": \"integer\"\n    },\n    \"unsupported\": {\n      \"type\": \"integer\"\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"imageCount\": {\n      \"type\": \"integer\"\n    },\n    \"unsupported\": {\n      \"type\": \"integer\"\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Answer",
+            "name": "Answer",
+            "description": "Grounded answer (BW RAG query)",
+            "activity": {
+              "ref": "#llmclientactivity",
+              "settings": {
+                "responseType": "Text",
+                "remoteAgents": [],
+                "mcpServers": [],
+                "conversationStoreType": "None",
+                "memoryMaxSize": 10
+              },
+              "input": {
+                "systemPrompt": "You are a helpful assistant providing grounded answers based ONLY on the provided retrieved context documents. Strict Rules: 1. Grounding: Answer the user query using ONLY the provided context. If the context does not contain enough information to answer the question, state clearly: \"I cannot answer this based on the provided documents.\" Do NOT use outside knowledge or make assumptions. 2. Inline Citations: Cite your sources inline directly after the statement using numeric markers like [1], [2], etc., corresponding to the metadata (e.g., filename, page/section) of the retrieved document. 3. Citation Accuracy: Every paragraph and claim must contain inline citations. Never invent or hallucinate source names, page numbers, or citation markers. 4. Sources Section: End your response with a \"Sources\" section listing every cited reference in numerical order with its metadata (e.g., [1] IndustrialGas_Safety_SDS_Argon.txt - Section 1). 5. Consistency: Ensure strict 1-to-1 matching between the inline markers [X] and the numbered list in the Sources section.",
+                "userPrompt": "=$activity[ChatInput].output.text",
+                "conversationId": "",
+                "llmConfiguration": {
+                  "mapping": {
+                    "provider": "=$property[\"LLM_PROVIDER\"]",
+                    "apiKey": "=$property[\"OPENAI_API_KEY\"]",
+                    "model": "=$property[\"LLM_MODEL\"]",
+                    "temparature": 1
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "llmConfiguration": {
+                    "type": "json",
+                    "value": "{\"type\": \"object\", \"additionalProperties\": false, \"title\": \"LLM Config Schema\", \"required\": [\"model\", \"provider\"], \"properties\": {\"provider\": {\"type\": \"string\", \"enum\": [\"OpenAI\", \"Gemini\", \"Anthropic\", \"Ollama\", \"vLLM\", \"AzureOpenAI\"]}, \"anthropicProviderType\": {\"type\": \"string\", \"enum\": [\"Default\", \"Amazon Bedrock\"]}, \"apiKey\": {\"type\": \"string\"}, \"model\": {\"type\": \"string\"}, \"providerBaseUrl\": {\"type\": \"string\"}, \"temparature\": {\"type\": \"number\", \"enum\": [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]}, \"reasoningEffort\": {\"type\": \"string\"}, \"azureDeployment\": {\"type\": \"string\"}, \"azureApiVersion\": {\"type\": \"string\"}, \"azureRegion\": {\"type\": \"string\"}, \"azureResourceName\": {\"type\": \"string\"}}}",
+                    "fe_metadata": "{\"type\": \"object\", \"additionalProperties\": false, \"title\": \"LLM Config Schema\", \"required\": [\"model\", \"provider\"], \"properties\": {\"provider\": {\"type\": \"string\", \"enum\": [\"OpenAI\", \"Gemini\", \"Anthropic\", \"Ollama\", \"vLLM\", \"AzureOpenAI\"]}, \"anthropicProviderType\": {\"type\": \"string\", \"enum\": [\"Default\", \"Amazon Bedrock\"]}, \"apiKey\": {\"type\": \"string\"}, \"model\": {\"type\": \"string\"}, \"providerBaseUrl\": {\"type\": \"string\"}, \"temparature\": {\"type\": \"number\", \"enum\": [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]}, \"reasoningEffort\": {\"type\": \"string\"}, \"azureDeployment\": {\"type\": \"string\"}, \"azureApiVersion\": {\"type\": \"string\"}, \"azureRegion\": {\"type\": \"string\"}, \"azureResourceName\": {\"type\": \"string\"}}}"
+                  },
+                  "mcpServerConfigs": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"array\",\n  \"items\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"name\": {\n        \"type\": \"string\"\n      },\n      \"serverType\": {\n        \"type\": \"string\",\n        \"enum\": [\n          \"http\"\n        ]\n      },\n      \"serverUrl\": {\n        \"type\": \"string\"\n      },\n      \"httpTransportType\": {\n        \"type\": \"string\",\n        \"enum\": [\n          \"streamable\",\n          \"sse\"\n        ]\n      },\n      \"authType\": {\n        \"type\": \"string\",\n        \"enum\": [\n          \"None\",\n          \"Token\"\n        ]\n      },\n      \"authToken\": {\n        \"type\": \"string\"\n      }\n    },\n    \"required\": [\n      \"name\",\n      \"serverUrl\"\n    ]\n  },\n  \"title\": \"MCP Server Config Schema\"\n}",
+                    "fe_metadata": "{\n  \"type\": \"array\",\n  \"items\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"name\": {\n        \"type\": \"string\"\n      },\n      \"serverType\": {\n        \"type\": \"string\",\n        \"enum\": [\n          \"http\"\n        ]\n      },\n      \"serverUrl\": {\n        \"type\": \"string\"\n      },\n      \"httpTransportType\": {\n        \"type\": \"string\",\n        \"enum\": [\n          \"streamable\",\n          \"sse\"\n        ]\n      },\n      \"authType\": {\n        \"type\": \"string\",\n        \"enum\": [\n          \"None\",\n          \"Token\"\n        ]\n      },\n      \"authToken\": {\n        \"type\": \"string\"\n      }\n    },\n    \"required\": [\n      \"name\",\n      \"serverUrl\"\n    ]\n  },\n  \"title\": \"MCP Server Config Schema\"\n}"
+                  },
+                  "a2aServerConfigs": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"array\",\n  \"items\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"name\": {\n        \"type\": \"string\"\n      },\n      \"serverUrl\": {\n        \"type\": \"string\"\n      },\n      \"authType\": {\n        \"type\": \"string\",\n        \"enum\": [\n          \"None\",\n          \"Static Token\"\n        ]\n      },\n      \"authToken\": {\n        \"type\": \"string\"\n      }\n    },\n    \"required\": [\n      \"name\",\n      \"serverUrl\"\n    ]\n  },\n  \"title\": \"A2A Server Config Schema\"\n}",
+                    "fe_metadata": "{\n  \"type\": \"array\",\n  \"items\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"name\": {\n        \"type\": \"string\"\n      },\n      \"serverUrl\": {\n        \"type\": \"string\"\n      },\n      \"authType\": {\n        \"type\": \"string\",\n        \"enum\": [\n          \"None\",\n          \"Static Token\"\n        ]\n      },\n      \"authToken\": {\n        \"type\": \"string\"\n      }\n    },\n    \"required\": [\n      \"name\",\n      \"serverUrl\"\n    ]\n  },\n  \"title\": \"A2A Server Config Schema\"\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "ConfigureHTTPResponse",
+            "name": "ConfigureHTTPResponse",
+            "description": "Configure HTTP Response Activity",
+            "activity": {
+              "ref": "#httpresponse",
+              "input": {
+                "trigger": "RAGImgQuery_service",
+                "responsecode": "200",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "answer": "=$activity[Answer].response"
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://AnswerBody"
+                },
+                "output": {
+                  "response": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"required\":[\"answer\"],\"properties\":{\"answer\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"required\":[\"answer\"],\"properties\":{\"answer\":{\"type\":\"string\"}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Reply to API Call for ragimgquery POST",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[ConfigureHTTPResponse].code",
+                  "responseBody": "=$activity[ConfigureHTTPResponse].response"
+                }
+              }
+            }
+          },
+          {
+            "id": "BadImage",
+            "name": "BadImage",
+            "description": "HTTP 400 response",
+            "activity": {
+              "ref": "#httpresponse",
+              "input": {
+                "trigger": "RAGImgQuery_service",
+                "responsecode": "400",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "error": "unsupported_image",
+                      "message": "imageInput accepts PNG, JPEG, GIF or WEBP images"
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://ErrorBody"
+                },
+                "output": {
+                  "response": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"error\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"error\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "ReturnBadImage",
+            "name": "ReturnBadImage",
+            "description": "Reply 400",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[BadImage].code",
+                  "responseBody": "=$activity[BadImage].response"
+                }
+              }
+            }
+          },
+          {
+            "id": "ChatRequest",
+            "name": "ChatRequest",
+            "description": "OpenAI chat request: text + images as data URLs",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "request": "=array.get(json.jq($activity[ChatInput].output, '{model: .model, max_completion_tokens: 5000, messages: [{role: \"system\", content: .system}, {role: \"user\", content: ([{type: \"text\", text: .text}] + [(.images // [])[] | (if startswith(\"iVBOR\") then \"image/png\" elif startswith(\"/9j/\") then \"image/jpeg\" elif startswith(\"R0lGOD\") then \"image/gif\" else \"image/webp\" end) as $m | {type: \"image_url\", image_url: {url: (\"data:\" + $m + \";base64,\" + .)}}])}]}'), 0)"
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"request\": {\n      \"type\": \"object\"\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"request\": {\n      \"type\": \"object\"\n    }\n  }\n}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"request\": {\n      \"type\": \"object\"\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"request\": {\n      \"type\": \"object\"\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "AskWithImages",
+            "name": "AskWithImages",
+            "description": "OpenAI chat completions with the images (the LLM Client is text-only)",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#rest",
+              "input": {
+                "swagger": "",
+                "authorization": false,
+                "authorizationConn": "",
+                "serviceName": "",
+                "resourcePath": "",
+                "Method": "POST",
+                "Uri": "=$property[\"OPENAI_CHAT_COMPLETIONS_URL\"]",
+                "requestType": "application/json",
+                "Use certificate for verification": false,
+                "mutualAuth": false,
+                "Client Certificate": "",
+                "Client Key": "",
+                "Server Certificate": "",
+                "disableSSLVerification": false,
+                "disableKeepAlives": false,
+                "followRedirects": true,
+                "enableSSRFProtection": false,
+                "ssrfAllowList": "",
+                "encodePathParams": true,
+                "Timeout": 180000,
+                "proxy": "",
+                "host": "",
+                "serviceUrl": "",
+                "multipartForm": {},
+                "serviceMetadata": {
+                  "mapping": {}
+                },
+                "queryParams": {
+                  "mapping": {}
+                },
+                "pathParams": {
+                  "mapping": {}
+                },
+                "headers": {
+                  "mapping": {
+                    "Authorization": "=string.concat(\"Bearer \", $property[\"OPENAI_API_KEY\"])"
+                  }
+                },
+                "dynamicRequestHeaders": {
+                  "mapping": {}
+                },
+                "body": "=$activity[ChatRequest].output.request",
+                "multipartFormData": {
+                  "mapping": {}
+                }
+              },
+              "output": {
+                "configureResponseCodes": false,
+                "throwError": false,
+                "responseType": "application/json",
+                "responseOutput": "JSON Object"
+              },
+              "schemas": {
+                "input": {
+                  "headers": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"properties\":{\"Authorization\":{\"type\":\"string\",\"visible\":true}},\"required\":[]}",
+                    "fe_metadata": "[{\"parameterName\": \"Authorization\", \"type\": \"string\", \"repeating\": \"false\", \"required\": \"false\", \"visible\": true}]"
+                  },
+                  "dynamicRequestHeaders": {
+                    "type": "json",
+                    "value": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"Header\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"Header\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}"
+                  },
+                  "body": {
+                    "type": "json",
+                    "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"model\": {\"type\": \"string\"}, \"max_completion_tokens\": {\"type\": \"integer\"}, \"messages\": {\"type\": \"array\", \"items\": {\"type\": \"object\"}}}}",
+                    "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"model\": {\"type\": \"string\"}, \"max_completion_tokens\": {\"type\": \"integer\"}, \"messages\": {\"type\": \"array\", \"items\": {\"type\": \"object\"}}}}"
+                  }
+                },
+                "output": {
+                  "responseBody": {
+                    "type": "json",
+                    "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"choices\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"message\": {\"type\": \"object\", \"properties\": {\"content\": {\"type\": \"string\"}}}}}}}}",
+                    "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"object\", \"properties\": {\"choices\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"message\": {\"type\": \"object\", \"properties\": {\"content\": {\"type\": \"string\"}}}}}}}}"
+                  },
+                  "headers": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"properties\":{\"Accept\":{\"type\":\"string\",\"visible\":false},\"Accept-Charset\":{\"type\":\"string\",\"visible\":false},\"Accept-Encoding\":{\"type\":\"string\",\"visible\":false},\"Content-Type\":{\"type\":\"string\",\"visible\":false},\"Content-Length\":{\"type\":\"string\",\"visible\":false},\"Connection\":{\"type\":\"string\",\"visible\":false},\"Cookie\":{\"type\":\"string\",\"visible\":false},\"Pragma\":{\"type\":\"string\",\"visible\":false},\"Set-Cookie\":{\"type\":\"string\",\"visible\":false}},\"required\":[]}",
+                    "fe_metadata": "[{\"parameterName\":\"Accept\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Charset\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Accept-Encoding\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Type\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Content-Length\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Connection\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Pragma\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false},{\"parameterName\":\"Set-Cookie\",\"type\":\"string\",\"repeating\":\"false\",\"required\":\"false\",\"visible\":false}]"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "ImageAnswer",
+            "name": "ImageAnswer",
+            "description": "HTTP 200 response",
+            "activity": {
+              "ref": "#httpresponse",
+              "input": {
+                "trigger": "RAGImgQuery_service",
+                "responsecode": "200",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "answer": "=$activity[AskWithImages].responseBody.choices[0].message.content"
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://AnswerBody"
+                },
+                "output": {
+                  "response": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"required\":[\"answer\"],\"properties\":{\"answer\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"required\":[\"answer\"],\"properties\":{\"answer\":{\"type\":\"string\"}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "ReturnImageAnswer",
+            "name": "ReturnImageAnswer",
+            "description": "Reply 200",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[ImageAnswer].code",
+                  "responseBody": "=$activity[ImageAnswer].response"
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6NTl9LCJMb2dfQVBJIjp7IngiOjM1MCwieSI6NTB9LCJCYWRSZXF1ZXN0Ijp7IngiOjYwMCwieSI6NTB9LCJSZXR1cm5CYWRSZXF1ZXN0Ijp7IngiOjg1MCwieSI6NTB9LCJHZXRTdG9yZSI6eyJ4Ijo2MDAsInkiOjIwMH0sIlNlYXJjaCI6eyJ4Ijo4NTAsInkiOjIwMH0sIlNlYXJjaFJvd3MiOnsieCI6MTEwMCwieSI6MjAwfSwiUmV0cmlldmFsIjp7IngiOjEzNTAsInkiOjIwMH0sIkNoYXRJbnB1dCI6eyJ4IjoxNjAwLCJ5IjoyMDB9LCJJbWFnZUNoZWNrIjp7IngiOjE4NTAsInkiOjIwMH0sIkFuc3dlciI6eyJ4IjoyMTAwLCJ5IjoyMDB9LCJDb25maWd1cmVIVFRQUmVzcG9uc2UiOnsieCI6MjM1MCwieSI6MjAwfSwiUmV0dXJuIjp7IngiOjI2MDAsInkiOjIwMH0sIkJhZEltYWdlIjp7IngiOjIxMDAsInkiOjM1MH0sIlJldHVybkJhZEltYWdlIjp7IngiOjIzNTAsInkiOjM1MH0sIkNoYXRSZXF1ZXN0Ijp7IngiOjIxMDAsInkiOjUwMH0sIkFza1dpdGhJbWFnZXMiOnsieCI6MjM1MCwieSI6NTAwfSwiSW1hZ2VBbnN3ZXIiOnsieCI6MjYwMCwieSI6NTAwfSwiUmV0dXJuSW1hZ2VBbnN3ZXIiOnsieCI6Mjg1MCwieSI6NTAwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "multipartFormData",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"question\":{\"type\":\"string\"},\"imageInput\":{\"type\":\"any\"}}"
+              }
+            },
+            {
+              "name": "requestURI",
+              "type": "string"
+            },
+            {
+              "name": "method",
+              "type": "string"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "responseBody",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\": \"object\", \"properties\": {\"multipartFormData\": {\"type\": \"object\", \"properties\": {\"question\": {\"type\": \"string\"}, \"imageInput\": {\"type\": \"any\"}}}, \"requestURI\": {\"type\": \"string\"}, \"method\": {\"type\": \"string\"}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:mcp_post_ragimgquery",
+      "data": {
+        "name": "mcp_post_ragimgquery",
+        "description": "MCP tool post-ragimgquery: calls post_ragimgquery_POST and returns its body",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Form",
+            "type": "label",
+            "label": "StartActivity to Form"
+          },
+          {
+            "id": 2,
+            "from": "Form",
+            "to": "CallOperation",
+            "type": "label",
+            "label": "Form to CallOperation"
+          },
+          {
+            "id": 3,
+            "from": "CallOperation",
+            "to": "Return",
+            "type": "label",
+            "label": "CallOperation to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "Form",
+            "name": "Form",
+            "description": "Tool arguments -> the operation's multipart form",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "question": "=$flow.arguments.question",
+                    "imageInput": "=$flow.arguments.imageInput"
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"question\": {\n      \"type\": \"string\"\n    },\n    \"imageInput\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"question\": {\n      \"type\": \"string\"\n    },\n    \"imageInput\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    }\n  }\n}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"question\": {\n      \"type\": \"string\"\n    },\n    \"imageInput\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"question\": {\n      \"type\": \"string\"\n    },\n    \"imageInput\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "CallOperation",
+            "name": "CallOperation",
+            "description": "Run post_ragimgquery_POST (the REST operation)",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#subflow",
+              "settings": {
+                "flowURI": "res://flow:post_ragimgquery_POST",
+                "detached": false,
+                "execTimeout": 0,
+                "transactional": false,
+                "transactionConnection": ""
+              },
+              "input": {
+                "input": {
+                  "mapping": {}
+                },
+                "multipartFormData": "=$activity[Form].output"
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\"type\": \"object\", \"properties\": {\"multipartFormData\": {\"type\": \"object\", \"properties\": {\"question\": {\"type\": \"string\"}, \"imageInput\": {\"type\": \"any\"}}}, \"requestURI\": {\"type\": \"string\"}, \"method\": {\"type\": \"string\"}}}",
+                    "fe_metadata": "{\"type\": \"object\", \"properties\": {\"multipartFormData\": {\"type\": \"object\", \"properties\": {\"question\": {\"type\": \"string\"}, \"imageInput\": {\"type\": \"any\"}}}, \"requestURI\": {\"type\": \"string\"}, \"method\": {\"type\": \"string\"}}}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}}}",
+                    "fe_metadata": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Return the REST body as the tool result",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "response": {
+                    "mapping": {
+                      "data": "=utility.renderJSON($activity[CallOperation].responseBody.body, false)",
+                      "error": "=$activity[CallOperation].code >= 400 ? utility.renderJSON($activity[CallOperation].responseBody.body, false) : \"\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6NTl9LCJGb3JtIjp7IngiOjM1MCwieSI6NTB9LCJDYWxsT3BlcmF0aW9uIjp7IngiOjYwMCwieSI6NTB9LCJSZXR1cm4iOnsieCI6ODUwLCJ5Ijo1MH19",
+        "metadata": {
+          "input": [
+            {
+              "name": "arguments",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"question\":{\"type\":\"string\"},\"imageInput\":{\"type\":\"array\",\"items\":{\"type\":\"string\"},\"description\":\"images, base64-encoded (PNG, JPEG, GIF, WEBP)\"}}"
+              }
+            }
+          ],
+          "output": [
+            {
+              "name": "response",
+              "type": "object"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\": \"object\", \"properties\": {\"arguments\": {\"type\": \"object\", \"required\": [\"question\"], \"properties\": {\"question\": {\"type\": \"string\"}, \"imageInput\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}, \"description\": \"images, base64-encoded (PNG, JPEG, GIF, WEBP)\"}}}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"title\":\"Inputs\",\"properties\":{\"response\":{\"type\":\"object\",\"properties\":{}}}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "flow:ResolveStore",
+      "data": {
+        "name": "ResolveStore",
+        "description": "The vector store named $property[VECTOR_STORE_NAME] (created on first use)",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "ListStores",
+            "type": "label",
+            "label": "StartActivity to ListStores"
+          },
+          {
+            "id": 2,
+            "from": "ListStores",
+            "to": "FindStore",
+            "type": "label",
+            "label": "ListStores to FindStore"
+          },
+          {
+            "id": 3,
+            "from": "FindStore",
+            "to": "ReturnExisting",
+            "type": "expression",
+            "label": "FindStore to ReturnExisting",
+            "value": "array.count($activity[FindStore].output.matches) > 0"
+          },
+          {
+            "id": 4,
+            "from": "FindStore",
+            "to": "CreateStore",
+            "type": "expression",
+            "label": "FindStore to CreateStore",
+            "value": "array.count($activity[FindStore].output.matches) == 0"
+          },
+          {
+            "id": 5,
+            "from": "CreateStore",
+            "to": "ReturnCreated",
+            "type": "label",
+            "label": "CreateStore to ReturnCreated"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "ListStores",
+            "name": "ListStores",
+            "description": "List the account's vector stores",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#vectorStoreList",
+              "settings": {
+                "endPointURL": "=$property[\"OPENAI_API_ENDPOINT_URL\"]",
+                "apiKey": "=$property[\"OPENAI_API_KEY\"]"
+              },
+              "input": {
+                "limit": 100,
+                "order": "",
+                "after": "",
+                "before": "",
+                "timeoutSeconds": 60
+              },
+              "schemas": {
+                "output": {
+                  "vectorStores": {
+                    "type": "json",
+                    "value": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\"}, \"name\": {\"type\": \"string\"}}}}",
+                    "fe_metadata": "{\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"string\"}, \"name\": {\"type\": \"string\"}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "FindStore",
+            "name": "FindStore",
+            "description": "The store with the configured name",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "matches": {
+                      "@foreach($activity[ListStores].vectorStores,s, $loop[s].name == $property[\"VECTOR_STORE_NAME\"])": {
+                        "id": "=$loop[s].id",
+                        "name": "=$loop[s].name"
+                      }
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"id\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"id\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"id\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"matches\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"id\": {\n            \"type\": \"string\"\n          },\n          \"name\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "ReturnExisting",
+            "name": "ReturnExisting",
+            "description": "Return the subflow outputs",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "storeId": "=$activity[FindStore].output.matches[0].id"
+                }
+              }
+            }
+          },
+          {
+            "id": "CreateStore",
+            "name": "CreateStore",
+            "description": "First use: create the store",
+            "settings": {
+              "retryOnError": {
+                "count": 0,
+                "interval": 0
+              }
+            },
+            "activity": {
+              "ref": "#vectorStoreCreate",
+              "settings": {
+                "endPointURL": "=$property[\"OPENAI_API_ENDPOINT_URL\"]",
+                "apiKey": "=$property[\"OPENAI_API_KEY\"]"
+              },
+              "input": {
+                "name": "=$property[\"VECTOR_STORE_NAME\"]",
+                "description": "Industrial gas safety data sheets, manuals and certificates",
+                "expiresAfterDays": 0,
+                "maxChunkSizeTokens": 800,
+                "chunkOverlapTokens": 400,
+                "timeoutSeconds": 60,
+                "fileIds": {
+                  "mapping": []
+                },
+                "metadata": {
+                  "mapping": []
+                }
+              }
+            }
+          },
+          {
+            "id": "ReturnCreated",
+            "name": "ReturnCreated",
+            "description": "Return the subflow outputs",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "storeId": "=$activity[CreateStore].id"
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6NTl9LCJMaXN0U3RvcmVzIjp7IngiOjM1MCwieSI6NTB9LCJGaW5kU3RvcmUiOnsieCI6NjAwLCJ5Ijo1MH0sIlJldHVybkV4aXN0aW5nIjp7IngiOjg1MCwieSI6NTB9LCJDcmVhdGVTdG9yZSI6eyJ4Ijo4NTAsInkiOjIwMH0sIlJldHVybkNyZWF0ZWQiOnsieCI6MTEwMCwieSI6MjAwfX0=",
+        "metadata": {
+          "input": [],
+          "output": [
+            {
+              "name": "storeId",
+              "type": "string"
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"type\": \"object\", \"properties\": {}}",
+            "output": "{\"type\": \"object\", \"properties\": {\"storeId\": {\"type\": \"string\"}}}"
+          }
+        }
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "REST_PORT",
+      "type": "float64",
+      "value": 8312
+    },
+    {
+      "name": "MCP_PORT",
+      "type": "string",
+      "value": "8412"
+    },
+    {
+      "name": "OPENAI_API_ENDPOINT_URL",
+      "type": "string",
+      "value": "https://api.openai.com/v1"
+    },
+    {
+      "name": "OPENAI_CHAT_COMPLETIONS_URL",
+      "type": "string",
+      "value": "https://api.openai.com/v1/chat/completions"
+    },
+    {
+      "name": "LLM_PROVIDER",
+      "type": "string",
+      "value": "OpenAI"
+    },
+    {
+      "name": "LLM_MODEL",
+      "type": "string",
+      "value": "gpt-5.5"
+    },
+    {
+      "name": "VECTOR_STORE_NAME",
+      "type": "string",
+      "value": "IndustrialGasDocs"
+    },
+    {
+      "name": "OPENAI_API_KEY",
+      "type": "string",
+      "value": "YOUR_OPENAI_API_KEY"
+    }
+  ],
+  "schemas": {
+    "ErrorBody": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"error\": {\n          \"type\": \"string\"\n        },\n        \"message\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"error\": {\n          \"type\": \"string\"\n        },\n        \"message\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}"
+    },
+    "AnswerBody": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"required\": [\n        \"answer\"\n      ],\n      \"properties\": {\n        \"answer\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"required\": [\n        \"answer\"\n      ],\n      \"properties\": {\n        \"answer\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}"
+    }
+  },
+  "specs": {
+    "7a4d8d14-2ae6-46b4-b2c2-c3c705cc8351": {
+      "id": "7a4d8d14-2ae6-46b4-b2c2-c3c705cc8351",
+      "name": "BW6Spec",
+      "type": "OpenAPI",
+      "version": "1.0.0",
+      "content": "eyJvcGVuYXBpIjoiMy4wLjAiLCJpbmZvIjp7InZlcnNpb24iOiIxLjAiLCJ0aXRsZSI6IlJBR0ltZ1F1ZXJ5IHNlcnZpY2UiLCJkZXNjcmlwdGlvbiI6IlJBR0ltZ1F1ZXJ5IHNlcnZpY2UifSwic2VydmVycyI6W3sidXJsIjoiaHR0cDovL2xvY2FsaG9zdDo4MzEyLyJ9XSwicGF0aHMiOnsiL3JhZ2ltZ3F1ZXJ5Ijp7InBvc3QiOnsic3VtbWFyeSI6InBvc3RSQUdJbWdRdWVyeSIsImRlc2NyaXB0aW9uIjoicG9zdFJBR0ltZ1F1ZXJ5Iiwib3BlcmF0aW9uSWQiOiJwb3N0X3JhZ2ltZ3F1ZXJ5IiwicGFyYW1ldGVycyI6W10sInJlcXVlc3RCb2R5Ijp7InJlcXVpcmVkIjp0cnVlLCJjb250ZW50Ijp7Im11bHRpcGFydC9mb3JtLWRhdGEiOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJyZXF1aXJlZCI6WyJxdWVzdGlvbiJdLCJwcm9wZXJ0aWVzIjp7InF1ZXN0aW9uIjp7InR5cGUiOiJzdHJpbmcifSwiaW1hZ2VJbnB1dCI6eyJ0eXBlIjoiYXJyYXkiLCJpdGVtcyI6eyJ0eXBlIjoic3RyaW5nIiwiZm9ybWF0IjoiYmluYXJ5IiwidW5pcXVlSXRlbXMiOmZhbHNlfX19fX19fSwicmVzcG9uc2VzIjp7IjIwMCI6eyJkZXNjcmlwdGlvbiI6ImEgUmVzcG9uc2VFbGVtZW50IHRvIGJlIHJldHVybmVkIiwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoib2JqZWN0IiwicmVxdWlyZWQiOlsiYW5zd2VyIl0sInByb3BlcnRpZXMiOnsiYW5zd2VyIjp7InR5cGUiOiJzdHJpbmcifX19fX19LCI0MDAiOnsiZGVzY3JpcHRpb24iOiJJbnZhbGlkIG9yIG1pc3NpbmcgaW5wdXQiLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImVycm9yIjp7InR5cGUiOiJzdHJpbmcifSwibWVzc2FnZSI6eyJ0eXBlIjoic3RyaW5nIn19fX19fSwiNDAzIjp7ImRlc2NyaXB0aW9uIjoiTm90IGFsbG93ZWQiLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImVycm9yIjp7InR5cGUiOiJzdHJpbmcifSwibWVzc2FnZSI6eyJ0eXBlIjoic3RyaW5nIn19fX19fSwiNDA0Ijp7ImRlc2NyaXB0aW9uIjoiUmVxdWVzdGVkIGl0ZW0gbm90IGZvdW5kIiwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJlcnJvciI6eyJ0eXBlIjoic3RyaW5nIn0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX0sIjQwOSI6eyJkZXNjcmlwdGlvbiI6IkNvbmZsaWN0IHdpdGggdGhlIGN1cnJlbnQgc3RhdGUiLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImVycm9yIjp7InR5cGUiOiJzdHJpbmcifSwibWVzc2FnZSI6eyJ0eXBlIjoic3RyaW5nIn19fX19fSwiNDIyIjp7ImRlc2NyaXB0aW9uIjoiUmVxdWVzdCB1bmRlcnN0b29kIGJ1dCBjYW5ub3QgYmUgcHJvY2Vzc2VkIiwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJlcnJvciI6eyJ0eXBlIjoic3RyaW5nIn0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX0sIjUwMCI6eyJkZXNjcmlwdGlvbiI6IlVuZXhwZWN0ZWQgZXJyb3IiLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImVycm9yIjp7InR5cGUiOiJzdHJpbmcifSwibWVzc2FnZSI6eyJ0eXBlIjoic3RyaW5nIn19fX19fX19fX0sImNvbXBvbmVudHMiOnsic2NoZW1hcyI6eyJyYWdpbWdxdWVyeVBvc3RGb3JtIjp7InR5cGUiOiJvYmplY3QiLCJyZXF1aXJlZCI6WyJxdWVzdGlvbiJdLCJwcm9wZXJ0aWVzIjp7InF1ZXN0aW9uIjp7InR5cGUiOiJzdHJpbmcifSwiaW1hZ2VJbnB1dCI6eyJ0eXBlIjoiYXJyYXkiLCJpdGVtcyI6eyJ0eXBlIjoic3RyaW5nIiwiZm9ybWF0IjoiYmluYXJ5IiwidW5pcXVlSXRlbXMiOmZhbHNlfX19fSwiUmVzcG9uc2VFbGVtZW50Ijp7InR5cGUiOiJvYmplY3QiLCJyZXF1aXJlZCI6WyJhbnN3ZXIiXSwicHJvcGVydGllcyI6eyJhbnN3ZXIiOnsidHlwZSI6InN0cmluZyJ9fX0sIkVycm9yUmVzcG9uc2UiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiZXJyb3IiOnsidHlwZSI6InN0cmluZyJ9LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmcifX19fX19"
+    }
+  },
+  "connections": {},
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTgiLCJ0YWciOiIxLjYuMTgtYjU5MSIsIm5hbWUiOiJUSUJDTyBGbG9nbyBDb25uZWN0b3IgZm9yIEdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS9USUJDT1NvZnR3YXJlL2Zsb2dvLWVudGVycHJpc2UtaHViL2V4dGVuc2lvbnMvb3BlbkFJIiwiaWQiOiJvcGVuQUkiLCJ2ZXJzaW9uIjoiMS4wLjEiLCJ0YWciOiIxLjAuMSIsIm5hbWUiOiJPcGVuQUkiLCJzM2xvY2F0aW9uIjoie1VTRVJJRH0vb3BlbkFJIiwiaXNVc2VyRXh0ZW5zaW9uIjp0cnVlfSx7InJlZiI6ImdpdGh1Yi5jb20vdGliY28vZmxvZ28tYWktYWdlbnQvc3JjL2FwcC9BZ2VudGljQUkiLCJpZCI6IkFnZW50aWNBSSIsInZlcnNpb24iOiIwLjkuNC1IRjEiLCJ0YWciOiIwLjkuNC1oZjEtYjAxIiwibmFtZSI6IlRJQkNPIEZsb2dvwq4gQ29ubmVjdG9yIGZvciBBZ2VudGljIEFJIChUZWNoIFByZXZpZXcpIiwiczNsb2NhdGlvbiI6IlRpYmNvL0FnZW50aWNBSSIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1tY3Avc3JjL2FwcC9NQ1AiLCJpZCI6Ik1DUCIsInZlcnNpb24iOiIxLjAuNCIsInRhZyI6IjEuMC40LWIwMiIsIm5hbWUiOiJUSUJDTyBGbG9nb8KuIENvbm5lY3RvciBmb3IgTW9kZWwgQ29udGV4dCBQcm90b2NvbCAoTUNQKSIsInMzbG9jYXRpb24iOiJUaWJjby9NQ1AiLCJpc1VzZXJFeHRlbnNpb24iOmZhbHNlfV0=",
+  "metadata": {
+    "endpoints": [
+      {
+        "protocol": "http",
+        "port": "8312",
+        "spec": {
+          "name": "GasDocsQueryAPI",
+          "version": "1.0.0"
+        },
+        "title": "RAGImgQuery_service",
+        "swagger": {
+          "openapi": "3.0.0",
+          "info": {
+            "title": "GasDocsQueryAPI",
+            "version": "1.0.0",
+            "description": "RAGImgQuery service"
+          },
+          "paths": {
+            "/ragimgquery": {
+              "post": {
+                "summary": "post_ragimgquery_POST",
+                "operationId": "post_ragimgquery",
+                "parameters": [],
+                "responses": {
+                  "200": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema1"
+                        }
+                      }
+                    }
+                  },
+                  "400": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "403": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "404": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "409": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "422": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "500": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  }
+                },
+                "description": "Flow for ragimgquery POST",
+                "requestBody": {
+                  "description": "",
+                  "required": false,
+                  "content": {
+                    "multipart/form-data": {
+                      "schema": {
+                        "type": "object",
+                        "properties": {
+                          "question": {
+                            "type": "string"
+                          },
+                          "imageInput": {
+                            "type": "string",
+                            "format": "binary"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "components": {
+            "schemas": {
+              "schema1": {
+                "type": "object",
+                "required": [
+                  "answer"
+                ],
+                "properties": {
+                  "answer": {
+                    "type": "string"
+                  }
+                }
+              },
+              "schema2": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "protocol": "http",
+        "port": "8412",
+        "title": "mcp_server",
+        "type": "public"
+      }
+    ],
+    "flogoVersion": "2.26.9"
+  }
+}

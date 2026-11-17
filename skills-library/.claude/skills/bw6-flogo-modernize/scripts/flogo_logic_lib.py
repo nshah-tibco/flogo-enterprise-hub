@@ -1,15 +1,15 @@
-"""Helpers for writing the business logic of a modernized flow with fda (step 3 of the skill).
+"""Helpers for writing the business logic of a modernized flow with fda (step 4 of SKILL.md).
 
 Use from a small per-app script:
 
     from flogo_logic_lib import Logic
-    L = Logic(r"<work>/plan.json")
-    F = L.flow("find_promotions")              # REST flow created by scaffold_flogo_app.py
+    L = Logic(sys.argv[1])                      # <work>/plan.json written by scaffold_flogo_app.py
+    F = L.flow("<operationId>")                 # REST flow created by scaffold_flogo_app.py
     L.unlink_placeholder(F)                     # detach the cas logReply response so you can insert steps
-    L.static_data(F, "CustomerData", "customers", items, item_schema)
+    L.static_data(F, "ItemData", "items", items, item_schema)
     ...
-    L.response(F, "ConfigureHTTPResponse", 200, "FindPromotionsBody", L.op(F)["ok"], {...})
-    L.link(F, "FindCustomer", "ConfigureHTTPResponse", "array.count($activity[FindCustomer].output.matches) > 0")
+    L.response(F, "ConfigureHTTPResponse", 200, "<OperationId>Body", L.op(F)["ok"], {...})
+    L.link(F, "FindItem", "ConfigureHTTPResponse", "array.count($activity[FindItem].output.matches) > 0")
     L.finish()                                  # reply link last, format, check-mappings
 
 Every helper encodes a verified rule (see references/gotchas.md):
@@ -88,7 +88,13 @@ def _deep_merge(a, b):
 
 class Logic:
     def __init__(self, plan_path):
+        if not plan_path or not os.path.isfile(plan_path):
+            sys.exit(f"error: plan.json not found ({plan_path or 'no path given'}). Pass <work>/plan.json, written by "
+                     "step 4: python scaffold_flogo_app.py --analysis <work>/analysis --work <work> ...")
         self.plan = json.load(open(plan_path, encoding="utf-8"))
+        if not os.path.isfile(self.plan.get("app", "")):
+            sys.exit(f"error: the app {self.plan.get('app')} named in {plan_path} does not exist - re-run "
+                     "scaffold_flogo_app.py --force (the logic script builds on a fresh scaffold)")
         self.work = os.path.dirname(os.path.abspath(plan_path))
         self.app = self.plan["app"]
         self.rest = self.plan["restTrigger"]
@@ -101,6 +107,14 @@ class Logic:
         # the analyzer spec (shared resources, decoded XSLT, literals); older plan.json files lack the path
         sp = self.plan.get("spec")
         self.spec = json.load(open(sp, encoding="utf-8")) if sp and os.path.exists(sp) else None
+        # error body fields: follow the API's own ErrorResponse schema when it declares one (e.g. {code, message}),
+        # else {error, message}
+        oas = sp.replace(".bw6spec.json", ".openapi.json") if sp else None
+        props = {}
+        if oas and os.path.exists(oas):
+            props = (json.load(open(oas, encoding="utf-8")).get("components", {}).get("schemas", {})
+                     .get("ErrorResponse", {}).get("properties", {}))
+        self.error_key = "code" if "code" in props and "error" not in props else "error"
 
     # ------------------------------------------------------------------ lookup
     def flow(self, prefix):
@@ -122,6 +136,28 @@ class Logic:
         if lit is None:
             sys.exit(f"{flow}/{name}: no string literal in its input mapping")
         return json.loads(lit)
+
+    def bw_xml(self, flow, name, item_schema=None):
+        """Records of the XML literal a BW activity (e.g. ParseXml) receives: the root's repeating children as dicts of
+        their child elements' text. item_schema (JSON schema of one record) types the values (integer/number/boolean);
+        without it everything stays a string."""
+        import xml.etree.ElementTree as ET
+        lit = bw_string_literal(self.bw_activity(flow, name)["inputXslt"][0])
+        if lit is None:
+            sys.exit(f"{flow}/{name}: no XML string literal in its input mapping")
+        root = ET.fromstring(lit.strip())
+        props = (item_schema or {}).get("properties", {})
+        conv = {"integer": int, "number": float, "boolean": lambda v: v.strip().lower() == "true"}
+        out = []
+        for rec in root:
+            row = {}
+            for f in rec:
+                tag = f.tag.rsplit("}", 1)[-1]
+                v = (f.text or "").strip()
+                t = props.get(tag, {}).get("type")
+                row[tag] = conv[t](v) if t in conv and v else v
+            out.append(row)
+        return out
 
     def tmp(self, name, obj):
         p = os.path.join(self.work, name)
@@ -246,8 +282,20 @@ class Logic:
             f("mm", f"{flow}.{ret}.input.mappings.responseBody", f"=$activity[{act}].response")
             f("cl", flow, act, ret)
 
+    def response_array(self, flow, act, code, wrapper_name, body_schema, source, desc=""):
+        """HTTP response whose body is a top-level JSON ARRAY, mapped whole from <source> (an array expression whose
+        items already have the reply's shape - e.g. a select()/static_data() mapper output). fda allows @foreach only
+        inside Mapper activities, so reshape items in a mapper first when they differ from the reply."""
+        self.response(flow, act, code, wrapper_name, body_schema, {}, desc)
+        src = source.lstrip("=")
+        # an empty @foreach result is nil, which the REST reply renders as {} - answer an explicit [] instead
+        self.fda("mm", f"{flow}.{act}.input.input.mapping.body", f'=array.count({src}) > 0 ? {src} : coerce.toArray("[]")')
+
     def error(self, flow, act, code, error, message_expr, wrapper_name="ErrorBody"):
-        self.response(flow, act, code, wrapper_name, ERROR_SCHEMA, {"error": error, "message": message_expr})
+        """JSON error reply {error|code, message}; the key follows the API's declared ErrorResponse schema."""
+        k = self.error_key
+        schema = {"type": "object", "properties": {k: {"type": "string"}, "message": {"type": "string"}}}
+        self.response(flow, act, code, wrapper_name, schema, {k: error, "message": message_expr})
 
     def require_params(self, flow, after="Log_API", next_step=None, act="BadRequest", body_fields=()):
         """400 JSON branch when a required query/path parameter (or a listed body field) is empty; the happy
@@ -399,6 +447,66 @@ class Logic:
             self.fda("mm", path, value)
 
     # ------------------------------------------------------------------ subflows
+    def multipart(self, flow, fields, extra_inputs=None):
+        """Make the REST operation <flow> accept multipart/form-data (fda cas only wires JSON bodies).
+        fields = [(name, "filecontent" | "string", required)]. The REST trigger hands the flow
+        $flow.multipartFormData.<name>: a string for "string" fields, and for "filecontent" fields a LIST of raw byte
+        arrays (one per uploaded file; the trigger drops the original file names). extra_inputs: other flow inputs
+        to keep, as JSON-schema properties (pathParams, queryParams ...)."""
+        params = [{"name": n, "type": t, "required": bool(r)} for n, t, r in fields]
+        data = {"type": "object", "properties": {n: ({"type": "any"} if t == "filecontent" else {"type": "string"})
+                                                  for n, t, _ in fields}}
+        h = f"{self.rest}.{flow}"   # cas names each REST handler after its flow
+        self.fda("sa", "handler", f"{h}.settings.reqType", "multipart/form-data")
+        # the runtime reads the parameter list (required checks) from fe_metadata; the designer from value
+        self.fda("sa", "handler", f"{h}.schemas.output.multipartForm", "--jsonFile", self.tmp(f"{flow}_multipartForm.json", {
+            "type": "json", "value": json.dumps(params), "fe_metadata": json.dumps(params)}), "--force")
+        self.fda("sa", "handler", f"{h}.schemas.output.multipartFormData", "--jsonFile", self.tmp(f"{flow}_multipartData.json", {
+            "type": "json", "value": json.dumps(data), "fe_metadata": json.dumps(data)}), "--force")
+        props = dict({"multipartFormData": data, "requestURI": {"type": "string"}, "method": {"type": "string"}},
+                     **(extra_inputs or {}))
+        self.fda("sms", f"{flow}.input", "--json-schema", json.dumps({"type": "object", "properties": props}))
+        # map the trigger's multipartFormData into the flow. Not 'fda wth --force': it re-derives the flow OUTPUTS
+        # too (code/message) and drops responseBody, which breaks the cas reply wiring
+        self.fda("sa", "handler", f"{h}.action.input.multipartFormData", "=$.multipartFormData", "--force")
+
+    def rest_invoke(self, flow, act, method, uri_prop, body_schema=None, body_expr=None, response_schema=None,
+                    headers=None, timeout_ms=60000, desc="Invoke REST"):
+        """Invoke REST (act_general_rest) call. uri_prop: app property holding the full URL (the designer blanks any
+        other Uri expression). headers = {"Name": "=expr" | literal}: each is DECLARED in the headers schema too - the
+        runtime only sends headers listed there (a mapping alone is silently dropped). Read the reply as
+        $activity[<act>].responseBody (typed by response_schema) and $activity[<act>].statusCode."""
+        self.activity(flow, act, "act_general_rest", desc)
+        for k, v in (("Method", method), ("Uri", f'=$property["{uri_prop}"]'), ("requestType", "application/json"),
+                     ("Timeout", timeout_ms)):
+            self._set_input(flow, act, k, v)
+        if headers:
+            params = [{"parameterName": h, "type": "string", "repeating": "false", "required": "false", "visible": True}
+                      for h in headers]
+            schema = {"type": "object", "properties": {h: {"type": "string", "visible": True} for h in headers}}
+            self.fda("sa", "activity", f"{flow}.{act}.schemas.input.headers", "--jsonFile", self.tmp(
+                f"{flow}_{act}_headers.json", {"type": "json", "value": json.dumps(schema), "fe_metadata": json.dumps(params)}),
+                "--force")
+            for h, v in headers.items():
+                self.fda("mm", f"{flow}.{act}.input.headers.mapping.{h}", v)
+        if body_schema:
+            self.fda("sa", "activity", f"{flow}.{act}.schemas.input.body", "--jsonFile",
+                     self.tmp(f"{flow}_{act}_body.json", jschema(dict({"$schema": "http://json-schema.org/draft-04/schema#"}, **body_schema))), "--force")
+        if body_expr:
+            self.fda("mm", f"{flow}.{act}.input.body", body_expr)
+        if response_schema:
+            self.fda("sa", "activity", f"{flow}.{act}.schemas.output.responseBody", "--jsonFile",
+                     self.tmp(f"{flow}_{act}_resp.json", jschema(dict({"$schema": "http://json-schema.org/draft-04/schema#"}, **response_schema))), "--force")
+
+    def mcp_tool_args(self, mcp_flow, args_schema):
+        """Declare an MCP tool's arguments (JSON-schema object) on BOTH the MCP handler and the tool flow's
+        'arguments' input, so the designer can resolve $flow.arguments.<field> (an untyped input is shown as an error)."""
+        full = dict({"$schema": "http://json-schema.org/draft-04/schema#"}, **args_schema)
+        self.fda("sa", "handler", f"mcp_server.{mcp_flow}.schemas.output.arguments", "--jsonFile",
+                 self.tmp(f"{mcp_flow}_args.json", jschema(full)), "--force")
+        plain = {k: v for k, v in args_schema.items() if k != "$schema"}
+        self.fda("sms", f"{mcp_flow}.input", "--json-schema", json.dumps({"type": "object", "properties": {"arguments": plain}}))
+
     def subflow(self, name, desc, inputs, outputs):
         """A flow without a trigger (BW subprocess / shared logic), run with call().
         inputs/outputs: JSON-schema properties {field: {"type": ...}}; read them as $flow.<field>."""
@@ -512,8 +620,20 @@ class Logic:
                 idx = next(i for i, l in enumerate(self.links(flow)) if l["from"] == frm and l["to"] == to)
                 f("sa", "flow", f"{flow}.links[{idx}].type", "expression")
                 f("sa", "flow", f"{flow}.links[{idx}].value", expr, "--force")
+        # Layout. fda's 'auto' (snake) places activities in their STORED order, ignoring the links, so an activity
+        # inserted after others were created is drawn at the end (the designer keeps those positions). Use the
+        # link-following 'dagre' layout whenever stored order != flow order (gotchas F46).
         for flow in list(self._ops) + [o["mcpFlow"] for o in self._ops.values() if o.get("mcpFlow")] + self._subflows:
-            f("ff", flow, "auto")
+            d = json.load(open(self.app, encoding="utf-8"))
+            data = next(r["data"] for r in d["resources"] if r["id"] == f"flow:{flow}")
+            tasks = [t["id"] for t in data["tasks"]]
+            flow_order = [tasks[0]] if tasks and not data.get("links") else []
+            for l in safe_order(tasks, data.get("links", [])):
+                for n in (l["from"], l["to"]):
+                    if n not in flow_order:
+                        flow_order.append(n)
+            stored = [t for t in tasks if t in flow_order]
+            f("ff", flow, "auto" if stored == flow_order else "dagre")
         fails, summary, _ = f.cm()
         print(f"\ncm: {summary[-1].split(')', 1)[-1].strip() if summary else '?'}")
         # documented fda cm false positives: filtered @foreach, $iteration (RESOLVER_UNKNOWN), subflow outputs

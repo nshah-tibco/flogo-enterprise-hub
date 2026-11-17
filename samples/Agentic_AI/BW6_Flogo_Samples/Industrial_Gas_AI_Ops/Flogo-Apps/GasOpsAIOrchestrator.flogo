@@ -1,0 +1,857 @@
+{
+  "imports": [
+    "github.com/project-flogo/flow",
+    "github.com/project-flogo/contrib/activity/noop",
+    "github.com/tibco/flogo-general/src/app/General/activity/log",
+    "github.com/tibco/flogo-general/src/app/General/activity/httpresponse",
+    "github.com/project-flogo/contrib/activity/actreturn",
+    "github.com/tibco/flogo-general/src/app/General/activity/mapper",
+    "github.com/tibco/flogo-ai-agent/src/app/AgenticAI/activity/llmclientactivity",
+    "github.com/tibco/flogo-general/src/app/General/trigger/rest",
+    "github.com/project-flogo/contrib/function/coerce",
+    "github.com/project-flogo/contrib/function/string",
+    "github.com/project-flogo/contrib/function/utils",
+    "github.com/project-flogo/contrib/function/datetime",
+    "github.com/tibco/flogo-ai-agent/src/app/AgenticAI/connector/mcpserverconfig"
+  ],
+  "name": "GasOpsAIOrchestrator",
+  "description": "AI assistant for gas-cylinder operations and documents over Flogo MCP tools",
+  "version": "1.0.0",
+  "type": "flogo:app",
+  "appModel": "1.1.1",
+  "tags": [],
+  "triggers": [
+    {
+      "ref": "#rest",
+      "name": "tibco-wi-rest",
+      "description": "AI assistant for gas-cylinder operations and documents, over Flogo MCP tools",
+      "settings": {
+        "port": "=$property[\"REST_PORT\"]",
+        "APISpecUpdate": true,
+        "swagger": "spec://e0372759-47ab-447c-a111-00378418891c",
+        "swaggerVersion": "v3",
+        "authenticationType": "None",
+        "username": "",
+        "password": "",
+        "apiVersion": "1.0.0",
+        "secureConnection": false,
+        "serverKey": "",
+        "caCertificate": "",
+        "readHeaderTimeout": 0,
+        "readTimeout": 0,
+        "maxRequestBodySize": 15
+      },
+      "id": "Gas_Ops_AI_Orchestrator_API",
+      "handlers": [
+        {
+          "description": "Flow for api/chat POST",
+          "settings": {
+            "APISpecPath": "/api/chat",
+            "Method": "POST",
+            "reqType": "application/json",
+            "Path": "/api/chat",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:chat_POST"
+            },
+            "input": {
+              "body": "=$.body"
+            },
+            "output": {
+              "code": "=$.code",
+              "responseBody": "=$.responseBody"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": true,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              },
+              "responseCodesSchema": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseType\":{\"type\":\"string\"},\"responseSchema\":{\"type\":\"string\"}},\"required\":[\"code\",\"responseType\",\"responseSchema\"]}}",
+                "fe_metadata": "[{\"code\":200,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"answer\\\":{\\\"type\\\":\\\"string\\\"},\\\"conversationId\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":400,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"},{\"code\":500,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"error\\\":{\\\"type\\\":\\\"string\\\"},\\\"message\\\":{\\\"type\\\":\\\"string\\\"}}}\"}]"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              },
+              "body": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"required\":[\"message\"],\"properties\":{\"message\":{\"type\":\"string\"},\"conversationId\":{\"type\":\"string\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"required\":[\"message\"],\"properties\":{\"message\":{\"type\":\"string\"},\"conversationId\":{\"type\":\"string\"}}}"
+              },
+              "multipartForm": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{}}",
+                "fe_metadata": "[]"
+              }
+            }
+          },
+          "name": "chat_POST"
+        },
+        {
+          "description": "Flow for api/health GET",
+          "settings": {
+            "APISpecPath": "/api/health",
+            "Method": "GET",
+            "reqType": "application/json",
+            "Path": "/api/health",
+            "OutputValidation": false
+          },
+          "action": {
+            "ref": "github.com/project-flogo/flow",
+            "settings": {
+              "flowURI": "res://flow:health_GET"
+            },
+            "input": {
+              "body": "=$.body"
+            },
+            "output": {
+              "code": "=$.code",
+              "responseBody": "=$.responseBody"
+            }
+          },
+          "reply": {
+            "code": 200,
+            "configureResponseCodes": true,
+            "message": ""
+          },
+          "schemas": {
+            "reply": {
+              "responseBody": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}",
+                "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"any\"},\"headers\":{\"type\":\"object\"}}}"
+              },
+              "responseCodesSchema": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseType\":{\"type\":\"string\"},\"responseSchema\":{\"type\":\"string\"}}}}",
+                "fe_metadata": "[{\"code\":200,\"responseType\":\"object\",\"responseSchema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"ok\\\":{\\\"type\\\":\\\"boolean\\\"},\\\"service\\\":{\\\"type\\\":\\\"string\\\"},\\\"model\\\":{\\\"type\\\":\\\"string\\\"}}}\"}]"
+              }
+            },
+            "output": {
+              "headers": {
+                "type": "json",
+                "value": "{\"type\":\"object\",\"properties\":{}}",
+                "fe_metadata": "[]"
+              },
+              "multipartForm": {
+                "type": "json",
+                "value": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":{}}",
+                "fe_metadata": "[]"
+              }
+            }
+          },
+          "name": "health_GET"
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "flow:chat_POST",
+      "data": {
+        "name": "chat_POST",
+        "description": "Flow for api/chat POST",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Log_API",
+            "type": "label",
+            "label": "StartActivity to Log_API"
+          },
+          {
+            "id": 2,
+            "from": "Log_API",
+            "to": "BadRequest",
+            "type": "expression",
+            "label": "Log_API to BadRequest",
+            "value": "coerce.toString($flow.body.message) == \"\""
+          },
+          {
+            "id": 3,
+            "from": "BadRequest",
+            "to": "ReturnBadRequest",
+            "type": "label",
+            "label": "BadRequest to ReturnBadRequest"
+          },
+          {
+            "id": 4,
+            "from": "Log_API",
+            "to": "Conversation",
+            "type": "expression",
+            "label": "Log_API to Conversation",
+            "value": "coerce.toString($flow.body.message) != \"\""
+          },
+          {
+            "id": 5,
+            "from": "Conversation",
+            "to": "Agent",
+            "type": "label",
+            "label": "Conversation to Agent"
+          },
+          {
+            "id": 6,
+            "from": "Agent",
+            "to": "ConfigureHTTPResponse",
+            "type": "label",
+            "label": "Agent to ConfigureHTTPResponse"
+          },
+          {
+            "id": 7,
+            "from": "ConfigureHTTPResponse",
+            "to": "Return",
+            "type": "label",
+            "label": "ConfigureHTTPResponse to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "Log_API",
+            "name": "Log_API",
+            "description": "Log API Call for api/chat POST",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "=string.concat(\"chat conversationId=\", coerce.toString($flow.body.conversationId))",
+                "logLevel": "",
+                "loggerName": "",
+                "fieldPrefix": "",
+                "dynamicLogFields": {
+                  "mapping": {}
+                }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "BadRequest",
+            "name": "BadRequest",
+            "description": "HTTP 400 response",
+            "activity": {
+              "ref": "#httpresponse",
+              "input": {
+                "trigger": "Gas_Ops_AI_Orchestrator_API",
+                "responsecode": "400",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "error": "invalid_request",
+                      "message": "message is required"
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://ErrorBody"
+                },
+                "output": {
+                  "response": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"error\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"error\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "ReturnBadRequest",
+            "name": "ReturnBadRequest",
+            "description": "Reply 400",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[BadRequest].code",
+                  "responseBody": "=$activity[BadRequest].response"
+                }
+              }
+            }
+          },
+          {
+            "id": "Conversation",
+            "name": "Conversation",
+            "description": "Keep the caller's conversation id, or start a new conversation",
+            "activity": {
+              "ref": "#mapper",
+              "input": {
+                "input": {
+                  "mapping": {
+                    "conversationId": "=coerce.toString($flow.body.conversationId) != \"\" ? $flow.body.conversationId : utils.uuid()"
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"conversationId\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"conversationId\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+                  }
+                },
+                "output": {
+                  "output": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"conversationId\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"conversationId\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Agent",
+            "name": "Agent",
+            "description": "Plan and call the MCP tools, then answer",
+            "activity": {
+              "ref": "#llmclientactivity",
+              "settings": {
+                "responseType": "Text",
+                "remoteAgents": [],
+                "mcpServers": [
+                  "conn://bf8bd955-90d0-403d-a928-a6b1cc65d820",
+                  "conn://72e80ca0-1ab2-434b-8bb9-946f199ddf00"
+                ],
+                "conversationStoreType": "Memory",
+                "memoryMaxSize": 20
+              },
+              "input": {
+                "systemPrompt": "=string.concat(\"You are the Industrial Gas Smart Operations AI Assistant, powered by TIBCO Flogo MCP tools. You have live cylinder-operations tools (search gas stock by gas type and yard location, get a cylinder's status, dispatch a cylinder) and a document tool (post-ragimgquery) that answers questions from the company's safety data sheets, SOPs and policies with citations. Always call a tool to get current data or document facts - never make assumptions about inventory or procedures. For document questions pass the user's question to post-ragimgquery and keep its citations and Sources section in your answer. Be concise and professional and reference specific cylinder IDs and figures from tool results. Before dispatching, check the cylinder's status and certificate expiry; when dispatching, confirm the cylinder ID and destination clearly. searchGasStock matches EXACT values: gasType is one of Argon, Nitrogen, Oxygen, Hydrogen (no grade words such as 'high-purity' - read purity from the results) and location is one of Houston Yard A, Houston Yard B, Dallas Distribution Center. To find a gas everywhere, search each location. Compare every certificate expiry date with today's date: a date before today means the certificate has EXPIRED and the cylinder is NOT ready for use or dispatch, even when its status is Available - always say so explicitly. A cylinder is ready only when its status is Available and its certificate has not expired. Today's date is \", string.substring(datetime.currentDate(), 0, 10), \".\")",
+                "userPrompt": "=$flow.body.message",
+                "conversationId": "=$activity[Conversation].output.conversationId",
+                "llmConfiguration": {
+                  "mapping": {
+                    "provider": "=$property[\"LLM_PROVIDER\"]",
+                    "apiKey": "=$property[\"LLM_API_KEY\"]",
+                    "model": "=$property[\"LLM_MODEL\"]",
+                    "temparature": 1
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "llmConfiguration": {
+                    "type": "json",
+                    "value": "{\"type\": \"object\", \"additionalProperties\": false, \"title\": \"LLM Config Schema\", \"required\": [\"model\", \"provider\"], \"properties\": {\"provider\": {\"type\": \"string\", \"enum\": [\"OpenAI\", \"Gemini\", \"Anthropic\", \"Ollama\", \"vLLM\", \"AzureOpenAI\"]}, \"anthropicProviderType\": {\"type\": \"string\", \"enum\": [\"Default\", \"Amazon Bedrock\"]}, \"apiKey\": {\"type\": \"string\"}, \"model\": {\"type\": \"string\"}, \"providerBaseUrl\": {\"type\": \"string\"}, \"temparature\": {\"type\": \"number\", \"enum\": [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]}, \"reasoningEffort\": {\"type\": \"string\"}, \"azureDeployment\": {\"type\": \"string\"}, \"azureApiVersion\": {\"type\": \"string\"}, \"azureRegion\": {\"type\": \"string\"}, \"azureResourceName\": {\"type\": \"string\"}}}",
+                    "fe_metadata": "{\"type\": \"object\", \"additionalProperties\": false, \"title\": \"LLM Config Schema\", \"required\": [\"model\", \"provider\"], \"properties\": {\"provider\": {\"type\": \"string\", \"enum\": [\"OpenAI\", \"Gemini\", \"Anthropic\", \"Ollama\", \"vLLM\", \"AzureOpenAI\"]}, \"anthropicProviderType\": {\"type\": \"string\", \"enum\": [\"Default\", \"Amazon Bedrock\"]}, \"apiKey\": {\"type\": \"string\"}, \"model\": {\"type\": \"string\"}, \"providerBaseUrl\": {\"type\": \"string\"}, \"temparature\": {\"type\": \"number\", \"enum\": [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]}, \"reasoningEffort\": {\"type\": \"string\"}, \"azureDeployment\": {\"type\": \"string\"}, \"azureApiVersion\": {\"type\": \"string\"}, \"azureRegion\": {\"type\": \"string\"}, \"azureResourceName\": {\"type\": \"string\"}}}"
+                  },
+                  "mcpServerConfigs": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"array\",\n  \"items\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"name\": {\n        \"type\": \"string\"\n      },\n      \"serverType\": {\n        \"type\": \"string\",\n        \"enum\": [\n          \"http\"\n        ]\n      },\n      \"serverUrl\": {\n        \"type\": \"string\"\n      },\n      \"httpTransportType\": {\n        \"type\": \"string\",\n        \"enum\": [\n          \"streamable\",\n          \"sse\"\n        ]\n      },\n      \"authType\": {\n        \"type\": \"string\",\n        \"enum\": [\n          \"None\",\n          \"Token\"\n        ]\n      },\n      \"authToken\": {\n        \"type\": \"string\"\n      }\n    },\n    \"required\": [\n      \"name\",\n      \"serverUrl\"\n    ]\n  },\n  \"title\": \"MCP Server Config Schema\"\n}",
+                    "fe_metadata": "{\n  \"type\": \"array\",\n  \"items\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"name\": {\n        \"type\": \"string\"\n      },\n      \"serverType\": {\n        \"type\": \"string\",\n        \"enum\": [\n          \"http\"\n        ]\n      },\n      \"serverUrl\": {\n        \"type\": \"string\"\n      },\n      \"httpTransportType\": {\n        \"type\": \"string\",\n        \"enum\": [\n          \"streamable\",\n          \"sse\"\n        ]\n      },\n      \"authType\": {\n        \"type\": \"string\",\n        \"enum\": [\n          \"None\",\n          \"Token\"\n        ]\n      },\n      \"authToken\": {\n        \"type\": \"string\"\n      }\n    },\n    \"required\": [\n      \"name\",\n      \"serverUrl\"\n    ]\n  },\n  \"title\": \"MCP Server Config Schema\"\n}"
+                  },
+                  "a2aServerConfigs": {
+                    "type": "json",
+                    "value": "{\n  \"type\": \"array\",\n  \"items\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"name\": {\n        \"type\": \"string\"\n      },\n      \"serverUrl\": {\n        \"type\": \"string\"\n      },\n      \"authType\": {\n        \"type\": \"string\",\n        \"enum\": [\n          \"None\",\n          \"Static Token\"\n        ]\n      },\n      \"authToken\": {\n        \"type\": \"string\"\n      }\n    },\n    \"required\": [\n      \"name\",\n      \"serverUrl\"\n    ]\n  },\n  \"title\": \"A2A Server Config Schema\"\n}",
+                    "fe_metadata": "{\n  \"type\": \"array\",\n  \"items\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"name\": {\n        \"type\": \"string\"\n      },\n      \"serverUrl\": {\n        \"type\": \"string\"\n      },\n      \"authType\": {\n        \"type\": \"string\",\n        \"enum\": [\n          \"None\",\n          \"Static Token\"\n        ]\n      },\n      \"authToken\": {\n        \"type\": \"string\"\n      }\n    },\n    \"required\": [\n      \"name\",\n      \"serverUrl\"\n    ]\n  },\n  \"title\": \"A2A Server Config Schema\"\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "ConfigureHTTPResponse",
+            "name": "ConfigureHTTPResponse",
+            "description": "Configure HTTP Response Activity",
+            "activity": {
+              "ref": "#httpresponse",
+              "input": {
+                "trigger": "Gas_Ops_AI_Orchestrator_API",
+                "responsecode": "200",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "answer": "=$activity[Agent].response",
+                      "conversationId": "=$activity[Conversation].output.conversationId"
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://ChatBody"
+                },
+                "output": {
+                  "response": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"answer\":{\"type\":\"string\"},\"conversationId\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"answer\":{\"type\":\"string\"},\"conversationId\":{\"type\":\"string\"}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Reply to API Call for api/chat POST",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[ConfigureHTTPResponse].code",
+                  "responseBody": "=$activity[ConfigureHTTPResponse].response"
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjEwMCwieSI6NTl9LCJMb2dfQVBJIjp7IngiOjM1MCwieSI6NTB9LCJCYWRSZXF1ZXN0Ijp7IngiOjYwMCwieSI6NTB9LCJSZXR1cm5CYWRSZXF1ZXN0Ijp7IngiOjg1MCwieSI6NTB9LCJDb252ZXJzYXRpb24iOnsieCI6NjAwLCJ5IjoyMDB9LCJBZ2VudCI6eyJ4Ijo4NTAsInkiOjIwMH0sIkNvbmZpZ3VyZUhUVFBSZXNwb25zZSI6eyJ4IjoxMTAwLCJ5IjoyMDB9LCJSZXR1cm4iOnsieCI6MTM1MCwieSI6MjAwfX0=",
+        "metadata": {
+          "input": [
+            {
+              "name": "body",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"message\":{\"type\":\"string\"},\"conversationId\":{\"type\":\"string\"}}"
+              }
+            },
+            {
+              "name": "multipartFormData",
+              "type": "object"
+            },
+            {
+              "name": "requestURI",
+              "type": "string"
+            },
+            {
+              "name": "method",
+              "type": "string"
+            }
+          ],
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "responseBody",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "input": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"message\":{\"type\":\"string\"},\"conversationId\":{\"type\":\"string\"}}},\"multipartFormData\":{\"type\":\"object\",\"properties\":{}},\"requestURI\":{\"type\":\"string\"},\"method\":{\"type\":\"string\"}}}",
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    },
+    {
+      "id": "flow:health_GET",
+      "data": {
+        "name": "health_GET",
+        "description": "Flow for api/health GET",
+        "links": [
+          {
+            "id": 1,
+            "from": "StartActivity",
+            "to": "Log_API",
+            "type": "label",
+            "label": "StartActivity to Log_API"
+          },
+          {
+            "id": 2,
+            "from": "Log_API",
+            "to": "ConfigureHTTPResponse",
+            "type": "label",
+            "label": "Log_API to ConfigureHTTPResponse"
+          },
+          {
+            "id": 3,
+            "from": "ConfigureHTTPResponse",
+            "to": "Return",
+            "type": "label",
+            "label": "ConfigureHTTPResponse to Return"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "StartActivity",
+            "name": "StartActivity",
+            "description": "NoOp Activity",
+            "activity": {
+              "ref": "#noop"
+            }
+          },
+          {
+            "id": "Log_API",
+            "name": "Log_API",
+            "description": "Log API Call for api/health GET",
+            "activity": {
+              "ref": "#log",
+              "input": {
+                "Log Level": "INFO",
+                "flowInfo": false,
+                "message": "Log API call for health_GET",
+                "logLevel": "",
+                "loggerName": "",
+                "fieldPrefix": "",
+                "dynamicLogFields": {
+                  "mapping": {}
+                }
+              },
+              "schemas": {
+                "input": {
+                  "dynamicLogFields": {
+                    "type": "json",
+                    "value": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}",
+                    "fe_metadata": "{\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\"\n          },\n          \"value\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"name\",\n          \"value\"\n        ]\n      }\n    }\n  }\n}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "ConfigureHTTPResponse",
+            "name": "ConfigureHTTPResponse",
+            "description": "Configure HTTP Response Activity",
+            "activity": {
+              "ref": "#httpresponse",
+              "input": {
+                "trigger": "Gas_Ops_AI_Orchestrator_API",
+                "responsecode": "200",
+                "input": {
+                  "mapping": {
+                    "body": {
+                      "ok": true,
+                      "service": "GasOpsAIOrchestrator",
+                      "model": "=$property[\"LLM_MODEL\"]"
+                    }
+                  }
+                }
+              },
+              "schemas": {
+                "input": {
+                  "input": "schema://HealthBody"
+                },
+                "output": {
+                  "response": {
+                    "type": "json",
+                    "value": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"ok\":{\"type\":\"boolean\"},\"service\":{\"type\":\"string\"},\"model\":{\"type\":\"string\"}}}}}",
+                    "fe_metadata": "{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{\"ok\":{\"type\":\"boolean\"},\"service\":{\"type\":\"string\"},\"model\":{\"type\":\"string\"}}}}}"
+                  }
+                }
+              },
+              "feSchemaMap": {}
+            }
+          },
+          {
+            "id": "Return",
+            "name": "Return",
+            "description": "Reply to API Call for api/health GET",
+            "activity": {
+              "ref": "#actreturn",
+              "settings": {
+                "mappings": {
+                  "code": "=$activity[ConfigureHTTPResponse].code",
+                  "responseBody": "=$activity[ConfigureHTTPResponse].response"
+                }
+              }
+            }
+          }
+        ],
+        "fe_metadata": "eyJTdGFydEFjdGl2aXR5Ijp7IngiOjUwLCJ5Ijo0NX0sIkxvZ19BUEkiOnsieCI6MjUwLCJ5Ijo0NX0sIkNvbmZpZ3VyZUhUVFBSZXNwb25zZSI6eyJ4Ijo0NTAsInkiOjQ1fSwiUmV0dXJuIjp7IngiOjY1MCwieSI6NDV9fQ==",
+        "metadata": {
+          "input": [],
+          "output": [
+            {
+              "name": "code",
+              "type": "float64"
+            },
+            {
+              "name": "responseBody",
+              "type": "object",
+              "schema": {
+                "type": "json",
+                "value": "{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}"
+              }
+            }
+          ],
+          "fe_metadata": {
+            "output": "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"number\"},\"responseBody\":{\"type\":\"object\",\"properties\":{\"body\":{\"type\":\"object\",\"properties\":{}},\"headers\":{\"type\":\"object\",\"properties\":{}}}}}}"
+          }
+        },
+        "explicitReply": true
+      }
+    }
+  ],
+  "properties": [
+    {
+      "name": "REST_PORT",
+      "type": "float64",
+      "value": 18090
+    },
+    {
+      "name": "LLM_PROVIDER",
+      "type": "string",
+      "value": "OpenAI"
+    },
+    {
+      "name": "LLM_MODEL",
+      "type": "string",
+      "value": "gpt-5.5"
+    },
+    {
+      "name": "LLM_API_KEY",
+      "type": "string",
+      "value": "SECRET:aq8pTHRBKhFju5W2daYMmrKI+31Fqzpe11RJp/DtdlVIWVA="
+    }
+  ],
+  "schemas": {
+    "HealthBody": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"ok\": {\n          \"type\": \"boolean\"\n        },\n        \"service\": {\n          \"type\": \"string\"\n        },\n        \"model\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"ok\": {\n          \"type\": \"boolean\"\n        },\n        \"service\": {\n          \"type\": \"string\"\n        },\n        \"model\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}"
+    },
+    "ErrorBody": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"error\": {\n          \"type\": \"string\"\n        },\n        \"message\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"error\": {\n          \"type\": \"string\"\n        },\n        \"message\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}"
+    },
+    "ChatBody": {
+      "type": "json",
+      "value": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"answer\": {\n          \"type\": \"string\"\n        },\n        \"conversationId\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}",
+      "fe_metadata": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"body\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"answer\": {\n          \"type\": \"string\"\n        },\n        \"conversationId\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}"
+    }
+  },
+  "specs": {
+    "e0372759-47ab-447c-a111-00378418891c": {
+      "id": "e0372759-47ab-447c-a111-00378418891c",
+      "name": "OrchestratorAPI",
+      "type": "OpenAPI",
+      "version": "1.0.0",
+      "content": "eyJvcGVuYXBpIjoiMy4wLjMiLCJpbmZvIjp7InRpdGxlIjoiR2FzIE9wcyBBSSBPcmNoZXN0cmF0b3IgQVBJIiwidmVyc2lvbiI6IjEuMC4wIiwiZGVzY3JpcHRpb24iOiJBSSBhc3Npc3RhbnQgZm9yIGdhcy1jeWxpbmRlciBvcGVyYXRpb25zIGFuZCBkb2N1bWVudHMsIG92ZXIgRmxvZ28gTUNQIHRvb2xzIn0sInBhdGhzIjp7Ii9hcGkvY2hhdCI6eyJwb3N0Ijp7Im9wZXJhdGlvbklkIjoiY2hhdCIsInN1bW1hcnkiOiJBc2sgdGhlIEFJIGFzc2lzdGFudCIsInJlcXVlc3RCb2R5Ijp7InJlcXVpcmVkIjp0cnVlLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJyZXF1aXJlZCI6WyJtZXNzYWdlIl0sInByb3BlcnRpZXMiOnsibWVzc2FnZSI6eyJ0eXBlIjoic3RyaW5nIn0sImNvbnZlcnNhdGlvbklkIjp7InR5cGUiOiJzdHJpbmcifX19fX19LCJyZXNwb25zZXMiOnsiMjAwIjp7ImRlc2NyaXB0aW9uIjoiVGhlIGFzc2lzdGFudCdzIGFuc3dlciIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiYW5zd2VyIjp7InR5cGUiOiJzdHJpbmcifSwiY29udmVyc2F0aW9uSWQiOnsidHlwZSI6InN0cmluZyJ9fX19fX0sIjQwMCI6eyJkZXNjcmlwdGlvbiI6IkludmFsaWQgb3IgbWlzc2luZyBpbnB1dCIsImNvbnRlbnQiOnsiYXBwbGljYXRpb24vanNvbiI6eyJzY2hlbWEiOnsidHlwZSI6Im9iamVjdCIsInByb3BlcnRpZXMiOnsiZXJyb3IiOnsidHlwZSI6InN0cmluZyJ9LCJtZXNzYWdlIjp7InR5cGUiOiJzdHJpbmcifX19fX19LCI1MDAiOnsiZGVzY3JpcHRpb24iOiJVbmV4cGVjdGVkIGVycm9yIiwiY29udGVudCI6eyJhcHBsaWNhdGlvbi9qc29uIjp7InNjaGVtYSI6eyJ0eXBlIjoib2JqZWN0IiwicHJvcGVydGllcyI6eyJlcnJvciI6eyJ0eXBlIjoic3RyaW5nIn0sIm1lc3NhZ2UiOnsidHlwZSI6InN0cmluZyJ9fX19fX19fX0sIi9hcGkvaGVhbHRoIjp7ImdldCI6eyJvcGVyYXRpb25JZCI6ImhlYWx0aCIsInN1bW1hcnkiOiJTZXJ2aWNlIGNoZWNrIiwicmVzcG9uc2VzIjp7IjIwMCI6eyJkZXNjcmlwdGlvbiI6IlNlcnZpY2UgaXMgdXAiLCJjb250ZW50Ijp7ImFwcGxpY2F0aW9uL2pzb24iOnsic2NoZW1hIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7Im9rIjp7InR5cGUiOiJib29sZWFuIn0sInNlcnZpY2UiOnsidHlwZSI6InN0cmluZyJ9LCJtb2RlbCI6eyJ0eXBlIjoic3RyaW5nIn19fX19fX19fX0sImNvbXBvbmVudHMiOnsic2NoZW1hcyI6eyJFcnJvclJlc3BvbnNlIjp7InR5cGUiOiJvYmplY3QiLCJwcm9wZXJ0aWVzIjp7ImVycm9yIjp7InR5cGUiOiJzdHJpbmcifSwibWVzc2FnZSI6eyJ0eXBlIjoic3RyaW5nIn19fX19fQ=="
+    }
+  },
+  "connections": {
+    "bf8bd955-90d0-403d-a928-a6b1cc65d820": {
+      "id": "bf8bd955-90d0-403d-a928-a6b1cc65d820",
+      "name": "GasCylinderOps",
+      "ref": "#mcpserverconfig",
+      "isGlobal": false,
+      "settings": {
+        "name": "GasCylinderOps",
+        "description": "Flogo MCP server GasCylinderOps",
+        "serverType": "http",
+        "serverUrl": "http://localhost:16100/mcp",
+        "httpTransportType": "streamable",
+        "authType": "None",
+        "authToken": "",
+        "selectedTools": []
+      }
+    },
+    "72e80ca0-1ab2-434b-8bb9-946f199ddf00": {
+      "id": "72e80ca0-1ab2-434b-8bb9-946f199ddf00",
+      "name": "GasDocs",
+      "ref": "#mcpserverconfig",
+      "isGlobal": false,
+      "settings": {
+        "name": "GasDocs",
+        "description": "Flogo MCP server GasDocs",
+        "serverType": "http",
+        "serverUrl": "http://localhost:8412/mcp",
+        "httpTransportType": "streamable",
+        "authType": "None",
+        "authToken": "",
+        "selectedTools": []
+      }
+    }
+  },
+  "contrib": "W3sicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1nZW5lcmFsL3NyYy9hcHAvR2VuZXJhbCIsImlkIjoiR2VuZXJhbCIsInZlcnNpb24iOiIxLjYuMTgiLCJ0YWciOiIxLjYuMTgtYjU5MSIsIm5hbWUiOiJUSUJDTyBGbG9nbyBDb25uZWN0b3IgZm9yIEdlbmVyYWwiLCJzM2xvY2F0aW9uIjoiVGliY28vR2VuZXJhbCIsImlzVXNlckV4dGVuc2lvbiI6ZmFsc2V9LHsicmVmIjoiZ2l0aHViLmNvbS90aWJjby9mbG9nby1haS1hZ2VudC9zcmMvYXBwL0FnZW50aWNBSSIsImlkIjoiQWdlbnRpY0FJIiwidmVyc2lvbiI6IjAuOS40LUhGMSIsInRhZyI6IjAuOS40LWhmMS1iMDEiLCJuYW1lIjoiVElCQ08gRmxvZ2/CriBDb25uZWN0b3IgZm9yIEFnZW50aWMgQUkgKFRlY2ggUHJldmlldykiLCJzM2xvY2F0aW9uIjoiVGliY28vQWdlbnRpY0FJIiwiaXNVc2VyRXh0ZW5zaW9uIjpmYWxzZX1d",
+  "metadata": {
+    "endpoints": [
+      {
+        "protocol": "http",
+        "port": "18090",
+        "spec": {
+          "name": "GasOpsAIOrchestrator",
+          "version": "1.0.0"
+        },
+        "title": "Gas_Ops_AI_Orchestrator_API",
+        "swagger": {
+          "openapi": "3.0.0",
+          "info": {
+            "title": "GasOpsAIOrchestrator",
+            "version": "1.0.0",
+            "description": "AI assistant for gas-cylinder operations and documents, over Flogo MCP tools"
+          },
+          "paths": {
+            "/api/chat": {
+              "post": {
+                "summary": "chat_POST",
+                "operationId": "post_api_chat",
+                "parameters": [],
+                "responses": {
+                  "200": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema1"
+                        }
+                      }
+                    }
+                  },
+                  "400": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  },
+                  "500": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema2"
+                        }
+                      }
+                    }
+                  }
+                },
+                "description": "Flow for api/chat POST",
+                "requestBody": {
+                  "description": "",
+                  "required": false,
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/schema3"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/api/health": {
+              "get": {
+                "summary": "health_GET",
+                "operationId": "get_api_health",
+                "parameters": [],
+                "responses": {
+                  "200": {
+                    "description": "",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/schema4"
+                        }
+                      }
+                    }
+                  }
+                },
+                "description": "Flow for api/health GET"
+              }
+            }
+          },
+          "components": {
+            "schemas": {
+              "schema1": {
+                "type": "object",
+                "properties": {
+                  "answer": {
+                    "type": "string"
+                  },
+                  "conversationId": {
+                    "type": "string"
+                  }
+                }
+              },
+              "schema2": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              },
+              "schema3": {
+                "type": "object",
+                "required": [
+                  "message"
+                ],
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  },
+                  "conversationId": {
+                    "type": "string"
+                  }
+                }
+              },
+              "schema4": {
+                "type": "object",
+                "properties": {
+                  "ok": {
+                    "type": "boolean"
+                  },
+                  "service": {
+                    "type": "string"
+                  },
+                  "model": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ],
+    "flogoVersion": "2.26.9"
+  }
+}

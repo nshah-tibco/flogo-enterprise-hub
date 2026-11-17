@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.example.org/QuerySchema" xmlns:tns="http://www.example.org/QuerySchema" elementFormDefault="qualified">
+
+    <element name="QueryElement">
+    	<complexType>
+    		<sequence>
+    			<element name="question" type="string"></element>
+    		</sequence>
+    	</complexType>
+    </element>
+
+    <element name="ResponseElement">
+    	<complexType>
+    		<sequence>
+    			<element name="answer" type="string" maxOccurs="1"></element>
+    		</sequence>
+    	</complexType>
+    </element>
+</schema>

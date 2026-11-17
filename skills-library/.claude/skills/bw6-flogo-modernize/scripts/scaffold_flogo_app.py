@@ -9,15 +9,21 @@ Writes <work>/plan.json for the business-logic step (see flogo_logic_lib.py) and
 operation-specific logic: every REST flow still answers with the cas logReply placeholder.
 
 Usage:
-  python scaffold_flogo_app.py --analysis <dir> --module <Module_slug> --app-name <AppName>
-                               --apps-dir <FLOGO_APPS_DIR> --work <dir> [--mcp all|explicit] [--force]
+  python scaffold_flogo_app.py --analysis <work>/analysis --work <work> [--module <Module_slug>] [--app-name <AppName>]
+                               [--apps-dir <FLOGO_APPS_DIR>] [--mcp all|explicit] [--mcp-path /mcp] [--force]
 
---module is the analyzer's file prefix (module name with non-alphanumerics as '_', e.g. Acme.Orders.API -> Acme_Orders_API).
+Required: --analysis (the folder analyze_bw6.py wrote, step 1) and --work; $FDA (see AGENT.md).
+--module is the analyzer's file prefix (module name with non-alphanumerics as '_', e.g. Acme.Orders.API -> Acme_Orders_API);
+  default: the only *.bw6spec.json in --analysis.
+--app-name defaults to the module name without dots (same default as modernization_plan.py).
+--apps-dir defaults to FLOGO_APPS_DIR from skills-library/.claude/skills/config.md (relative to config.md).
 --mcp explicit (default) exposes only operations configured as MCP tools in BW; 'all' reproduces BW's
   behaviour for modules without MCP configuration (every operation becomes a tool).
+--mcp-path is the MCP endpoint path (default /mcp).
 --force deletes an existing <AppName>.flogo and its fda history first (otherwise the script refuses).
 """
 import argparse
+import glob
 import json
 import os
 import re
@@ -25,7 +31,10 @@ import shutil
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from fdalib import Fda  # noqa: E402
+from fdalib import Fda, config_value, fda_path  # noqa: E402
+from modernization_plan import flogo_app_name  # noqa: E402
+
+ANALYZE = "python analyze_bw6.py <bw6-module-dir> --out <work>/analysis"
 
 
 def jschema(s):
@@ -47,21 +56,47 @@ def resolve(schema, comps, depth=0):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--analysis", required=True)
-    ap.add_argument("--module", required=True)
-    ap.add_argument("--app-name", required=True)
-    ap.add_argument("--apps-dir", required=True)
-    ap.add_argument("--work", required=True, help="folder for plan.json and the schema files fda reads")
-    ap.add_argument("--mcp", choices=["explicit", "all"], default="explicit")
-    ap.add_argument("--force", action="store_true")
+    ap.add_argument("--analysis", required=True, help="REQUIRED. folder analyze_bw6.py wrote (<work>/analysis)")
+    ap.add_argument("--module", help="analyzer file prefix, e.g. Acme_Orders_API (default: the only *.bw6spec.json "
+                                     "in --analysis)")
+    ap.add_argument("--app-name", help="Flogo app name: letters, digits, _ (default: the module name without dots)")
+    ap.add_argument("--apps-dir", help="target apps folder (default: FLOGO_APPS_DIR from config.md)")
+    ap.add_argument("--work", required=True, help="REQUIRED. folder for plan.json and the schema files fda reads")
+    ap.add_argument("--mcp", choices=["explicit", "all"], default="explicit",
+                    help="explicit (default): only operations configured as MCP tools in BW; all: every operation")
+    ap.add_argument("--mcp-path", default="/mcp", help="MCP endpoint path (default /mcp)")
+    ap.add_argument("--force", action="store_true", help="delete an existing <AppName>.flogo and its fda history first")
     a = ap.parse_args()
 
-    if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*", a.app_name):
-        sys.exit("--app-name: letters, digits and _ only, starting with a letter")
-    spec = json.load(open(os.path.join(a.analysis, a.module + ".bw6spec.json"), encoding="utf-8"))
+    # ---- inputs: fail fast, before anything is created or deleted
+    if not os.path.isdir(a.analysis):
+        sys.exit(f"error: --analysis {a.analysis} does not exist. Run step 1 first: {ANALYZE}")
+    specs = sorted(os.path.basename(p)[:-len(".bw6spec.json")] for p in glob.glob(os.path.join(a.analysis, "*.bw6spec.json")))
+    if not a.module:
+        if len(specs) != 1:
+            sys.exit(f"error: --module is needed: {len(specs)} analyzer specs in {a.analysis}"
+                     + (f" ({', '.join(specs)})" if specs else f" - run step 1 first: {ANALYZE}"))
+        a.module = specs[0]
+    spec_path = os.path.abspath(os.path.join(a.analysis, a.module + ".bw6spec.json"))
+    if not os.path.isfile(spec_path):
+        sys.exit(f"error: {spec_path} not found - run step 1 ({ANALYZE}) for this module"
+                 + (f"; specs present: {', '.join(specs)}" if specs else ""))
+    spec = json.load(open(spec_path, encoding="utf-8"))
+    if not spec.get("operations"):
+        sys.exit(f"error: {spec['module']} has no REST operations (shared module or non-REST starters) - nothing to scaffold")
     oas_path = os.path.abspath(os.path.join(a.analysis, a.module + ".openapi.json"))
     if not os.path.exists(oas_path):
         sys.exit(f"{oas_path} not found: the module has no REST operations with an OpenAPI descriptor")
+    a.app_name = a.app_name or flogo_app_name(spec["module"])
+    if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*", a.app_name):
+        sys.exit(f"--app-name {a.app_name!r}: letters, digits and _ only, starting with a letter")
+    a.apps_dir = a.apps_dir or config_value("FLOGO_APPS_DIR", path_relative=True)
+    if not a.apps_dir:
+        sys.exit("error: target apps folder unknown: pass --apps-dir <FLOGO_APPS_DIR> or set FLOGO_APPS_DIR in "
+                 "skills-library/.claude/skills/config.md (copy config.example.md)")
+    if not a.mcp_path.startswith("/"):
+        sys.exit(f"--mcp-path {a.mcp_path!r} must start with '/'")
+    fda_path()  # $FDA must be valid BEFORE --force deletes anything
     oas = json.load(open(oas_path, encoding="utf-8"))
     os.makedirs(a.work, exist_ok=True)
     work = os.path.abspath(a.work)
@@ -71,6 +106,7 @@ def main():
         json.dump(obj, open(p, "w", encoding="utf-8"), indent=1)
         return p
 
+    os.makedirs(a.apps_dir, exist_ok=True)  # FLOGO_APPS_DIR may not exist yet on a fresh machine
     app = os.path.abspath(os.path.join(a.apps_dir, a.app_name + ".flogo"))
     hist = os.path.join(os.path.dirname(app), ".flogodesign", "history", a.app_name)
     if os.path.exists(app):
@@ -92,8 +128,8 @@ def main():
 
     comps = oas["components"]["schemas"]
     plan = {"app": app, "appName": a.app_name, "module": spec["module"], "restTrigger": rest_trigger,
-            "spec": os.path.abspath(os.path.join(a.analysis, a.module + ".bw6spec.json")),
-            "restPort": spec["http"]["flogoPort"], "mcpPort": spec["mcp"]["flogoPort"], "ops": []}
+            "spec": spec_path,
+            "restPort": spec["http"]["flogoPort"], "mcpPort": spec["mcp"]["flogoPort"], "mcpPath": a.mcp_path, "ops": []}
     missing = [f"{o['method']} {o['path']}" for o in spec["operations"] if not o.get("flogoFlow")]
     if missing:
         sys.exit("these BW operations have no path in the module's OpenAPI descriptor, so no flow can be generated: "
@@ -108,9 +144,10 @@ def main():
         body = resolve(item.get("requestBody", {}).get("content", {}).get("application/json", {}).get("schema"), comps)
         ok = resolve(((item.get("responses", {}).get("200") or {}).get("content", {}).get("application/json", {})
                       .get("schema")) or {"type": "object"}, comps)
-        # 1) cas leaves query/path params out of the flow inputs
+        # 1) cas leaves query/path params - and, next to a path param, the JSON body - out of the flow inputs. Over REST
+        #    the trigger still passes them, but a subflow call (the mcp_<tool> flows) only passes DECLARED inputs.
         meta_in = {r["name"] for r in flows[flow]["data"]["metadata"].get("input", [])}
-        if (qp and "queryParams" not in meta_in) or (pp and "pathParams" not in meta_in):
+        if (qp and "queryParams" not in meta_in) or (pp and "pathParams" not in meta_in) or (body and "body" not in meta_in):
             props = {}
             for kind, plist in (("queryParams", qp), ("pathParams", pp)):
                 if plist:
@@ -149,7 +186,7 @@ def main():
         fda("ct", "mcp_server", "tr_mcpserver", f"MCP server for {spec['module']}")
         fda("sa", "trigger", "mcp_server.settings.serverName", spec["module"])
         fda("sa", "trigger", "mcp_server.settings.serverPort", "MCP_PORT", "--configType", "app-property")
-        fda("sa", "trigger", "mcp_server.settings.serverEndpointPath", "/mcp")
+        fda("sa", "trigger", "mcp_server.settings.serverEndpointPath", a.mcp_path)
     for o in tools:
         m = o["mcp"]
         mf = "mcp_" + re.sub(r"[^A-Za-z0-9_]", "_", m["name"])
@@ -163,9 +200,13 @@ def main():
         for n, s in ((o["body"] or {}).get("properties") or {}).items():
             props.setdefault(n, s)
         args = {"$schema": "http://json-schema.org/draft-04/schema#", "type": "object", "properties": props}
-        if o["requiredQuery"] + o["pathParams"]:
-            args["required"] = o["requiredQuery"] + o["pathParams"]
+        required = o["requiredQuery"] + o["pathParams"] + [f for f in (o["body"] or {}).get("required", []) if f in props]
+        if required:
+            args["required"] = sorted(set(required), key=required.index)
         fda("sa", "handler", f"mcp_server.{mf}.schemas.output.arguments", "--jsonFile", tmp(f"{mf}_args.json", jschema(args)), "--force")
+        # type the tool flow's 'arguments' input too: the designer flags $flow.arguments.<field> on an untyped object
+        fda("sms", f"{mf}.input", "--json-schema", json.dumps({"type": "object", "properties": {
+            "arguments": {k: v for k, v in args.items() if k != "$schema"}}}))
         # tr_mcpserver reply contract: response.data (string) = tool text content; non-empty response.error = isError
         resp = {"$schema": "http://json-schema.org/draft-04/schema#", "type": "object",
                 "properties": {"data": {"type": "string"}, "error": {"type": "string"}}}
@@ -190,7 +231,7 @@ def main():
     fails, summary, _ = fda.cm()
     print(f"\napp      : {app}")
     print(f"flows    : {[o['flow'] for o in plan['ops']]} + MCP {[o.get('mcpFlow') for o in tools]}")
-    print(f"ports    : REST {plan['restPort']}, MCP {plan['mcpPort'] if tools else '-'}")
+    print(f"ports    : REST {plan['restPort']}, MCP {str(plan['mcpPort']) + a.mcp_path if tools else '-'}")
     print(f"cm       : {summary[-1].split(')', 1)[-1].strip() if summary else '?'}")
     for f in fails:
         print("  FAIL", re.sub(r"\s+", " ", f)[:140])

@@ -2,7 +2,10 @@
 """Side-by-side parity check: send the same requests to a running BW6 app and its Flogo modernization.
 
 Usage:
-  python parity_check.py <cases.json> [--report <out.md>]
+  python parity_check.py <cases.json> [--report <out.md>] [--timeout 60]
+
+Required: the BW6 app RUNNING (its base URL, and its MCP endpoint when the module has MCP tools) and the Flogo app
+running next to it. Without a BW6 instance there is no side-by-side parity: say so in the hand-over instead.
 
 cases.json:
 {
@@ -20,7 +23,7 @@ cases.json:
 Verdicts per case:
   MATCH      same status and identical JSON body (MCP: identical tool result JSON)
   EQUIVALENT identical except keys BW omits and Flogo sends as null (or the reverse)
-  IMPROVED   BW failed badly (5xx, or a non-JSON error page) and Flogo answered with a JSON 4xx/5xx.
+  IMPROVED   BW failed badly (5xx, or a non-JSON error page) and Flogo answered with JSON (an error or a proper result).
              A JSON 4xx from BW is a real answer and is compared like any other (status and body).
   ACCEPTED   a MISMATCH on a case that carries "accept": "<why>" - an intentional, documented deviation
 
@@ -32,27 +35,31 @@ drops values each side generates on its own (UUIDs, timestamps) before comparing
              expected fact found and every expected value present - for operations whose exact output cannot
              match (LLM answers, vector search scores/ids):
                "semantic": {"facts": {"$.answer": ["14 days"]},             # case-insensitive substrings
-                            "values": {"$.citations[*].uri": ["policy://policy-electronics-returns"]},
-                            "why": "OpenAI vector store + LLM instead of BW RAG/Weaviate"}
+                            "values": {"$.citations[*].uri": ["<a document uri BW also cites>"]},
+                            "why": "OpenAI vector store + LLM instead of the BW RAG palette"}
   MISMATCH   anything else -> exit code 1
 
 Standard library only; uses urllib (curl may be blocked in agent shells).
 """
 import argparse
 import json
+import os
 import re
 import sys
 import urllib.error
 import urllib.request
 
 
-def http(method, url, body=None, timeout=60, headers=None):
+TIMEOUT = 60  # seconds per request; --timeout (LLM / RAG operations can need more)
+
+
+def http(method, url, body=None, timeout=None, headers=None):
     data = json.dumps(body).encode() if body is not None else None
     h = {"Content-Type": "application/json"} if data else {}
     h.update(headers or {})
     req = urllib.request.Request(url, data=data, method=method, headers=h)
     try:
-        r = urllib.request.urlopen(req, timeout=timeout)
+        r = urllib.request.urlopen(req, timeout=timeout or TIMEOUT)
         status, raw, ctype = r.status, r.read(), r.headers.get("Content-Type", "")
     except urllib.error.HTTPError as e:
         status, raw, ctype = e.code, e.read(), e.headers.get("Content-Type", "")
@@ -192,8 +199,9 @@ def verdict(bw_status, bw_json, bw_ok, fl_status, fl_json):
         if strip_nulls(bw_json) == strip_nulls(fl_json):
             return "EQUIVALENT", ["differs only in null vs absent keys"]
         return "MISMATCH", diff(bw_json, fl_json)
-    # BW failed (5xx / HTML error page / connection error)
-    if fl_status and fl_status >= 400 and fl_json is not None:
+    # BW failed (5xx / HTML error page / connection error): any JSON answer from Flogo - an error object or a proper
+    # result such as [] for "nothing found" - is an improvement; it is listed for review, never hidden
+    if fl_status and fl_json is not None:
         return "IMPROVED", [f"BW {bw_status} (non-JSON or 5xx) -> Flogo {fl_status} JSON {json.dumps(fl_json)[:90]}"]
     if bw_status == fl_status and bw_json == fl_json:
         return "MATCH", []
@@ -222,7 +230,7 @@ class MCP:
         h = {"Content-Type": "application/json", "Accept": "application/json, text/event-stream"}
         if self.sid:
             h["Mcp-Session-Id"] = self.sid
-        r = urllib.request.urlopen(urllib.request.Request(self.url, json.dumps(body).encode(), h), timeout=60)
+        r = urllib.request.urlopen(urllib.request.Request(self.url, json.dumps(body).encode(), h), timeout=TIMEOUT)
         self.sid = r.headers.get("Mcp-Session-Id") or self.sid
         txt = r.read().decode("utf-8", "replace")
         if notify or not txt.strip():
@@ -257,12 +265,42 @@ def schema_shape(s):
     return ({k: (v or {}).get("type") for k, v in (s.get("properties") or {}).items()}, sorted(s.get("required") or []))
 
 
+def load_cases(path):
+    """cases.json, checked up front: a missing BW/Flogo URL is a missing INPUT, not a parity failure."""
+    if not os.path.isfile(path):
+        sys.exit(f"error: {path} not found (write the cases first: SKILL.md step 3)")
+    try:
+        cfg = json.load(open(path, encoding="utf-8"))
+    except ValueError as e:
+        sys.exit(f"error: {path} is not valid JSON: {e}")
+    if not isinstance(cfg, dict) or not (cfg.get("rest") or cfg.get("mcp")):
+        sys.exit(f"error: {path} needs a \"rest\" and/or an \"mcp\" section (format: parity_check.py --help)")
+    problems = []
+    for sec, items in (("rest", "cases"), ("mcp", "calls")):
+        s = cfg.get(sec)
+        if not s:
+            continue
+        for side, what in (("bw", "base URL of the RUNNING BW6 app" if sec == "rest" else "BW MCP endpoint"),
+                           ("flogo", "base URL of the running Flogo app" if sec == "rest" else "Flogo MCP endpoint")):
+            url = str(s.get(side) or "")
+            if not re.match(r"https?://[^<>\s]+$", url):
+                problems.append(f"{sec}.{side}: {what} missing or a placeholder ({url or 'empty'})")
+        if sec == "rest" and not s.get(items):
+            problems.append("rest.cases: no cases")
+    if problems:
+        sys.exit("error: cases.json is incomplete - ask the user for these inputs:\n  " + "\n  ".join(problems))
+    return cfg
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("cases")
+    ap.add_argument("cases", help="REQUIRED. cases.json (format above)")
     ap.add_argument("--report", help="write a markdown report here")
+    ap.add_argument("--timeout", type=int, default=60, help="seconds per request (default 60)")
     a = ap.parse_args()
-    cfg = json.load(open(a.cases, encoding="utf-8"))
+    global TIMEOUT
+    TIMEOUT = a.timeout
+    cfg = load_cases(a.cases)
     rows, bad = [], 0
 
     rest = cfg.get("rest")
@@ -315,6 +353,8 @@ def main():
         for c in mcp.get("calls", []):
             be, bj, braw = tool_result_json(bwm.call(c["tool"], c["arguments"]))
             fe, fj, fraw = tool_result_json(flm.call(c["tool"], c["arguments"]))
+            if c.get("ignore"):  # values each side generates on its own (dates, ids)
+                bj, fj = drop_paths(bj, c["ignore"]), drop_paths(fj, c["ignore"])
             bw_ok = not be and bj is not None and not braw.startswith(BW_MCP_FAILURE)
             if bw_ok:
                 if fj == bj:
@@ -323,6 +363,8 @@ def main():
                     v, notes = "EQUIVALENT", ["differs only in null vs absent keys"]
                 else:
                     v, notes = "MISMATCH", diff(bj, fj) or [f"Flogo text: {fraw[:120]}"]
+                    if c.get("accept"):
+                        v, notes = "ACCEPTED", [f"intentional deviation: {c['accept']}"] + notes[:2]
             else:
                 v, notes = ("IMPROVED", [f"BW: {braw[:70]}... -> Flogo: {fraw[:90]}"]) if fj is not None else \
                            ("MISMATCH", [f"BW error, Flogo non-JSON: {fraw[:120]}"])

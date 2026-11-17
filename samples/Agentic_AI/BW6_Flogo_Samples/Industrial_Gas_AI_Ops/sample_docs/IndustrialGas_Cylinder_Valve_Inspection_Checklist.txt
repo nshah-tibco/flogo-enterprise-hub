@@ -1,0 +1,16 @@
+INDUSTRIAL GAS - CYLINDER VALVE INSPECTION CHECKLIST
+Document ID: IG-CHK-VLV-031   Revision: 1   Effective date: 2026-10-01
+Applies to: Houston Yard A, Houston Yard B, Dallas Distribution Center
+NOTE: FICTIONAL DOCUMENT CREATED FOR DEMO PURPOSES ONLY. NOT FOR OPERATIONAL USE.
+
+1. Purpose. This checklist defines the valve inspection every gas cylinder must pass before it is filled or dispatched.
+
+2. Leak test interval. Every cylinder valve must be leak-tested at least every 90 days using a 1% leak-detection solution, and again after any valve repair. A valve that shows bubbles for more than 5 seconds fails the test.
+
+3. Valve O-rings. Valve O-rings must be replaced every 24 months, or immediately if they are cracked, flattened or contaminated with oil. Oxygen cylinder valves must only use oxygen-compatible, oil-free O-rings.
+
+4. Valve protection cap. The valve protection cap must be fitted whenever the cylinder is not connected to equipment. A cylinder found without its cap during a yard audit is tagged "HOLD" for 24 hours and re-inspected.
+
+5. Inspector sign-off. Each inspection is recorded with the inspector code (for example VLV-7) and the date in the Smart Cylinder Operations system. A cylinder without a valve inspection in the last 90 days must not be dispatched.
+
+6. Failed inspection. A cylinder that fails any check is set to status "Quarantine", its valve is replaced by the maintenance team, and it is leak-tested again before returning to "Available".

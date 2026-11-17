@@ -17,7 +17,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts"))
 from flogo_logic_lib import Logic, bw_string_literal  # noqa: E402
 
-L = Logic(sys.argv[1])
+L = Logic(sys.argv[1] if len(sys.argv) > 1 else None)   # <work>/plan.json from scaffold_flogo_app.py
 
 # ---------------------------------------------------------------- GET /api/promotions
 F = L.flow("find_promotions")

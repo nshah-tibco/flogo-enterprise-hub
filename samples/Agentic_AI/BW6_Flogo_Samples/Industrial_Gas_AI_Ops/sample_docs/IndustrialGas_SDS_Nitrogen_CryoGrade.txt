@@ -1,0 +1,20 @@
+INDUSTRIAL GAS - SAFETY DATA SHEET AND HANDLING GUIDE
+Product: Nitrogen, Cryo-Grade (Compressed and Refrigerated Liquid)
+Document ID: IG-SDS-NIT-004   Revision: 7   Effective date: 2026-03-01
+NOTE: FICTIONAL DOCUMENT CREATED FOR DEMO PURPOSES ONLY. NOT FOR OPERATIONAL USE.
+
+1. Product identification. Industrial Gas Cryo-Grade Nitrogen (N2) is supplied as a compressed gas in 50 L steel cylinders at a nominal filling pressure of 180 bar, and as a refrigerated liquid in dewars and bulk tanks. Cryo-Grade Nitrogen has a minimum purity of 99.99% (grade 4.0). Typical Industrial Gas cylinder IDs for this product start with the prefix CYL-NIT, for example CYL-NIT-4011.
+
+2. Purity requirements for food-grade cryo-freezing. Nitrogen used for food freezing, chilling and modified atmosphere packaging must meet food additive specification E941. For direct-contact food-grade cryo-freezing, Industrial Gas requires a minimum Nitrogen purity of 99.99% (grade 4.0, Cryo-Grade) with oxygen below 10 ppm and moisture below 5 ppm. Industrial-grade Nitrogen (99.5%) must never be used for direct food contact. Each Cryo-Grade Nitrogen batch intended for food use is released with a Certificate of Conformity referencing E941.
+
+3. Main hazards of Nitrogen. Nitrogen is non-toxic but is an asphyxiant: it displaces oxygen without any warning smell or colour. An atmosphere with less than 19.5% oxygen is considered oxygen-deficient and dangerous; below 10% oxygen, loss of consciousness can occur within seconds. Liquid Nitrogen is extremely cold (-196 degrees C) and causes severe cold burns (frostbite) and brittle failure of ordinary plastics and carbon steel.
+
+4. Safety steps required during Nitrogen transfer (cylinder or liquid). Before any Nitrogen transfer, the operator must: (a) confirm the area is well ventilated and that a fixed or personal oxygen monitor set to alarm at 19.5% O2 is working; (b) wear cryogenic gloves, a full face shield over safety glasses, a long-sleeved lab coat or apron and closed safety shoes; (c) inspect hoses, couplings and the cylinder valve for frost, damage or leaks; (d) use only transfer hoses rated for cryogenic service and never trap liquid Nitrogen between two closed valves, because expansion (about 700 times) can rupture the line; (e) open valves slowly and stand to the side of the outlet; (f) never work alone in a confined space during Nitrogen transfer - a second person must be present outside the space.
+
+5. Transfer into food-freezing tunnels. When filling a cryogenic food-freezing tunnel with Cryo-Grade Nitrogen, the exhaust fan of the tunnel must be running before the Nitrogen supply valve is opened, and the oxygen monitor at the tunnel entrance must read at least 19.5%. Food-contact transfer hoses must be dedicated to food-grade Nitrogen only and labelled "FOOD GRADE N2 - E941".
+
+6. First aid for Nitrogen exposure. Asphyxiation: move the person to fresh air only if it is safe to do so (rescuers must not enter an oxygen-deficient area without breathing apparatus), give oxygen if trained, and call emergency services. Cold burns from liquid Nitrogen: flush the affected area with lukewarm (not hot) water for at least 15 minutes, do not rub the skin, and seek medical attention.
+
+7. Storage of Nitrogen cylinders. Store Nitrogen cylinders upright, secured with chains or straps, in a well-ventilated area away from heat sources, at a temperature below 50 degrees C. Keep the valve protection cap fitted when the cylinder is not in use. Liquid Nitrogen dewars must never be sealed and must be stored in ventilated rooms with oxygen monitoring.
+
+8. Revision history. Revision 7 (2026-03-01) added the E941 food-grade purity limits and the tunnel filling procedure in sections 2 and 5.
